@@ -1,68 +1,207 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.any2json</groupId>
-  <artifactId>Any2Json</artifactId>
+  <groupId>com.github.romualdrousseau</groupId>
+  <artifactId>any2json</artifactId>
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
   <name>Any2Json</name>
-  <url>http://maven.apache.org</url>
+  <url>https://github.com/romualdrousseau/any2json</url>
+
+  <licenses>
+    <license>
+      <name>GNU GENERAL PUBLIC LICENSE, Version 3.0</name>
+      <url>https://www.gnu.org/licenses/gpl-3.0.txt</url>
+    </license>
+  </licenses>
+  
+  <developers>
+    <developer>
+      <name>Romuald Rousseau</name>
+      <email>romualdrousseau@gmail.com</email>
+      <organization>romualdrousseau</organization>
+      <organizationUrl>https://github.com/romualdrousseau</organizationUrl>
+    </developer>
+  </developers>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <project.build.reportingEncoding>UTF-8</project.build.reportingEncoding>
   </properties>
+  
   <scm>
-    <connection>scm:git:git://github.com/RomualdRousseau/Any2Json.git</connection>
-    <developerConnection>scm:git:https://romualdrousseau:Sppdmlm2@github.com/RomualdRousseau/Any2Json.git</developerConnection>
-    <url>https://github.com/RomualdRousseau/Any2Json</url>
+    <connection>scm:git:git://github.com/romualdrousseau/any2json.git</connection>
+    <developerConnection>scm:git:https://github.com/romualdrousseau/any2json.git</developerConnection>
+    <url>https://github.com/romualdrousseau/any2json</url>
+    <tag>HEAD</tag>
   </scm>
+  
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+    </repository>
+  </distributionManagement>
+
+  <repositories>
+    <repository>
+      <id>ossrh</id>
+      <name>Open Source Project Repository Hosting</name>
+      <url>https://oss.sonatype.org/content/groups/public</url>
+    </repository>
+  </repositories>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.6.8</version>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>ossrh</serverId>
+          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+          <autoReleaseAfterClose>true</autoReleaseAfterClose>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>release</id>
+      <activation>
+        <property>
+          <name>release</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.0.1</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.0.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.6</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <configuration>
+                  <passphraseServerId>gpg.passphrase</passphraseServerId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>com.github.github</groupId>
+            <artifactId>site-maven-plugin</artifactId>
+            <version>0.12</version>
+            <executions>
+              <execution>
+                <phase>site</phase>
+                <goals>
+                  <goal>site</goal>
+                </goals>
+                <configuration>
+                  <server>github.com</server>
+                  <message>Building site for ${project.version}</message>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.0.1</version>
+          </plugin>
+        </plugins>
+      </reporting>
+    </profile>
+  </profiles>
+
   <dependencies>
+    <dependency>
+      <groupId>org.jsoup</groupId>
+      <artifactId>jsoup</artifactId>
+      <version>1.10.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi</artifactId>
+      <version>3.11</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi-ooxml</artifactId>
+      <version>3.11</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi-ooxml-schemas</artifactId>
+      <version>3.11</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi-scratchpad</artifactId>
+      <version>3.11</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.xmlbeans</groupId>
+      <artifactId>xmlbeans</artifactId>
+      <version>2.6.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.json-simple</groupId>
+      <artifactId>json-simple</artifactId>
+      <version>1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.romualdrousseau</groupId>
+      <artifactId>shuju</artifactId>
+      <version>1.3-SNAPSHOT</version>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>jsoup</groupId>
-      <artifactId>jsoup</artifactId>
-      <version>1.10.2</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>poi</groupId>
-      <artifactId>poi</artifactId>
-      <version>3.11</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>poi</groupId>
-      <artifactId>poi-ooxml</artifactId>
-      <version>3.11</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>poi</groupId>
-      <artifactId>poi-ooxml-schemas</artifactId>
-      <version>3.11</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>poi</groupId>
-      <artifactId>poi-scratchpad</artifactId>
-      <version>3.11</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>xmlbeans</groupId>
-      <artifactId>xmlbeans</artifactId>
-      <version>2.6.0</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.shuju</groupId>
-      <artifactId>ShuJu</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
   </dependencies>
+
 </project>
