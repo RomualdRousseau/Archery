@@ -4,12 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.ArrayList;
 
 import com.github.romualdrousseau.any2json.IDocument;
 import com.github.romualdrousseau.any2json.ISheet;
@@ -17,7 +12,7 @@ import com.github.romualdrousseau.any2json.ITable;
 import com.github.romualdrousseau.any2json.TableHeader;
 import com.github.romualdrousseau.any2json.util.StringUtility;
 
-public class TextDocument extends IDocument
+public class TextDocument implements IDocument
 {
 	public boolean open(File txtFile, String encoding) {
 		if(openWithEncoding(txtFile, null)) {
@@ -29,60 +24,37 @@ public class TextDocument extends IDocument
 	}
 	
 	public void close() {
-		m_sheet = null;
+		this.sheet = null;
 	}
 
 	public int getNumberOfSheets() {
-		return (m_sheet == null) ? 0 : 1;
+		return (this.sheet == null) ? 0 : 1;
 	}
 
 	public ISheet getSheetAt(int i) {
-		return m_sheet;
+		return this.sheet;
 	}
 
 	private boolean openWithEncoding(File txtFile, String encoding) {
-		BufferedReader br = null;
-		boolean forceClose = false;
-
 		if(encoding == null) {
 			encoding = "UTF-8";
 		}
 
-		m_sheet = null;
+		close();
 
-		try {
-			InputStream inputStream = new FileInputStream(txtFile);
-			br = new BufferedReader(new InputStreamReader(inputStream, encoding));
-			
-			TextTable table = new TextTable(br);
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(txtFile), encoding))) {
+			TextTable table = new TextTable(reader);
 			if(table.hasHeaders()) {
 				String sheetName = txtFile.getName().replaceFirst("[.][^.]+$", "");
-				m_sheet = new TextSheet(sheetName, table);
+				this.sheet = new TextSheet(sheetName, table);
 			}
+		}
+		catch(IOException x) {
+			close();
+		}
 
-			br.close();
-			br = null;
-
-			return m_sheet != null;
-		}
-		catch(Exception x) {
-			forceClose = true;
-			return false;
-		}
-		finally {
-			if(br != null) {
-				try {
-					br.close();
-				}
-				catch(IOException x) {
-					// ignore exception
-				}
-			}
-			if(forceClose) {
-				close();
-			}
-		}
+		return this.sheet != null;
 	}
 
-	private TextSheet m_sheet = null;
+	private TextSheet sheet = null;
 }

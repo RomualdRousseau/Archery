@@ -2,15 +2,6 @@ package com.github.romualdrousseau.any2json;
 
 public class TableHeader
 {
-	public String getOriginalName() {
-		return this.originalName;
-	}
-
-	public TableHeader setOriginalName(String originalName) {
-		this.originalName = originalName;
-		return this;
-	}
-
 	public String getName() {
 		return this.name;
 	}
@@ -38,6 +29,10 @@ public class TableHeader
 		return this;
 	}
 
+	public boolean hasTag() {
+		return this.tag != null;
+	}
+
 	public HeaderTag getTag() {
 		return this.tag;
 	}
@@ -57,10 +52,9 @@ public class TableHeader
 	}
 
 	public String toString() {
-		return this.originalName;
+		return this.name;
 	}
 
-	private String originalName;
 	private String name;
 	private int columnIndex;
 	private int numberOfCells;

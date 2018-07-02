@@ -1,25 +1,33 @@
 package com.github.romualdrousseau.any2json.document.html;
 
 import com.github.romualdrousseau.any2json.TableHeader;
-import com.github.romualdrousseau.any2json.IRow;
+import com.github.romualdrousseau.any2json.Row;
 
-class HtmlRow extends IRow
+class HtmlRow extends Row
 {
-	public HtmlRow(String[] rows) {
-		m_row = rows;
+	public HtmlRow(String[] cells) {
+		this.cells = cells;
 	}
 
 	public int getNumberOfCells() {
-		return m_row.length;
+		return this.cells.length;
 	}
 
 	public String getCellValue(TableHeader header) {
+		if(header == null) {
+			throw new IllegalArgumentException();
+		}
+
 		return getCellValueAt(header.getColumnIndex());
 	}
 
 	public String getCellValueAt(int i) {
-		return m_row[i];
+		if(i < 0 || i >= getNumberOfCells()) {
+			throw new ArrayIndexOutOfBoundsException(i);
+		}
+
+		return this.cells[i];
 	}
 
-	private String[] m_row = null;
+	private String[] cells = null;
 }

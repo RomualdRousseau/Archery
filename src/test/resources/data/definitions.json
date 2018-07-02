@@ -2,7 +2,7 @@
 	{
 		"tag":"date",
 		"patterns":[
-			{"weight":1.0,"value":"\\d{2,4}[-/]\\d{1,2}[-/]\\d{2}"},
+			{"weight":1.0,"value":"\\d{2,4}[-/]\\d{1,2}([-/]\\d{2})?"},
 			{"weight":1.0,"value":"\\d{6}||\\d{8}"}
 		],
 		"words":[
@@ -23,7 +23,8 @@
 			{"weight":1.0,"value":".*"}
 		],
 		"words":[
-			{"weight":1.0,"value":"품명"}
+			{"weight":1.0,"value":"품명"},
+			{"weight":1.0,"value":"MATERIAL DESCRIPTION","option":"tokenize"}
 		]
 	},
 	{
@@ -46,7 +47,8 @@
 		"words":[
 			{"weight":1.0,"value":"수량"},
 			{"weight":1.0,"value":"출고량"},
-			{"weight":1.0,"value":"입고"}
+			{"weight":1.0,"value":"입고"},
+			{"weight":1.0,"value":"SALES QUANTITY","option":"tokenize"}
 		]
 	},
 	{
@@ -73,7 +75,8 @@
 			{"weight":1.0,"value":"금액"},
 			{"weight":1.0,"value":"합계"},
 			{"weight":1.0,"value":"매출액"},
-			{"weight":1.0,"value":"보험액"}
+			{"weight":1.0,"value":"보험액"},
+			{"weight":1.0,"value":"VALUE"}
 		]
 	},
 	{
@@ -97,7 +100,8 @@
 		],
 		"words":[
 			{"weight":1.0,"value":"약국명"},
-			{"weight":1.0,"value":"거래처종류"}
+			{"weight":1.0,"value":"거래처종류"},
+			{"weight":1.0,"value":"CUSTOMER PRICE GROUP","option":"tokenize"}
 		]
 	},
 	{
@@ -128,7 +132,8 @@
 			{"weight":1.0,"value":"발주처"},
 			{"weight":1.0,"value":"매입처"},
 			{"weight":1.0,"value":"메이커명"},
-			{"weight":1.0,"value":"보낼매입처명"}
+			{"weight":1.0,"value":"보낼매입처명"},
+			{"weight":1.0,"value":"CUSTOMER NAME","option":"tokenize"}
 		]
 	},
 	{

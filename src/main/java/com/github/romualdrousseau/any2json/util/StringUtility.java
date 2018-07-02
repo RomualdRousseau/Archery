@@ -41,7 +41,32 @@ public class StringUtility
 		return s.replaceAll("[" + whiteSpaces + "]", "");
 	}
 
+	public static String singleWhiteSpaces(String s) {
+		return singleWhiteSpaces(s, StringUtility.WHITE_SPACES);
+	}
+
+	public static String singleWhiteSpaces(String s, String whiteSpaces) {
+		if(s == null) {
+			return null;
+		}
+		return s.replaceAll("[" + whiteSpaces + "]+", " ");
+	}
+
 	public static boolean checkIfGoodEncoding(String s) {
 		return !Pattern.compile(StringUtility.WRONG_UNICODE).matcher(s).find();
+	}
+
+	public static String cleanHeaderToken(String token) {
+		token = token.replaceAll("\\(.*\\)", "");
+		token = token.replaceAll("/.*", "");
+		token = token.replaceAll("▲", "");
+		return token;
+	}
+
+	public static String cleanValueToken(String token) {
+		token = StringUtility.normalizeWhiteSpaces(token);
+		token = StringUtility.singleWhiteSpaces(token);
+		token = StringUtility.trim(token, StringUtility.WHITE_SPACES + "\"");
+		return token;
 	}
 }

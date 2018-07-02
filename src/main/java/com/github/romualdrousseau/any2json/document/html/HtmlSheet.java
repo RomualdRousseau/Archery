@@ -3,21 +3,21 @@ package com.github.romualdrousseau.any2json.document.html;
 import com.github.romualdrousseau.any2json.ISheet;
 import com.github.romualdrousseau.any2json.ITable;
 
-class HtmlSheet extends ISheet
+class HtmlSheet implements ISheet
 {
 	public HtmlSheet(String name, ITable table) {
-		m_name = name;
-		m_table = table;
+		this.name = name;
+		this.table = table;
 	}
 
 	public String getName() {
-		return m_name;
+		return this.name;
 	}
 
 	public ITable getTable() {
-		return m_table;
+		return this.table;
 	}
 
-	private String m_name;
-	private ITable m_table;
+	private String name;
+	private ITable table;
 }

@@ -6,38 +6,38 @@ import org.apache.poi.ss.usermodel.Cell;
 import com.github.romualdrousseau.shuju.cv.SearchPoint;
 import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.RectangleExtractor;
 
-import com.github.romualdrousseau.any2json.ISheet;
 import com.github.romualdrousseau.any2json.ITable;
+import com.github.romualdrousseau.any2json.ISheet;
 
-class ExcelSheet extends ISheet
+class ExcelSheet implements ISheet
 {
 	public ExcelSheet(Sheet sheet, int headerColumns, int headerRows) {
-		m_sheet = sheet;
-		m_headerColumns = headerColumns;
-		m_headerRows = Math.min(headerRows, m_sheet.getLastRowNum() + 1);
-		m_table = null;
+		this.sheet = sheet;
+		this.headerColumns = headerColumns;
+		this.headerRows = Math.min(headerRows, this.sheet.getLastRowNum() + 1);
+		this.table = null;
 	}
 
 	public String getName() {
-		return m_sheet.getSheetName();
+		return this.sheet.getSheetName();
 	}
 
 	public ITable getTable() {
-		if(m_table == null) {
-			m_table = findTable(m_headerColumns, m_headerRows);
+		if(this.table == null) {
+			this.table = findTable(this.headerColumns, this.headerRows);
 		}
-		return m_table;
+		return this.table;
 	}
 
 	private ExcelTable findTable(int headerColumns, int headerRows) {
-		ExcelSearchBitmap searchBitmap = new ExcelSearchBitmap(m_sheet, headerColumns, headerRows);
+		ExcelSearchBitmap searchBitmap = new ExcelSearchBitmap(this.sheet, headerColumns, headerRows);
 		SearchPoint[] table = new RectangleExtractor().extractBest(searchBitmap);
 		//debug(searchBitmap, table);
 		if(table == null) {
 			return null;
 		}
 
-		return new ExcelTable(m_sheet, table[0].getX(), table[0].getY(), table[1].getX(), m_sheet.getLastRowNum());
+		return new ExcelTable(this.sheet, table[0].getX(), table[0].getY(), table[1].getX(), this.sheet.getLastRowNum());
 	}
 
 	private void debug(ExcelSearchBitmap searchBitmap, SearchPoint[] table) {
@@ -61,8 +61,8 @@ class ExcelSheet extends ISheet
 		}
 	}
 
-	private Sheet m_sheet;
-	private int m_headerColumns;
-	private int m_headerRows;
-	private ExcelTable m_table;
+	private Sheet sheet;
+	private int headerColumns;
+	private int headerRows;
+	private ExcelTable table;
 }

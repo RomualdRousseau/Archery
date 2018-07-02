@@ -4,15 +4,15 @@ import java.util.ArrayList;
 import java.io.IOException;
 import java.io.BufferedReader;
 
-import com.github.romualdrousseau.any2json.ITable;
-import com.github.romualdrousseau.any2json.IRow;
+import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.TableHeader;
+import com.github.romualdrousseau.any2json.IRow;
 import com.github.romualdrousseau.any2json.util.StringUtility;
 
-class TextTable extends ITable
+class TextTable extends Table
 {
-	public TextTable(BufferedReader br) throws IOException {
-		processOneTable(br);
+	public TextTable(BufferedReader reader) throws IOException {
+		processOneTable(reader);
 	}
 
 	public int getNumberOfColumns() {
@@ -20,21 +20,27 @@ class TextTable extends ITable
 	}
 
 	public int getNumberOfRows() {
-		return m_rows.size();	
+		return this.rows.size();	
 	}
 
 	public IRow getRowAt(int i) {
-		return m_rows.get(i);
+		if(i < 0 || i >= getNumberOfRows()) {
+			throw new ArrayIndexOutOfBoundsException(i);
+		}
+		
+		return this.rows.get(i);
 	}
 
-	private void processOneTable(BufferedReader br) throws IOException {
-		if(br == null) {
+	private void processOneTable(BufferedReader reader) throws IOException {
+		if(reader == null) {
 			return;
 		}
 
-		if(processHeaders(br.readLine())) {
-			processRows(br);
+		if(!processHeaders(reader.readLine())) {
+			return;
 		}
+		
+		processRows(reader);
 	}
 
 	private boolean processHeaders(String textLine) {
@@ -44,34 +50,36 @@ class TextTable extends ITable
 
 		String[] textHeaders = parseOneRow(textLine);
 		for(int i = 0; i < textHeaders.length; i++) {
-			TableHeader header = new TableHeader()
+			addHeader(new TableHeader()
 				.setColumnIndex(i)
 				.setNumberOfCells(1)
-				.setOriginalName(cleanValueToken(textHeaders[i]))
-				.setName(cleanHeaderToken(textHeaders[i]))
-				.setTag(null);
-			addHeader(header);
+				.setName(StringUtility.cleanValueToken(textHeaders[i]))
+				.setTag(null));
 		}
 
 		return true;
 	}
 
-	private void processRows(BufferedReader br) throws IOException {
-		for(String textRow; (textRow = br.readLine()) != null;) {
+	private void processRows(BufferedReader reader) throws IOException {
+		for(String textRow; (textRow = reader.readLine()) != null;) {
 			String[] tokens = parseOneRow(textRow);
-			if(tokens.length == getNumberOfColumns()) {
-				m_rows.add(new TextRow(tokens));
+
+			if(tokens.length != getNumberOfColumns()) {
+				continue;
 			}
+
+			for(int j = 0; j < tokens.length; j++) {
+				tokens[j] = StringUtility.cleanValueToken(tokens[j]);
+			}
+
+			this.rows.add(new TextRow(tokens));
 		}
+		
 	}
 
 	private String[] parseOneRow(String data) {
-		String[] tokens = data.split("\t");
-		for(int i = 0; i < tokens.length; i++){
-			tokens[i] = cleanValueToken(tokens[i]);
-		}
-		return tokens;
+		return data.split("\t"); // DIRTY: but hey! It is working until now
 	}
 
-	private ArrayList<IRow> m_rows = new ArrayList<IRow>();
+	private ArrayList<IRow> rows = new ArrayList<IRow>();
 }

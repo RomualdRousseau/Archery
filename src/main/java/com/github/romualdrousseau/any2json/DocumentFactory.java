@@ -13,13 +13,19 @@ import com.github.romualdrousseau.any2json.document.text.TextDocument;
 public class DocumentFactory
 {
 	public static IDocument createInstance(String filePath, String encoding, int headerColumns, int headerRows) {
+		if(filePath == null) {
+            throw new IllegalArgumentException();
+        }
+
 		return DocumentFactory.createInstance(new File(filePath), encoding, headerColumns, headerRows);
 	}
 
 	public static IDocument createInstance(File file, String encoding, int headerColumns, int headerRows) {
-		IDocument document;
+		if(file == null) {
+            throw new IllegalArgumentException();
+        }
 
-		document = new ExcelDocument(headerColumns, headerRows);
+		IDocument document = new ExcelDocument(headerColumns, headerRows);
 		if(document.open(file, encoding)) {
 			return document;
 		}

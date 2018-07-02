@@ -2,75 +2,69 @@ package com.github.romualdrousseau.any2json.document.excel;
 
 import java.util.regex.Pattern;
 
-import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Cell;
 
-import com.github.romualdrousseau.any2json.IRow;
+import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.TableHeader;
 import com.github.romualdrousseau.any2json.util.StringUtility;
 
-public class ExcelRow extends IRow
+public class ExcelRow extends Row
 {
-	public ExcelRow(Row row, DataFormatter formatter, int firstColumn, int lastColumn) {
-		m_row = row;
-		m_formatter = formatter;
-		m_firstColumn = firstColumn;
-		m_lastColumn = lastColumn;
+	public ExcelRow(org.apache.poi.ss.usermodel.Row row, DataFormatter formatter, int firstColumn, int lastColumn) {
+		this.row = row;
+		this.formatter = formatter;
+		this.firstColumn = firstColumn;
+		this.lastColumn = lastColumn;
 	}
 
 	public int getNumberOfCells() {
-		return m_lastColumn - m_firstColumn + 1;
+		return this.lastColumn - this.firstColumn + 1;
 	}
 
 	public String getCellValue(TableHeader header) {
-		String result = StringUtility.trim(getInternalCellValueAt(header.getColumnIndex()));
+		if(header == null) {
+			throw new IllegalArgumentException();
+		}
+
+		String result = getCellValueAt(header.getColumnIndex());
 		if(result == null) {
 			result = "";
 		}
 
 		for(int i = 1; i < header.getNumberOfCells(); i++) {
-			String s = getInternalCellValueAt(header.getColumnIndex() + i);
+			String s = getCellValueAt(header.getColumnIndex() + i);
 			if(s != null) {
-				result += StringUtility.trim(s);
+				result += s;
 			}
 		}
 		
-		return StringUtility.normalizeWhiteSpaces(result);
+		return result;
 	}
 
 	public String getCellValueAt(int i) {
-		String result = StringUtility.trim(getInternalCellValueAt(i));
-		return StringUtility.normalizeWhiteSpaces(result);
-	}
-
-	private String getInternalCellValueAt(int i) {
 		if(i < 0 || i >= getNumberOfCells()) {
-			throw new java.lang.ArrayIndexOutOfBoundsException(i);
+			throw new ArrayIndexOutOfBoundsException(i);
 		}
 
-		Cell cell = m_row.getCell(m_firstColumn + i);
+		Cell cell = this.row.getCell(this.firstColumn + i);
 		if(cell == null) {
 			return null;
 		}
 
-		String value = m_formatter.formatCellValue(cell);
-		if(cell.getCellType() == Cell.CELL_TYPE_NUMERIC && Pattern.matches("-?\\d+", value)) { // !!! DIRTY !!! Check if not a date
+		String value = this.formatter.formatCellValue(cell);
+
+		// TRICKY: Get hidden decimals in case of a rounded numeric value
+		if(cell.getCellType() == Cell.CELL_TYPE_NUMERIC && value.matches("-?\\d+")) { 
 			double d = cell.getNumericCellValue();
-			if(Math.floor(d) == d) {
-				return value;
-			}
-			else {
-				return "" + d; // !!! DIRTY !!! get the right double number
-			}
+			value = (Math.floor(d) == d) ? value : String.valueOf(d);
 		}
-		else {
-			return value;
-		}
+		
+		return StringUtility.cleanValueToken(value);
 	}
 
-	private Row m_row = null;
-	private DataFormatter m_formatter = null;
-	private int m_firstColumn;
-	private int m_lastColumn;
+	private org.apache.poi.ss.usermodel.Row row = null;
+	private DataFormatter formatter = null;
+	private int firstColumn;
+	private int lastColumn;
 }

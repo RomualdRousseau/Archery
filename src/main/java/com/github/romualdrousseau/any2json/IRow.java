@@ -1,10 +1,12 @@
 package com.github.romualdrousseau.any2json;
 
-public abstract class IRow
+public interface IRow
 {
-	public abstract int getNumberOfCells();
+	public boolean isEmpty(double ratio);
 
-	public abstract String getCellValue(TableHeader header);
+	public int getNumberOfCells();
 
-	public abstract String getCellValueAt(int i);
+	public String getCellValue(TableHeader header);
+
+	public String getCellValueAt(int i);
 }

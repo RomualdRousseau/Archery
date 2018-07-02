@@ -7,12 +7,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.github.romualdrousseau.any2json.ITable;
-import com.github.romualdrousseau.any2json.IRow;
+import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.TableHeader;
+import com.github.romualdrousseau.any2json.IRow;
 import com.github.romualdrousseau.any2json.util.StringUtility;
 
-class HtmlTable extends ITable
+class HtmlTable extends Table
 {
 	public HtmlTable(Elements htmlElements) {
 		processOneTable(htmlElements);
@@ -23,16 +23,15 @@ class HtmlTable extends ITable
 	}
 
 	public int getNumberOfRows() {
-		return m_rows.size();	
+		return this.rows.size();	
 	}
 
 	public IRow getRowAt(int i) {
-		return m_rows.get(i);
-	}
-
-	public ITable addRow(IRow row) {
-		m_rows.add(row);
-		return this;
+		if(i < 0 || i >= getNumberOfRows()) {
+			throw new ArrayIndexOutOfBoundsException(i);
+		}
+		
+		return this.rows.get(i);
 	}
 
 	private void processOneTable(Elements htmlElements) {
@@ -40,9 +39,11 @@ class HtmlTable extends ITable
 			return;
 		}
 
-		if(processHeaders(htmlElements.get(0))) {
-			processRows(htmlElements);
+		if(!processHeaders(htmlElements.get(0))) {
+			return;
 		}
+
+		processRows(htmlElements);
 	}
 
 	private boolean processHeaders(Element htmlElement) {
@@ -52,33 +53,27 @@ class HtmlTable extends ITable
 
 		Elements htmlTableHeaders = parseOneRow(htmlElement);
 		for(int i = 0; i < htmlTableHeaders.size(); i++) {
-			TableHeader header = new TableHeader()
+			addHeader(new TableHeader()
 				.setColumnIndex(i)
 				.setNumberOfCells(1)
-				.setOriginalName(cleanValueToken(htmlTableHeaders.get(i).text()))
-				.setName(cleanHeaderToken(htmlTableHeaders.get(i).text()))
-				.setTag(null);
-			addHeader(header);
+				.setName(StringUtility.cleanValueToken(htmlTableHeaders.get(i).text()))
+				.setTag(null));
 		}
 
 		return true;
 	}
 
 	private void processRows(Elements htmlElements) {
-		if(htmlElements == null || htmlElements.size() == 0) {
-			return;
-		}
-
 		for(int i = 1; i < htmlElements.size(); i++) {
 			Elements htmlTableCells = parseOneRow(htmlElements.get(i));
 
 			String[] tokens = new String[htmlTableCells.size()];
 			for(int j = 0; j < htmlTableCells.size(); j++) {
-				tokens[j] = cleanValueToken(htmlTableCells.get(j).text());
+				tokens[j] = StringUtility.cleanValueToken(htmlTableCells.get(j).text());
 			}
 
 			if(tokens.length == getNumberOfColumns()) {
-				m_rows.add(new HtmlRow(tokens));
+				this.rows.add(new HtmlRow(tokens));
 			}
 		}
 	}
@@ -94,5 +89,5 @@ class HtmlTable extends ITable
 		return cells;
 	}
 
-	private ArrayList<IRow> m_rows = new ArrayList<IRow>();
+	private ArrayList<IRow> rows = new ArrayList<IRow>();
 }

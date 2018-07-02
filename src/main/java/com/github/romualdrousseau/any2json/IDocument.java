@@ -1,17 +1,14 @@
 package com.github.romualdrousseau.any2json;
 
 import java.io.File;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map.Entry;
 
-public abstract class IDocument
+public interface IDocument extends AutoCloseable
 {
-	public abstract boolean open(File excelFile, String encoding);
+	public boolean open(File excelFile, String encoding);
 
-	public abstract void close();
+	public void close();
 
-	public abstract int getNumberOfSheets();
+	public int getNumberOfSheets();
 
-	public abstract ISheet getSheetAt(int i);
+	public ISheet getSheetAt(int i);
 }
