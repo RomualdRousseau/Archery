@@ -106,38 +106,38 @@ public abstract class Table implements ITable
 			}
 		}
 
-		for(TableHeader header: this.headers) if(header.hasTag()) {
-			String buffer = "";
-			for(TableHeader other: this.headers) if(other.hasTag() && other != header) {
-				buffer += other.getName();
-			}
-			buffer = String.format("%s, %s, %s", word2vec(header.getName()), word2vec(buffer), header.getTag().getValue());
-			System.out.println(buffer);
-		}
+		// for(TableHeader header: this.headers) if(header.hasTag()) {
+		// 	String buffer = "";
+		// 	for(TableHeader other: this.headers) if(other.hasTag() && other != header) {
+		// 		buffer += other.getName();
+		// 	}
+		// 	buffer = String.format("%s, %s, %s", word2vec(header.getName()), word2vec(buffer), header.getTag().getValue());
+		// 	System.out.println(buffer);
+		// }
 
-		System.out.println(vectorSpace);
+		// System.out.println(vectorSpace);
 	}
 
-	private static String word2vec(String s) {
-		char[] result = new char[100];
+	// private static String word2vec(String s) {
+	// 	char[] result = new char[100];
 
-		for(int i = 0; i < result.length; i++) {
-			result[i] = '0';
-		}
+	// 	for(int i = 0; i < result.length; i++) {
+	// 		result[i] = '0';
+	// 	}
 
-		for(char c: s.toCharArray()) if(Character.isLetter(c)) {
-			if(!vectorSpace.contains(c)) {
-				vectorSpace.add(c);
-			}
+	// 	for(char c: s.toCharArray()) if(Character.isLetter(c)) {
+	// 		if(!vectorSpace.contains(c)) {
+	// 			vectorSpace.add(c);
+	// 		}
 
-			int i = vectorSpace.indexOf(c);
-			result[i] = '1';
-		}
+	// 		int i = vectorSpace.indexOf(c);
+	// 		result[i] = '1';
+	// 	}
 
-		return String.valueOf(result);
-	}
+	// 	return String.valueOf(result);
+	// }
 
-	private static ArrayList<Character> vectorSpace = new ArrayList<Character>();
+	// private static ArrayList<Character> vectorSpace = new ArrayList<Character>();
 
 	protected ITable addHeader(TableHeader header) {
 		this.headers.add(header);
