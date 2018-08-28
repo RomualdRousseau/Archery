@@ -12,20 +12,20 @@ import com.github.romualdrousseau.any2json.document.text.TextDocument;
 
 public class DocumentFactory
 {
-	public static IDocument createInstance(String filePath, String encoding, int headerColumns, int headerRows) {
+	public static IDocument createInstance(String filePath, String encoding) {
 		if(filePath == null) {
             throw new IllegalArgumentException();
         }
 
-		return DocumentFactory.createInstance(new File(filePath), encoding, headerColumns, headerRows);
+		return DocumentFactory.createInstance(new File(filePath), encoding);
 	}
 
-	public static IDocument createInstance(File file, String encoding, int headerColumns, int headerRows) {
+	public static IDocument createInstance(File file, String encoding) {
 		if(file == null) {
             throw new IllegalArgumentException();
         }
 
-		IDocument document = new ExcelDocument(headerColumns, headerRows);
+		IDocument document = new ExcelDocument();
 		if(document.open(file, encoding)) {
 			return document;
 		}

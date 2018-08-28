@@ -45,18 +45,22 @@ class ExcelTable extends Table
 	private void processHeaders() {
 		int ignoreCells = 0;
 		for(Cell cell: this.sheet.getRow(this.firstRow - 1)) {
+			if((cell.getColumnIndex() - this.firstColumn) >= getNumberOfColumns()) {
+				break;
+			}
+
 			if(ignoreCells > 0) {
 				ignoreCells--;
 				continue;
 			}
-	
+
 			TableHeader header = new TableHeader()
 				.setColumnIndex(cell.getColumnIndex() - this.firstColumn)
 				.setNumberOfCells(findNumberOfCells(cell))
 				.setName(StringUtility.cleanValueToken(this.formatter.formatCellValue(cell)))
 				.setTag(null);
 			addHeader(header);
-
+			
 			ignoreCells = header.getNumberOfCells() - 1;
 		}
 	}

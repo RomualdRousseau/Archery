@@ -17,6 +17,10 @@ class HtmlSheet implements ISheet
 	public ITable getTable() {
 		return this.table;
 	}
+	
+	public ITable findTable(int headerColumns, int headerRows) {
+		return this.table;
+	}
 
 	private String name;
 	private ITable table;

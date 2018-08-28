@@ -44,14 +44,15 @@ public class HtmlDocument implements IDocument
 		try {
 			Document html = Jsoup.parse(htmlFile, encoding);
 			Elements htmlTables = html.select("table");
-
-			for(int i = 0; i < htmlTables.size(); i++) {
-				HtmlTable table = new HtmlTable(htmlTables.get(i).select("tr"));
-				if(table.hasHeaders()) {
-					String sheetName = (i == 0) ? htmlFile.getName().replaceFirst("[.][^.]+$", "") : "Sheet" + (i + 1);
-					this.sheets.add(new HtmlSheet(sheetName, table));
+			if(htmlTables != null) {
+				for(int i = 0; i < htmlTables.size(); i++) {
+					HtmlTable table = new HtmlTable(htmlTables.get(i).select("tr"));
+					if(table.hasHeaders()) {
+						String sheetName = (i == 0) ? htmlFile.getName().replaceFirst("[.][^.]+$", "") : "Sheet" + (i + 1);
+						this.sheets.add(new HtmlSheet(sheetName, table));
+					}
 				}
-			}			
+			}		
 		}
 		catch(IOException x) {
 			close();

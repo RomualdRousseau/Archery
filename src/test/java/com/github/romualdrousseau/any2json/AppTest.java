@@ -44,8 +44,8 @@ public class AppTest
                     case 0:
                         document = loadDocument(expectedValue, "CP949");
                         sheet = document.getSheetAt(0);
-                        table = sheet.getTable();
-                        assert table != null;
+                        table = sheet.findTable(30, 30);
+                        assert !Table.IsEmpty(table);
                         state = 1;
                         break;
                     case 1:
@@ -94,8 +94,8 @@ public class AppTest
                     case 0:
                         document = loadDocument(expectedValue, "CP949");
                         sheet = document.getSheetAt(0);
-                        table = sheet.getTable();
-                        assert table != null;
+                        table = sheet.findTable(30, 30);
+                        assert !Table.IsEmpty(table);
                         table.updateHeaderTags(tagClassifier, 10);
                         state = 1;
                         break;
@@ -216,7 +216,7 @@ public class AppTest
     }
 
     private IDocument loadDocument(String resourceName, String encoding) {
-        return DocumentFactory.createInstance(getResourcePath(resourceName).toString(), encoding, 30, 30);
+        return DocumentFactory.createInstance(getResourcePath(resourceName).toString(), encoding);
     }
 
     private Dictionary loadDictionary(String resourceName) {

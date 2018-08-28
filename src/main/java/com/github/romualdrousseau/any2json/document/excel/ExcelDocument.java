@@ -14,11 +14,6 @@ import com.github.romualdrousseau.any2json.ISheet;
 
 public class ExcelDocument implements IDocument
 {
-	public ExcelDocument(int headerColumns, int headerRows) {
-		this.headerColumns = headerColumns;
-		this.headerRows = headerRows;
-	}
-
 	public boolean open(File excelFile, String encoding) {
 		if(excelFile == null) {
             throw new IllegalArgumentException();
@@ -30,7 +25,7 @@ public class ExcelDocument implements IDocument
 			this.workbook = WorkbookFactory.create(excelFile);
 
 			for(int i = 0; i < this.workbook.getNumberOfSheets(); i++) {
-				this.sheets.add(new ExcelSheet(this.workbook.getSheetAt(i), this.headerColumns, this.headerRows));
+				this.sheets.add(new ExcelSheet(this.workbook.getSheetAt(i)));
 			}
 		}
 		catch(NotOLE2FileException x) {
@@ -71,7 +66,5 @@ public class ExcelDocument implements IDocument
 	}
 
 	private Workbook workbook = null;	
-	private int headerColumns = 0;
-	private int headerRows = 0;
 	private ArrayList<ExcelSheet> sheets = new ArrayList<ExcelSheet>();
 }

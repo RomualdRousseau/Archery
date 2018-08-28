@@ -11,8 +11,11 @@ import com.github.romualdrousseau.any2json.util.StringUtility;
 
 class TextTable extends Table
 {
+	public final static int ROWS_IN_MEMORY = 10000;
+
 	public TextTable(BufferedReader reader) throws IOException {
-		processOneTable(reader);
+		this.reader = reader;
+		processOneTable();
 	}
 
 	public int getNumberOfColumns() {
@@ -20,30 +23,35 @@ class TextTable extends Table
 	}
 
 	public int getNumberOfRows() {
-		return this.rows.size();	
+		return this.processedCount;	
 	}
 
 	public IRow getRowAt(int i) {
-		if(i < 0 || i >= getNumberOfRows()) {
+
+		ensureRowsInMemory(i);
+
+		if(i < 0 || i >= this.processedCount) {
 			throw new ArrayIndexOutOfBoundsException(i);
 		}
-		
-		return this.rows.get(i);
+
+		return this.rows.get(i % ROWS_IN_MEMORY);
 	}
 
-	private void processOneTable(BufferedReader reader) throws IOException {
-		if(reader == null) {
-			return;
-		}
+	private void processOneTable() throws IOException {
 
-		if(!processHeaders(reader.readLine())) {
+		if(this.reader == null) {
 			return;
 		}
 		
-		processRows(reader);
+		if(!processHeaders(this.reader.readLine())) {
+			return;
+		}
+		
+		processRows(this.reader);
 	}
 
 	private boolean processHeaders(String textLine) {
+
 		if(textLine == null || !StringUtility.checkIfGoodEncoding(textLine)) {
 			return false;
 		}
@@ -61,7 +69,11 @@ class TextTable extends Table
 	}
 
 	private void processRows(BufferedReader reader) throws IOException {
+
+		this.rows.clear();
+		
 		for(String textRow; (textRow = reader.readLine()) != null;) {
+
 			String[] tokens = parseOneRow(textRow);
 
 			if(tokens.length != getNumberOfColumns()) {
@@ -73,13 +85,33 @@ class TextTable extends Table
 			}
 
 			this.rows.add(new TextRow(tokens));
+			processedCount++;
+
+			if(this.rows.size() >= ROWS_IN_MEMORY) {
+				return;
+			}
 		}
-		
+
+		isProcessedAllRows = true;
 	}
 
 	private String[] parseOneRow(String data) {
 		return data.split("\t"); // DIRTY: but hey! It is working until now
 	}
 
+	private void ensureRowsInMemory(int i) {
+		try {
+			if(i >= this.processedCount) {
+				processRows(this.reader);
+			}
+		}
+		catch(IOException x) {
+			throw new ArrayIndexOutOfBoundsException(i);
+		}
+	}
+
+	private BufferedReader reader;
 	private ArrayList<IRow> rows = new ArrayList<IRow>();
+	private boolean isProcessedAllRows = false;
+	private int processedCount = 0;
 }

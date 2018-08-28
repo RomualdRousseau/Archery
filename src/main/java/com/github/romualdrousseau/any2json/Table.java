@@ -18,6 +18,10 @@ import com.github.romualdrousseau.any2json.util.StringUtility;
 
 public abstract class Table implements ITable
 {
+	public static boolean IsEmpty(ITable table) {
+		return table == null || table.getNumberOfHeaders() == 0;
+	}
+
 	public Iterable<TableHeader> headers() {
 		return this.headers;
 	}
@@ -63,7 +67,7 @@ public abstract class Table implements ITable
 			for(int i = 0; i < Math.min(sampleCount, getNumberOfRows()); i++) {
 
 	            DataRow sample = new DataRow()
-                    .addFeature(new RegexFeature( getRowAt(i).getCellValue(header)))
+                    .addFeature(new RegexFeature(getRowAt(i).getCellValue(header)))
                     .addFeature(new FuzzyFeature(StringUtility.cleanHeaderToken(header.getName())));
 	            
 	            Result result = classifier.predict(sample);

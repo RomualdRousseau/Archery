@@ -2,6 +2,7 @@ package com.github.romualdrousseau.any2json.document.excel;
 
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
 
 import com.github.romualdrousseau.shuju.cv.SearchPoint;
 import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.RectangleExtractor;
@@ -11,10 +12,8 @@ import com.github.romualdrousseau.any2json.ISheet;
 
 class ExcelSheet implements ISheet
 {
-	public ExcelSheet(Sheet sheet, int headerColumns, int headerRows) {
+	public ExcelSheet(Sheet sheet) {
 		this.sheet = sheet;
-		this.headerColumns = headerColumns;
-		this.headerRows = Math.min(headerRows, this.sheet.getLastRowNum() + 1);
 		this.table = null;
 	}
 
@@ -23,21 +22,36 @@ class ExcelSheet implements ISheet
 	}
 
 	public ITable getTable() {
-		if(this.table == null) {
-			this.table = findTable(this.headerColumns, this.headerRows);
+		int lastColumnNum = estimateLastColumnNum();
+		if(this.table == null && lastColumnNum > 0) {
+			this.table = new ExcelTable(this.sheet, 0, 0, lastColumnNum, this.sheet.getLastRowNum());
 		}
 		return this.table;
 	}
 
-	private ExcelTable findTable(int headerColumns, int headerRows) {
-		ExcelSearchBitmap searchBitmap = new ExcelSearchBitmap(this.sheet, headerColumns, headerRows);
-		SearchPoint[] table = new RectangleExtractor().extractBest(searchBitmap);
-		//debug(searchBitmap, table);
-		if(table == null) {
-			return null;
+	public ExcelTable findTable(int headerColumns, int headerRows) {
+		if(this.table == null) {
+			ExcelSearchBitmap searchBitmap = new ExcelSearchBitmap(this.sheet, headerColumns, headerRows);
+			SearchPoint[] table = new RectangleExtractor().extractBest(searchBitmap);
+			//debug(searchBitmap, table);
+			if(table != null && table[1].getX() > table[0].getX()) {
+				this.table = new ExcelTable(this.sheet, table[0].getX(), table[0].getY(), table[1].getX(), this.sheet.getLastRowNum());
+			}
 		}
+		return this.table;
+	}
 
-		return new ExcelTable(this.sheet, table[0].getX(), table[0].getY(), table[1].getX(), this.sheet.getLastRowNum());
+	private int estimateLastColumnNum() {
+		Row row = this.sheet.getRow(0);
+		if(row == null) {
+			return 0;
+		}
+		int colNum = 0;
+		Cell cell = row.getCell(colNum);
+		while(cell != null) {
+			cell = row.getCell(++colNum);
+		}
+		return colNum;
 	}
 
 	private void debug(ExcelSearchBitmap searchBitmap, SearchPoint[] table) {
@@ -62,7 +76,5 @@ class ExcelSheet implements ISheet
 	}
 
 	private Sheet sheet;
-	private int headerColumns;
-	private int headerRows;
 	private ExcelTable table;
 }
