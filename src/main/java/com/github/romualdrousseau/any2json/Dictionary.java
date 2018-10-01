@@ -39,7 +39,7 @@ public class Dictionary
             JSONObject jsonDefinition = (JSONObject) jsonDefinitions.get(i);  
 
             Definition definition = new Definition();
-            definition.tag = (String) jsonDefinition.get("tag");
+            definition.tag = (String) jsonDefinition.get("name");
 
             JSONArray jsonPatterns = (JSONArray) jsonDefinition.get("patterns");
             for(int j = 0; j < jsonPatterns.size(); j++) {
@@ -49,13 +49,14 @@ public class Dictionary
                     (Double) jsonPattern.get("weight")));                
             }
 
-            JSONArray jsonWords = (JSONArray) jsonDefinition.get("words");
+            JSONArray jsonWords = (JSONArray) jsonDefinition.get("lexicon");
             for(int j = 0; j < jsonWords.size(); j++) {
                 JSONObject jsonWord = (JSONObject) jsonWords.get(j); 
+                JSONArray jsonOptions = (JSONArray) jsonWord.get("options");
                 definition.words().add(new WeightedString(
                     (String) jsonWord.get("value"),
                     (Double) jsonWord.get("weight"),
-                    (String) jsonWord.get("option")));            
+                    JSONArrayToStringArray(jsonOptions)));            
             }
 
             this.definitions.add(definition);
@@ -83,6 +84,14 @@ public class Dictionary
         return arr;
     }
 
+    private String[] JSONArrayToStringArray(JSONArray jsonArray) {
+        String[] temp = new String[jsonArray.size()];
+        for(int j = 0; j < jsonArray.size(); j++) {
+            temp[j] = (String) jsonArray.get(j);
+        }
+        return temp;
+    }
+
     private DataSet buildDataSet() {
         DataSet dataset = new DataSet();
         String buildNegPattern = "";
@@ -93,7 +102,7 @@ public class Dictionary
                 for(WeightedString word: definition.words()) {
                     dataset.addRow(new DataRow()
                         .addFeature(new RegexFeature(pattern.getValue()))
-                        .addFeature(new FuzzyFeature(word.getValue()).setTokenizer("tokenize".equals(word.getOption()), " "))
+                        .addFeature(new FuzzyFeature(word.getValue()).setTokenizer(word.hasOption("WORD_DIVIDER_SPACE"), " "))
                         .setLabel(new StringFeature(definition.getTag(), word.getWeight())));
                 }
             
@@ -153,7 +162,7 @@ public class Dictionary
             JSONObject obj = new JSONObject();
             obj.put("tag", this.tag);
             obj.put("patterns", arr1);
-            obj.put("words", arr2);
+            obj.put("lexicon", arr2);
             return obj;
         }
 
@@ -167,13 +176,13 @@ public class Dictionary
         public WeightedString(String v, double w) {
             this.value = v;
             this.weight = w;
-            this.option = null;
+            this.options = null;
         }
 
-        public WeightedString(String v, double w, String o) {
+        public WeightedString(String v, double w, String[] o) {
             this.value = v;
             this.weight = w;
-            this.option = o;
+            this.options = o;
         }
 
         public String getValue() {
@@ -188,8 +197,22 @@ public class Dictionary
             return this.weight;
         }
 
-        public String getOption() {
-            return this.option;
+        public String[] getOptions() {
+            return this.options;
+        }
+
+        public boolean hasOption(String option) {
+            if(this.options == null) {
+                return false;
+            }
+
+            boolean found = false;
+            for(String o: this.options) {
+                if(o.equals(option)) {
+                    found = true;
+                }
+            }
+            return found;
         }        
 
         @SuppressWarnings("unchecked")
@@ -197,13 +220,13 @@ public class Dictionary
             JSONObject obj = new JSONObject();
             obj.put("value", this.value);
             obj.put("weight", this.weight);
-            obj.put("option", this.option);
+            obj.put("option", this.options);
             return obj;
         }
 
         private String value;
         private double weight;
-        private String option;
+        private String[] options;
     }
 
     private List<Definition> definitions;

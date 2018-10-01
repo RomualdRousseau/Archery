@@ -45,8 +45,8 @@ class ExcelTable extends Table
 	private void processHeaders() {
 		int ignoreCells = 0;
 		for(Cell cell: this.sheet.getRow(this.firstRow - 1)) {
-			if((cell.getColumnIndex() - this.firstColumn) >= getNumberOfColumns()) {
-				break;
+			if(cell.getColumnIndex() < this.firstColumn || cell.getColumnIndex() > this.lastColumn) {
+				continue;
 			}
 
 			if(ignoreCells > 0) {

@@ -269,7 +269,8 @@ public class AppTest
         {"/data/대전오성팜.xls", "매입처별 제조사별 매출현황", "56", "코드", "10399", "제조사명", "한국세르비에(주)", "발주처명", "한국세르비에(주)", "일자", "2016-12-01", "영업담당", "최원철", "코드", "20269", "매출처명", "천안-다사랑약국(봉명동)", "표준코드", "8806763001016", "보험코드", "676300100", "코드", "12038", "제품명", "프로코라란정5mg", "규격", "56정(PTP)", "현재보험가", "6,720.00", "수량", "20", "매출단가", "6,720.00", "매출금액", "134,400", "보험단가", "6,720.00", "보험금액", "134,400", "현재고", "0", "실납처명", "천안-다사랑약국(봉명동)", "원재고구분", "기타매출처", "재고적용구분", "기타매출처", "우편번호", "330-930", "주소", "충청남도 천안시 동남구 순천향4길 50", "사업자등록번호", "312-32-97054", "대표자", "조성희", "전화번호", "041-579-5900", "요양기관코드", "34836268"},
         {"/data/대전지오팜.xls", "대전지오팜", "1615", "제품명", "그로리정97.875mg(병)", "규격", "100T", "보험코드", "651601730", "수량", "2", "매출일자", "2016/12/05", "거래처분류", "약국", "우편번호", "331-947", "표준코드", "8806516017325", "주소", "충남 천안시 서북구 쌍용2동"},
         {"/data/전주전주.xls", "work", "108", "입 고 처", "에스케이케미칼", "발주처", "한국세르비에", "매출처", "김제건강종합약국", "원재고거래처", "재고적용거래처", "적용재고거래처", "재고적용거래처", "제품코드", "01760", "제품명", "디아미크롱정80mg(P)", "재고", "17", "규격", "100T", "현보험가", "11,900.00" ,"수량", "-1", "매출단가", "11,900.00", "매출금액", "-11,900", "사업자등록번호", "405-02-91694", "주소", "전라북도 김제시 남북로 222 (요촌동)", "대표자", "박동현", "거래처종류", "약국", "우편번호", "54384", "전화번호", "547-2073", "제조사", "에스케이케미칼", "판매일자", "2016/10/07", "거래처코드", "50338", "KD코드", "644703170", "담당자명", "우창걸", "요양기관코드", "35805366", "단가적용처", "단가적용거래처", "거래처그룹", "일반", "시점별보험가", "11,900.00", "표준코드", "8806447031711", "매출금액(시점별보험가)", "-11,900"},
-        //{"/data/R9089a_101378_2018-04-18-03-51-23.xlsx", "Sales Summary Data", "592", "SALESPERSON CODE", "PSR", "SALESPERSON NAME", "#", "CUSTOMER CODE", "010001", "CUSTOMER NAME", "國立台灣大學醫學院附設醫院", "SAP CUSTOMER CODE", "30078334", "MATERIAL CODE", "27D02", "MATERIAL DESCRIPTION", "Diamicron MR Tab 30mg 60'S/Bx", "SALES QUANTITY", "960", "BONUS QUANTITY", "0", "VALUE", "74058", "IMS CUSTOMER GROUP 1", "HP1", "CUSTOMER PRICE GROUP 1", "HP"}
+        {"/data/Sales_analysis(01_Aug_18).xls", "Principal Product by Customer(W", "775", "Txn Dt", "08/01/18", "Depot", "NP", "Item Name", "ARCALION 200 COATED (30'S) TAB", "Invoice Qty", "5", "Bonus Qty", "0", "Sale Amount", "34130", "Return Qty", "0", "Return Bonus Qty", "0", "Return Value", "", "Net Qty", "5", "Net Bonus Qty", "0", "Gross Value", "34130", "Discount", "0", "Net Amount", "34130", "Item Code", "SRV-A00033", "Cust Code", "NP-M10702", "Cname", "MYA GANDAMAR", "Cust Type", "GP Clinic", "Township", "PYINMANA"},
+        {"/data/R9089a_101378_2018-04-18-03-51-23.xlsx", "Sales Summary Data", "592", "SALESPERSON CODE", "PSR", "SALESPERSON NAME", "#", "CUSTOMER CODE", "010001", "CUSTOMER NAME", "國立台灣大學醫學院附設醫院", "SAP CUSTOMER CODE", "30078334", "MATERIAL CODE", "27D02", "MATERIAL DESCRIPTION", "Diamicron MR Tab 30mg 60'S/Bx", "SALES QUANTITY", "960", "BONUS QUANTITY", "0", "VALUE", "74058", "IMS CUSTOMER GROUP 1", "HP1", "CUSTOMER PRICE GROUP 1", "HP"}
     };
 
     private String[][] scenarios2 = {
@@ -285,7 +286,8 @@ public class AppTest
         {"/data/전주전주.xls", "2016/10/07", "디아미크롱정80mg(P)", "100T", "-1","11,900.00", "-11,900", "김제건강종합약국", "약국", "54384", "전라북도 김제시 남북로 222 (요촌동)", "한국세르비에"},
         {"/data/대구경일.xls", "201611", "프로코라란정5mg", "56T(P)", "-1", null, null, "안동성소", null, null, "경상북도안동시서동문로", "세르비에"},
         {"/data/대전엘에스팜.xls", "20170623", "디아미크롱서방정30mg", "500T", "3", null, "177,000", "약국", null, "31151", "충청남도 천안시 동남구 순천향4길, 50", null},
-        //{"/data/R9089a_101378_2018-04-18-03-51-23.xlsx", null, "Diamicron MR Tab 30mg 60'S/Bx", null, "960", null, "74058", null, "HP", null, null, "國立台灣大學醫學院附設醫院"}
+        {"/data/Sales_analysis(01_Aug_18).xls", "08/01/18", "ARCALION 200 COATED (30'S) TAB", null, "5", null, "34130", "NP", "GP Clinic", null, "PYINMANA", "MYA GANDAMAR"},
+        {"/data/R9089a_101378_2018-04-18-03-51-23.xlsx", null, "Diamicron MR Tab 30mg 60'S/Bx", null, "960", null, "74058", null, "HP", null, null, "國立台灣大學醫學院附設醫院"}
     };
 }
 

@@ -4,6 +4,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 
+import com.github.romualdrousseau.shuju.cv.Filter;
+import com.github.romualdrousseau.shuju.cv.Template;
 import com.github.romualdrousseau.shuju.cv.SearchPoint;
 import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.RectangleExtractor;
 
@@ -30,8 +32,15 @@ class ExcelSheet implements ISheet
 	}
 
 	public ExcelTable findTable(int headerColumns, int headerRows) {
+		final Filter filter = new Filter(new Template(new int[][] {
+			{0, 0, 0},
+			{1, 0, 1},
+			{0, 0, 0}
+		 }));
+
 		if(this.table == null) {
 			ExcelSearchBitmap searchBitmap = new ExcelSearchBitmap(this.sheet, headerColumns, headerRows);
+			filter.applyNeg(searchBitmap, 2);
 			SearchPoint[] table = new RectangleExtractor().extractBest(searchBitmap);
 			//debug(searchBitmap, table);
 			if(table != null && table[1].getX() > table[0].getX()) {
