@@ -2,6 +2,7 @@ package com.github.romualdrousseau.any2json.document.excel;
 
 import java.util.ArrayList;
 
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -14,8 +15,9 @@ import com.github.romualdrousseau.any2json.util.StringUtility;
 
 class ExcelTable extends Table
 {
-	public ExcelTable(Sheet sheet, int firstColumn, int firstRow, int lastColumn, int lastRow) {
+	public ExcelTable(Sheet sheet, FormulaEvaluator evaluator, int firstColumn, int firstRow, int lastColumn, int lastRow) {
 		this.sheet = sheet;
+		this.evaluator = evaluator;
 		this.formatter = new DataFormatter();
 		this.firstColumn = firstColumn;
 		this.firstRow = firstRow + 1;
@@ -39,7 +41,7 @@ class ExcelTable extends Table
 		}
 
 		org.apache.poi.ss.usermodel.Row row = this.sheet.getRow(this.firstRow + i);
-		return (row != null ) ? new ExcelRow(row, this.formatter, this.firstColumn, this.lastColumn) : null;	
+		return (row != null ) ? new ExcelRow(row, this.evaluator, this.formatter, this.firstColumn, this.lastColumn) : null;	
 	}
 
 	private void processHeaders() {
@@ -77,6 +79,7 @@ class ExcelTable extends Table
 	}
 
 	private Sheet sheet;
+	private FormulaEvaluator evaluator;
 	private DataFormatter formatter;
 	private int firstColumn;
 	private int firstRow;

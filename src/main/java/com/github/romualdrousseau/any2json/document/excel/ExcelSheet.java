@@ -1,5 +1,6 @@
 package com.github.romualdrousseau.any2json.document.excel;
 
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -14,9 +15,10 @@ import com.github.romualdrousseau.any2json.ISheet;
 
 class ExcelSheet implements ISheet
 {
-	public ExcelSheet(Sheet sheet) {
+	public ExcelSheet(Sheet sheet, FormulaEvaluator evaluator) {
 		this.sheet = sheet;
 		this.table = null;
+		this.evaluator = evaluator;
 	}
 
 	public String getName() {
@@ -26,7 +28,7 @@ class ExcelSheet implements ISheet
 	public ITable getTable() {
 		int lastColumnNum = estimateLastColumnNum();
 		if(this.table == null && lastColumnNum > 0) {
-			this.table = new ExcelTable(this.sheet, 0, 0, lastColumnNum, this.sheet.getLastRowNum());
+			this.table = new ExcelTable(this.sheet, this.evaluator, 0, 0, lastColumnNum, this.sheet.getLastRowNum());
 		}
 		return this.table;
 	}
@@ -44,7 +46,7 @@ class ExcelSheet implements ISheet
 			SearchPoint[] table = new RectangleExtractor().extractBest(searchBitmap);
 			//debug(searchBitmap, table);
 			if(table != null && table[1].getX() > table[0].getX()) {
-				this.table = new ExcelTable(this.sheet, table[0].getX(), table[0].getY(), table[1].getX(), this.sheet.getLastRowNum());
+				this.table = new ExcelTable(this.sheet, this.evaluator, table[0].getX(), table[0].getY(), table[1].getX(), this.sheet.getLastRowNum());
 			}
 		}
 		return this.table;
@@ -86,4 +88,5 @@ class ExcelSheet implements ISheet
 
 	private Sheet sheet;
 	private ExcelTable table;
+	private FormulaEvaluator evaluator;
 }

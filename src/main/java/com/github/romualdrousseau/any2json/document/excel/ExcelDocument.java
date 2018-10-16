@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.io.IOException;
 
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.poifs.filesystem.NotOLE2FileException;
@@ -24,8 +25,10 @@ public class ExcelDocument implements IDocument
 		try {
 			this.workbook = WorkbookFactory.create(excelFile);
 
+			FormulaEvaluator evaluator = this.workbook.getCreationHelper().createFormulaEvaluator();
+
 			for(int i = 0; i < this.workbook.getNumberOfSheets(); i++) {
-				this.sheets.add(new ExcelSheet(this.workbook.getSheetAt(i)));
+				this.sheets.add(new ExcelSheet(this.workbook.getSheetAt(i), evaluator));
 			}
 		}
 		catch(NotOLE2FileException x) {

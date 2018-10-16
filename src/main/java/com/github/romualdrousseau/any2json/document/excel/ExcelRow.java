@@ -2,6 +2,7 @@ package com.github.romualdrousseau.any2json.document.excel;
 
 import java.util.regex.Pattern;
 
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Cell;
 
@@ -11,8 +12,9 @@ import com.github.romualdrousseau.any2json.util.StringUtility;
 
 public class ExcelRow extends Row
 {
-	public ExcelRow(org.apache.poi.ss.usermodel.Row row, DataFormatter formatter, int firstColumn, int lastColumn) {
+	public ExcelRow(org.apache.poi.ss.usermodel.Row row, FormulaEvaluator evaluator, DataFormatter formatter, int firstColumn, int lastColumn) {
 		this.row = row;
+		this.evaluator = evaluator;
 		this.formatter = formatter;
 		this.firstColumn = firstColumn;
 		this.lastColumn = lastColumn;
@@ -52,19 +54,30 @@ public class ExcelRow extends Row
 			return null;
 		}
 
+		int type = evaluator.evaluateInCell(cell).getCellType();
+
+		//int type = cell.getCellType();
+		//if(type == Cell.CELL_TYPE_FORMULA) {
+		//	type = evaluator.evaluateInCell(cell).getCellType();
+		//}
+
 		String value = this.formatter.formatCellValue(cell);
 
 		// TRICKY: Get hidden decimals in case of a rounded numeric value
-		if(cell.getCellType() == Cell.CELL_TYPE_NUMERIC && value.matches("-?\\d+")) { 
+		if(type == Cell.CELL_TYPE_NUMERIC && value.matches("-?\\d+")) { 
 			double d = cell.getNumericCellValue();
 			value = (Math.floor(d) == d) ? value : String.valueOf(d);
+		}
+		else if(type == Cell.CELL_TYPE_ERROR) {
+			throw new UnsupportedOperationException("Unexceptected Cell Error at [" + row.getRowNum() + ";" + (this.firstColumn + i) + "]");
 		}
 		
 		return StringUtility.cleanValueToken(value);
 	}
 
-	private org.apache.poi.ss.usermodel.Row row = null;
-	private DataFormatter formatter = null;
+	private org.apache.poi.ss.usermodel.Row row;
+	private FormulaEvaluator evaluator;
+	private DataFormatter formatter;
 	private int firstColumn;
 	private int lastColumn;
 }
