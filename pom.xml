@@ -14,7 +14,7 @@
 			<url>https://www.gnu.org/licenses/gpl-3.0.txt</url>
 		</license>
 	</licenses>
-	
+
 	<developers>
 		<developer>
 			<name>Romuald Rousseau</name>
@@ -30,14 +30,14 @@
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
 	</properties>
-	
+
 	<scm>
 		<connection>scm:git:https://github.com/romualdrousseau/any2json.git</connection>
 		<developerConnection>scm:git:https://github.com/romualdrousseau/any2json.git</developerConnection>
 		<url>https://github.com/romualdrousseau/any2json</url>
 		<tag>HEAD</tag>
 	</scm>
-	
+
 	<distributionManagement>
 		<snapshotRepository>
 			<id>ossrh</id>
@@ -96,7 +96,7 @@
 		<dependency>
 			<groupId>com.github.romualdrousseau</groupId>
 			<artifactId>shuju</artifactId>
-			<version>1.5</version>
+			<version>1.6-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
