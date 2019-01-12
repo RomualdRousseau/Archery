@@ -1,7 +1,5 @@
 package com.github.romualdrousseau.any2json.document.excel;
 
-import java.util.regex.Pattern;
-
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Cell;
@@ -40,7 +38,7 @@ public class ExcelRow extends Row
 				result += s;
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -64,14 +62,14 @@ public class ExcelRow extends Row
 		String value = this.formatter.formatCellValue(cell);
 
 		// TRICKY: Get hidden decimals in case of a rounded numeric value
-		if(type == Cell.CELL_TYPE_NUMERIC && value.matches("-?\\d+")) { 
+		if(type == Cell.CELL_TYPE_NUMERIC && value.matches("-?\\d+")) {
 			double d = cell.getNumericCellValue();
 			value = (Math.floor(d) == d) ? value : String.valueOf(d);
 		}
 		else if(type == Cell.CELL_TYPE_ERROR) {
 			throw new UnsupportedOperationException("Unexceptected Cell Error at [" + row.getRowNum() + ";" + (this.firstColumn + i) + "]");
 		}
-		
+
 		return StringUtility.cleanValueToken(value);
 	}
 

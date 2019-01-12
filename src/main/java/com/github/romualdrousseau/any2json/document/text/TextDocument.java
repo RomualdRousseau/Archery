@@ -1,28 +1,24 @@
 package com.github.romualdrousseau.any2json.document.text;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 import com.github.romualdrousseau.any2json.IDocument;
 import com.github.romualdrousseau.any2json.ISheet;
-import com.github.romualdrousseau.any2json.ITable;
-import com.github.romualdrousseau.any2json.TableHeader;
-import com.github.romualdrousseau.any2json.util.StringUtility;
 
 public class TextDocument implements IDocument
 {
-	public boolean open(File txtFile, String encoding) {
-		if(openWithEncoding(txtFile, null)) {
-			return true;
-		}
-		else {
-			return openWithEncoding(txtFile, encoding);
-		}
+    public boolean open(File txtFile, String encoding) {
+        if (openWithEncoding(txtFile, null)) {
+            return true;
+        } else {
+            return openWithEncoding(txtFile, encoding);
+        }
 	}
-	
+
 	public void close() {
 		this.sheet = null;
 	}

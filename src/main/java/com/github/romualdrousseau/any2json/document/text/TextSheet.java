@@ -1,8 +1,5 @@
 package com.github.romualdrousseau.any2json.document.text;
 
-import java.io.IOException;
-import java.io.BufferedReader;
-
 import com.github.romualdrousseau.any2json.ISheet;
 import com.github.romualdrousseau.any2json.ITable;
 

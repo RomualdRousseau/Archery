@@ -3,14 +3,11 @@ package com.github.romualdrousseau.any2json.document.excel;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
 import com.github.romualdrousseau.shuju.cv.Template;
 import com.github.romualdrousseau.shuju.cv.Filter;
-
-import com.github.romualdrousseau.any2json.util.StringUtility;
 
 public class ExcelSearchBitmap extends ISearchBitmap
 {

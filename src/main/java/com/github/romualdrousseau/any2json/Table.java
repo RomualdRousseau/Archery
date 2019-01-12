@@ -2,10 +2,10 @@ package com.github.romualdrousseau.any2json;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map.Entry;
+//import java.util.Map.Entry;
 
 import com.github.romualdrousseau.shuju.Result;
-import com.github.romualdrousseau.shuju.DataSet;
+//import com.github.romualdrousseau.shuju.DataSet;
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.IFeature;
 import com.github.romualdrousseau.shuju.features.RegexFeature;
@@ -69,10 +69,10 @@ public abstract class Table implements ITable
 	            DataRow sample = new DataRow()
                     .addFeature(new RegexFeature(getRowAt(i).getCellValue(header)))
                     .addFeature(new FuzzyFeature(StringUtility.cleanHeaderToken(header.getName())));
-	            
+
 	            Result result = classifier.predict(sample);
 	            if(!result.isUndefined()) {
-	            	results.add(result);
+	                results.add(result);
 	            }
 	        }
 
@@ -83,7 +83,7 @@ public abstract class Table implements ITable
 	        }
 
 	        // Update the tags list if the result is better
-            for(IFeature label: winner.getCandidate().labels()) {
+            for(IFeature<?> label: winner.getCandidate().labels()) {
             	String k = label.getValue().toString();
                 double p = winner.getCandidate().getProbability() * label.getProbability();
                 HeaderTag tag = tags.get(k);
@@ -111,12 +111,12 @@ public abstract class Table implements ITable
 		}
 
 		// for(TableHeader header: this.headers) if(header.hasTag()) {
-		// 	String buffer = "";
-		// 	for(TableHeader other: this.headers) if(other.hasTag() && other != header) {
-		// 		buffer += other.getName();
-		// 	}
-		// 	buffer = String.format("%s, %s, %s", word2vec(header.getName()), word2vec(buffer), header.getTag().getValue());
-		// 	System.out.println(buffer);
+		//  String buffer = "";
+		//  for(TableHeader other: this.headers) if(other.hasTag() && other != header) {
+		//  	buffer += other.getName();
+		//  }
+		//  buffer = String.format("%s, %s, %s", word2vec(header.getName()), word2vec(buffer), header.getTag().getValue());
+		//  System.out.println(buffer);
 		// }
 
 		// System.out.println(vectorSpace);
@@ -148,7 +148,7 @@ public abstract class Table implements ITable
 		header.setTable(this);
 		if(header.getTag() != null) {
 			this.headersByTag.put(header.getTag().getValue(), header);
-		}	
+		}
 		return this;
 	}
 

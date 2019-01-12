@@ -1,16 +1,11 @@
 package com.github.romualdrousseau.any2json;
 
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.function.Consumer;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
 import java.net.URL;
 import java.net.URISyntaxException;
-import java.io.PrintStream;
+//import java.io.PrintStream;
 
 import org.json.simple.parser.ParseException;
 
@@ -24,7 +19,7 @@ import com.github.romualdrousseau.shuju.ml.tree.NaiveTree;
 /**
  * Unit test for simple App.
  */
-public class AppTest 
+public class AppTest
 {
     /**
      * Rigorous Test :-)
@@ -35,7 +30,7 @@ public class AppTest
         ISheet sheet = null;
         ITable table = null;
         TableHeader header = null;
-       
+
         for(String[] expectedValues: scenarios1) {
             int state = 0;
             int headerIndex = 0;
@@ -81,7 +76,7 @@ public class AppTest
         ISheet sheet = null;
         ITable table = null;
         TableHeader header = null;
-       
+
         DataSet trainingSet = loadDictionary("/data/definitions.json").getDataSet();
         assert trainingSet != null;
         IClassifier tagClassifier = new NaiveTree(0.5);
@@ -247,14 +242,14 @@ public class AppTest
         }
     }
 
-    private static PrintStream setEncoding(PrintStream stream, String encoding) {
-        try {
-            return new PrintStream(stream, true, encoding);
-        }
-        catch(java.io.UnsupportedEncodingException x) {
-            return stream;
-        }
-    }
+    //private static PrintStream setEncoding(PrintStream stream, String encoding) {
+    //    try {
+    //        return new PrintStream(stream, true, encoding);
+    //    }
+    //    catch(java.io.UnsupportedEncodingException x) {
+    //        return stream;
+    //    }
+    //}
 
     private String[][] scenarios1 = {
         {"/data/강원동양.xls", "한국세르비에", "22", "매출처", "강릉아산병원", "매출일", "2016/06/01", "품 명", "디아미크롱서방정", "규 격", "30mg/500T", "수 량", "1", "대표자", "하현권", "주 소", "강원도 강릉시 방동길 38 (사천면)", "비 고", ""},

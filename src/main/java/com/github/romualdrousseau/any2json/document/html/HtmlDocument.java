@@ -4,28 +4,23 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import com.github.romualdrousseau.any2json.IDocument;
 import com.github.romualdrousseau.any2json.ISheet;
-import com.github.romualdrousseau.any2json.ITable;
-import com.github.romualdrousseau.any2json.TableHeader;
-import com.github.romualdrousseau.any2json.util.StringUtility;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 
 public class HtmlDocument implements IDocument
 {
 	public boolean open(File htmlFile, String encoding) {
-		if(openWithEncoding(htmlFile, null)) {
-			return true;
-		}
-		else {
+        if (openWithEncoding(htmlFile, null)) {
+            return true;
+        } else {
 			return openWithEncoding(htmlFile, encoding);
 		}
 	}
-	
+
 	public void close() {
 		this.sheets.clear();
 	}
@@ -52,7 +47,7 @@ public class HtmlDocument implements IDocument
 						this.sheets.add(new HtmlSheet(sheetName, table));
 					}
 				}
-			}		
+			}
 		}
 		catch(IOException x) {
 			close();

@@ -19,11 +19,11 @@ class TextTable extends Table
 	}
 
 	public int getNumberOfColumns() {
-		return getNumberOfHeaders();	
+		return getNumberOfHeaders();
 	}
 
 	public int getNumberOfRows() {
-		return this.processedCount;	
+		return this.processedCount;
 	}
 
 	public IRow getRowAt(int i) {
@@ -42,11 +42,11 @@ class TextTable extends Table
 		if(this.reader == null) {
 			return;
 		}
-		
+
 		if(!processHeaders(this.reader.readLine())) {
 			return;
 		}
-		
+
 		processRows(this.reader);
 	}
 
@@ -71,7 +71,7 @@ class TextTable extends Table
 	private void processRows(BufferedReader reader) throws IOException {
 
 		this.rows.clear();
-		
+
 		for(String textRow; (textRow = reader.readLine()) != null;) {
 
 			String[] tokens = parseOneRow(textRow);
@@ -91,8 +91,6 @@ class TextTable extends Table
 				return;
 			}
 		}
-
-		isProcessedAllRows = true;
 	}
 
 	private String[] parseOneRow(String data) {
@@ -112,6 +110,5 @@ class TextTable extends Table
 
 	private BufferedReader reader;
 	private ArrayList<IRow> rows = new ArrayList<IRow>();
-	private boolean isProcessedAllRows = false;
 	private int processedCount = 0;
 }

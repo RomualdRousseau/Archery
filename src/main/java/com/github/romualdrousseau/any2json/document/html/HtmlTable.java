@@ -2,35 +2,32 @@ package com.github.romualdrousseau.any2json.document.html;
 
 import java.util.ArrayList;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
+import com.github.romualdrousseau.any2json.IRow;
+import com.github.romualdrousseau.any2json.Table;
+import com.github.romualdrousseau.any2json.TableHeader;
+import com.github.romualdrousseau.any2json.util.StringUtility;
+
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.github.romualdrousseau.any2json.Table;
-import com.github.romualdrousseau.any2json.TableHeader;
-import com.github.romualdrousseau.any2json.IRow;
-import com.github.romualdrousseau.any2json.util.StringUtility;
+class HtmlTable extends Table {
+    public HtmlTable(Elements htmlElements) {
+        processOneTable(htmlElements);
+    }
 
-class HtmlTable extends Table
-{
-	public HtmlTable(Elements htmlElements) {
-		processOneTable(htmlElements);
-	}
-
-	public int getNumberOfColumns() {
-		return getNumberOfHeaders();	
+    public int getNumberOfColumns() {
+		return getNumberOfHeaders();
 	}
 
 	public int getNumberOfRows() {
-		return this.rows.size();	
+		return this.rows.size();
 	}
 
 	public IRow getRowAt(int i) {
 		if(i < 0 || i >= getNumberOfRows()) {
 			throw new ArrayIndexOutOfBoundsException(i);
 		}
-		
+
 		return this.rows.get(i);
 	}
 

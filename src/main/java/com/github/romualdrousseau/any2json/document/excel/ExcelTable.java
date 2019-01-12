@@ -1,7 +1,5 @@
 package com.github.romualdrousseau.any2json.document.excel;
 
-import java.util.ArrayList;
-
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Cell;
@@ -28,11 +26,11 @@ class ExcelTable extends Table
 	}
 
 	public int getNumberOfColumns() {
-		return this.lastColumn - this.firstColumn + 1;	
+		return this.lastColumn - this.firstColumn + 1;
 	}
-	
+
 	public int getNumberOfRows() {
-		return this.lastRow - this.firstRow + 1;	
+		return this.lastRow - this.firstRow + 1;
 	}
 
 	public Row getRowAt(int i) {
@@ -41,7 +39,7 @@ class ExcelTable extends Table
 		}
 
 		org.apache.poi.ss.usermodel.Row row = this.sheet.getRow(this.firstRow + i);
-		return (row != null ) ? new ExcelRow(row, this.evaluator, this.formatter, this.firstColumn, this.lastColumn) : null;	
+		return (row != null ) ? new ExcelRow(row, this.evaluator, this.formatter, this.firstColumn, this.lastColumn) : null;
 	}
 
 	private void processHeaders() {
@@ -62,7 +60,7 @@ class ExcelTable extends Table
 				.setName(StringUtility.cleanValueToken(this.formatter.formatCellValue(cell)))
 				.setTag(null);
 			addHeader(header);
-			
+
 			ignoreCells = header.getNumberOfCells() - 1;
 		}
 	}

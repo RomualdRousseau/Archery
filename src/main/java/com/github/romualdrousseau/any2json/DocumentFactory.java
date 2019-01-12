@@ -1,9 +1,6 @@
 package com.github.romualdrousseau.any2json;
 
 import java.io.File;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map.Entry;
 import java.util.UnknownFormatConversionException;
 
 import com.github.romualdrousseau.any2json.document.excel.ExcelDocument;
