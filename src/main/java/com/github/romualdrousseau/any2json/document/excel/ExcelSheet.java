@@ -65,6 +65,7 @@ class ExcelSheet implements ISheet
 		return colNum;
 	}
 
+    /*
 	private void debug(ExcelSearchBitmap searchBitmap, SearchPoint[] table) {
 		for(int i = 0; i < searchBitmap.getHeight(); i++) {
 			for(int j = 0; j < searchBitmap.getWidth(); j++) {
@@ -85,6 +86,7 @@ class ExcelSheet implements ISheet
 			System.out.println(table[1].getY());
 		}
 	}
+    */
 
 	private Sheet sheet;
 	private ExcelTable table;
