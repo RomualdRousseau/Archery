@@ -6,6 +6,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 
 import com.github.romualdrousseau.shuju.cv.Filter;
+import com.github.romualdrousseau.shuju.cv.EdgeFilter;
 import com.github.romualdrousseau.shuju.cv.Template;
 import com.github.romualdrousseau.shuju.cv.SearchPoint;
 import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.RectangleExtractor;
@@ -34,17 +35,24 @@ class ExcelSheet implements ISheet
 	}
 
 	public ExcelTable findTable(int headerColumns, int headerRows) {
-		final Filter filter = new Filter(new Template(new int[][] {
+        //final Filter filter1 = new Filter(new Template(new int[][] {
+		//	{1, 1, 1, 1, 1}
+        //}));
+		final Filter filter2 = new Filter(new Template(new int[][] {
 			{0, 0, 0},
 			{1, 0, 1},
 			{0, 0, 0}
-		 }));
+        }));
 
 		if(this.table == null) {
-			ExcelSearchBitmap searchBitmap = new ExcelSearchBitmap(this.sheet, headerColumns, headerRows);
-			filter.applyNeg(searchBitmap, 2);
-			SearchPoint[] table = new RectangleExtractor().extractBest(searchBitmap);
-			//debug(searchBitmap, table);
+            ExcelSearchBitmap bitmap1 = new ExcelSearchBitmap(this.sheet, headerColumns, headerRows);
+            //filter1.apply(bitmap1, 3);
+            //filter2.applyNeg(bitmap1, 2);
+            filter2.apply(bitmap1, 1);
+            filter2.applyNeg(bitmap1, 2);
+
+			SearchPoint[] table = new RectangleExtractor().extractBest(bitmap1);
+			debug(bitmap1, table);
 			if(table != null && table[1].getX() > table[0].getX()) {
 				this.table = new ExcelTable(this.sheet, this.evaluator, table[0].getX(), table[0].getY(), table[1].getX(), this.sheet.getLastRowNum());
 			}
@@ -65,7 +73,6 @@ class ExcelSheet implements ISheet
 		return colNum;
 	}
 
-    /*
 	private void debug(ExcelSearchBitmap searchBitmap, SearchPoint[] table) {
 		for(int i = 0; i < searchBitmap.getHeight(); i++) {
 			for(int j = 0; j < searchBitmap.getWidth(); j++) {
@@ -86,7 +93,6 @@ class ExcelSheet implements ISheet
 			System.out.println(table[1].getY());
 		}
 	}
-    */
 
 	private Sheet sheet;
 	private ExcelTable table;

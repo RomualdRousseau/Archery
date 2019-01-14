@@ -6,19 +6,20 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
-import com.github.romualdrousseau.shuju.cv.Template;
-import com.github.romualdrousseau.shuju.cv.Filter;
 
 public class ExcelSearchBitmap extends ISearchBitmap
 {
+    public ExcelSearchBitmap(int columns, int rows) {
+        this.width = columns;
+		this.height = rows;
+		this.data = new int[this.height][this.width];
+    }
+
 	public ExcelSearchBitmap(Sheet sheet, int columns, int rows) {
 		this.width = columns;
 		this.height = rows;
 		this.data = new int[this.height][this.width];
-
 		loadData(sheet);
-
-		new Filter(new Template(new int[][] {{1, 1, 1, 1, 1}})).apply(this, 3);
 	}
 
 	public int getWidth() {
