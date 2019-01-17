@@ -63,7 +63,11 @@ public class ExcelSearchBitmap extends ISearchBitmap
 		CellRangeAddress region = checkIfMergedCell(sheet, cell);
 		if(region != null) {
 			cell = row.getCell(region.getFirstColumn());
-		}
+        }
+
+        if(cell != null && cell.getCellType() == Cell.CELL_TYPE_BLANK && cell.getCellStyle().getFillBackgroundColorColor() == null) {
+            cell = null;
+        }
 
 		return (cell == null) ?  0 : 1;
 	}
