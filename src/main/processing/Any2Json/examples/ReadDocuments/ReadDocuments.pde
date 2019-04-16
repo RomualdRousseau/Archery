@@ -1,84 +1,83 @@
-import com.github.romualdrousseau.shuju.*;
-import com.github.romualdrousseau.any2json.*;
-
-float cellWidth = 100;
-float cellHeight = 21;
-int numberOfVisibleRows;
 String[] documentFileNames;
 int currentDocumentIndex = 0;
 
+Viewer viewer;
+
+Extractor regexExtractor = new Extractor();
+
 void setup() {
   size(1600, 800);
-  
+
+  regexExtractor.loadStopWords();
+  regexExtractor.loadEntities();
+
   documentFileNames = listFileNames(dataPath("1612"));
+
+  viewer = new Viewer(200, 0, width - 200, height, dataPath("1612/" + documentFileNames[currentDocumentIndex]));
 }
 
 void draw() {
   background(51);
   noFill();
-  stroke(64);
 
-  println("============================================================");
-  println("FileName: " + documentFileNames[currentDocumentIndex]);
-  
-  IDocument document = DocumentFactory.createInstance(dataPath("1612/" + documentFileNames[currentDocumentIndex]), "CP949");
-  ISheet sheet = document.getSheetAt(0);
-  ITable table = sheet.findTable(30, 30);
-  assert !com.github.romualdrousseau.any2json.Table.IsEmpty(table);
+  text(documentFileNames[currentDocumentIndex], 0, 16);
 
-  cellWidth = width / float(table.getNumberOfHeaders());
-  numberOfVisibleRows = height / int(cellHeight);
-  
-  for (int k = 0; k < document.getNumberOfSheets(); k++) {
-    print(document.getSheetAt(k).getName());
-    print("    ");
-  }
-  println();
-  
-  for (int j = 0; j < table.getNumberOfHeaders(); j++) {
-    TableHeader header = table.getHeaderAt(j);
-    drawCell(header.getName(), j, 0);
-  }
-
-  for (int i = 0; i < min(numberOfVisibleRows - 1, table.getNumberOfRows()); i++) {
-    Row row = (Row) table.getRowAt(i); 
-    try {
-    if (!row.isEmpty(0.5)) {
-      for (int j = 0; j < row.getNumberOfCells(); j++) {
-        String value = row.getCellValueAt(j);
-        drawCell(value, j, i + 1);
-      }
+  if (viewer.currentCell != null) {
+    text(viewer.currentHeader.value, 0, 32);
+    text(viewer.currentHeader.rawTag.toString(), 0, 48);
+    text(viewer.currentHeader.tag.toString(), 0, 64);
+    
+    int line = 6;
+    float[] entity2vec = viewer.currentHeader.entity2vec(viewer.cells, 0.8);
+    for (int i = 0; i < entity2vec.length; i++) {
+      text(i + ": " + entity2vec[i], 0, line * 16);
+      line++;
     }
+    
+    line++;
+    float[] word2vec = viewer.currentHeader.word2vec(2);
+    for (int i = 0; i < word2vec.length; i++) {
+      text(i + ": " + word2vec[i], 0, line * 16);
+      line++;
     }
-    catch(UnsupportedOperationException x) {
+    
+    line++;
+    float[] neighbor2vec = viewer.currentHeader.neighbor2vec(viewer.cells[0], 2);
+    for (int i = 0; i < neighbor2vec.length; i++) {
+      text(i + ": " + neighbor2vec[i], 0, line * 16);
+      line++;
     }
   }
-  
-  document.close();
-  
-  delay(1000);
-  currentDocumentIndex++;
-  if(currentDocumentIndex >= documentFileNames.length) {
-    currentDocumentIndex = 0;
+
+  viewer.show();
+}
+
+void keyPressed() {
+  if (key == CODED && keyCode == RIGHT) {
+    currentDocumentIndex++;
+    if (currentDocumentIndex >= documentFileNames.length) {
+      currentDocumentIndex = 0;
+    }
+    viewer = new Viewer(200, 0, width - 200, height, dataPath("1612/" + documentFileNames[currentDocumentIndex]));
+  }
+  if (key == CODED && keyCode == LEFT) {
+    currentDocumentIndex--;
+    if (currentDocumentIndex < 0) {
+      currentDocumentIndex = documentFileNames.length - 1;
+    }
+    viewer = new Viewer(200, 0, width - 200, height, dataPath("1612/" + documentFileNames[currentDocumentIndex]));
+  }
+  if(key == CODED && keyCode == UP && viewer.currentCell != null) {
+     viewer.currentHeader.nextTag();
+  }
+  if(key == CODED && keyCode == DOWN && viewer.currentCell != null) {
+     viewer.currentHeader.prevTag();
+  }
+  if(key == 't' || key == 'T') {
+     // add to training and train
   }
 }
 
-void drawCell(String value, int col, int row) {
-  rect(col * cellWidth, row * cellHeight, cellWidth, cellHeight);
-  if (value != null) {
-    clip(col * cellWidth + 4, row * cellHeight, cellWidth - 8, cellHeight);
-    text(value, col * cellWidth + 4, (row + 1) * cellHeight - 6);
-    noClip();
-  }
-}
-
-String[] listFileNames(String dir) {
-  File file = new File(dir);
-  if (file.isDirectory()) {
-    String names[] = file.list();
-    return names;
-  } else {
-    // If it's not a directory
-    return null;
-  }
+void mousePressed() {
+  viewer.update();
 }
