@@ -1,147 +1,85 @@
-class Cell {
-  int row;
-  int col;
-  String rawValue;
-  String value;
+class Cell extends Widget {
+  String cleanValue;
   EntityType[] types;
-  Tag rawTag;
-  Tag tag;
-  
-  Cell(String value, int row, int col) {
-    this.row = row;
-    this.col = col;
-    this.rawValue = value;
-    this.value = regexExtractor.removeStopWords(value);
-    this.types = regexExtractor.findEntityTypes(this.value);
+  Tag orgTag;
+  Tag newTag;
+
+  Cell(Sheet parent, String value, int row, int col) {
+    super(parent, value, row, col);
+    this.cleanValue = NlpHelper.removeStopWords(value);
+    this.types = NlpHelper.findEntityTypes(this.cleanValue);
   }
 
-  public void updateNgrams(int n) {
-    for (int i = 0; i < this.value.length() - n + 1; i++) {
-      String p = this.value.substring(i, i + n);
-      Integer index = ngrams.get(p);
-      if (index == null) {
-        index = ngramsCount;
-        ngrams.put(p, index);
-        ngramsCount++;
-      }
+  public void updateTag(boolean reset) {
+    this.orgTag = Brain.predict(this);
+    if (reset) {
+      this.newTag = this.orgTag;
     }
   }
 
-  public void updateTag() {
-    switch(floor(random(3))) {
-    case 0:
-      this.rawTag = Tag.NONE;
-      break;
-    case 1:
-      this.rawTag = Tag.AMOUNT;
-      break;
-    case 2:
-      this.rawTag = Tag.QUANTITY;
-      break;
-    }
-    this.tag = this.rawTag;
-  }
-  
   public void prevTag() {
-    switch(this.tag) {
-    case NONE:
-      this.tag = Tag.QUANTITY;
-      break;
-    case AMOUNT:
-      this.tag = Tag.NONE;
-      break;
-    case QUANTITY:
-      this.tag = Tag.AMOUNT;
-      break;
+    Tag[] tags = Tag.values();
+    int prevIndex = this.newTag.ordinal() - 1;
+    if (prevIndex < 0) {
+      prevIndex = tags.length - 1;
     }
+    this.newTag = tags[prevIndex];
   }
-  
+
   public void nextTag() {
-    switch(this.tag) {
-    case NONE:
-      this.tag = Tag.AMOUNT;
-      break;
-    case AMOUNT:
-      this.tag = Tag.QUANTITY;
-      break;
-    case QUANTITY:
-      this.tag = Tag.NONE;
-      break;
+    Tag[] tags = Tag.values();
+    int nextIndex = this.newTag.ordinal() + 1;
+    if (nextIndex >= tags.length) {
+      nextIndex = 0;
     }
+    this.newTag = tags[nextIndex];
   }
 
-  public float[] entity2vec(Cell[][] cells, float p) {
-    float[] result = new float[this.types.length];
+  boolean checkDuplicateTags() {
+    Sheet sheet = (Sheet) this.parent;
+    Cell[] headers = sheet.cells[0];
 
-    for (int i = 1; i < cells.length; i++) {
-      Cell cell = cells[i][this.col];
-      if (cell == null) {
-        continue;
-      }
-
-      for (int j = 0; j < this.types.length; j++) {  
-        result[j] += (cell.types[j] == EntityType.NONE) ? 0 : 1;
+    for (int j = 0; j < headers.length; j++) {
+      Cell header = headers[j];
+      if (header != this && !header.newTag.equals(Tag.NONE) && header.newTag.equals(this.newTag)) {
+        return true;
       }
     }
 
-    for (int j = 0; j < this.types.length; j++) {
-      result[j] = (result[j] >= p * float(cells.length - 1)) ? 1 : 0;
-    }
-
-    return result;
+    return false;
   }
 
-  public float[] word2vec(int n) {
-    float[] result = new float[ngramsCount];
-
-    for (int i = 0; i < this.value.length() - n + 1; i++) {
-      String p = this.value.substring(i, i + n);
-      Integer index = ngrams.get(p);
-      if (index != null) {
-        result[index] = 1;
-      }
-    }
-
-    return result;
-  }
-
-  public float[] neighbor2vec(Cell[] headers, int n) {
-    float[] result = new float[ngramsCount];
-
-    for (int i = 0; i < headers.length; i++) {
-      Cell header = headers[i];
-      if (header != this) {
-        float[] tmp = header.word2vec(n);
-        for (int j = 0; j < result.length; j++) {
-          result[j] = min(1, result[j] + tmp[j]);
-        }
-      }
-    }
-
-    return result;
-  }
-
-  boolean checkMouse(int x, int y, int w, int h) {
-    int x1 = x + this.col * w;
-    int y1 = y + this.row * h;
-    int x2 = x1 + w;
-    int y2 = y1 + h;
-    return x1 <= mouseX && mouseX < x2 && y1 <= mouseY && mouseY < y2;
-  }
-
-  void show(int x, int y, int w, int h, boolean focus) {
-    stroke(64);
-    rect(x + this.col * w, y + this.row * h, w, h);
-
-    if (focus) {
-      stroke(255, 128, 0);
-      rect(x + this.col * w + 1, y + this.row * h + 1, w - 2, h - 2);
-    }
-
-    if (this.rawValue != null) {
-      clip(x + this.col * w + 4, y + this.row * h, w - 8, h - 2);
-      text(this.rawValue, x + this.col * w + 4, y + (this.row + 1) * h - 6);
-      noClip();
-    }
+  void showTag() {
+    /*
+    if (this.frozen) {
+     fill(128, 128, 128);
+     stroke(64);
+     rect(this.x, this.y, this.w, this.h);
+     noFill();
+     } else {
+     noFill();
+     stroke(64);
+     rect(this.x, this.y, this.w, this.h);
+     }
+     
+     if (this.changed) {
+     stroke(128, 255, 128, 192);
+     rect(this.x + 1, this.y + 1, this.w - 2, this.h - 2);
+     }
+     
+     if (this.error) {
+     stroke(255, 128, 128, 192);
+     rect(this.x + 1, this.y + 1, this.w - 2, this.h - 2);
+     }
+     
+     if (this.focus) {
+     stroke(255, 128, 0, 192);
+     rect(this.x + 1, this.y + 1, this.w - 2, this.h - 2);
+     }
+     */
+    fill(255);
+    clip(this.x + 4, this.y - CELL_HEIGHT + 1, this.w - 8, this.h - 2);
+    text(this.newTag.toString(), this.x + 4, this.y - 6);
+    noClip();
   }
 }
