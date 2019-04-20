@@ -1,9 +1,9 @@
 enum EntityType { 
   NONE, 
     DATE, 
-    CODEPOSTAL, 
+    POSTAL_CODE, 
     REFERENCE, 
-    DOSAGE, 
+    PACKAGE, 
     SMALL, 
     NUMBER
 }
@@ -18,8 +18,8 @@ enum Tag {
     CUSTOMER_TYPE, 
     PRODUCT_CODE, 
     PRODUCT_NAME, 
-    PRODUCT_DOSAGE, 
-    CODE_POSTAL, 
+    PRODUCT_PACKAGE, 
+    POSTAL_CODE, 
     ADMIN_AREA, 
     LOCALITY, 
     ADDRESS
@@ -80,6 +80,33 @@ class NlpHelper_ {
       } else {
         result[i] = EntityType.NONE;
       }
+    }
+
+    return result;
+  }
+  
+  float[] entity2vec(Cell cell, float p) {
+    Sheet sheet = (Sheet) cell.parent;
+    float[] result;
+
+    if (cell.row == 0) {
+      result = new float[ENTITYVEC_LENGTH];
+      int n = 0;
+
+      for (int i = 1; i < sheet.cells.length; i++) {
+        Cell other = sheet.cells[i][cell.col];
+        if (other != null) {
+          float[] tmp = this.entity2vec(other.types, ENTITYVEC_LENGTH);
+          addvf(result, tmp);
+          n++;
+        }
+      }
+
+      if (n > 0) {
+        filtervf(result, p * float(n), 0, 1);
+      }
+    } else {
+      result = this.entity2vec(cell.types, ENTITYVEC_LENGTH);
     }
 
     return result;

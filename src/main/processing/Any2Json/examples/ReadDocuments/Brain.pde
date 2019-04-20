@@ -32,13 +32,8 @@ class Brain_ {
     this.criterion = new Loss(SoftmaxCrossEntropy);
   }
 
-  Tag predict(Cell cell) {
-    float[] entity2vec = TrainingSet.entity2vec(cell, 0.8);
-    float[] word2vec = TrainingSet.word2vec(cell.cleanValue);
-    float[] neighbor2vec = TrainingSet.neighbor2vec(cell);
-    float[] data = concat(concat(entity2vec, word2vec), neighbor2vec);
-    
-    Matrix input = new Matrix(data);
+  Tag predict(Header header, Header[] conflicts) {
+    Matrix input = new Matrix(TrainingSet.buildInput(header, conflicts));
     int i = this.model.model(input).detach().argmax(0);
     
     Tag[] tags = Tag.values();
@@ -60,7 +55,7 @@ class Brain_ {
       this.optimizer.zeroGradients();
 
       for (int i = 0; i < TrainingSet.size(); i++) {
-        Matrix input = new Matrix(TrainingSet.data.get(i));
+        Matrix input = new Matrix(TrainingSet.inputs.get(i));
         Matrix target = new Matrix(TrainingSet.targets.get(i));
 
         Layer output = this.model.model(input);

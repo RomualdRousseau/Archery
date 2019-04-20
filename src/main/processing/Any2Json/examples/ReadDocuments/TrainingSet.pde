@@ -2,104 +2,73 @@ class TrainingSet_ {
   HashMap<String, Integer> ngrams = new HashMap<String, Integer>();
   int ngramsCount = 0;
 
-  ArrayList<float[]> data = new ArrayList<float[]>();
+  ArrayList<float[]> inputs = new ArrayList<float[]>();
   ArrayList<float[]> targets = new ArrayList<float[]>();
 
-  int size() {
-    return data.size();
-  }
-
-  boolean conflict(Cell cell) {
-    float[] entity2vec = TrainingSet.entity2vec(cell, 0.8);
-    float[] word2vec = TrainingSet.word2vec(cell.cleanValue);
-    float[] neighbor2vec = TrainingSet.neighbor2vec(cell);
-    float[] data = concat(concat(entity2vec, word2vec), neighbor2vec);
-
-    float[] target = oneHot(cell.newTag.ordinal(), TAGVEC_LENGTH);
-
-    return this.conflict(data, target);
-  }
-
-  boolean conflict(float[] data, float[] target) {
-    int i  = 0;
-    while (i < this.data.size() && !java.util.Arrays.equals(this.data.get(i), data)) i++;
-    if (i == this.data.size()) {
-      return false;
-    } else {
-      return !java.util.Arrays.equals(this.targets.get(i), target);
+  void healthCheck() {
+    if (inputs.size() != targets.size()) {
+      throw new UnsupportedOperationException("TRAININGSET UNHEALTHY");
     }
   }
 
-  void add(Cell cell) {
-    float[] entity2vec = TrainingSet.entity2vec(cell, 0.8);
-    float[] word2vec = TrainingSet.word2vec(cell.cleanValue);
-    float[] neighbor2vec = TrainingSet.neighbor2vec(cell);
-    float[] data = concat(concat(entity2vec, word2vec), neighbor2vec);
-
-    float[] target = oneHot(cell.newTag.ordinal(), TAGVEC_LENGTH);
-
-    this.add(data, target);
+  int size() {
+    return inputs.size();
   }
 
-  void add(float[] data, float[] target) {
+  float[] buildInput(Header header, Header[] conflicts) {
+    float[] entity2vec = NlpHelper.entity2vec(header, 0.8);
+    float[] word2vec = this.word2vec(header);
+    float[] neighbor2vec = this.words2vev(conflicts);
+    return concat(concat(entity2vec, word2vec), neighbor2vec);
+  }
+
+  float[] buildTarget(Header header) {
+    return oneHot(header.newTag.ordinal(), TAGVEC_LENGTH);
+  }
+
+  boolean checkConflict(float[] input, float[] target) {
     int i  = 0;
-    while (i < this.data.size() && !java.util.Arrays.equals(this.data.get(i), data)) i++;
-    if (i == this.data.size()) {
-      this.data.add(data);
+    while (i < this.inputs.size() && !java.util.Arrays.equals(this.inputs.get(i), input)) i++;
+    
+    return i < this.inputs.size() && !java.util.Arrays.equals(this.targets.get(i), target);
+  }
+
+  void add(float[] input, float[] target) {
+    this.healthCheck();
+
+    int i  = 0;
+    while (i < this.inputs.size() && !java.util.Arrays.equals(this.inputs.get(i), input)) i++;
+
+    if (i == this.inputs.size()) {
+      this.inputs.add(input);
       this.targets.add(target);
     } else {
+      //if (!java.util.Arrays.equals(this.targets.get(i), target)) {
+      //  throw new UnsupportedOperationException("CONFLICTING TARGETS");
+      //}
       this.targets.set(i, target);
     }
   }
-  
+
   void registerWord(String w, int n) {
     for (int i = 0; i < w.length() - n + 1; i++) {
       String s = w.substring(i, i + n).toLowerCase();
       Integer index = this.ngrams.get(s);
-      if (index == null) {
-        index = this.ngramsCount;
-        this.ngrams.put(s, index);
-        this.ngramsCount++;
-        if (this.ngramsCount >= WORDVEC_LENGTH) {
-          println("ooooo");
-        }
+      if (index != null) {
+        continue;
       }
-    }
-  }
-  
-  float[] entity2vec(Cell cell, float p) {
-    Sheet sheet = (Sheet) cell.parent;
-    float[] result;
-    
-    if(cell.row == 0) {
-      result = new float[ENTITYVEC_LENGTH];
-      
-      int n = 0;
-      for (int i = 1; i < sheet.cells.length; i++) {
-        Cell other = sheet.cells[i][cell.col];
-        if (other == null) {
-          continue;
-        }
-  
-        float[] tmp = NlpHelper.entity2vec(other.types, ENTITYVEC_LENGTH);
-        for (int j = 0; j < result.length; j++) {  
-          result[j] += tmp[j];
-        }
-        
-        n++;
-      }
-  
-      for (int j = 0; j < result.length; j++) {
-        result[j] = (result[j] >= p * float(n)) ? 1 : 0;
-      }
-    } else {
-      result = NlpHelper.entity2vec(cell.types, ENTITYVEC_LENGTH);
-    }
 
-    return result;
+      index = this.ngramsCount;
+      this.ngrams.put(s, index);
+      this.ngramsCount++;
+      if (this.ngramsCount >= WORDVEC_LENGTH) {
+        throw new IndexOutOfBoundsException("WORD2VEC");
+      }
+    }
   }
-  
-  float[] word2vec(String w) {
+
+  float[] word2vec(Header header) {
+    String w = header.cleanValue;
     float[] result = new float[WORDVEC_LENGTH];
 
     for (int i = 0; i < w.length() - NGRAMS + 1; i++) {
@@ -112,39 +81,42 @@ class TrainingSet_ {
 
     return result;
   }
-  
-  float[] neighbor2vec(Cell cell) {
-    //Sheet sheet = (Sheet) cell.parent;
+
+  float[] words2vev(Header[] headers) {
     float[] result = new float[WORDVEC_LENGTH];
-    /*
+
+    if (headers == null) {
+      return result;
+    }
+
     for (int i = 0; i < headers.length; i++) {
-     Cell header = sheet.cells[0][i];
-     if (header != this) {
-     float[] tmp = NlpHelper.word2vec(header.cleanValue, NGRAMS, WORDVEC_LENGTH);
-     for (int j = 0; j < result.length; j++) {
-     result[j] = min(1, result[j] + tmp[j]);
-     }
-     }
-     }
-     */
-    return result;
+      Header header = headers[i];
+      if (header != null) {
+        float[] tmp = TrainingSet.word2vec(header);
+        addvf(result, tmp);
+      }
+    }
+
+    return constrainvf(result, 0, 1);
   }
 
   JSONObject toJSON() {
+    this.healthCheck();
+
     JSONArray jsonNgrams = new JSONArray();
     for (String ngram : this.ngrams.keySet()) {
       int index = this.ngrams.get(ngram);
       jsonNgrams.setString(index, ngram);
     }
 
-    JSONArray jsonData = new JSONArray();
+    JSONArray jsonInputs = new JSONArray();
     JSONArray jsonTargets = new JSONArray();
-    for (int i = 0; i < this.data.size(); i++) {
-      JSONArray jsonOneData = new JSONArray();
-      for (int j = 0; j < this.data.get(i).length; j++) {
-        jsonOneData.append(this.data.get(i)[j]);
+    for (int i = 0; i < this.inputs.size(); i++) {
+      JSONArray jsonInput = new JSONArray();
+      for (int j = 0; j < this.inputs.get(i).length; j++) {
+        jsonInput.append(this.inputs.get(i)[j]);
       }
-      jsonData.append(jsonOneData);
+      jsonInputs.append(jsonInput);
 
       JSONArray jsonTarget = new JSONArray();
       for (int j = 0; j < this.targets.get(i).length; j++) {
@@ -155,14 +127,14 @@ class TrainingSet_ {
 
     JSONObject json = new JSONObject();
     json.setJSONArray("ngrams", jsonNgrams);
-    json.setJSONArray("data", jsonData);
+    json.setJSONArray("inputs", jsonInputs);
     json.setJSONArray("targets", jsonTargets);
     return json;
   }
 
   void fromJSON(JSONObject json) {
     JSONArray jsonNgrams = json.getJSONArray("ngrams");
-    JSONArray jsonData = json.getJSONArray("data");
+    JSONArray jsonInputs = json.getJSONArray("inputs");
     JSONArray jsonTargets = json.getJSONArray("targets");
 
     this.ngrams.clear();
@@ -170,26 +142,29 @@ class TrainingSet_ {
       String p = jsonNgrams.getString(i);
       this.ngrams.put(p, i);
     }
-    
-    this.data.clear();
-    for (int i = 0; i < jsonData.size(); i++) {
-      JSONArray jsonTmp = jsonData.getJSONArray(i);
-      float[] data = new float[jsonTmp.size()];
-      for (int j = 0; j < jsonTmp.size(); j++) {
-        data[j] = jsonTmp.getFloat(j);
+    this.ngramsCount = jsonNgrams.size();
+
+    this.inputs.clear();
+    for (int i = 0; i < jsonInputs.size(); i++) {
+      JSONArray jsonInput = jsonInputs.getJSONArray(i);
+      float[] input = new float[jsonInput.size()];
+      for (int j = 0; j < jsonInput.size(); j++) {
+        input[j] = jsonInput.getFloat(j);
       }
-      this.data.add(data);
+      this.inputs.add(input);
     }
 
     this.targets.clear();
     for (int i = 0; i < jsonTargets.size(); i++) {
-      JSONArray jsonTmp = jsonTargets.getJSONArray(i);
-      float[] target = new float[jsonTmp.size()];
-      for (int j = 0; j < jsonTmp.size(); j++) {
-        target[j] = jsonTmp.getFloat(j);
+      JSONArray jsonTarget = jsonTargets.getJSONArray(i);
+      float[] target = new float[jsonTarget.size()];
+      for (int j = 0; j < jsonTarget.size(); j++) {
+        target[j] = jsonTarget.getFloat(j);
       }
       this.targets.add(target);
     }
+
+    this.healthCheck();
   }
 }
 TrainingSet_ TrainingSet = new TrainingSet_();

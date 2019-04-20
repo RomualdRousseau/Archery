@@ -20,15 +20,18 @@ class Viewer extends Container {
   void update(int x, int y, int w, int h) {
     super.update(x, y, w, h);
     
+    final int wTab = this.w / this.sheets.length;
+    
     for (int k = 0; k < this.sheets.length; k++) {
       Sheet sheet = this.sheets[k];
-      sheet.update(0, this.h - CELL_HEIGHT, this.w / this.sheets.length, CELL_HEIGHT);
+      sheet.update(k * wTab, this.h - CELL_HEIGHT, wTab, CELL_HEIGHT);
     }
 
     for (int k = 0; k < this.sheets.length; k++) {
       Sheet sheet = this.sheets[k];
-      if (mousePressed && sheet.checkMouse()) {
-        this.currentSheet = this.sheets[k];
+      if (mousePressed && sheet.checkMouse() && this.currentSheet != sheet) {
+        this.currentSheet.unload();
+        this.currentSheet = sheet;
         this.currentSheet.load();
       }
     }

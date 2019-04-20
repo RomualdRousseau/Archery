@@ -41,8 +41,8 @@ class Widget {
 
   void update(int x, int y, int w, int h) {
     if (this.parent != null) {
-      this.x = this.parent.x + this.col * w + x;
-      this.y = this.parent.y + this.row * h + y;
+      this.x = this.parent.x + x;
+      this.y = this.parent.y + y;
     } else {
       this.x = x;
       this.y = y;
@@ -52,6 +52,10 @@ class Widget {
   }
 
   void show() {
+    if (this.w == 0 || this.h == 0) {
+      return;
+    }
+
     if (this.frozen) {
       fill(128, 128, 128);
       stroke(64);
@@ -64,23 +68,24 @@ class Widget {
     }
 
     if (this.changed) {
-      stroke(128, 255, 128, 192);
+      stroke(64, 255, 64);
       rect(this.x + 1, this.y + 1, this.w - 2, this.h - 2);
     }
 
     if (this.error) {
-      stroke(255, 128, 128, 192);
+      stroke(255, 64, 64);
       rect(this.x + 1, this.y + 1, this.w - 2, this.h - 2);
     }
 
     if (this.focus) {
-      stroke(255, 128, 0, 192);
-      rect(this.x + 1, this.y + 1, this.w - 2, this.h - 2);
+      noStroke();
+      fill(255, 128, 0, 128);
+      rect(this.x + 1, this.y + 1, this.w - 1, this.h - 1);
     }
 
     if (this.value != null) {
       if (this.found) {
-        fill(255, 128, 0);
+        fill(255, 192, 0);
       } else {
         fill(255);
       }

@@ -36,6 +36,27 @@ int argmin(float[] v) {
   return result;
 }
 
+float[] addvf(float[] u, float[] v) {
+  for (int i = 0; i < u.length; i++) {
+    u[i] += v[i];
+  }
+  return u;
+}
+
+float[] constrainvf(float[] u, float a, float b) {
+  for (int i = 0; i < u.length; i++) {
+    u[i] = constrain(u[i], a, b);
+  }
+  return u;
+}
+
+float[] filtervf(float[] u, float p, float a, float b) {
+  for (int j = 0; j < u.length; j++) {
+    u[j] = (u[j] < p) ? a : b;
+  }
+  return u;
+}
+
 float unlerp(float a, float b, float v) {
   return (v - a) / (b - a);
 }

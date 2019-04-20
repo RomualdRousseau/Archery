@@ -1,31 +1,50 @@
 class Sheet extends Container {
   Cell[][] cells;
-  Cell currentHeader;
+  Cell[] headers;
+  Header currentHeader;
   Cell currentCell;
+  boolean beautify;
 
   Sheet(Viewer parent, String value, int index) {
     super(parent, value, 0, index);
+    this.beautify = false;
   }
 
-  void trainTags() {
-    Cell[] headers = this.cells[0];
+  void buildTrainingSet() {
+    if (this.cells == null) {
+      return;
+    }
 
-    for (int j = 0; j < headers.length; j++) {
-      Cell header = headers[j];
+    for (int j = 0; j < this.headers.length; j++) {
+      Header header = (Header) this.headers[j];
       if (header != null) {
         TrainingSet.registerWord(header.cleanValue, NGRAMS);
-        TrainingSet.add(header);
+        float[] input = TrainingSet.buildInput(header, header.getConflicts(true));  
+        float[] target = TrainingSet.buildTarget(header);
+        TrainingSet.add(input, target);
       }
     }
+
+    viewer.currentSheet.currentHeader = null;
+    viewer.currentSheet.currentCell = null;
   }
 
   void updateTags(boolean reset) {
-    Cell[] headers = this.cells[0];
+    if (this.cells == null) {
+      return;
+    }
 
-    for (int j = 0; j < headers.length; j++) {
-      Cell header = headers[j];
+    for (int j = 0; j < this.headers.length; j++) {
+      Header header = (Header) this.headers[j];
       if (header != null) {
-        header.updateTag(reset);
+        header.updateTag(reset, false);
+      }
+    }
+
+    for (int j = 0; j < this.headers.length; j++) {
+      Header header = (Header) this.headers[j];
+      if (header != null) {
+        header.updateTag(reset, true);
       }
     }
   }
@@ -37,23 +56,55 @@ class Sheet extends Container {
       return;
     }
 
-    final int wCell = this.parent.w / this.cells[0].length;
+    int countVisibleCells = 0;
+    if (this.beautify) {
+      for (int i = 0; i < this.headers.length; i++) {
+        Header header = (Header) this.headers[i];
+        if (header != null && !header.orgTag.equals(Tag.NONE)) {
+          countVisibleCells++;
+        }
+      }
+    } else {
+      countVisibleCells = this.headers.length;
+    }
+    if (countVisibleCells == 0) {
+      return;
+    }
+
+    final int wCell = this.parent.w / countVisibleCells;
     final int hCell = CELL_HEIGHT;
+
+    if (mousePressed) {
+      viewer.currentSheet.currentHeader = null;
+      viewer.currentSheet.currentCell = null;
+    }
 
     for (int i = 0; i < this.cells.length; i++) {
       Cell[] row = this.cells[i];
+      int k = 0;
       for (int j = 0; j < row.length; j++) {
         Cell cell = row[j];
-        if (cell == null) {
-          continue;
+        
+        if (this.beautify) {
+          Header header = (Header) this.headers[j];
+          if (header == null || header.orgTag.equals(Tag.NONE)) {
+            if (cell != null) {
+              cell.update(0, 0, 0, 0);
+            }
+            continue;
+          }
         }
-
-        cell.update(0, -this.parent.h + CELL_HEIGHT * 2, wCell, hCell);
-
-        if (mousePressed && cell.checkMouse()) {
-          this.currentHeader = this.cells[0][j];
-          this.currentCell = cell;
+          
+        if (cell != null) {
+          cell.update(k * wCell, i * hCell - this.parent.h + CELL_HEIGHT * 2, wCell, hCell);
+  
+          if (mousePressed && cell.checkMouse() && this.currentCell != cell) {
+            this.currentHeader = (Header) this.headers[j];
+            this.currentCell = cell;
+          }
         }
+        
+        k++;
       }
     }
   }
@@ -66,24 +117,26 @@ class Sheet extends Container {
     }
 
     for (int i = 0; i < min(this.cells.length, this.parent.h / CELL_HEIGHT - 2); i++) {
-      Cell[] headers = this.cells[0];
       Cell[] row = this.cells[i];
 
       for (int j = 0; j < row.length; j++) {
+        Header header = (Header) this.headers[j];
         Cell cell = row[j];
         if (cell == null) {
           continue;
         }
 
         cell.focus = cell == this.currentCell;
-        cell.changed = cell.orgTag != null && !cell.orgTag.equals(cell.newTag);
-        cell.frozen = headers[j].newTag != null && headers[j].newTag.equals(Tag.NONE); 
-        cell.error = false;
+        cell.frozen = header.newTag != null && header.newTag.equals(Tag.NONE); 
         cell.found = search != null && search.equals(cell.cleanValue);
 
         if (i == 0) {
-          cell.showTag();
-          cell.error = cell.checkDuplicateTags() || TrainingSet.conflict(cell);
+          cell.changed = header.orgTag != null && !header.orgTag.equals(header.newTag);
+          cell.error = header.checkPossibleConflicts();
+          header.showTag();
+        } else {
+          cell.changed = false;
+          cell.error = false;
         }
 
         cell.show();
@@ -105,16 +158,18 @@ class Sheet extends Container {
       numberOfRows = min(50, table.getNumberOfRows());
     }
 
-    if (numberOfCols == 0 || numberOfRows == 0) {
-      this.cells = new Cell[1][1];
-    } else {
+    this.unload();
+
+    if (numberOfCols > 0 && numberOfRows > 0) {
       this.cells = new Cell[numberOfRows][numberOfCols];
+      this.headers = this.cells[0];
 
       for (int j = 0; j < numberOfCols; j++) {
         TableHeader header = table.getHeaderAt(j);
-        this.cells[0][j] = new Cell(this, header.getName(), 0, j);
+        this.headers[j] = new Header(this, header.getName(), j);
       }
 
+      int k = 1;
       for (int i = 1; i < numberOfRows; i++) {
         Row row = (Row) table.getRowAt(i - 1); 
         try {
@@ -125,9 +180,11 @@ class Sheet extends Container {
           for (int j = 0; j < numberOfCols; j++) {
             String value = row.getCellValueAt(j);
             if (value != null) {
-              this.cells[i][j] = new Cell(this, value, i, j);
+              this.cells[k][j] = new Cell(this, value, k, j);
             }
           }
+          
+          k++;
         }
         catch(UnsupportedOperationException x) {
         }
@@ -137,5 +194,12 @@ class Sheet extends Container {
     document.close();
 
     this.updateTags(true);
+  }
+
+  void unload() {
+    this.cells = null;
+    this.headers = null;
+    this.currentHeader = null;
+    this.currentCell = null;
   }
 }
