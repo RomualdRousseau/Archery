@@ -4,9 +4,11 @@ public interface IRow
 {
 	public boolean isEmpty(double ratio);
 
-	public int getNumberOfCells();
+    public int getNumberOfCells();
+
+    public int getNumberOfMergedCellsAt(int i);
 
 	public String getCellValue(TableHeader header);
 
-	public String getCellValueAt(int i);
+    public String getCellValueAt(int i);
 }

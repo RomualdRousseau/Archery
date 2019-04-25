@@ -48,16 +48,14 @@ class ClipHelper_ {
     return data;
   }
 
-  Object pasteObject (DataFlavor flavor)  
-    throws UnsupportedFlavorException, IOException
-  {
+  Object pasteObject (DataFlavor flavor) throws UnsupportedFlavorException, IOException {
     Object obj = null;
     getClipboard();
 
     Transferable content = clipboard.getContents(null);
-    if (content != null)
+    if (content != null) {
       obj = content.getTransferData(flavor);
-
+    }
     return obj;
   }
 }

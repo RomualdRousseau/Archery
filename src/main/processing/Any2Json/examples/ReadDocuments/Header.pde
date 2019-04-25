@@ -4,8 +4,8 @@ class Header extends Cell {
 
   Header(Sheet parent, String value, int col) {
     super(parent, value, 0, col);
-    this.cleanValue = NlpHelper.removeStopWords(value);
-    this.types = NlpHelper.findEntityTypes(this.cleanValue);
+    this.cleanValue = NlpHelper.stopwords.removeStopWords(value);
+    this.types = NlpHelper.entities.find(this.cleanValue, new EntityType[ENTITYVEC_LENGTH]);
   }
 
   void resetTag() {
@@ -37,7 +37,7 @@ class Header extends Cell {
     this.newTag = tags[nextIndex];
   }
 
-  boolean checkPossibleConflicts() {
+  boolean checkConflicts() {
     Sheet sheet = (Sheet) this.parent;
 
     for (int j = 0; j < sheet.headers.length; j++) {
@@ -50,17 +50,18 @@ class Header extends Cell {
     if(this.newTag.equals(this.orgTag)) {
       return false;
     } else {
-      return TrainingSet.checkConflict(TrainingSet.buildInput(this, this.getConflicts(true)), TrainingSet.buildTarget(this));
+      return TrainingSet.checkConflict(NlpHelper.buildRow(this, this.getConflicts(true)));
     }
   }
   
-  Header[] getConflicts(boolean includeOnlyRealConflicts) {
-    ArrayList<Header> result = new ArrayList<Header>();
+  Header[] getConflicts(boolean ignoreSelfConflict) {
     Sheet sheet = (Sheet) this.parent;
     
-    if (includeOnlyRealConflicts && this.newTag.equals(this.orgTag)) {
+    if (ignoreSelfConflict && this.newTag.equals(this.orgTag)) {
       return null;
     }
+    
+    ArrayList<Header> result = new ArrayList<Header>();
 
     for (int j = 0; j < sheet.headers.length; j++) {
       Header header = (Header) sheet.headers[j];
@@ -75,36 +76,18 @@ class Header extends Cell {
       return result.toArray(new Header[result.size()]);
     }
   }
+  
+  void update(int x, int y, int w, int h) {
+    super.update(x, y, w, h);
+    this.changed = this.orgTag != null && !this.orgTag.equals(this.newTag);
+    this.error = this.checkConflicts() || ((Sheet) this.parent).invalid;
+  }
 
-  void showTag() {
-    //if (this.frozen) {
-    //  fill(128, 128, 128);
-    //  stroke(64);
-    //  rect(this.x, this.y, this.w, this.h);
-    //  noFill();
-    //} else {
-    //  noFill();
-    //  stroke(64);
-    //  rect(this.x, this.y, this.w, this.h);
-    //}
-
-    //if (this.changed) {
-    //  stroke(128, 255, 128, 192);
-    //  rect(this.x + 1, this.y + 1, this.w - 2, this.h - 2);
-    //}
-
-    //if (this.error) {
-    //  stroke(255, 128, 128, 192);
-    //  rect(this.x + 1, this.y + 1, this.w - 2, this.h - 2);
-    //}
-
-    //if (this.focus) {
-    //  stroke(255, 128, 0, 192);
-    //  rect(this.x + 1, this.y + 1, this.w - 2, this.h - 2);
-    //}
+  void show() {
     fill(255);
     clip(this.x + 4, this.y - CELL_HEIGHT + 1, this.w - 8, this.h - 2);
     text(this.newTag.toString(), this.x + 4, this.y - 6);
     noClip();
+    super.show();
   }
 }

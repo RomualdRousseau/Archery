@@ -52,7 +52,7 @@ class TextTable extends Table
 
 	private boolean processHeaders(String textLine) {
 
-		if(textLine == null || !StringUtility.checkIfGoodEncoding(textLine)) {
+		if(textLine == null) {
 			return false;
 		}
 
@@ -76,15 +76,12 @@ class TextTable extends Table
 
 			String[] tokens = parseOneRow(textRow);
 
-			if(tokens.length != getNumberOfColumns()) {
-				continue;
+            String[] cells =  new String[getNumberOfColumns()];
+			for(int j = 0; j < Math.min(tokens.length, cells.length); j++) {
+                cells[j] = StringUtility.cleanValueToken(tokens[j]);
 			}
 
-			for(int j = 0; j < tokens.length; j++) {
-				tokens[j] = StringUtility.cleanValueToken(tokens[j]);
-			}
-
-			this.rows.add(new TextRow(tokens));
+			this.rows.add(new TextRow(cells));
 			processedCount++;
 
 			if(this.rows.size() >= ROWS_IN_MEMORY) {

@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 
 import com.github.romualdrousseau.any2json.IDocument;
 import com.github.romualdrousseau.any2json.ISheet;
+import com.github.romualdrousseau.any2json.util.StringUtility;
 
 public class TextDocument implements IDocument
 {
@@ -34,13 +35,13 @@ public class TextDocument implements IDocument
 	private boolean openWithEncoding(File txtFile, String encoding) {
 		if(encoding == null) {
 			encoding = "UTF-8";
-		}
+        }
 
 		close();
 
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(txtFile), encoding))) {
 			TextTable table = new TextTable(reader);
-			if(table.hasHeaders()) {
+			if(table.hasHeaders() && table.getNumberOfRows() > 0 && checkIfGoodEncoding(table)) {
 				String sheetName = txtFile.getName().replaceFirst("[.][^.]+$", "");
 				this.sheet = new TextSheet(sheetName, table);
 			}
@@ -50,7 +51,15 @@ public class TextDocument implements IDocument
 		}
 
 		return this.sheet != null;
-	}
+    }
+
+    private boolean checkIfGoodEncoding(TextTable table) {
+        boolean result = true;
+        for(int i = 0; i < table.getNumberOfHeaders(); i++) {
+            result &= StringUtility.checkIfGoodEncoding(table.getHeaderAt(i).getName());
+        }
+        return result;
+    }
 
 	private TextSheet sheet = null;
 }

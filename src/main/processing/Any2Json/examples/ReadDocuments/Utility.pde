@@ -23,3 +23,12 @@ void translateWord(String word) {
     println(e);
   }
 }
+
+void locateGeo(String word) {
+  try {
+    link("https://www.google.com/maps/place/" + java.net.URLEncoder.encode(word, "UTF-8") + ",+South+Korea");
+  } 
+  catch (java.io.UnsupportedEncodingException e) {
+    println(e);
+  }
+}

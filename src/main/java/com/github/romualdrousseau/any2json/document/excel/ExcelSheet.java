@@ -1,5 +1,8 @@
 package com.github.romualdrousseau.any2json.document.excel;
 
+import java.util.List;
+import java.util.ArrayList;
+
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Cell;
@@ -52,6 +55,27 @@ class ExcelSheet implements ISheet
             }
         }
         return this.table;
+    }
+
+    public List<ITable> findTables(int headerColumns, int headerRows) {
+        final Filter filter = new Filter(new Template(new int[][] {
+            {0, 0, 0},
+            {1, 0, 1},
+            {0, 0, 0}
+        }));
+
+        ArrayList<ITable> result = new ArrayList<ITable>();
+
+        ExcelSearchBitmap bitmap1 = new ExcelSearchBitmap(this.sheet, headerColumns, headerRows);
+        filter.apply(bitmap1, 1);
+        filter.applyNeg(bitmap1, 2);
+
+        List<SearchPoint[]> tables = new RectangleExtractor().extractAll(bitmap1);
+        for(SearchPoint[] table: tables) if(table[1].getX() > table[0].getX()) {
+            result.add(new ExcelTable(this.sheet, this.evaluator, table[0].getX(), table[0].getY(), table[1].getX(), this.sheet.getLastRowNum()));
+        }
+
+        return result;
     }
 
     private int estimateLastColumnNum() {

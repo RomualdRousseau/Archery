@@ -24,18 +24,19 @@ boolean beautify = false;
 void setup() {
   size(1600, 800);
   background(51);
+  
+  NlpHelper.ngrams.fromJSON(JSONProcessingFactory.loadJSONArray(dataPath("ngrams.json")));
+  NlpHelper.stopwords.fromJSON(JSONProcessingFactory.loadJSONArray(dataPath("stopwords.json")));
+  NlpHelper.entities.fromJSON(JSONProcessingFactory.loadJSONArray(dataPath("entities.json")), EntityType.class);
 
   Brain.init();
 
   if (new File(dataPath("brain.json")).exists()) {
-    Brain.model.fromJSON(loadJSONArray(dataPath("brain.json")));
+    Brain.model.fromJSON(JSONProcessingFactory.loadJSONArray(dataPath("brain.json")));
   }
   if (new File(dataPath("trainingset.json")).exists()) {
-    TrainingSet.fromJSON(loadJSONObject(dataPath("trainingset.json")));
+    TrainingSet.fromJSON(JSONProcessingFactory.loadJSONObject(dataPath("trainingset.json")));
   }
-
-  NlpHelper.loadStopWords();
-  NlpHelper.loadEntities();
 
   documentFileNames = listFileNames(dataPath("1612"));
 
@@ -47,7 +48,7 @@ void draw() {
   background(51);
   noFill();
 
-  if (!ProgressBar.isRunning()) {
+  if (!ProgressBar.isRunning() && viewer != null && viewer.currentSheet != null) {
     viewer.currentSheet.beautify = beautify;
     viewer.update(200, 0, width - 200, height);
 
@@ -63,7 +64,7 @@ void draw() {
     fill(255);
     text(String.format("%03d / %03d [%s]", currentDocumentIndex + 1, documentFileNames.length, beautify ? "Beautified" : ""), 0, 16);
     text(documentFileNames[currentDocumentIndex], 0, 32);
-    
+
     if (viewer.currentSheet.currentCell != null) {
       text(viewer.currentSheet.currentHeader.value, 0, 64);
       text(viewer.currentSheet.currentHeader.cleanValue, 0, 80);
@@ -80,8 +81,8 @@ void draw() {
         text(String.format("%.0f %.0f %s", entityVec1[i - 1], entityVec2[i - 1], entityTypes[i]), 0, 176 + i * 16);
       }
     }
-    
-    if(search != null) {
+
+    if (search != null) {
       fill(255, 192, 0);
       text("Search: " + search, 0, height - 2 - 16);
     }
@@ -150,32 +151,63 @@ void keyPressed(KeyEvent e) {
     learning = !learning;
     if (learning) {
       ProgressBar.start("Learning ...", false);
-      viewer.currentSheet.buildTrainingSet();
       ProgressBar.show();
+      viewer.currentSheet.buildTrainingSet();
     } else {
       ProgressBar.stop();
     }
   }
   
-  if (e.isControlDown() && (keyCode == 'f' || keyCode == 'F')) {
-    ClipHelper.copyString(documentFileNames[currentDocumentIndex]);
-  }
-
-  if (e.isControlDown() && (keyCode == 'c' || keyCode == 'C')) {
-    if (viewer.currentSheet.currentCell != null) {
-      ClipHelper.copyString(viewer.currentSheet.currentCell.value);
-      search = viewer.currentSheet.currentCell.cleanValue;
-    } else {
-      ClipHelper.copyString(viewer.currentSheet.value);
-      search = null;
+  if (key==CODED && keyCode == java.awt.event.KeyEvent.VK_F3) {
+    String searchedFilename = ClipHelper.pasteString();
+    for(int i = 0; i < documentFileNames.length; i++) {
+      if(documentFileNames[i].contains(searchedFilename)) {
+        currentDocumentIndex = i;
+        ProgressBar.start("Loading document ...", true);
+        thread("loadDocument");
+        return;
+      }
     }
   }
-  
+
+  if (key==CODED && keyCode == java.awt.event.KeyEvent.VK_F5) {
+    ProgressBar.start("Loading document ...", true);
+    thread("loadDocument");
+  }
+
+  if (e.isControlDown() && (keyCode == 'e' || keyCode == 'E')) {
+    if (documentFileNames.length > 0) {
+      launch(dataPath("1612/" + documentFileNames[currentDocumentIndex]));
+    }
+  }
+
   if (e.isControlDown() && (keyCode == 't' || keyCode == 'T')) {
-    if(viewer.currentSheet.currentCell != null) {
+    if (viewer != null && viewer.currentSheet != null && viewer.currentSheet.currentCell != null) {
       translateWord(viewer.currentSheet.currentCell.value);
     } else {
       translateWord(viewer.currentSheet.value);
+    }
+  }
+  
+  if (e.isControlDown() && (keyCode == 'l' || keyCode == 'L')) {
+    if (viewer != null && viewer.currentSheet != null && viewer.currentSheet.currentCell != null) {
+      locateGeo(viewer.currentSheet.currentCell.value);
+    }
+  }
+
+  if (e.isControlDown() && (keyCode == 'f' || keyCode == 'F')) {
+    if (documentFileNames.length > 0) {
+      ClipHelper.copyString(documentFileNames[currentDocumentIndex]);
+    }
+  }
+
+  if (e.isControlDown() && (keyCode == 'c' || keyCode == 'C')) {
+    if (viewer != null && viewer.currentSheet != null && viewer.currentSheet.currentCell != null) {
+      ClipHelper.copyString(viewer.currentSheet.currentCell.value);
+      search = viewer.currentSheet.currentCell.cleanValue;
+    } else if (viewer != null && viewer.currentSheet != null) {
+      ClipHelper.copyString(viewer.currentSheet.value);
+      search = null;
     }
   }
 
@@ -200,19 +232,25 @@ void keyPressed(KeyEvent e) {
 }
 
 void loadDocument() {
-  viewer = new Viewer(dataPath("1612/" + documentFileNames[currentDocumentIndex]));
+  if (documentFileNames.length > 0) {
+    viewer = new Viewer(dataPath("1612/" + documentFileNames[currentDocumentIndex]));
+  }
   ProgressBar.stop();
 }
 
 void saveConfigToDisk() {
-  saveJSONObject(TrainingSet.toJSON(), dataPath("trainingset.json"));
-  saveJSONArray(Brain.model.toJSON(), dataPath("brain.json"));
+  JSONProcessingFactory.saveJSONArray(dataPath("ngrams.json"), NlpHelper.ngrams.toJSON(JSONProcessingFactory));
+  JSONProcessingFactory.saveJSONObject(dataPath("trainingset.json"), TrainingSet.toJSON(JSONProcessingFactory));
+  JSONProcessingFactory.saveJSONArray(dataPath("brain.json"), Brain.model.toJSON(JSONProcessingFactory));
   ProgressBar.stop();
 }
 
 void loadConfigfromDisk() { 
-  TrainingSet.fromJSON(loadJSONObject(dataPath("trainingset.json")));
-  Brain.model.fromJSON(loadJSONArray(dataPath("brain.json")));
+  NlpHelper.ngrams.fromJSON(JSONProcessingFactory.loadJSONArray(dataPath("ngrams.json")));
+  NlpHelper.stopwords.fromJSON(JSONProcessingFactory.loadJSONArray(dataPath("stopwords.json")));
+  NlpHelper.entities.fromJSON(JSONProcessingFactory.loadJSONArray(dataPath("entities.json")), EntityType.class);
+  TrainingSet.fromJSON(JSONProcessingFactory.loadJSONObject(dataPath("trainingset.json")));
+  Brain.model.fromJSON(JSONProcessingFactory.loadJSONArray(dataPath("brain.json")));
   viewer.currentSheet.updateTags(true);
   ProgressBar.stop();
 }
@@ -223,7 +261,11 @@ void moveFileToTrash() {
   if (currentDocumentIndex >= documentFileNames.length) {
     currentDocumentIndex = 0;
   }
-  ProgressBar.start("Loading document ...", true);
-  viewer = new Viewer(dataPath("1612/" + documentFileNames[currentDocumentIndex]));
+
+  if (documentFileNames.length > 0) {
+    ProgressBar.start("Loading document ...", true);
+    viewer = new Viewer(dataPath("1612/" + documentFileNames[currentDocumentIndex]));
+  }
+
   ProgressBar.stop();
 }

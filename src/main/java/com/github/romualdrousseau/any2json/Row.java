@@ -7,15 +7,24 @@ public abstract class Row implements IRow
             return true;
         }
 
-        int emptyCellCount = 0;            
-        for(int i = 0; i < getNumberOfCells(); i++) {
-        	String value = getCellValueAt(i);
-        	if(value == null || value.equals("")) {
-                emptyCellCount++;
+        try {
+            int cellCount = 0;
+            int emptyCellCount = 0;
+            for(int i = 0; i < getNumberOfCells();) {
+                String value = getCellValueAt(i);
+                if(value == null || value.trim().equals("")) {
+                    emptyCellCount++;
+                }
+                cellCount++;
+                i += getNumberOfMergedCellsAt(i);
             }
-        }
-        double emptiness = Double.valueOf(emptyCellCount) / Double.valueOf(getNumberOfCells());
 
-        return emptiness >= ratioOfEmptiness;
-	}
+            double emptiness = Double.valueOf(emptyCellCount) / Double.valueOf(cellCount);
+
+            return emptiness >= ratioOfEmptiness;
+        }
+        catch(UnsupportedOperationException x) {
+            return true;
+        }
+    }
 }

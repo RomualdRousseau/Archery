@@ -22,6 +22,8 @@ class ExcelTable extends Table
 		this.lastColumn = lastColumn;
 		this.lastRow = lastRow;
 
+        skipEmptyFirstRows(0.5);
+
 		processHeaders();
 	}
 
@@ -39,7 +41,7 @@ class ExcelTable extends Table
 		}
 
 		org.apache.poi.ss.usermodel.Row row = this.sheet.getRow(this.firstRow + i);
-		return (row != null ) ? new ExcelRow(row, this.evaluator, this.formatter, this.firstColumn, this.lastColumn) : null;
+		return (row != null ) ? new ExcelRow(this, row) : null;
 	}
 
 	private void processHeaders() {
@@ -74,13 +76,29 @@ class ExcelTable extends Table
 			}
 		}
 		return numberOfCells;
-	}
+    }
 
-	private Sheet sheet;
-	private FormulaEvaluator evaluator;
-	private DataFormatter formatter;
-	private int firstColumn;
-	private int firstRow;
-	private int lastColumn;
-	private int lastRow;
+    private void skipEmptyFirstRows(double ratioOfEmptiness) {
+        for(int i = 0; i < Math.min(10, getNumberOfRows()); i++) {
+            org.apache.poi.ss.usermodel.Row tmp = this.sheet.getRow(this.firstRow - 1);
+            Row row = (tmp != null ) ? new ExcelRow(this, tmp) : null;
+
+            if(row != null) {
+                double emptinessFirstCell = Double.valueOf(row.getNumberOfMergedCellsAt(0)) / Double.valueOf(row.getNumberOfCells());
+                if(emptinessFirstCell < 0.5 && !row.isEmpty(0.5)) {
+                    break;
+                }
+            }
+
+            this.firstRow++;
+        }
+    }
+
+	protected Sheet sheet;
+	protected FormulaEvaluator evaluator;
+	protected DataFormatter formatter;
+	protected int firstColumn;
+	protected int firstRow;
+	protected int lastColumn;
+	protected int lastRow;
 }

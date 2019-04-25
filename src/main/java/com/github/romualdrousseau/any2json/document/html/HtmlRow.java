@@ -11,7 +11,11 @@ class HtmlRow extends Row
 
 	public int getNumberOfCells() {
 		return this.cells.length;
-	}
+    }
+
+    public int getNumberOfMergedCellsAt(int i) {
+        return 1;
+    }
 
 	public String getCellValue(TableHeader header) {
 		if(header == null) {
