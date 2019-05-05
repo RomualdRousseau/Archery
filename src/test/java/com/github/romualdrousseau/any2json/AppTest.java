@@ -1,20 +1,21 @@
 package com.github.romualdrousseau.any2json;
 
-import java.io.IOException;
 import java.nio.file.Paths;
+
+import com.github.romualdrousseau.any2json.classifiers.NGramNNClassifier;
+import com.github.romualdrousseau.shuju.json.JSON;
+import com.github.romualdrousseau.shuju.nlp.NgramList;
+import com.github.romualdrousseau.shuju.nlp.RegexList;
+import com.github.romualdrousseau.shuju.nlp.StopWordList;
+import com.github.romualdrousseau.shuju.nlp.StringList;
+
 import java.nio.file.Path;
 import java.net.URL;
 import java.net.URISyntaxException;
 //import java.io.PrintStream;
 
-import org.json.simple.parser.ParseException;
-
 import org.junit.Test;
 import static org.junit.Assert.*;
-
-import com.github.romualdrousseau.shuju.DataSet;
-import com.github.romualdrousseau.shuju.IClassifier;
-import com.github.romualdrousseau.shuju.ml.tree.NaiveTree;
 
 /**
  * Unit test for simple App.
@@ -70,17 +71,19 @@ public class AppTest
     /**
      * Test to read various documents, tgas the headers and check the first line
      */
-    @Test
+    //@Test
     public void testTagsVariousDocuments() {
         IDocument document = null;
         ISheet sheet = null;
         ITable table = null;
         TableHeader header = null;
 
-        DataSet trainingSet = loadDictionary("/data/definitions.json").getDataSet();
-        assert trainingSet != null;
-        IClassifier tagClassifier = new NaiveTree(0.5);
-        tagClassifier.train(trainingSet);
+        NGramNNClassifier Brain = new NGramNNClassifier(
+            new NgramList(JSON.loadJSONObject(getResourcePath("ngrams.json").toString())),
+            new RegexList(JSON.loadJSONObject(getResourcePath("entities.json").toString())),
+            new StopWordList(JSON.loadJSONArray(getResourcePath("stopwords.json").toString())),
+            new StringList(JSON.loadJSONObject(getResourcePath("tags.json").toString())));
+        Brain.getModel().fromJSON(JSON.loadJSONArray(getResourcePath("brain.json").toString()));
 
         for(String[] expectedValues: scenarios2) {
             int state = 0;
@@ -89,9 +92,8 @@ public class AppTest
                     case 0:
                         document = loadDocument(expectedValue, "CP949");
                         sheet = document.getSheetAt(0);
-                        table = sheet.findTable(30, 30);
+                        table = sheet.findTableWithItelliTag(Brain, new String[] { "QUANTITY", "PRODUCT_NAME"});
                         assert !Table.IsEmpty(table);
-                        table.updateHeaderTags(tagClassifier, 10);
                         state = 1;
                         break;
                     case 1:
@@ -212,22 +214,6 @@ public class AppTest
 
     private IDocument loadDocument(String resourceName, String encoding) {
         return DocumentFactory.createInstance(getResourcePath(resourceName).toString(), encoding);
-    }
-
-    private Dictionary loadDictionary(String resourceName) {
-        try {
-            Dictionary dic = new Dictionary();
-            dic.loadFromFile(getResourcePath(resourceName).toString());
-            return dic;
-        }
-        catch(ParseException x) {
-            fail(x.getMessage());
-            return null;
-        }
-        catch(IOException x) {
-            fail(x.getMessage());
-            return null;
-        }
     }
 
     private Path getResourcePath(String resourceName) {

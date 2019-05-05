@@ -6,12 +6,10 @@
  * Processing 3+
  */
 
-static final int BRAIN_CLOCK = 10;
-static final int NGRAMS = 2;
-static final int ENTITYVEC_LENGTH = 24;
-static final int WORDVEC_LENGTH = 500;
-static final int TAGVEC_LENGTH = 16;
 static final int CELL_HEIGHT = 21;
+
+NGramNNClassifier Brain;
+DataSet TrainingSet;
 
 String[] documentFileNames;
 int currentDocumentIndex = 0;
@@ -22,22 +20,23 @@ String search = null;
 boolean beautify = false;
 
 void setup() {
+  JSON.setFactory(new JSONProcessingFactory(this));
   size(1600, 800);
   background(51);
-  
-  NlpHelper.ngrams.fromJSON(JSONProcessingFactory.loadJSONArray(dataPath("ngrams.json")));
-  NlpHelper.stopwords.fromJSON(JSONProcessingFactory.loadJSONArray(dataPath("stopwords.json")));
-  NlpHelper.entities.fromJSON(JSONProcessingFactory.loadJSONArray(dataPath("entities.json")), EntityType.class);
 
-  Brain.init();
+  Brain = new NGramNNClassifier(
+    new NgramList(JSON.loadJSONObject(dataPath("ngrams.json"))),
+    new RegexList(JSON.loadJSONObject(dataPath("entities.json"))),
+    new StopWordList(JSON.loadJSONArray(dataPath("stopwords.json"))),
+    new com.github.romualdrousseau.shuju.nlp.StringList(JSON.loadJSONObject(dataPath("tags.json"))));
+  Brain.getModel().fromJSON(JSON.loadJSONArray(dataPath("brain.json")));
 
-  if (new File(dataPath("brain.json")).exists()) {
-    Brain.model.fromJSON(JSONProcessingFactory.loadJSONArray(dataPath("brain.json")));
-  }
   if (new File(dataPath("trainingset.json")).exists()) {
-    TrainingSet.fromJSON(JSONProcessingFactory.loadJSONObject(dataPath("trainingset.json")));
+    TrainingSet = new DataSet(JSON.loadJSONObject(dataPath("trainingset.json")));
+  } else {
+    TrainingSet = new DataSet();
   }
-
+  
   documentFileNames = listFileNames(dataPath("1612"));
 
   ProgressBar.start("Loading document ...", true);
@@ -53,8 +52,8 @@ void draw() {
     viewer.update(200, 0, width - 200, height);
 
     if (learning) {
-      Brain.fit();
-      if (Brain.mean <= 5e-3) {
+      Brain.fit(TrainingSet);
+      if (Brain.getMean() <= 5e-3) {
         learning = false;
         ProgressBar.stop();
       }
@@ -66,19 +65,16 @@ void draw() {
     text(documentFileNames[currentDocumentIndex], 0, 32);
 
     if (viewer.currentSheet.currentCell != null) {
-      text(viewer.currentSheet.currentHeader.value, 0, 64);
-      text(viewer.currentSheet.currentHeader.cleanValue, 0, 80);
-      text(viewer.currentSheet.currentHeader.orgTag.toString(), 0, 96);
-      text(viewer.currentSheet.currentHeader.newTag.toString(), 0, 112);
+      text(viewer.currentSheet.currentHeader.text, 0, 64);
+      text(viewer.currentSheet.currentHeader.header.getCleanName(), 0, 80);
+      text(viewer.currentSheet.currentHeader.header.getTag().getValue(), 0, 96);
+      text(viewer.currentSheet.currentHeader.newTag, 0, 112);
 
-      text(viewer.currentSheet.currentCell.value, 0, 144);
-      text(viewer.currentSheet.currentCell.cleanValue, 0, 160);
+      text(viewer.currentSheet.currentCell.text, 0, 144);
+      text(viewer.currentSheet.currentCell.cell.getCleanValue(), 0, 160);
 
-      float[] entityVec1 = NlpHelper.entity2vec(viewer.currentSheet.currentHeader, 0.8);
-      float[] entityVec2 = NlpHelper.entity2vec(viewer.currentSheet.currentCell, 0.8);
-      EntityType[] entityTypes = EntityType.values();
-      for (int i = 1; i < entityTypes.length; i++) {
-        text(String.format("%.0f %.0f %s", entityVec1[i - 1], entityVec2[i - 1], entityTypes[i]), 0, 176 + i * 16);
+      for (int i = 0; i < Brain.getEntityList().size(); i++) {
+        text(String.format("%.0f %.0f %s", viewer.currentSheet.currentHeader.header.getEntityVector().get(i), viewer.currentSheet.currentCell.cell.getEntityVector().get(i), Brain.getEntityList().get(i)), 0, 176 + i * 16);
       }
     }
 
@@ -89,7 +85,7 @@ void draw() {
 
     if (learning) {
       fill(255, 0, 0);
-      text(String.format("Accu: %.03f Mean: %.03f", Brain.accuracy, Brain.mean), 0, height - 2);
+      text(String.format("Accu: %.03f Mean: %.03f", Brain.getAccuracy(), Brain.getMean()), 0, height - 2);
     }
 
     viewer.show();
@@ -183,15 +179,15 @@ void keyPressed(KeyEvent e) {
 
   if (e.isControlDown() && (keyCode == 't' || keyCode == 'T')) {
     if (viewer != null && viewer.currentSheet != null && viewer.currentSheet.currentCell != null) {
-      translateWord(viewer.currentSheet.currentCell.value);
+      translateWord(viewer.currentSheet.currentCell.text);
     } else {
-      translateWord(viewer.currentSheet.value);
+      translateWord(viewer.currentSheet.text);
     }
   }
   
   if (e.isControlDown() && (keyCode == 'l' || keyCode == 'L')) {
     if (viewer != null && viewer.currentSheet != null && viewer.currentSheet.currentCell != null) {
-      locateGeo(viewer.currentSheet.currentCell.value);
+      locateGeo(viewer.currentSheet.currentCell.text);
     }
   }
 
@@ -203,10 +199,10 @@ void keyPressed(KeyEvent e) {
 
   if (e.isControlDown() && (keyCode == 'c' || keyCode == 'C')) {
     if (viewer != null && viewer.currentSheet != null && viewer.currentSheet.currentCell != null) {
-      ClipHelper.copyString(viewer.currentSheet.currentCell.value);
-      search = viewer.currentSheet.currentCell.cleanValue;
+      ClipHelper.copyString(viewer.currentSheet.currentCell.text);
+      search = viewer.currentSheet.currentCell.cell.getCleanValue();
     } else if (viewer != null && viewer.currentSheet != null) {
-      ClipHelper.copyString(viewer.currentSheet.value);
+      ClipHelper.copyString(viewer.currentSheet.text);
       search = null;
     }
   }
@@ -229,6 +225,10 @@ void keyPressed(KeyEvent e) {
     ProgressBar.start("Deleting file ...", true);
     thread("moveFileToTrash");
   }
+  
+  if (e.isControlDown() && (keyCode == 'p' || keyCode == 'P')) {
+    TrainingSet = TrainingSet.purgeConflicts();
+  }
 }
 
 void loadDocument() {
@@ -239,18 +239,20 @@ void loadDocument() {
 }
 
 void saveConfigToDisk() {
-  JSONProcessingFactory.saveJSONArray(dataPath("ngrams.json"), NlpHelper.ngrams.toJSON(JSONProcessingFactory));
-  JSONProcessingFactory.saveJSONObject(dataPath("trainingset.json"), TrainingSet.toJSON(JSONProcessingFactory));
-  JSONProcessingFactory.saveJSONArray(dataPath("brain.json"), Brain.model.toJSON(JSONProcessingFactory));
+  JSON.saveJSONObject(TrainingSet.toJSON(), dataPath("trainingset.json"));
+  JSON.saveJSONObject(Brain.getWordList().toJSON(), dataPath("ngrams.json"));
+  JSON.saveJSONArray(Brain.getModel().toJSON(), dataPath("brain.json"));
   ProgressBar.stop();
 }
 
 void loadConfigfromDisk() { 
-  NlpHelper.ngrams.fromJSON(JSONProcessingFactory.loadJSONArray(dataPath("ngrams.json")));
-  NlpHelper.stopwords.fromJSON(JSONProcessingFactory.loadJSONArray(dataPath("stopwords.json")));
-  NlpHelper.entities.fromJSON(JSONProcessingFactory.loadJSONArray(dataPath("entities.json")), EntityType.class);
-  TrainingSet.fromJSON(JSONProcessingFactory.loadJSONObject(dataPath("trainingset.json")));
-  Brain.model.fromJSON(JSONProcessingFactory.loadJSONArray(dataPath("brain.json")));
+  Brain = new NGramNNClassifier(
+    new NgramList(JSON.loadJSONObject(dataPath("ngrams.json"))),
+    new RegexList(JSON.loadJSONObject(dataPath("entities.json"))),
+    new StopWordList(JSON.loadJSONArray(dataPath("stopwords.json"))),
+    new com.github.romualdrousseau.shuju.nlp.StringList(JSON.loadJSONObject(dataPath("tags.json"))));
+  Brain.getModel().fromJSON(JSON.loadJSONArray(dataPath("brain.json")));
+  TrainingSet = new DataSet(JSON.loadJSONObject(dataPath("trainingset.json")));
   viewer.currentSheet.updateTags(true);
   ProgressBar.stop();
 }

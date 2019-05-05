@@ -1,28 +1,27 @@
 package com.github.romualdrousseau.any2json;
 
-import com.github.romualdrousseau.shuju.IClassifier;
+public interface ITable {
+    Iterable<TableHeader> headers();
 
-public interface ITable
-{
-	public Iterable<TableHeader> headers();
+    int getNumberOfHeaders();
 
-	public int getNumberOfHeaders();
+    TableHeader getHeaderAt(int colIndex);
 
-	public TableHeader getHeaderAt(int colIndex);
+    TableHeader getHeaderByTag(String tagName);
 
-	public TableHeader getHeaderByTag(String tagName);
+    boolean hasHeaders();
 
-	public boolean hasHeaders();
+    void clearHeaders();
 
-	public void clearHeaders();
+    int getNumberOfColumns();
 
-	public int getNumberOfColumns();
+    Iterable<IRow> rows();
 
-	public Iterable<IRow> rows();
+    int getNumberOfRows();
 
-	public int getNumberOfRows();
+    IRow getRowAt(int i);
 
-	public IRow getRowAt(int i);
+    void resetHeaderTags();
 
-	public void updateHeaderTags(IClassifier classifier, int sampleCount);
+    void updateHeaderTags(ITagClassifier classifier);
 }

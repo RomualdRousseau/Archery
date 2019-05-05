@@ -8,6 +8,8 @@ public interface IRow
 
     public int getNumberOfMergedCellsAt(int i);
 
+    public TableCell getCell(TableHeader header);
+
 	public String getCellValue(TableHeader header);
 
     public String getCellValueAt(int i);

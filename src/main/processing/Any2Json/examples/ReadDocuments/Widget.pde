@@ -3,7 +3,7 @@ class Widget {
   Container parent;
   int row;
   int col;
-  String value;
+  String text;
   boolean noEvent;
   boolean focus;
   boolean error;
@@ -11,15 +11,15 @@ class Widget {
   boolean frozen;
   boolean found;
 
-  Widget(Container parent, String value, int row, int col) {
-    this(parent, value, row, col, false);
+  Widget(Container parent, String text, int row, int col) {
+    this(parent, text, row, col, false);
   }
 
-  Widget(Container parent, String value, int row, int col, boolean noEvent) {
+  Widget(Container parent, String text, int row, int col, boolean noEvent) {
     this.parent = parent;
     this.row = row;
     this.col = col;
-    this.value = value;
+    this.text = text;
     this.noEvent = noEvent;
     this.focus = false;
     this.error = false;
@@ -83,14 +83,14 @@ class Widget {
       rect(this.x + 1, this.y + 1, this.w - 1, this.h - 1);
     }
 
-    if (this.value != null) {
+    if (this.text != null) {
       if (this.found) {
         fill(255, 192, 0);
       } else {
         fill(255);
       }
       clip(this.x + 4, this.y, this.w - 8, this.h - 2);
-      text(this.value, this.x + 4, this.y + this.h - 6);
+      text(this.text, this.x + 4, this.y + this.h - 6);
       noClip();
     }
   }

@@ -1,9 +1,9 @@
 package com.github.romualdrousseau.any2json.document.html;
 
 import com.github.romualdrousseau.any2json.TableHeader;
-import com.github.romualdrousseau.any2json.Row;
+import com.github.romualdrousseau.any2json.TableRow;
 
-class HtmlRow extends Row
+class HtmlRow extends TableRow
 {
 	public HtmlRow(String[] cells) {
 		this.cells = cells;

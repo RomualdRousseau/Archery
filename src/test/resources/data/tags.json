@@ -1,0 +1,19 @@
+{
+    "types": [
+        "NONE",
+        "DATE",
+        "AMOUNT",
+        "QUANTITY",
+        "CUSTOMER_CODE",
+        "CUSTOMER_NAME",
+        "CUSTOMER_TYPE",
+        "PRODUCT_CODE",
+        "PRODUCT_NAME",
+        "PRODUCT_PACKAGE",
+        "POSTAL_CODE",
+        "ADMIN_AREA",
+        "LOCALITY",
+        "ADDRESS"
+    ],
+    "maxVectorSize": 16
+}

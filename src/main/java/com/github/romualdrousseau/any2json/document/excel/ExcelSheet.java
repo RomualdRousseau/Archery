@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.ArrayList;
 
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
-import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 
@@ -14,11 +13,11 @@ import com.github.romualdrousseau.shuju.cv.SearchPoint;
 import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.RectangleExtractor;
 
 import com.github.romualdrousseau.any2json.ITable;
-import com.github.romualdrousseau.any2json.ISheet;
+import com.github.romualdrousseau.any2json.Sheet;
 
-class ExcelSheet implements ISheet
+class ExcelSheet extends Sheet
 {
-    public ExcelSheet(Sheet sheet, FormulaEvaluator evaluator) {
+    public ExcelSheet(org.apache.poi.ss.usermodel.Sheet sheet, FormulaEvaluator evaluator) {
         this.sheet = sheet;
         this.table = null;
         this.evaluator = evaluator;
@@ -114,7 +113,7 @@ class ExcelSheet implements ISheet
     }
     */
 
-    private Sheet sheet;
+    private org.apache.poi.ss.usermodel.Sheet sheet;
     private ExcelTable table;
     private FormulaEvaluator evaluator;
 }

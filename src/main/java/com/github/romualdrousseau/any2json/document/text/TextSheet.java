@@ -3,10 +3,10 @@ package com.github.romualdrousseau.any2json.document.text;
 import java.util.List;
 import java.util.ArrayList;
 
-import com.github.romualdrousseau.any2json.ISheet;
+import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.ITable;
 
-class TextSheet implements ISheet
+class TextSheet extends Sheet
 {
 	public TextSheet(String name, ITable table) {
 		this.name = name;

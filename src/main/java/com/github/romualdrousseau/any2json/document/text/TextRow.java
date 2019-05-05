@@ -1,9 +1,9 @@
 package com.github.romualdrousseau.any2json.document.text;
 
-import com.github.romualdrousseau.any2json.Row;
+import com.github.romualdrousseau.any2json.TableRow;
 import com.github.romualdrousseau.any2json.TableHeader;
 
-class TextRow extends Row
+class TextRow extends TableRow
 {
 	public TextRow(String[] tokens) {
 		this.cells = tokens;

@@ -3,11 +3,11 @@ package com.github.romualdrousseau.any2json.document.excel;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.util.CellRangeAddress;
 
-import com.github.romualdrousseau.any2json.Row;
+import com.github.romualdrousseau.any2json.TableRow;
 import com.github.romualdrousseau.any2json.TableHeader;
 import com.github.romualdrousseau.any2json.util.StringUtility;
 
-public class ExcelRow extends Row
+public class ExcelRow extends TableRow
 {
 	public ExcelRow(ExcelTable table, org.apache.poi.ss.usermodel.Row row) {
         this.table = table;

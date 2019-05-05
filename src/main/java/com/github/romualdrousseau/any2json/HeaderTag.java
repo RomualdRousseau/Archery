@@ -2,14 +2,20 @@ package com.github.romualdrousseau.any2json;
 
 public class HeaderTag
 {
-	public HeaderTag(TableHeader header, String value, double probability) {
+    public HeaderTag(TableHeader header, String value) {
 		this.header = header;
-		this.value = value.equals("none") ? null : value;
+		this.value = value;
+		this.probability = 0.0f;
+    }
+
+	public HeaderTag(TableHeader header, String value, float probability) {
+		this.header = header;
+		this.value = value;
 		this.probability = probability;
 	}
 
 	public boolean isUndefined() {
-		return this.value == null;
+		return this.value == null || value.equals("none") || value.equals("NONE");
 	}
 
 	public TableHeader getHeader() {
@@ -30,18 +36,22 @@ public class HeaderTag
 		return this;
 	}
 
-	public double getProbability() {
+	public float getProbability() {
 		return this.probability;
 	}
 
-	public HeaderTag setProbability(double probability) {
+	public HeaderTag setProbability(float probability) {
 		this.probability = probability;
 		return this;
-	}
+    }
+
+    public boolean equals(HeaderTag other) {
+        return !this.isUndefined() && !other.isUndefined() && this.value.equals(other.value);
+    }
 
 	public String toString() {
-		if(this.value == null) {
-			return String.format("[%s, <undefined>, %.1f]", this.header, this.probability);	
+		if(this.isUndefined()) {
+			return String.format("[%s, <undefined>, %.1f]", this.header, this.probability);
 		}
 		else {
 			return String.format("[%s, %s, %.1f]", this.header, this.value.toString(), this.probability);
@@ -50,5 +60,5 @@ public class HeaderTag
 
 	private TableHeader header;
 	private String value;
-	private double probability;
+	private float probability;
 }

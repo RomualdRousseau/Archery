@@ -8,7 +8,7 @@ import org.apache.poi.ss.usermodel.DataFormatter;
 
 import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.TableHeader;
-import com.github.romualdrousseau.any2json.Row;
+import com.github.romualdrousseau.any2json.TableRow;
 import com.github.romualdrousseau.any2json.util.StringUtility;
 
 class ExcelTable extends Table
@@ -35,7 +35,7 @@ class ExcelTable extends Table
 		return this.lastRow - this.firstRow + 1;
 	}
 
-	public Row getRowAt(int i) {
+	public TableRow getRowAt(int i) {
 		if(i < 0 || i >= getNumberOfRows()) {
 			throw new ArrayIndexOutOfBoundsException(i);
 		}
@@ -81,7 +81,7 @@ class ExcelTable extends Table
     private void skipEmptyFirstRows(double ratioOfEmptiness) {
         for(int i = 0; i < Math.min(10, getNumberOfRows()); i++) {
             org.apache.poi.ss.usermodel.Row tmp = this.sheet.getRow(this.firstRow - 1);
-            Row row = (tmp != null ) ? new ExcelRow(this, tmp) : null;
+            TableRow row = (tmp != null ) ? new ExcelRow(this, tmp) : null;
 
             if(row != null) {
                 double emptinessFirstCell = Double.valueOf(row.getNumberOfMergedCellsAt(0)) / Double.valueOf(row.getNumberOfCells());
