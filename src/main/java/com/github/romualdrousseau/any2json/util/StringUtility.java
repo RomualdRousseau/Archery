@@ -6,7 +6,11 @@ public class StringUtility
 {
 	public static final String WHITE_SPACES = "\\s\\u00A0\\u3000";
 
-	public static final String WRONG_UNICODE = "\\uFFFD";
+    public static final String WRONG_UNICODE = "\\uFFFD";
+
+    public static boolean isEmpty(String s) {
+        return s == null || StringUtility.trim(s, StringUtility.WHITE_SPACES).equals("");
+    }
 
 	public static String trim(String s) {
 		return trim(s, StringUtility.WHITE_SPACES);

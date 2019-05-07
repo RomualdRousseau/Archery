@@ -1,4 +1,4 @@
-class Sheet extends Container { //<>// //<>//
+class Sheet extends Container { //<>//
   ITable table;
   Header[] headers;
   Header currentHeader;
@@ -18,11 +18,9 @@ class Sheet extends Container { //<>// //<>//
       return;
     }
 
-    for (int j = 0; j < this.headers.length; j++) {
-      Header header = this.headers[j];
-      if (header != null) {
-        Brain.getWordList().add(header.header.getCleanName());
-        TrainingSet.addRow(header.header.buildRow(header.newTag), true);
+    for (Header header : this.headers) {
+      if (!header.newTag.equals(header.header.getTag().getValue())) {
+        TrainingSet.addRow(header.header.buildRow(header.newTag, true, true), true);
       }
     }
   }
@@ -32,17 +30,11 @@ class Sheet extends Container { //<>// //<>//
       return;
     }
 
-    for (int j = 0; j < this.headers.length; j++) {
-      Header header = this.headers[j];
-      if (header != null) {
-        header.updateTag(reset, false);
-      }
-    }
+    this.table.updateHeaderTags(Brain);
 
-    for (int j = 0; j < this.headers.length; j++) {
-      Header header = this.headers[j];
-      if (header != null) {
-        header.updateTag(reset, true);
+    if (reset) {
+      for (Header header : this.headers) {
+        header.newTag = header.header.getTag().getValue();
       }
     }
   }
@@ -64,9 +56,8 @@ class Sheet extends Container { //<>// //<>//
 
     if (mousePressed) {
       this.currentHeader = null;
-      for (int i = 0; i < this.headers.length; i++) {
-        Header header = this.headers[i];
-        if (header != null && header.checkMouse()) {
+      for(Header header: this.headers) {
+        if (header.checkMouse()) {
           this.currentHeader = header;
         }
       }
@@ -91,12 +82,7 @@ class Sheet extends Container { //<>// //<>//
     final int wCell = this.parent.w / Brain.getTagList().size();
     final int hCell = CELL_HEIGHT;
 
-    for (int j = 0; j < headers.length; j++) { // skip NONE
-      Header header = this.headers[j];
-      if (header == null) {
-        continue;
-      }
-
+    for(Header header: this.headers) {
       if (header.header.getTag().getValue().equals("NONE")) {
         header.update(0, 0, 0, 0);
       } else {
@@ -112,8 +98,7 @@ class Sheet extends Container { //<>// //<>//
         if (cell == null) {
           continue;
         }
-
-        if (header == null || header.header.getTag().getValue().equals("NONE")) {
+        if (header.header.getTag().getValue().equals("NONE")) {
           cell.update(0, 0, 0, 0);
         } else {
           cell.update(xOffset + (Brain.getTagList().ordinal(header.header.getTag().getValue()) - 1) * wCell, yOffset + (i + 1) * hCell, wCell, hCell);
@@ -130,9 +115,7 @@ class Sheet extends Container { //<>// //<>//
 
     for (int i = 0; i < this.headers.length; i++) {
       Header header = this.headers[i];
-      if (header != null) {
-        header.update(xOffset + i * wCell, yOffset, wCell, hCell);
-      }
+      header.update(xOffset + i * wCell, yOffset, wCell, hCell);
     }
 
     for (int i = 0; i < this.cells.length; i++) {
@@ -148,11 +131,8 @@ class Sheet extends Container { //<>// //<>//
 
   void show() {
     if (this.headers != null) {
-      for (int j = 0; j < headers.length; j++) {
-        Header header = headers[j];
-        if (header != null) {
-          header.show();
-        }
+      for(Header header: this.headers) {
+        header.show();
       }
     }
 
@@ -177,26 +157,25 @@ class Sheet extends Container { //<>// //<>//
     Viewer viewer = (Viewer) this.parent;
     IDocument document = DocumentFactory.createInstance(viewer.filename, "CP949");
     ISheet sheet = document.getSheetAt(this.col);
-    ITable table = sheet.findTableWithItelliTag(Brain, new String[] { "QUANTITY", "PRODUCT_NAME"});
+    ITable table = sheet.findTableWithItelliTag(Brain, new String[] { "QUANTITY", "PRODUCT_NAME" }); 
     if (table == null) {
       document.close();
       return;
     }
 
     int numberOfCols = table.getNumberOfHeaders();
-    int numberOfRows = min(50, table.getNumberOfRows() + 1);
+    int numberOfRows = min(50, table.getNumberOfRows());
 
-    this.cells = new Cell[numberOfRows - 1][numberOfCols];
+    this.cells = new Cell[numberOfRows][numberOfCols];
     this.headers = new Header[numberOfCols];
 
     for (int j = 0; j < numberOfCols; j++) {
       TableHeader header = table.getHeaderAt(j);
       this.headers[j] = new Header(this, header, j);
-      this.headers[j].resetTag();
     }
 
     int k = 0;
-    for (int i = 0; i < numberOfRows - 1; i++) {
+    for (int i = 0; i < numberOfRows; i++) {
       IRow row = table.getRowAt(i); 
       if (row == null || row.isEmpty(0.5)) {
         continue;
@@ -216,6 +195,7 @@ class Sheet extends Container { //<>// //<>//
   }
 
   void unload() {
+    this.table = null;
     this.cells = null;
     this.headers = null;
     this.currentHeader = null;
@@ -228,12 +208,7 @@ class Sheet extends Container { //<>// //<>//
     }
 
     int mask = 0;
-    for (int j = 0; j < this.headers.length; j++) {
-      Header header = (Header) this.headers[j];
-      if (header == null) {
-        continue;
-      }
-
+    for(Header header: this.headers) {
       if (header.newTag.equals("QUANTITY")) {
         mask += 1;
       }

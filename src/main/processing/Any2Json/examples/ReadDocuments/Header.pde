@@ -5,17 +5,7 @@ class Header extends Widget {
   Header(Sheet parent, TableHeader header, int col) {
     super(parent, header.getName(), 0, col);
     this.header = header;
-  }
-
-  void resetTag() {
-    this.newTag = this.header.getTag().getValue();
-  }
-
-  void updateTag(boolean reset, boolean checkForConflicts) {
-    this.header.updateTag(checkForConflicts);
-    if (reset) {
-      this.resetTag();
-    }
+    this.newTag = header.getTag().getValue();
   }
 
   void prevTag() {
@@ -47,7 +37,7 @@ class Header extends Widget {
     if (this.newTag.equals(this.header.getTag().getValue())) {
       return false;
     } else {
-      return TrainingSet.conflicts(this.header.buildRow(this.newTag));
+      return TrainingSet.conflicts(this.header.buildRow(this.newTag, false, false));
     }
   }
 

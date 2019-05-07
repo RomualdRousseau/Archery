@@ -48,9 +48,9 @@ public abstract class Table implements ITable {
     }
 
     public void updateHeaderTags(ITagClassifier classifier) {
-        if (classifier == null) {
-            throw new IllegalArgumentException();
-        }
+        assert classifier != null;
+
+        this.resetHeaderTags();
 
         if (Table.IsEmpty(this)) {
             return;
@@ -58,15 +58,22 @@ public abstract class Table implements ITable {
 
         for(TableHeader header: this.headers) {
             header.setTagClassifier(classifier);
+        }
 
+        for(TableHeader header: this.headers) {
             header.updateTag(false);
         }
 
         for(TableHeader header: this.headers) {
             header.updateTag(true);
+        }
 
+        for(TableHeader header: this.headers) {
             if (header.hasTag() && !header.getTag().isUndefined()) {
-                this.headersByTag.put(header.getTag().getValue(), header);
+                TableHeader head = this.headersByTag.putIfAbsent(header.getTag().getValue(), header);
+                if(head != null) {
+                    head.chain(header);
+                }
             }
         }
     }

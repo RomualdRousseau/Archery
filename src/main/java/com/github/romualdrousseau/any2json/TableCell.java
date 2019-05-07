@@ -14,7 +14,7 @@ public class TableCell {
     }
 
     public boolean hasValue() {
-        return this.value != null && !this.value.equals("");
+        return !StringUtility.isEmpty(value);
     }
 
     public String getValue() {

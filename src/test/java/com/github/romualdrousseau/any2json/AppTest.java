@@ -31,6 +31,7 @@ public class AppTest
         ISheet sheet = null;
         ITable table = null;
         TableHeader header = null;
+        int fileNo = 0;
 
         for(String[] expectedValues: scenarios1) {
             int state = 0;
@@ -45,45 +46,42 @@ public class AppTest
                         state = 1;
                         break;
                     case 1:
-                        assertEquals("Sheet name", expectedValue, sheet.getName());
+                        assertEquals(fileNo + ": Sheet name", expectedValue, sheet.getName());
                         state = 2;
                         break;
                      case 2:
-                        assertEquals("Number of Rows", expectedValue, "" + table.getNumberOfRows());
+                        assertEquals(fileNo + ": Number of Rows", expectedValue, "" + table.getNumberOfRows());
                         state = 3;
                         break;
                     case 3:
                         header = table.getHeaderAt(headerIndex);
-                        assertEquals("Header name", expectedValue, header.getName());
+                        assertEquals(fileNo + ": Header name", expectedValue, header.getName());
                         state = 4;
                         break;
                     case 4:
-                        assertEquals("Value of <" + header.getName() + ">", expectedValue, table.getRowAt(0).getCellValue(header));
+                        assertEquals(fileNo + ": Value of <" + header.getName() + ">", expectedValue, table.getRowAt(0).getCellValue(header));
                         headerIndex++;
                         state = 3;
                         break;
                 }
             }
             document.close();
+            fileNo++;
         }
     }
 
     /**
      * Test to read various documents, tgas the headers and check the first line
      */
-    //@Test
+    @Test
     public void testTagsVariousDocuments() {
         IDocument document = null;
         ISheet sheet = null;
         ITable table = null;
         TableHeader header = null;
+        int fileNo = 0;
 
-        NGramNNClassifier Brain = new NGramNNClassifier(
-            new NgramList(JSON.loadJSONObject(getResourcePath("ngrams.json").toString())),
-            new RegexList(JSON.loadJSONObject(getResourcePath("entities.json").toString())),
-            new StopWordList(JSON.loadJSONArray(getResourcePath("stopwords.json").toString())),
-            new StringList(JSON.loadJSONObject(getResourcePath("tags.json").toString())));
-        Brain.getModel().fromJSON(JSON.loadJSONArray(getResourcePath("brain.json").toString()));
+        NGramNNClassifier Brain = new NGramNNClassifier(JSON.loadJSONObject(getResourcePath("/data/all.json").toString()));
 
         for(String[] expectedValues: scenarios2) {
             int state = 0;
@@ -97,118 +95,119 @@ public class AppTest
                         state = 1;
                         break;
                     case 1:
-                        header = table.getHeaderByTag("date");
+                        header = table.getHeaderByTag("DATE");
                         if(header != null) {
-                            assertEquals("Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header));
+                            assertEquals(fileNo + ": Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header, true));
                         }
                         else {
-                            assertEquals("Value of <date>", expectedValue, null);
+                            assertEquals(fileNo + ": Value of <date>", expectedValue, null);
                         }
                         state = 2;
                         break;
                     case 2:
-                        header = table.getHeaderByTag("product");
+                        header = table.getHeaderByTag("PRODUCT_NAME");
                         if(header != null) {
-                            assertEquals("Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header));
+                            assertEquals(fileNo + ": Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header, true));
                         }
                         else {
-                            assertEquals("Value of <product>", expectedValue, null);
+                            assertEquals(fileNo + ": Value of <product-name>", expectedValue, null);
                         }
                         state = 3;
                         break;
                     case 3:
-                        header = table.getHeaderByTag("dosage");
+                        header = table.getHeaderByTag("PRODUCT_PACKAGE");
                         if(header != null) {
-                            assertEquals("Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header));
+                            assertEquals(fileNo + ": Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header, true));
                         }
                         else {
-                            assertEquals("Value of <dosage>", expectedValue, null);
+                            assertEquals(fileNo + ": Value of <product-package>", expectedValue, null);
                         }
                         state = 4;
                         break;
                     case 4:
-                        header = table.getHeaderByTag("quantity");
+                        header = table.getHeaderByTag("QUANTITY");
                         if(header != null) {
-                            assertEquals("Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header));
+                            assertEquals(fileNo + ": Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header, true));
                         }
                         else {
-                            assertEquals("Value of <quantity>", expectedValue, null);
+                            assertEquals(fileNo + ": Value of <quantity>", expectedValue, null);
                         }
                         state = 5;
                         break;
                     case 5:
-                        header = table.getHeaderByTag("unit-price");
-                        if(header != null) {
-                            assertEquals("Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header));
-                        }
-                        else {
-                            assertEquals("Value of <unit-price>", expectedValue, null);
-                        }
+                        // header = table.getHeaderByTag("unit-price");
+                        // if(header != null) {
+                        //     assertEquals(fileNo + ": Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header, true));
+                        // }
+                        // else {
+                        //     assertEquals(fileNo + ": Value of <unit-price>", expectedValue, null);
+                        // }
                         state = 6;
                         break;
                     case 6:
-                        header = table.getHeaderByTag("amount");
+                        header = table.getHeaderByTag("AMOUNT");
                         if(header != null) {
-                            assertEquals("Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header));
+                            assertEquals(fileNo + ": Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header, true));
                         }
                         else {
-                            assertEquals("Value of <amount>", expectedValue, null);
+                            assertEquals(fileNo + ": Value of <amount>", expectedValue, null);
                         }
                         state = 7;
                         break;
                     case 7:
-                        header = table.getHeaderByTag("delivery-name");
+                        header = table.getHeaderByTag("CUSTOMER_NAME");
                         if(header != null) {
-                            assertEquals("Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header));
+                            assertEquals(fileNo + ": Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header, true));
                         }
                         else {
-                            assertEquals("Value of <delivery-name>", expectedValue, null);
+                            assertEquals(fileNo + ": Value of <customer-name>", expectedValue, null);
                         }
                         state = 8;
                         break;
                     case 8:
-                        header = table.getHeaderByTag("delivery-type");
+                        header = table.getHeaderByTag("CUSTOMER_TYPE");
                         if(header != null) {
-                            assertEquals("Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header));
+                            assertEquals(fileNo + ": Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header, true));
                         }
                         else {
-                            assertEquals("Value of <delivery-type>", expectedValue, null);
+                            assertEquals(fileNo + ": Value of <customer-type>", expectedValue, null);
                         }
                         state = 9;
                         break;
                     case 9:
-                        header = table.getHeaderByTag("delivery-postal-code");
+                        header = table.getHeaderByTag("POSTAL_CODE");
                         if(header != null) {
-                            assertEquals("Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header));
+                            assertEquals(fileNo + ": Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header, true));
                         }
                         else {
-                            assertEquals("Value of <delivery-postal-code>", expectedValue, null);
+                            assertEquals(fileNo + ": Value of <postal-code>", expectedValue, null);
                         }
                         state = 10;
                         break;
                     case 10:
-                        header = table.getHeaderByTag("delivery-address");
+                        header = table.getHeaderByTag("ADDRESS");
                         if(header != null) {
-                            assertEquals("Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header));
+                            assertEquals(fileNo + ": Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header, true));
                         }
                         else {
-                            assertEquals("Value of <delivery-address>", expectedValue, null);
+                            assertEquals(fileNo + ": Value of <address>", expectedValue, null);
                         }
                         state = 11;
                         break;
                     case 11:
-                        header = table.getHeaderByTag("customer");
-                        if(header != null) {
-                            assertEquals("Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header));
-                        }
-                        else {
-                            assertEquals("Value of <customer>", expectedValue, null);
-                        }
+                        // header = table.getHeaderByTag("CUSTOMER_NAME");
+                        // if(header != null) {
+                        //     assertEquals(fileNo + ": Value of <" + header.getTag() + ">", expectedValue, table.getRowAt(0).getCellValue(header, true));
+                        // }
+                        // else {
+                        //     assertEquals(fileNo + ": Value of <customer>", expectedValue, null);
+                        // }
                         state = 12;
                         break;
                 }
             }
             document.close();
+            fileNo++;
         }
     }
 
@@ -257,20 +256,20 @@ public class AppTest
 
     private String[][] scenarios2 = {
         {"/data/강원동양.xls", "2016/06/01", "디아미크롱서방정", "30mg/500T", "1", null, null, "강릉아산병원", null, null, "강원도 강릉시 방동길 38 (사천면)", null},
-        {"/data/강원백제.xls", "2016-06-02", "디아미크롱서방정30mg 500T", null, "1", "59000", "59000", null, "약국", "220-010", "강원도 원주시 중앙로 86, 1동 102호 (중앙동)", "한국세르비에"},
+        {"/data/강원백제.xls", "2016-06-02", "디아미크롱서방정30mg 500T", null, "1", "59000", "59000", "약국", null, "220-010", "강원도 원주시 중앙로 86, 1동 102호 (중앙동)", "한국세르비에"},
         {"/data/강원서호.xls", null, "헤파멜즈산", "5g/100포", "8", "57,000.00", "456,000", "강릉약국(신)", null, "25440", "강원도 강릉시 방동길", null},
         {"/data/강원순천당.xls", "2016/06/07", "디아미크롱정 100T(PTP)", "100T", "1", "11,900.00", "11,900", "강릉시민약국", "약국", "25532", "강원도 강릉시 경강로 2109 (임당동)", null},
         {"/data/광주순천호남.XLS", "2016/06/01", "아서틸정4mg", "90T", "2", "43,920", "87,840", "고흥)고흥병원", null, "59535", "전라남도 고흥군 고흥읍고흥로, 1935 (남계리,숙소) 남계 186번지", null},
-        {"/data/대구지오팜.xls", "12/2/16", "그로리정97.875mg(병)", "30T", "1", null, null, "약국", null, "719-801", "경북 성주군 성주읍", null},
+        {"/data/대구지오팜.xls", "12/2/16", "그로리정97.875mg(병)", "30T", "1", null, null, null, "약국", "719-801", "경북 성주군 성주읍", null},
         {"/data/대전경동팜.xlsx", "2016/12/05", "디아미크롱서방", "30/500T", "2", "59,000.00", "118,000", "수원123약국", null, "16501", "경기도 수원시 영통구 월드컵로", null},
         {"/data/대전오성팜.xls", "2016-12-01", "프로코라란정5mg", "56정(PTP)", "20", "6,720.00", "134,400", "천안-다사랑약국(봉명동)", null, "330-930", "충청남도 천안시 동남구 순천향4길 50", "한국세르비에(주)"},
-        {"/data/대전지오팜.xls", "2016/12/05", "그로리정97.875mg(병)", "100T", "2", null, null, "약국", null, "331-947", "충남 천안시 서북구 쌍용2동", null},
+        {"/data/대전지오팜.xls", "2016/12/05", "그로리정97.875mg(병)", "100T", "2", null, null, null, "약국", "331-947", "충남 천안시 서북구 쌍용2동", null},
         {"/data/전주전주.xls", "2016/10/07", "디아미크롱정80mg(P)", "100T", "-1","11,900.00", "-11,900", "김제건강종합약국", "약국", "54384", "전라북도 김제시 남북로 222 (요촌동)", "한국세르비에"},
         {"/data/대구경일.xls", "201611", "프로코라란정5mg", "56T(P)", "-1", null, null, "안동성소", null, null, "경상북도안동시서동문로", "세르비에"},
         {"/data/대전엘에스팜.xls", "20170623", "디아미크롱서방정30mg", "500T", "3", null, "177,000", "약국", null, "31151", "충청남도 천안시 동남구 순천향4길, 50", null},
-        {"/data/Sales_analysis(01_Aug_18).xls", "08/01/18", "ARCALION 200 COATED (30'S) TAB", null, "5", null, "34130", "NP", "GP Clinic", null, "PYINMANA", "MYA GANDAMAR"},
-        {"/data/R9089a_101378_2018-04-18-03-51-23.xlsx", null, "Diamicron MR Tab 30mg 60'S/Bx", null, "960", null, "74058", null, "HP", null, null, "國立台灣大學醫學院附設醫院"},
-        {"/data/sales.mega.daily-2018-12-03.xlsx", "12/03/18", "ARCALION 200 COATED (30'S) TAB", null, "10", null, "74970", "ML", "Stockist", null, "DAWEI", "WIN ZAW"}
+        //{"/data/Sales_analysis(01_Aug_18).xls", "08/01/18", "ARCALION 200 COATED (30'S) TAB", null, "5", null, "34130", "NP", "GP Clinic", null, "PYINMANA", "MYA GANDAMAR"},
+        //{"/data/R9089a_101378_2018-04-18-03-51-23.xlsx", null, "Diamicron MR Tab 30mg 60'S/Bx", null, "960", null, "74058", null, "HP", null, null, "國立台灣大學醫學院附設醫院"},
+        //{"/data/sales.mega.daily-2018-12-03.xlsx", "12/03/18", "ARCALION 200 COATED (30'S) TAB", null, "10", null, "74970", "ML", "Stockist", null, "DAWEI", "WIN ZAW"}
     };
 }
 

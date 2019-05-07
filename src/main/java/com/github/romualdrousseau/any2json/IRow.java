@@ -1,16 +1,19 @@
 package com.github.romualdrousseau.any2json;
 
-public interface IRow
-{
-	public boolean isEmpty(double ratio);
+public interface IRow {
+	boolean isEmpty(double ratio);
 
-    public int getNumberOfCells();
+    int getNumberOfCells();
 
-    public int getNumberOfMergedCellsAt(int i);
+    int getNumberOfMergedCellsAt(int i);
 
-    public TableCell getCell(TableHeader header);
+    String getCellValueAt(int i);
 
-	public String getCellValue(TableHeader header);
+    TableCell getCell(TableHeader header);
 
-    public String getCellValueAt(int i);
+    TableCell getCell(TableHeader header, boolean mergeValues);
+
+    String getCellValue(TableHeader header);
+
+    String getCellValue(TableHeader header, boolean mergeValues);
 }

@@ -3,6 +3,10 @@ package com.github.romualdrousseau.any2json;
 import java.util.List;
 
 public abstract class Sheet implements ISheet {
+    public ITable findTableWithItelliTag(ITagClassifier classifier) {
+        return this.findTableWithItelliTag(classifier, null);
+    }
+
     public ITable findTableWithItelliTag(ITagClassifier classifier, String[] requiredTags) {
         ITable result = null;
 
@@ -19,10 +23,14 @@ public abstract class Sheet implements ISheet {
 
             table.updateHeaderTags(classifier);
 
-            if (this.checkValidity(table, requiredTags)) {
+            if (requiredTags == null || this.checkValidity(table, requiredTags)) {
                 result = table;
                 break;
             }
+        }
+
+        if(result == null && requiredTags != null) {
+            result = this.findTableWithItelliTag(classifier);
         }
 
         return result;

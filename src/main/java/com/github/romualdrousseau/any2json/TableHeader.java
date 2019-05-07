@@ -38,7 +38,8 @@ public class TableHeader {
     }
 
     public Vector getConflictVector(boolean checkForConflicts) {
-        return this.words2vec(checkForConflicts ? this.findConflictHeaders() : null);
+        TableHeader[] conflictingHeaders = checkForConflicts ? this.findConflictingHeaders() : null;
+        return this.words2vec(conflictingHeaders);
     }
 
     public TableHeader setName(String name) {
@@ -104,6 +105,7 @@ public class TableHeader {
         this.wordVector = null;
         this.entityVector = null;
         this.tag = null;
+        this.next = null;
     }
 
     public void updateTag(boolean checkForConflicts) {
@@ -112,27 +114,37 @@ public class TableHeader {
         this.tag = new HeaderTag(this, tagValue);
     }
 
-    public DataRow buildRow(String tag) {
-        return new DataRow().addFeature(this.buildFeature(!tag.equals(this.getTag().getValue())))
-                .setLabel(classifier.getTagList().word2vec(tag));
+    public DataRow buildRow(String tagValue, boolean checkForConflicts, boolean ensureWordExists) {
+        if(ensureWordExists) {
+            this.classifier.getWordList().add(this.getCleanName());
+        }
+        return new DataRow().addFeature(this.buildFeature(checkForConflicts))
+                .setLabel(this.classifier.getTagList().word2vec(tagValue));
+    }
+
+    protected void chain(TableHeader other) {
+        this.next = other;
+    }
+
+    protected TableHeader next() {
+        return this.next;
     }
 
     private Vector buildFeature(boolean checkForConflicts) {
         final Vector entity2vec = this.getEntityVector();
         final Vector word2vec = this.getWordVector();
-        final Vector neighbor2vec = this.getConflictVector(checkForConflicts);
-        return entity2vec.concat(word2vec).concat(neighbor2vec);
+        final Vector conflict2vec = this.getConflictVector(checkForConflicts);
+        return entity2vec.concat(word2vec).concat(conflict2vec);
     }
 
-    private TableHeader[] findConflictHeaders() {
+    private TableHeader[] findConflictingHeaders() {
         ArrayList<TableHeader> result = new ArrayList<TableHeader>();
 
-        for (TableHeader header : this.table.headers())
-            if (header != this) {
-                if (header != null && header.tag != null && header.tag.equals(this.tag)) {
-                    result.add(header);
-                }
+        for (TableHeader header : this.table.headers()) {
+            if (header != this && header.tag != null && header.tag.equals(this.tag)) {
+                result.add(header);
             }
+        }
 
         if (result.size() == 0) {
             return null;
@@ -168,7 +180,7 @@ public class TableHeader {
         }
 
         for (TableHeader header : headers) {
-            result.add(classifier.getWordList().word2vec(header.getCleanName()));
+            result.add(header.getWordVector());
         }
 
         return result.constrain(0, 1);
@@ -183,4 +195,5 @@ public class TableHeader {
     private ITagClassifier classifier;
     private HeaderTag tag;
     private ITable table;
+    private TableHeader next = null;
 }

@@ -20,14 +20,14 @@ String search = null;
 boolean beautify = false;
 
 void setup() {
-  JSON.setFactory(new JSONProcessingFactory(this));
+  JSON.setFactory(new JSONProcessingFactory());
   size(1600, 800);
   background(51);
 
   Brain = new NGramNNClassifier(
-    new NgramList(JSON.loadJSONObject(dataPath("ngrams.json"))),
-    new RegexList(JSON.loadJSONObject(dataPath("entities.json"))),
-    new StopWordList(JSON.loadJSONArray(dataPath("stopwords.json"))),
+    new NgramList(JSON.loadJSONObject(dataPath("ngrams.json"))), 
+    new RegexList(JSON.loadJSONObject(dataPath("entities.json"))), 
+    new StopWordList(JSON.loadJSONArray(dataPath("stopwords.json"))), 
     new com.github.romualdrousseau.shuju.nlp.StringList(JSON.loadJSONObject(dataPath("tags.json"))));
   Brain.getModel().fromJSON(JSON.loadJSONArray(dataPath("brain.json")));
 
@@ -36,7 +36,7 @@ void setup() {
   } else {
     TrainingSet = new DataSet();
   }
-  
+
   documentFileNames = listFileNames(dataPath("1612"));
 
   ProgressBar.start("Loading document ...", true);
@@ -53,28 +53,38 @@ void draw() {
 
     if (learning) {
       Brain.fit(TrainingSet);
-      if (Brain.getMean() <= 5e-3) {
+      if (Brain.getAccuracy() == 1.0f) {
         learning = false;
         ProgressBar.stop();
       }
-      viewer.currentSheet.updateTags(false);
+      if (viewer.currentSheet != null) {
+        viewer.currentSheet.updateTags(false);
+      }
     }
 
     fill(255);
     text(String.format("%03d / %03d [%s]", currentDocumentIndex + 1, documentFileNames.length, beautify ? "Beautified" : ""), 0, 16);
     text(documentFileNames[currentDocumentIndex], 0, 32);
 
-    if (viewer.currentSheet.currentCell != null) {
+    if (viewer.currentSheet.currentHeader != null) {
       text(viewer.currentSheet.currentHeader.text, 0, 64);
       text(viewer.currentSheet.currentHeader.header.getCleanName(), 0, 80);
       text(viewer.currentSheet.currentHeader.header.getTag().getValue(), 0, 96);
       text(viewer.currentSheet.currentHeader.newTag, 0, 112);
+    }
 
+    if (viewer.currentSheet.currentCell != null) {
       text(viewer.currentSheet.currentCell.text, 0, 144);
       text(viewer.currentSheet.currentCell.cell.getCleanValue(), 0, 160);
+    }
 
+    if (viewer.currentSheet.currentHeader != null && viewer.currentSheet.currentCell != null) {
       for (int i = 0; i < Brain.getEntityList().size(); i++) {
         text(String.format("%.0f %.0f %s", viewer.currentSheet.currentHeader.header.getEntityVector().get(i), viewer.currentSheet.currentCell.cell.getEntityVector().get(i), Brain.getEntityList().get(i)), 0, 176 + i * 16);
+      }
+    } else if (viewer.currentSheet.currentHeader != null) {
+      for (int i = 0; i < Brain.getEntityList().size(); i++) {
+        text(String.format("%.0f 0 %s", viewer.currentSheet.currentHeader.header.getEntityVector().get(i), Brain.getEntityList().get(i)), 0, 176 + i * 16);
       }
     }
 
@@ -135,11 +145,11 @@ void keyPressed(KeyEvent e) {
     thread("loadDocument");
   }
 
-  if (key == CODED && keyCode == UP && viewer.currentSheet.currentCell != null) {
+  if (key == CODED && keyCode == UP && viewer.currentSheet.currentHeader != null) {
     viewer.currentSheet.currentHeader.nextTag();
   }
 
-  if (key == CODED && keyCode == DOWN && viewer.currentSheet.currentCell != null) {
+  if (key == CODED && keyCode == DOWN && viewer.currentSheet.currentHeader != null) {
     viewer.currentSheet.currentHeader.prevTag();
   }
 
@@ -153,11 +163,11 @@ void keyPressed(KeyEvent e) {
       ProgressBar.stop();
     }
   }
-  
+
   if (key==CODED && keyCode == java.awt.event.KeyEvent.VK_F3) {
     String searchedFilename = ClipHelper.pasteString();
-    for(int i = 0; i < documentFileNames.length; i++) {
-      if(documentFileNames[i].contains(searchedFilename)) {
+    for (int i = 0; i < documentFileNames.length; i++) {
+      if (documentFileNames[i].contains(searchedFilename)) {
         currentDocumentIndex = i;
         ProgressBar.start("Loading document ...", true);
         thread("loadDocument");
@@ -178,13 +188,17 @@ void keyPressed(KeyEvent e) {
   }
 
   if (e.isControlDown() && (keyCode == 't' || keyCode == 'T')) {
-    if (viewer != null && viewer.currentSheet != null && viewer.currentSheet.currentCell != null) {
-      translateWord(viewer.currentSheet.currentCell.text);
-    } else {
-      translateWord(viewer.currentSheet.text);
+    if (viewer != null && viewer.currentSheet != null) {
+      if (viewer.currentSheet.currentCell != null) {
+        translateWord(viewer.currentSheet.currentCell.text);
+      } else if (viewer.currentSheet.currentHeader != null) {
+        translateWord(viewer.currentSheet.currentHeader.text);
+      } else {
+        translateWord(viewer.currentSheet.text);
+      }
     }
   }
-  
+
   if (e.isControlDown() && (keyCode == 'l' || keyCode == 'L')) {
     if (viewer != null && viewer.currentSheet != null && viewer.currentSheet.currentCell != null) {
       locateGeo(viewer.currentSheet.currentCell.text);
@@ -198,12 +212,17 @@ void keyPressed(KeyEvent e) {
   }
 
   if (e.isControlDown() && (keyCode == 'c' || keyCode == 'C')) {
-    if (viewer != null && viewer.currentSheet != null && viewer.currentSheet.currentCell != null) {
-      ClipHelper.copyString(viewer.currentSheet.currentCell.text);
-      search = viewer.currentSheet.currentCell.cell.getCleanValue();
-    } else if (viewer != null && viewer.currentSheet != null) {
-      ClipHelper.copyString(viewer.currentSheet.text);
-      search = null;
+    if (viewer != null && viewer.currentSheet != null) {
+      if (viewer.currentSheet.currentCell != null) {
+        ClipHelper.copyString(viewer.currentSheet.currentCell.text);
+        search = viewer.currentSheet.currentCell.cell.getCleanValue();
+      } else if (viewer.currentSheet.currentHeader != null) {
+        ClipHelper.copyString(viewer.currentSheet.currentHeader.text);
+        search = viewer.currentSheet.currentHeader.header.getCleanName();
+      } else {
+        ClipHelper.copyString(viewer.currentSheet.text);
+        search = null;
+      }
     }
   }
 
@@ -225,7 +244,7 @@ void keyPressed(KeyEvent e) {
     ProgressBar.start("Deleting file ...", true);
     thread("moveFileToTrash");
   }
-  
+
   if (e.isControlDown() && (keyCode == 'p' || keyCode == 'P')) {
     TrainingSet = TrainingSet.purgeConflicts();
   }
@@ -242,14 +261,15 @@ void saveConfigToDisk() {
   JSON.saveJSONObject(TrainingSet.toJSON(), dataPath("trainingset.json"));
   JSON.saveJSONObject(Brain.getWordList().toJSON(), dataPath("ngrams.json"));
   JSON.saveJSONArray(Brain.getModel().toJSON(), dataPath("brain.json"));
+  JSON.saveJSONObject(Brain.toJSON(), dataPath("all.json"));
   ProgressBar.stop();
 }
 
 void loadConfigfromDisk() { 
   Brain = new NGramNNClassifier(
-    new NgramList(JSON.loadJSONObject(dataPath("ngrams.json"))),
-    new RegexList(JSON.loadJSONObject(dataPath("entities.json"))),
-    new StopWordList(JSON.loadJSONArray(dataPath("stopwords.json"))),
+    new NgramList(JSON.loadJSONObject(dataPath("ngrams.json"))), 
+    new RegexList(JSON.loadJSONObject(dataPath("entities.json"))), 
+    new StopWordList(JSON.loadJSONArray(dataPath("stopwords.json"))), 
     new com.github.romualdrousseau.shuju.nlp.StringList(JSON.loadJSONObject(dataPath("tags.json"))));
   Brain.getModel().fromJSON(JSON.loadJSONArray(dataPath("brain.json")));
   TrainingSet = new DataSet(JSON.loadJSONObject(dataPath("trainingset.json")));
