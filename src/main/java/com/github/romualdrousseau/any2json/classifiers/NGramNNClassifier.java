@@ -94,9 +94,11 @@ public class NGramNNClassifier implements ITagClassifier {
         this.mean = 0.0f;
 
         for (int n = 0; n < nCount; n++) {
-            DataSet trainingSet = dataset.subset(0, total - slice * (n + 1))
-                    .join(dataset.subset(total - slice * n, total));
-            DataSet testSet = dataset.subset(total - slice * (n + 1), total - slice * n);
+            int d1 = total - slice * (n + 1);
+            int d2 = total - slice * n;
+            DataSet trainingSet = dataset.subset(0, d1).join(dataset.subset(d2, total));
+            DataSet testSet = dataset.subset(d1, d2);
+            //System.out.println(String.format("0 %d %d %d", d1, d2, total));
 
             float sumAccu = 0.0f;
             float sumMean = 0.0f;

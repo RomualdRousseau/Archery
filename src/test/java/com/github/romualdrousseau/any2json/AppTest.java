@@ -4,15 +4,10 @@ import java.nio.file.Paths;
 
 import com.github.romualdrousseau.any2json.classifiers.NGramNNClassifier;
 import com.github.romualdrousseau.shuju.json.JSON;
-import com.github.romualdrousseau.shuju.nlp.NgramList;
-import com.github.romualdrousseau.shuju.nlp.RegexList;
-import com.github.romualdrousseau.shuju.nlp.StopWordList;
-import com.github.romualdrousseau.shuju.nlp.StringList;
 
 import java.nio.file.Path;
 import java.net.URL;
 import java.net.URISyntaxException;
-//import java.io.PrintStream;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -226,15 +221,6 @@ public class AppTest
             return null;
         }
     }
-
-    //private static PrintStream setEncoding(PrintStream stream, String encoding) {
-    //    try {
-    //        return new PrintStream(stream, true, encoding);
-    //    }
-    //    catch(java.io.UnsupportedEncodingException x) {
-    //        return stream;
-    //    }
-    //}
 
     private String[][] scenarios1 = {
         {"/data/강원동양.xls", "한국세르비에", "22", "매출처", "강릉아산병원", "매출일", "2016/06/01", "품 명", "디아미크롱서방정", "규 격", "30mg/500T", "수 량", "1", "대표자", "하현권", "주 소", "강원도 강릉시 방동길 38 (사천면)", "비 고", ""},

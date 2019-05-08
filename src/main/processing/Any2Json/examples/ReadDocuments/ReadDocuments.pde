@@ -80,11 +80,11 @@ void draw() {
 
     if (viewer.currentSheet.currentHeader != null && viewer.currentSheet.currentCell != null) {
       for (int i = 0; i < Brain.getEntityList().size(); i++) {
-        text(String.format("%.0f %.0f %s", viewer.currentSheet.currentHeader.header.getEntityVector().get(i), viewer.currentSheet.currentCell.cell.getEntityVector().get(i), Brain.getEntityList().get(i)), 0, 176 + i * 16);
+        text(String.format("%.0f %.0f %s", viewer.currentSheet.currentHeader.header.getEntityVector().get(i), viewer.currentSheet.currentCell.cell.getEntityVector().get(i), Brain.getEntityList().get(i)), 0, 192 + i * 16);
       }
     } else if (viewer.currentSheet.currentHeader != null) {
       for (int i = 0; i < Brain.getEntityList().size(); i++) {
-        text(String.format("%.0f 0 %s", viewer.currentSheet.currentHeader.header.getEntityVector().get(i), Brain.getEntityList().get(i)), 0, 176 + i * 16);
+        text(String.format("%.0f 0 %s", viewer.currentSheet.currentHeader.header.getEntityVector().get(i), Brain.getEntityList().get(i)), 0, 192 + i * 16);
       }
     }
 

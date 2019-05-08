@@ -157,8 +157,8 @@ class Sheet extends Container { //<>//
     Viewer viewer = (Viewer) this.parent;
     IDocument document = DocumentFactory.createInstance(viewer.filename, "CP949");
     ISheet sheet = document.getSheetAt(this.col);
-    ITable table = sheet.findTableWithItelliTag(Brain, new String[] { "QUANTITY", "PRODUCT_NAME" }); 
-    if (table == null) {
+    this.table = sheet.findTableWithItelliTag(Brain, new String[] { "QUANTITY", "PRODUCT_NAME" }); 
+    if (this.table == null) {
       document.close();
       return;
     }
@@ -170,13 +170,13 @@ class Sheet extends Container { //<>//
     this.headers = new Header[numberOfCols];
 
     for (int j = 0; j < numberOfCols; j++) {
-      TableHeader header = table.getHeaderAt(j);
+      TableHeader header = this.table.getHeaderAt(j);
       this.headers[j] = new Header(this, header, j);
     }
 
     int k = 0;
     for (int i = 0; i < numberOfRows; i++) {
-      IRow row = table.getRowAt(i); 
+      IRow row = this.table.getRowAt(i); 
       if (row == null || row.isEmpty(0.5)) {
         continue;
       }
