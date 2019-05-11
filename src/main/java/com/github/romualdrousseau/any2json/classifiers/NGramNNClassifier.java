@@ -82,12 +82,12 @@ public class NGramNNClassifier implements ITagClassifier {
     }
 
     public void fit(DataSet dataset) {
-        if (dataset.rows().size() == 0 || this.mean < 1e-4) {
+        if (dataset.rows().size() == 0) {
             return;
         }
 
-        final int nCount = 10;
         final int total = dataset.shuffle().rows().size();
+        final int nCount = Math.min(10, total);
         final int slice = total / nCount;
 
         this.accuracy = 0.0f;
@@ -98,10 +98,6 @@ public class NGramNNClassifier implements ITagClassifier {
             int d2 = total - slice * n;
             DataSet trainingSet = dataset.subset(0, d1).join(dataset.subset(d2, total));
             DataSet testSet = dataset.subset(d1, d2);
-            //System.out.println(String.format("0 %d %d %d", d1, d2, total));
-
-            float sumAccu = 0.0f;
-            float sumMean = 0.0f;
 
             this.optimizer.zeroGradients();
 
@@ -127,22 +123,18 @@ public class NGramNNClassifier implements ITagClassifier {
                 Loss loss = this.criterion.loss(output, target);
 
                 if (output.detach().argmax(0) == target.argmax()) {
-                    sumAccu++;
+                    this.accuracy++;
                 }
 
-                sumMean += loss.getValue().flatten(0);
-
-                if (Float.isNaN(sumMean)) {
-                    sumMean = (float) slice;
+                this.mean += loss.getValue().flatten(0);
+                if (Float.isNaN(this.mean)) {
+                    this.mean = (float) (slice * nCount);
                 }
             }
-
-            this.accuracy += Scalar.constrain(sumAccu / (float) slice, 0, 1);
-            this.mean += Scalar.constrain(sumMean / (float) slice, 0, 1);
         }
 
-        this.accuracy /= (float) nCount;
-        this.mean /= (float) nCount;
+        this.accuracy = Scalar.constrain(this.accuracy / (float) (slice * nCount), 0, 1);
+        this.mean = Scalar.constrain(this.mean / (float) (slice * nCount), 0, 1);
     }
 
     public String predict(DataRow row) {

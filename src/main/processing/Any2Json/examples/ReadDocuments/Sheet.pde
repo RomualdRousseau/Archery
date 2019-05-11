@@ -12,6 +12,19 @@ class Sheet extends Container { //<>//
     this.beautify = false;
     this.invalid = false;
   }
+  
+  boolean isAllValid() {
+    if (this.headers == null) {
+      return true;
+    }
+
+    boolean valid = true;
+    for (Header header : this.headers) {
+      valid &= header.newTag.equals(header.header.getTag().getValue());
+    }
+    
+    return valid;
+  }
 
   void buildTrainingSet() {
     if (this.headers == null) {
@@ -63,8 +76,7 @@ class Sheet extends Container { //<>//
       }
 
       this.currentCell = null;   
-      for (int i = 0; i < this.cells.length; i++) {
-        Cell[] row = this.cells[i];
+      for(Cell[] row: this.cells) {
         for (int j = 0; j < row.length; j++) {
           Cell cell = row[j];
           if (cell != null && cell.checkMouse()) {

@@ -63,3 +63,8 @@ void locateGeo(String word) {
     println(e);
   }
 }
+
+void parallel(String text, String command) {
+  ProgressBar.start(text, true);
+  thread(command);
+}
