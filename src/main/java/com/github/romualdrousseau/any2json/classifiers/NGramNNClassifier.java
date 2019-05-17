@@ -86,56 +86,94 @@ public class NGramNNClassifier implements ITagClassifier {
             return;
         }
 
-        final int total = dataset.shuffle().rows().size();
-        final int nCount = Math.min(10, total);
-        final int slice = total / nCount;
+        final float total = dataset.shuffle().rows().size();
 
         this.accuracy = 0.0f;
         this.mean = 0.0f;
 
-        for (int n = 0; n < nCount; n++) {
-            int d1 = total - slice * (n + 1);
-            int d2 = total - slice * n;
-            DataSet trainingSet = dataset.subset(0, d1).join(dataset.subset(d2, total));
-            DataSet testSet = dataset.subset(d1, d2);
+        this.optimizer.zeroGradients();
 
-            this.optimizer.zeroGradients();
+        for (DataRow data : dataset.rows()) {
+            Vector input = data.featuresAsOneVector();
+            Vector target = data.label();
 
-            for (DataRow data : trainingSet.rows()) {
-                Vector input = data.featuresAsOneVector();
-                Vector target = data.label();
+            Layer output = this.model.model(input);
+            Loss loss = this.criterion.loss(output, target);
 
-                Layer output = this.model.model(input);
-                Loss loss = this.criterion.loss(output, target);
-
-                if (output.detach().argmax(0) != target.argmax()) {
-                    loss.backward();
-                }
+            if (output.detach().argmax(0) != target.argmax()) {
+                loss.backward();
+            } else {
+                this.accuracy++;
             }
 
-            this.optimizer.step();
-
-            for (DataRow data : testSet.rows()) {
-                Vector input = data.featuresAsOneVector();
-                Vector target = data.label();
-
-                Layer output = this.model.model(input);
-                Loss loss = this.criterion.loss(output, target);
-
-                if (output.detach().argmax(0) == target.argmax()) {
-                    this.accuracy++;
-                }
-
-                this.mean += loss.getValue().flatten(0);
-                if (Float.isNaN(this.mean)) {
-                    this.mean = (float) (slice * nCount);
-                }
+            this.mean += loss.getValue().flatten(0);
+            if (Float.isNaN(this.mean)) {
+                this.mean = total;
             }
         }
 
-        this.accuracy = Scalar.constrain(this.accuracy / (float) (slice * nCount), 0, 1);
-        this.mean = Scalar.constrain(this.mean / (float) (slice * nCount), 0, 1);
+        this.optimizer.step();
+
+        this.accuracy = this.accuracy / total;
+        this.mean = Scalar.constrain(this.mean / total, 0, 1);
     }
+
+    // public void fit(DataSet dataset) {
+    // if (dataset.rows().size() == 0) {
+    // return;
+    // }
+
+    // final int total = dataset.shuffle().rows().size();
+    // final int nCount = Math.min(10, total);
+    // final int slice = total / nCount;
+
+    // this.accuracy = 0.0f;
+    // this.mean = 0.0f;
+
+    // for (int n = 0; n < nCount; n++) {
+    // int d1 = total - slice * (n + 1);
+    // int d2 = total - slice * n;
+    // DataSet trainingSet = dataset.subset(0, d1).join(dataset.subset(d2, total));
+    // DataSet testSet = dataset.subset(d1, d2);
+
+    // this.optimizer.zeroGradients();
+
+    // for (DataRow data : trainingSet.rows()) {
+    // Vector input = data.featuresAsOneVector();
+    // Vector target = data.label();
+
+    // Layer output = this.model.model(input);
+    // Loss loss = this.criterion.loss(output, target);
+
+    // if (output.detach().argmax(0) != target.argmax()) {
+    // loss.backward();
+    // }
+    // }
+
+    // this.optimizer.step();
+
+    // for (DataRow data : testSet.rows()) {
+    // Vector input = data.featuresAsOneVector();
+    // Vector target = data.label();
+
+    // Layer output = this.model.model(input);
+    // Loss loss = this.criterion.loss(output, target);
+
+    // if (output.detach().argmax(0) == target.argmax()) {
+    // this.accuracy++;
+    // }
+
+    // this.mean += loss.getValue().flatten(0);
+    // if (Float.isNaN(this.mean)) {
+    // this.mean = (float) (slice * nCount);
+    // }
+    // }
+    // }
+
+    // this.accuracy = Scalar.constrain(this.accuracy / (float) (slice * nCount), 0,
+    // 1);
+    // this.mean = Scalar.constrain(this.mean / (float) (slice * nCount), 0, 1);
+    // }
 
     public String predict(DataRow row) {
         Vector input = row.featuresAsOneVector();
