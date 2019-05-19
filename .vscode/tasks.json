@@ -6,7 +6,7 @@
         {
             "label": "Any2Json: mvn build",
             "type": "shell",
-            "command": "mvn -q clean package",
+            "command": "mvn clean package",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -27,7 +27,7 @@
         {
             "label": "Any2Json: mvn install",
             "type": "shell",
-            "command": "mvn -q install",
+            "command": "mvn install",
             "problemMatcher": {
                 "owner": "java",
                 "fileLocation": ["relative", "${workspaceFolder}"],
@@ -44,7 +44,7 @@
         {
             "label": "Any2Json: mvn deploy",
             "type": "shell",
-            "command": "mvn -q deploy",
+            "command": "mvn deploy",
             "problemMatcher": {
                 "owner": "java",
                 "fileLocation": ["relative", "${workspaceFolder}"],
