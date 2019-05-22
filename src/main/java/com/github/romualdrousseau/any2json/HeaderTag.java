@@ -15,7 +15,7 @@ public class HeaderTag
 	}
 
 	public boolean isUndefined() {
-		return this.value == null || value.equals("none") || value.equals("NONE");
+		return this.value == null || value.equalsIgnoreCase("none");
 	}
 
 	public TableHeader getHeader() {
