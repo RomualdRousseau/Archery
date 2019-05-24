@@ -68,7 +68,7 @@ public class AppTest {
     /**
      * Test to read various documents, tgas the headers and check the first line
      */
-    //@Test
+    @Test
     public void testTagsVariousDocuments() {
         IDocument document = null;
         ISheet sheet = null;
@@ -314,7 +314,7 @@ public class AppTest {
                     "54384", "전라북도 김제시 남북로 222 (요촌동)", "한국세르비에" },
             { "/data/대구경일.xls", "201611", "프로코라란정5mg", "56T(P)", "-1", null, null, "안동성소", null, null, "경상북도안동시서동문로",
                     "세르비에" },
-            { "/data/대전엘에스팜.xls", "20170623", "디아미크롱서방정30mg", "500T", "3", null, "177,000", "약국", null, "31151",
+            { "/data/대전엘에스팜.xls", "20170623", "디아미크롱서방정30mg", "500T", "3", null, "177,000", null, "약국", "31151",
                     "충청남도 천안시 동남구 순천향4길, 50", null },
             // {"/data/Sales_analysis(01_Aug_18).xls", "08/01/18", "ARCALION 200 COATED
             // (30'S) TAB", null, "5", null, "34130", "NP", "GP Clinic", null, "PYINMANA",
