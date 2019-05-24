@@ -61,9 +61,12 @@ public class StringUtility
 	}
 
 	public static String cleanHeaderToken(String token) {
-		token = token.replaceAll("\\(.*\\)", "");
-		token = token.replaceAll("/.*", "");
-		token = token.replaceAll("▲", "");
+        //token = token.replaceAll("\\(.*\\)", "");
+		//token = token.replaceAll("/.*", "");
+        //token = token.replaceAll("▲", "");
+        token = StringUtility.normalizeWhiteSpaces(token);
+		token = StringUtility.singleWhiteSpaces(token);
+		token = StringUtility.trim(token, StringUtility.WHITE_SPACES + "\"");
 		return token;
 	}
 

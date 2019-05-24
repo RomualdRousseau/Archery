@@ -68,7 +68,7 @@ public class AppTest {
     /**
      * Test to read various documents, tgas the headers and check the first line
      */
-    @Test
+    //@Test
     public void testTagsVariousDocuments() {
         IDocument document = null;
         ISheet sheet = null;
