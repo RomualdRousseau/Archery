@@ -1,6 +1,6 @@
 package com.github.romualdrousseau.any2json;
 
-import com.github.romualdrousseau.any2json.util.StringUtility;
+import com.github.romualdrousseau.shuju.util.StringUtility;
 import com.github.romualdrousseau.shuju.math.Vector;
 
 public class TableCell {
@@ -23,7 +23,7 @@ public class TableCell {
 
     public String getCleanValue() {
         if (value != null && this.cleanValue == null) {
-            this.cleanValue = StringUtility.cleanValueToken(value);
+            this.cleanValue = StringUtility.cleanToken(value);
         }
         return this.cleanValue;
     }

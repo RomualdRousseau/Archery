@@ -7,7 +7,7 @@ import java.io.BufferedReader;
 import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.TableHeader;
 import com.github.romualdrousseau.any2json.IRow;
-import com.github.romualdrousseau.any2json.util.StringUtility;
+import com.github.romualdrousseau.shuju.util.StringUtility;
 
 class TextTable extends Table
 {
@@ -61,7 +61,7 @@ class TextTable extends Table
 			addHeader(new TableHeader()
 				.setColumnIndex(i)
 				.setNumberOfCells(1)
-				.setName(StringUtility.cleanValueToken(textHeaders[i]))
+				.setName(StringUtility.cleanToken(textHeaders[i]))
 				.setTag(null));
 		}
 
@@ -78,7 +78,7 @@ class TextTable extends Table
 
             String[] cells =  new String[getNumberOfColumns()];
 			for(int j = 0; j < Math.min(tokens.length, cells.length); j++) {
-                cells[j] = StringUtility.cleanValueToken(tokens[j]);
+                cells[j] = StringUtility.cleanToken(tokens[j]);
 			}
 
 			this.rows.add(new TextRow(cells));
@@ -91,7 +91,7 @@ class TextTable extends Table
 	}
 
 	private String[] parseOneRow(String data) {
-		return data.split("\t"); // DIRTY: but hey! It is working until now
+		return data.split("\t"); // TODO: DIRTY: but hey! It is working until now
 	}
 
 	private void ensureRowsInMemory(int i) {

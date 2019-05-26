@@ -2,7 +2,7 @@ package com.github.romualdrousseau.any2json;
 
 import java.util.ArrayList;
 
-import com.github.romualdrousseau.any2json.util.StringUtility;
+import com.github.romualdrousseau.shuju.util.StringUtility;
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.math.Vector;
 
@@ -14,10 +14,9 @@ public class TableHeader {
     public String getCleanName() {
         if (this.name != null && this.cleanName == null) {
             if (this.classifier != null) {
-                this.cleanName = StringUtility
-                        .cleanHeaderToken(this.classifier.getStopWordList().removeStopWords(this.name));
+                this.cleanName = StringUtility.cleanToken(this.classifier.getStopWordList().removeStopWords(this.name));
             } else {
-                this.cleanName = StringUtility.cleanHeaderToken(this.name);
+                this.cleanName = StringUtility.cleanToken(this.name);
             }
         }
         return this.cleanName;
@@ -115,7 +114,7 @@ public class TableHeader {
     }
 
     public DataRow buildRow(String tagValue, boolean checkForConflicts, boolean ensureWordExists) {
-        if(ensureWordExists) {
+        if (ensureWordExists) {
             this.classifier.getWordList().add(this.getCleanName());
         }
         return new DataRow().addFeature(this.buildFeature(checkForConflicts))

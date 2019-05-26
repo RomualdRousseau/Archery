@@ -1,11 +1,11 @@
 package com.github.romualdrousseau.any2json.document.excel;
 
+import com.github.romualdrousseau.any2json.TableHeader;
+import com.github.romualdrousseau.any2json.TableRow;
+import com.github.romualdrousseau.shuju.util.StringUtility;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.util.CellRangeAddress;
-
-import com.github.romualdrousseau.any2json.TableRow;
-import com.github.romualdrousseau.any2json.TableHeader;
-import com.github.romualdrousseau.any2json.util.StringUtility;
 
 public class ExcelRow extends TableRow
 {
@@ -87,7 +87,7 @@ public class ExcelRow extends TableRow
 			throw new UnsupportedOperationException("Unexceptected Cell Error at [" + row.getRowNum() + ";" + (this.table.firstColumn + i) + "]");
 		}
 
-		return StringUtility.cleanValueToken(value);
+		return StringUtility.cleanToken(value);
     }
 
     private ExcelTable table;

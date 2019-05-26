@@ -1,6 +1,6 @@
 package com.github.romualdrousseau.any2json;
 
-import com.github.romualdrousseau.any2json.util.StringUtility;
+import com.github.romualdrousseau.shuju.util.StringUtility;
 
 public abstract class TableRow implements IRow {
     public boolean isEmpty(double ratioOfEmptiness) {
