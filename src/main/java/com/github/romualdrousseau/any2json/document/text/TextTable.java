@@ -7,105 +7,115 @@ import java.io.BufferedReader;
 import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.TableHeader;
 import com.github.romualdrousseau.any2json.IRow;
+import com.github.romualdrousseau.shuju.math.Vector;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
-class TextTable extends Table
-{
-	public final static int ROWS_IN_MEMORY = 10000;
+class TextTable extends Table {
+    public final static int ROWS_IN_MEMORY = 10000;
 
-	public TextTable(BufferedReader reader) throws IOException {
-		this.reader = reader;
-		processOneTable();
-	}
+    public TextTable(BufferedReader reader) throws IOException {
+        this.reader = reader;
+        processOneTable();
+    }
 
-	public int getNumberOfColumns() {
-		return getNumberOfHeaders();
-	}
+    public int getNumberOfColumns() {
+        return getNumberOfHeaders();
+    }
 
-	public int getNumberOfRows() {
-		return this.processedCount;
-	}
+    public int getNumberOfRows() {
+        return this.processedCount;
+    }
 
-	public IRow getRowAt(int i) {
+    public IRow getRowAt(int i) {
 
-		ensureRowsInMemory(i);
+        ensureRowsInMemory(i);
 
-		if(i < 0 || i >= this.processedCount) {
-			throw new ArrayIndexOutOfBoundsException(i);
-		}
+        if (i < 0 || i >= this.processedCount) {
+            throw new ArrayIndexOutOfBoundsException(i);
+        }
 
-		return this.rows.get(i % ROWS_IN_MEMORY);
-	}
+        return this.rows.get(i % ROWS_IN_MEMORY);
+    }
 
-	private void processOneTable() throws IOException {
+    private void processOneTable() throws IOException {
 
-		if(this.reader == null) {
-			return;
-		}
+        if (this.reader == null) {
+            return;
+        }
 
-		if(!processHeaders(this.reader.readLine())) {
-			return;
-		}
+        if (!processHeaders(this.reader.readLine())) {
+            return;
+        }
 
-		processRows(this.reader);
-	}
+        processRows(this.reader);
+    }
 
-	private boolean processHeaders(String textLine) {
+    private boolean processHeaders(String textLine) {
 
-		if(textLine == null) {
-			return false;
-		}
+        if (textLine == null) {
+            return false;
+        }
 
-		String[] textHeaders = parseOneRow(textLine);
-		for(int i = 0; i < textHeaders.length; i++) {
-			addHeader(new TableHeader()
-				.setColumnIndex(i)
-				.setNumberOfCells(1)
-				.setName(StringUtility.cleanToken(textHeaders[i]))
-				.setTag(null));
-		}
+        this.separator = this.guessSeparator(textLine);
 
-		return true;
-	}
+        String[] textHeaders = parseOneRow(textLine);
+        for (int i = 0; i < textHeaders.length; i++) {
+            addHeader(new TableHeader().setColumnIndex(i).setNumberOfCells(1)
+                    .setName(StringUtility.cleanToken(textHeaders[i])).setTag(null));
+        }
 
-	private void processRows(BufferedReader reader) throws IOException {
+        return true;
+    }
 
-		this.rows.clear();
+    private void processRows(BufferedReader reader) throws IOException {
 
-		for(String textRow; (textRow = reader.readLine()) != null;) {
+        this.rows.clear();
 
-			String[] tokens = parseOneRow(textRow);
+        for (String textRow; (textRow = reader.readLine()) != null;) {
 
-            String[] cells =  new String[getNumberOfColumns()];
-			for(int j = 0; j < Math.min(tokens.length, cells.length); j++) {
+            String[] tokens = parseOneRow(textRow);
+
+            String[] cells = new String[getNumberOfColumns()];
+            for (int j = 0; j < Math.min(tokens.length, cells.length); j++) {
                 cells[j] = StringUtility.cleanToken(tokens[j]);
-			}
+            }
 
-			this.rows.add(new TextRow(cells));
-			processedCount++;
+            this.rows.add(new TextRow(cells));
+            processedCount++;
 
-			if(this.rows.size() >= ROWS_IN_MEMORY) {
-				return;
-			}
-		}
-	}
+            if (this.rows.size() >= ROWS_IN_MEMORY) {
+                return;
+            }
+        }
+    }
 
-	private String[] parseOneRow(String data) {
-		return data.split("\t"); // TODO: DIRTY: but hey! It is working until now
-	}
+    private String[] parseOneRow(String data) {
+        return data.split(this.separator);
+    }
 
-	private void ensureRowsInMemory(int i) {
-		try {
-			if(i >= this.processedCount) {
-				processRows(this.reader);
-			}
-		}
-		catch(IOException x) {
-			throw new ArrayIndexOutOfBoundsException(i);
-		}
-	}
+    private String guessSeparator(String sample) {
+        final String[] separators = { "\t", ",", ";" };
 
-	private BufferedReader reader;
-	private ArrayList<IRow> rows = new ArrayList<IRow>();
-	private int processedCount = 0;
+        // find the separator generating the more of columns
+        float[] v =  new float[separators.length];
+        for(int i = 0; i < separators.length; i++) {
+            v[i] = sample.split(separators[i]).length;
+        }
+        return separators[new Vector(v).argmax()];
+    }
+
+    private void ensureRowsInMemory(int i) {
+        try {
+            if (i >= this.processedCount) {
+                processRows(this.reader);
+            }
+        } catch (IOException x) {
+            throw new ArrayIndexOutOfBoundsException(i);
+        }
+    }
+
+    private BufferedReader reader;
+    private ArrayList<IRow> rows = new ArrayList<IRow>();
+    private int processedCount = 0;
+    private String separator = null;
 }
