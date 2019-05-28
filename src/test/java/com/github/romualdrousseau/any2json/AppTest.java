@@ -86,7 +86,7 @@ public class AppTest {
                 case 0:
                     document = loadDocument(expectedValue, "CP949");
                     sheet = document.getSheetAt(0);
-                    table = sheet.findTableWithItelliTag(Brain, new String[] { "QUANTITY", "PRODUCT_NAME" });
+                    table = sheet.findTableWithItelliTag(Brain);
                     assert !Table.IsEmpty(table);
                     state = 1;
                     break;

@@ -4,6 +4,7 @@ import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.DataSet;
 import com.github.romualdrousseau.shuju.json.JSON;
+import com.github.romualdrousseau.shuju.json.JSONArray;
 import com.github.romualdrousseau.shuju.json.JSONObject;
 import com.github.romualdrousseau.shuju.math.Scalar;
 import com.github.romualdrousseau.shuju.math.Vector;
@@ -27,25 +28,36 @@ public class NGramNNClassifier implements ITagClassifier {
     private RegexList entities;
     private StopWordList stopwords;
     private StringList tags;
+    private String[] requiredTags;
     private Model model;
     private Optimizer optimizer;
     private Loss criterion;
     private float accuracy;
     private float mean;
 
-    public NGramNNClassifier(NgramList ngrams, RegexList entities, StopWordList stopwords, StringList tags) {
+    public NGramNNClassifier(NgramList ngrams, RegexList entities, StopWordList stopwords, StringList tags, String[] requiredTags) {
         this.accuracy = 0.0f;
         this.mean = 1.0f;
         this.ngrams = ngrams;
         this.entities = entities;
         this.stopwords = stopwords;
         this.tags = tags;
+        this.requiredTags = requiredTags;
         this.buildModel();
     }
 
     public NGramNNClassifier(JSONObject json) {
         this(new NgramList(json.getJSONObject("ngrams")), new RegexList(json.getJSONObject("entities")),
-                new StopWordList(json.getJSONArray("stopwords")), new StringList(json.getJSONObject("tags")));
+                new StopWordList(json.getJSONArray("stopwords")), new StringList(json.getJSONObject("tags")), null);
+
+        JSONArray requiredTags = json.getJSONObject("tags").getJSONArray("requiredTypes");
+        if(requiredTags.size() > 0) {
+            this.requiredTags = new String[requiredTags.size()];
+            for(int i = 0; i < requiredTags.size(); i++) {
+                this.requiredTags[i] = requiredTags.getString(i);
+            }
+        }
+
         this.model.fromJSON(json.getJSONArray("model"));
     }
 
@@ -67,6 +79,10 @@ public class NGramNNClassifier implements ITagClassifier {
 
     public StringList getTagList() {
         return this.tags;
+    }
+
+    public String[] getRequiredTagList() {
+        return this.requiredTags;
     }
 
     public Model getModel() {
@@ -187,13 +203,86 @@ public class NGramNNClassifier implements ITagClassifier {
     }
 
     public JSONObject toJSON() {
+        JSONArray requiredTags = JSON.newJSONArray();
+        if(this.requiredTags != null) {
+            for(int i = 0; i < this.requiredTags.length; i++) {
+                requiredTags.append(this.requiredTags[i]);
+            }
+        }
+        JSONObject tags = this.tags.toJSON();
+        tags.setJSONArray("requiredTypes", requiredTags);
+
         JSONObject json = JSON.newJSONObject();
         json.setJSONObject("ngrams", this.ngrams.toJSON());
         json.setJSONObject("entities", this.entities.toJSON());
         json.setJSONArray("stopwords", this.stopwords.toJSON());
-        json.setJSONObject("tags", this.tags.toJSON());
+        json.setJSONObject("tags", tags);
         json.setJSONArray("model", this.model.toJSON());
         return json;
+    }
+
+    public String dumpDataSet(DataSet dataset) {
+        StringBuilder result = new StringBuilder();
+
+        for(DataRow row : dataset.rows()) {
+            Vector v = row.featuresAsOneVector();
+
+            boolean firstPass = true;
+            for(int i = 0; i < 24; i++) {
+                if(v.get(i) == 1.0f) {
+                    if(firstPass) {
+                        result.append(this.getEntityList().get(i));
+                        firstPass = false;
+                    } else {
+                        result.append(":").append(this.getEntityList().get(i));
+                    }
+                }
+            }
+
+            result.append(",");
+            firstPass = true;
+            for(int i = 24; i < 524; i++) {
+                if(v.get(i) == 1.0f) {
+                    if(firstPass) {
+                        result.append(this.getWordList().get(i - 24));
+                        firstPass = false;
+                    } else {
+                        result.append(":").append(this.getWordList().get(i - 24));
+                    }
+                }
+            }
+
+            result.append(",");
+            firstPass = true;
+            for(int i = 524; i < 1024; i++) {
+                if(v.get(i) == 1.0f) {
+                    if(firstPass) {
+                        result.append(this.getWordList().get(i - 524));
+                        firstPass = false;
+                    } else {
+                        result.append(":").append(this.getWordList().get(i - 524));
+                    }
+                }
+            }
+
+            Vector l = row.label();
+            result.append(",");
+            firstPass = true;
+            for(int i = 0; i < 16; i++) {
+                if(l.get(i) == 1.0f) {
+                    if(firstPass) {
+                        result.append(this.getTagList().get(i));
+                        firstPass = false;
+                    } else {
+                        result.append(":").append(this.getTagList().get(i));
+                    }
+                }
+            }
+
+            result.append("\n");
+        }
+
+        return result.toString();
     }
 
     private void buildModel() {

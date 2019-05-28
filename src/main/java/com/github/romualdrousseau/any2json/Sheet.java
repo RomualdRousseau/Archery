@@ -4,10 +4,6 @@ import java.util.List;
 
 public abstract class Sheet implements ISheet {
     public ITable findTableWithItelliTag(ITagClassifier classifier) {
-        return this.findTableWithItelliTag(classifier, null);
-    }
-
-    public ITable findTableWithItelliTag(ITagClassifier classifier, String[] requiredTags) {
         ITable result = null;
 
         ITable bestTable = this.findTable(classifier.getSampleCount(), classifier.getSampleCount());
@@ -23,13 +19,13 @@ public abstract class Sheet implements ISheet {
 
             table.updateHeaderTags(classifier);
 
-            if (requiredTags == null || this.checkValidity(table, requiredTags)) {
+            if (classifier.getRequiredTagList() == null || this.checkValidity(table, classifier.getRequiredTagList())) {
                 result = table;
                 break;
             }
         }
 
-        if(result == null && requiredTags != null) {
+        if(result == null && classifier.getRequiredTagList() != null) {
             result = this.findTableWithItelliTag(classifier);
         }
 

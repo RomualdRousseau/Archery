@@ -108,16 +108,28 @@ public class TableHeader {
     }
 
     public void updateTag(boolean checkForConflicts) {
-        DataRow data = new DataRow().addFeature(this.buildFeature(checkForConflicts));
-        String tagValue = classifier.predict(data);
-        this.tag = new HeaderTag(this, tagValue);
+        if(StringUtility.isEmpty(this.getCleanName())) {
+            this.tag = new HeaderTag(this, "none");
+        } else {
+            DataRow data = new DataRow().addFeature(this.buildFeature(checkForConflicts));
+            String tagValue = classifier.predict(data);
+            this.tag = new HeaderTag(this, tagValue);
+        }
     }
 
-    public DataRow buildRow(String tagValue, boolean checkForConflicts, boolean ensureWordExists) {
-        if (ensureWordExists) {
+    public DataRow buildRow(String tagValue, TableHeader[] conflicts, boolean ensureWordsExists) {
+        if (ensureWordsExists) {
             this.classifier.getWordList().add(this.getCleanName());
+            this.wordVector = null;
+
+            if (conflicts != null) {
+                for (TableHeader conflict : conflicts) {
+                    this.classifier.getWordList().add(conflict.getCleanName());
+                    conflict.wordVector = null;
+                }
+            }
         }
-        return new DataRow().addFeature(this.buildFeature(checkForConflicts))
+        return new DataRow().addFeature(this.buildFeature(conflicts))
                 .setLabel(this.classifier.getTagList().word2vec(tagValue));
     }
 
@@ -136,11 +148,18 @@ public class TableHeader {
         return entity2vec.concat(word2vec).concat(conflict2vec);
     }
 
+    private Vector buildFeature(TableHeader[] conflicts) {
+        final Vector entity2vec = this.getEntityVector();
+        final Vector word2vec = this.getWordVector();
+        final Vector conflict2vec = this.words2vec(conflicts);
+        return entity2vec.concat(word2vec).concat(conflict2vec);
+    }
+
     private TableHeader[] findConflictingHeaders() {
         ArrayList<TableHeader> result = new ArrayList<TableHeader>();
 
         for (TableHeader header : this.table.headers()) {
-            if (header != this && header.tag != null && header.tag.equals(this.tag)) {
+            if (header != this && header.hasTag() && header.tag.equals(this.tag) && !header.tag.isUndefined()) {
                 result.add(header);
             }
         }
@@ -165,7 +184,7 @@ public class TableHeader {
         }
 
         if (n > 0) {
-            result.cond(p * ((float) n), 0, 1);
+            result.cond(p * ((float) n), 0.0f, 1.0f);
         }
 
         return result;

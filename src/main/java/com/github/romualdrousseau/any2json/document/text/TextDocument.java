@@ -40,6 +40,15 @@ public class TextDocument implements IDocument {
 
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(new FileInputStream(txtFile), encoding))) {
+
+            if (encoding.equals("UTF-8")) {
+                // skip BOM if present
+                reader.mark(1);
+                if (reader.read() != StringUtility.BOM_CHAR) {
+                    reader.reset();
+                }
+            }
+
             TextTable table = new TextTable(reader);
             if (table.hasHeaders() && table.getNumberOfRows() > 0 && this.checkIfGoodEncoding(table)) {
                 String sheetName = StringUtility.removeExtension(txtFile.getName());

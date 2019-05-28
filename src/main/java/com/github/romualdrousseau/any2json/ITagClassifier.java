@@ -16,6 +16,8 @@ public interface ITagClassifier {
 
     BaseList getTagList();
 
+    String[] getRequiredTagList();
+
     float getMean();
 
     float getAccuracy();

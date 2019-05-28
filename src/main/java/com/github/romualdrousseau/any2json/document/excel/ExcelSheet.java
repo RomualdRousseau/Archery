@@ -15,8 +15,7 @@ import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.Recta
 import com.github.romualdrousseau.any2json.ITable;
 import com.github.romualdrousseau.any2json.Sheet;
 
-class ExcelSheet extends Sheet
-{
+class ExcelSheet extends Sheet {
     public ExcelSheet(org.apache.poi.ss.usermodel.Sheet sheet, FormulaEvaluator evaluator) {
         this.sheet = sheet;
         this.table = null;
@@ -28,40 +27,35 @@ class ExcelSheet extends Sheet
     }
 
     public ITable getTable() {
-        int lastColumnNum = estimateLastColumnNum();
-        if(this.table == null && lastColumnNum > 0) {
+        int lastColumnNum = this.estimateLastColumnNum(0, 0);
+        if (this.table == null && lastColumnNum > 0) {
             this.table = new ExcelTable(this.sheet, this.evaluator, 0, 0, lastColumnNum, this.sheet.getLastRowNum());
         }
         return this.table;
     }
 
-    public ExcelTable findTable(int headerColumns, int headerRows) {
-        final Filter filter = new Filter(new Template(new int[][] {
-            {0, 0, 0},
-            {1, 0, 1},
-            {0, 0, 0}
-        }));
+    public ITable findTable(int headerColumns, int headerRows) {
+        final Filter filter = new Filter(new Template(new int[][] { { 0, 0, 0 }, { 1, 0, 1 }, { 0, 0, 0 } }));
 
-        if(this.table == null) {
+        if (this.table == null) {
             ExcelSearchBitmap bitmap1 = new ExcelSearchBitmap(this.sheet, headerColumns, headerRows);
             filter.apply(bitmap1, 1);
             filter.applyNeg(bitmap1, 2);
 
             SearchPoint[] table = new RectangleExtractor().extractBest(bitmap1);
-            //debug(bitmap1, table);
-            if(table != null && table[1].getX() > table[0].getX()) {
-                this.table = new ExcelTable(this.sheet, this.evaluator, table[0].getX(), table[0].getY(), table[1].getX(), this.sheet.getLastRowNum());
+            // debug(bitmap1, table);
+            if (table != null && table[1].getX() > table[0].getX()) {
+                int lastColumnNum = Math.max(table[1].getX(),
+                        this.estimateLastColumnNum(table[0].getX(), table[0].getY()));
+                this.table = new ExcelTable(this.sheet, this.evaluator, table[0].getX(), table[0].getY(), lastColumnNum,
+                        this.sheet.getLastRowNum());
             }
         }
         return this.table;
     }
 
     public List<ITable> findTables(int headerColumns, int headerRows) {
-        final Filter filter = new Filter(new Template(new int[][] {
-            {0, 0, 0},
-            {1, 0, 1},
-            {0, 0, 0}
-        }));
+        final Filter filter = new Filter(new Template(new int[][] { { 0, 0, 0 }, { 1, 0, 1 }, { 0, 0, 0 } }));
 
         ArrayList<ITable> result = new ArrayList<ITable>();
 
@@ -70,48 +64,41 @@ class ExcelSheet extends Sheet
         filter.applyNeg(bitmap1, 2);
 
         List<SearchPoint[]> tables = new RectangleExtractor().extractAll(bitmap1);
-        for(SearchPoint[] table: tables) if(table[1].getX() > table[0].getX()) {
-            result.add(new ExcelTable(this.sheet, this.evaluator, table[0].getX(), table[0].getY(), table[1].getX(), this.sheet.getLastRowNum()));
-        }
+        for (SearchPoint[] table : tables)
+            if (table[1].getX() > table[0].getX()) {
+                int lastColumnNum = Math.max(table[1].getX(),
+                        this.estimateLastColumnNum(table[0].getX(), table[0].getY()));
+                result.add(new ExcelTable(this.sheet, this.evaluator, table[0].getX(), table[0].getY(), lastColumnNum,
+                        this.sheet.getLastRowNum()));
+            }
 
         return result;
     }
 
-    private int estimateLastColumnNum() {
-        Row row = this.sheet.getRow(0);
-        if(row == null) {
+    private int estimateLastColumnNum(int x, int y) {
+        Row row = this.sheet.getRow(y);
+        if (row == null) {
             return 0;
         }
-        int colNum = 0;
+        int colNum = x;
         Cell cell = row.getCell(colNum);
-        while(cell != null) {
+        while (cell != null) {
             cell = row.getCell(++colNum);
         }
         return colNum;
     }
 
     /*
-    private void debug(ExcelSearchBitmap searchBitmap, SearchPoint[] table) {
-        for(int i = 0; i < searchBitmap.getHeight(); i++) {
-            for(int j = 0; j < searchBitmap.getWidth(); j++) {
-                if(searchBitmap.get(j, i) == 0) {
-                    System.out.print("_");
-                }
-                else {
-                    System.out.print("#");
-                }
-            }
-            System.out.println();
-        }
-
-        if(table != null) {
-            System.out.print(table[0].getX() + " ");
-            System.out.print(table[0].getY() + " ");
-            System.out.print(table[1].getX() + " ");
-            System.out.println(table[1].getY());
-        }
-    }
-    */
+     * private void debug(ExcelSearchBitmap searchBitmap, SearchPoint[] table) {
+     * for(int i = 0; i < searchBitmap.getHeight(); i++) { for(int j = 0; j <
+     * searchBitmap.getWidth(); j++) { if(searchBitmap.get(j, i) == 0) {
+     * System.out.print("_"); } else { System.out.print("#"); } }
+     * System.out.println(); }
+     *
+     * if(table != null) { System.out.print(table[0].getX() + " ");
+     * System.out.print(table[0].getY() + " "); System.out.print(table[1].getX() +
+     * " "); System.out.println(table[1].getY()); } }
+     */
 
     private org.apache.poi.ss.usermodel.Sheet sheet;
     private ExcelTable table;
