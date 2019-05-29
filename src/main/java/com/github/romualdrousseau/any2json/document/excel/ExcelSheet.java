@@ -5,13 +5,14 @@ import java.util.ArrayList;
 
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 
 import com.github.romualdrousseau.shuju.cv.Filter;
 import com.github.romualdrousseau.shuju.cv.Template;
 import com.github.romualdrousseau.shuju.cv.SearchPoint;
 import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.RectangleExtractor;
-
+import com.github.romualdrousseau.shuju.util.StringUtility;
 import com.github.romualdrousseau.any2json.ITable;
 import com.github.romualdrousseau.any2json.Sheet;
 
@@ -82,10 +83,14 @@ class ExcelSheet extends Sheet {
         }
         int colNum = x;
         Cell cell = row.getCell(colNum);
-        while (cell != null) {
+        while (cell != null && this.cellValue(cell).length() > 0) {
             cell = row.getCell(++colNum);
         }
-        return colNum;
+        return colNum - 1;
+    }
+
+    private String cellValue(Cell cell) {
+        return StringUtility.cleanToken(new DataFormatter().formatCellValue(cell));
     }
 
     /*

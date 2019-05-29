@@ -85,7 +85,7 @@ class ExcelTable extends Table {
                 double emptinessFirstCell = Double.valueOf(row.getNumberOfMergedCellsAt(0))
                         / Double.valueOf(row.getNumberOfCells());
                 if (emptinessFirstCell < 0.5 && !row.isEmpty(0.5)) {
-                    break;
+                    return;
                 }
             }
 
