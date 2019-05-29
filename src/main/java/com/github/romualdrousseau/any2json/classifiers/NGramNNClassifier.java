@@ -209,6 +209,7 @@ public class NGramNNClassifier implements ITagClassifier {
                 requiredTags.append(this.requiredTags[i]);
             }
         }
+
         JSONObject tags = this.tags.toJSON();
         tags.setJSONArray("requiredTypes", requiredTags);
 
