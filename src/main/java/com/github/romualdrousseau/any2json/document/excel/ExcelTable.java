@@ -77,14 +77,16 @@ class ExcelTable extends Table {
     }
 
     private void skipEmptyFirstRows(double ratioOfEmptiness) {
-        for (int i = 0; i < Math.min(10, getNumberOfRows()); i++) {
-            org.apache.poi.ss.usermodel.Row tmp = this.sheet.getRow(this.firstRow - 1);
-            TableRow row = (tmp != null) ? new ExcelRow(this, tmp) : null;
+        final int numberOfRows = Math.min(10, getNumberOfRows());
 
+        for (int i = 0; i < numberOfRows; i++) {
+            org.apache.poi.ss.usermodel.Row tmp = this.sheet.getRow(this.firstRow - 1);
+
+            TableRow row = (tmp != null) ? new ExcelRow(this, tmp) : null;
             if (row != null) {
                 double emptinessFirstCell = Double.valueOf(row.getNumberOfMergedCellsAt(0))
                         / Double.valueOf(row.getNumberOfCells());
-                if (emptinessFirstCell < 0.5 && !row.isEmpty(0.5)) {
+                if (emptinessFirstCell <= ratioOfEmptiness && !row.isEmpty(ratioOfEmptiness)) {
                     return;
                 }
             }

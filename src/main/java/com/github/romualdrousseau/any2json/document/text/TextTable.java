@@ -11,10 +11,13 @@ import com.github.romualdrousseau.shuju.math.Vector;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 class TextTable extends Table {
-    public final static int ROWS_IN_MEMORY = 10000;
+    public final static int ROWS_IN_MEMORY = 100000;
 
-    public TextTable(BufferedReader reader) throws IOException {
+    private int rowCount;
+
+    public TextTable(BufferedReader reader, int rowCount) throws IOException {
         this.reader = reader;
+        this.rowCount = rowCount - 1;
         processOneTable();
     }
 
@@ -23,16 +26,15 @@ class TextTable extends Table {
     }
 
     public int getNumberOfRows() {
-        return this.processedCount;
+        return this.rowCount;
     }
 
     public IRow getRowAt(int i) {
-
-        ensureRowsInMemory(i);
-
-        if (i < 0 || i >= this.processedCount) {
+        if (i < 0 || i >= this.rowCount) {
             throw new ArrayIndexOutOfBoundsException(i);
         }
+
+        ensureRowsInMemory(i);
 
         return this.rows.get(i % ROWS_IN_MEMORY);
     }

@@ -38,6 +38,17 @@ public class TextDocument implements IDocument {
 
         close();
 
+        int rowCount = 0;
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(new FileInputStream(txtFile), encoding))) {
+            while (reader.readLine() != null) {
+                rowCount++;
+            }
+        } catch (IOException x) {
+            close();
+            return false;
+        }
+
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(new FileInputStream(txtFile), encoding))) {
 
@@ -49,7 +60,7 @@ public class TextDocument implements IDocument {
                 }
             }
 
-            TextTable table = new TextTable(reader);
+            TextTable table = new TextTable(reader, rowCount);
             if (table.hasHeaders() && table.getNumberOfRows() > 0 && this.checkIfGoodEncoding(table)) {
                 String sheetName = StringUtility.removeExtension(txtFile.getName());
                 this.sheet = new TextSheet(sheetName, table);
