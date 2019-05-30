@@ -92,15 +92,56 @@ class TextTable extends Table {
     }
 
     private String[] parseOneRow(String data) {
-        return data.split(this.separator);
+        ArrayList<String> result = new ArrayList<String>();
+        String acc = "";
+        int state = 0;
+
+        for (int i = 0; i < data.length(); i++) {
+            char c = data.charAt(i);
+
+            switch (state) {
+            case 0:
+                if (c == separator.charAt(0)) {
+                    result.add(acc);
+                    acc = "";
+                } else if (c == '"' && acc.trim().equals("")) {
+                    acc = "";
+                    state = 1;
+                } else {
+                    acc += c;
+                }
+                break;
+
+            case 1: // Double quote context
+                if (c == '"') {
+                    state = 2;
+                } else {
+                    acc += c;
+                }
+                break;
+
+            case 2: // Check double quote context exit
+                if (c == '"') {
+                    acc += c;
+                    state = 1;
+                } else {
+                    result.add(acc);
+                    acc = "";
+                    state = 0;
+                }
+                break;
+            }
+        }
+
+        return result.toArray(new String[result.size()]);
     }
 
     private String guessSeparator(String sample) {
         final String[] separators = { "\t", ",", ";" };
 
         // find the separator generating the more of columns
-        float[] v =  new float[separators.length];
-        for(int i = 0; i < separators.length; i++) {
+        float[] v = new float[separators.length];
+        for (int i = 0; i < separators.length; i++) {
             v[i] = sample.split(separators[i]).length;
         }
         return separators[new Vector(v).argmax()];
