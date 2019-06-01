@@ -23,10 +23,12 @@ void setup() {
   size(1600, 800);
   background(51);
 
+  JSON.setFactory(new JSONProcessingFactory());
+
   Brain = new NGramNNClassifier(
-    new NgramList(JSON.loadJSONObject(dataPath("ngrams.json"))), 
-    new RegexList(JSON.loadJSONObject(dataPath("entities.json"))), 
-    new StopWordList(JSON.loadJSONArray(dataPath("stopwords.json"))), 
+    new NgramList(JSON.loadJSONObject(dataPath("ngrams.json"))),
+    new RegexList(JSON.loadJSONObject(dataPath("entities.json"))),
+    new StopWordList(JSON.loadJSONArray(dataPath("stopwords.json"))),
     new com.github.romualdrousseau.shuju.nlp.StringList(JSON.loadJSONObject(dataPath("tags.json"))));
 
   if (new File(dataPath("brain.json")).exists()) {
