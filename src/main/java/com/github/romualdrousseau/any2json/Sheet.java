@@ -4,6 +4,10 @@ import java.util.List;
 
 public abstract class Sheet implements ISheet {
     public ITable findTableWithItelliTag(ITagClassifier classifier) {
+        return this.findTableWithItelliTag(classifier, classifier.getRequiredTagList());
+    }
+
+    public ITable findTableWithItelliTag(ITagClassifier classifier, String[] requiredTagList) {
         ITable result = null;
 
         ITable bestTable = this.findTable(classifier.getSampleCount(), classifier.getSampleCount());
@@ -19,28 +23,28 @@ public abstract class Sheet implements ISheet {
 
             table.updateHeaderTags(classifier);
 
-            if (classifier.getRequiredTagList() == null || this.checkValidity(table, classifier.getRequiredTagList())) {
+            if (this.checkValidity(table, requiredTagList)) {
                 result = table;
                 break;
             }
         }
 
-        if(result == null && classifier.getRequiredTagList() != null) {
-            result = this.findTableWithItelliTag(classifier);
-        }
-
         return result;
     }
 
-    public boolean checkValidity(ITable table, String[] requiredTags) {
+    public boolean checkValidity(ITable table, String[] requiredTagList) {
+        if(requiredTagList == null || requiredTagList.length == 0) {
+            return true;
+        }
+
         int mask = 0;
         for(TableHeader header: table.headers()) {
-            for(int j = 0; j < requiredTags.length; j++) {
-                if (header.hasTag() && !header.getTag().isUndefined() && header.getTag().getValue().equals(requiredTags[j])) {
+            for(int j = 0; j < requiredTagList.length; j++) {
+                if (header.hasTag() && !header.getTag().isUndefined() && header.getTag().getValue().equals(requiredTagList[j])) {
                     mask |= (1 << j);
                 }
             }
         }
-        return (mask == ((1 << requiredTags.length) - 1));
+        return (mask == ((1 << requiredTagList.length) - 1));
     }
 }
