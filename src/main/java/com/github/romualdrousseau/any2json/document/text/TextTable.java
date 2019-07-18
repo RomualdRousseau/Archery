@@ -133,6 +133,10 @@ class TextTable extends Table {
             }
         }
 
+        if (!acc.trim().equals("")) {
+            result.add(acc);
+        }
+
         return result.toArray(new String[result.size()]);
     }
 
