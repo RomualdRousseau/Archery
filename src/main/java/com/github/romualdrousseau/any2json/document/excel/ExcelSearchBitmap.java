@@ -58,21 +58,31 @@ public class ExcelSearchBitmap extends ISearchBitmap
 		Cell cell = row.getCell(colIndex);
 		if(cell == null) {
 			return 0;
-		}
+        }
+
+        int p = 1;
 
 		CellRangeAddress region = checkIfMergedCell(sheet, cell);
 		if(region != null) {
-			cell = row.getCell(region.getFirstColumn());
+            cell = row.getCell(region.getFirstColumn());
         }
 
-        if(cell != null && cell.getCellType() == Cell.CELL_TYPE_BLANK && cell.getCellStyle().getFillBackgroundColorColor() == null) {
+        if(cell != null && checkIfCellIsBlank(cell)) {
             cell = null;
         }
 
-		return (cell == null) ?  0 : 1;
-	}
+        if(cell == null) {
+            p = 0;
+        }
 
-	private CellRangeAddress checkIfMergedCell(Sheet sheet,Cell cell) {
+		return p;
+    }
+
+    private boolean checkIfCellIsBlank(Cell cell) {
+        return cell.getCellType() == Cell.CELL_TYPE_BLANK && cell.getCellStyle().getFillBackgroundColorColor() == null;
+    }
+
+	private CellRangeAddress checkIfMergedCell(Sheet sheet, Cell cell) {
 		for(int i = 0; i < sheet.getNumMergedRegions(); i++) {
 			CellRangeAddress region = sheet.getMergedRegion(i);
 			if(region.isInRange(cell.getRowIndex(), cell.getColumnIndex())) {

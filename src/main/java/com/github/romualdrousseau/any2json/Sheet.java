@@ -2,7 +2,13 @@ package com.github.romualdrousseau.any2json;
 
 import java.util.List;
 
+import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
+
 public abstract class Sheet implements ISheet {
+    public ISearchBitmap getSearchBitmap(int headerColumns, int headerRows) {
+        return null;
+    }
+
     public ITable findTableWithItelliTag(ITagClassifier classifier) {
         return this.findTableWithItelliTag(classifier, classifier.getRequiredTagList());
     }

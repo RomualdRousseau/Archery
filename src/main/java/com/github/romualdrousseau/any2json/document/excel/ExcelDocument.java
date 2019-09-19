@@ -43,7 +43,7 @@ public class ExcelDocument implements IDocument
 
 		return this.sheets.size() > 0;
 	}
-	
+
 	public void close() {
 		this.sheets.clear();
 		if(this.workbook == null) {
@@ -68,6 +68,6 @@ public class ExcelDocument implements IDocument
 		return this.sheets.get(i);
 	}
 
-	private Workbook workbook = null;	
+	private Workbook workbook = null;
 	private ArrayList<ExcelSheet> sheets = new ArrayList<ExcelSheet>();
 }

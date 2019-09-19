@@ -1,10 +1,13 @@
 package com.github.romualdrousseau.any2json.document.excel;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.TableHeader;
-import com.github.romualdrousseau.any2json.TableRow;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
@@ -13,40 +16,32 @@ import org.apache.poi.ss.util.CellRangeAddress;
 
 class ExcelTable extends Table {
     public ExcelTable(Sheet sheet, FormulaEvaluator evaluator, int firstColumn, int firstRow, int lastColumn,
-            int lastRow) {
+            int lastRow, int groupId) {
         this.sheet = sheet;
         this.evaluator = evaluator;
         this.formatter = new DataFormatter();
-        this.firstColumn = firstColumn;
-        this.firstRow = firstRow + 1;
-        this.lastColumn = lastColumn;
-        this.lastRow = lastRow;
-
-        skipEmptyFirstRows(0.5);
-
-        processHeaders();
+        buildTable(firstColumn, firstRow, lastColumn, lastRow, groupId);
     }
 
-    public int getNumberOfColumns() {
-        return this.lastColumn - this.firstColumn + 1;
-    }
-
-    public int getNumberOfRows() {
-        return this.lastRow - this.firstRow + 1;
-    }
-
-    public TableRow getRowAt(int i) {
-        if (i < 0 || i >= getNumberOfRows()) {
-            throw new ArrayIndexOutOfBoundsException(i);
-        }
-
-        org.apache.poi.ss.usermodel.Row row = this.sheet.getRow(this.firstRow + i);
+    protected ExcelRow getInternalRowAt(int i) {
+        org.apache.poi.ss.usermodel.Row row = this.sheet.getRow(i);
         return (row != null) ? new ExcelRow(this, row) : null;
     }
 
-    private void processHeaders() {
+    protected ExcelTable createMetaTable(int firstColumn, int firstRow, int lastColumn, int lastRow, int groupId) {
+        return new ExcelTable(this.sheet, this.evaluator, firstColumn, firstRow, lastColumn, lastRow, groupId);
+    }
+
+    protected List<TableHeader> getHeadersAt(int i) {
+        ArrayList<TableHeader> result = new ArrayList<TableHeader>();
+
+        Row cells = this.sheet.getRow(i);
+        if (cells == null) {
+            return result;
+        }
+
         int ignoreCells = 0;
-        for (Cell cell : this.sheet.getRow(this.firstRow - 1)) {
+        for (Cell cell : cells) {
             if (cell.getColumnIndex() < this.firstColumn || cell.getColumnIndex() > this.lastColumn) {
                 continue;
             }
@@ -59,10 +54,12 @@ class ExcelTable extends Table {
             TableHeader header = new TableHeader().setColumnIndex(cell.getColumnIndex() - this.firstColumn)
                     .setNumberOfCells(findNumberOfCells(cell))
                     .setName(StringUtility.cleanToken(this.formatter.formatCellValue(cell))).setTag(null);
-            addHeader(header);
 
             ignoreCells = header.getNumberOfCells() - 1;
+
+            result.add(header);
         }
+        return result;
     }
 
     private int findNumberOfCells(Cell cell) {
@@ -76,30 +73,7 @@ class ExcelTable extends Table {
         return numberOfCells;
     }
 
-    private void skipEmptyFirstRows(double ratioOfEmptiness) {
-        final int numberOfRows = Math.min(10, getNumberOfRows());
-
-        for (int i = 0; i < numberOfRows; i++) {
-            org.apache.poi.ss.usermodel.Row tmp = this.sheet.getRow(this.firstRow - 1);
-
-            TableRow row = (tmp != null) ? new ExcelRow(this, tmp) : null;
-            if (row != null) {
-                double emptinessFirstCell = Double.valueOf(row.getNumberOfMergedCellsAt(0))
-                        / Double.valueOf(row.getNumberOfCells());
-                if (emptinessFirstCell <= ratioOfEmptiness && !row.isEmpty(ratioOfEmptiness)) {
-                    return;
-                }
-            }
-
-            this.firstRow++;
-        }
-    }
-
     protected Sheet sheet;
     protected FormulaEvaluator evaluator;
     protected DataFormatter formatter;
-    protected int firstColumn;
-    protected int firstRow;
-    protected int lastColumn;
-    protected int lastRow;
 }

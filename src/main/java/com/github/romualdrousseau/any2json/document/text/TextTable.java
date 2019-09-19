@@ -1,89 +1,82 @@
 package com.github.romualdrousseau.any2json.document.text;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.io.IOException;
 import java.io.BufferedReader;
 
 import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.TableHeader;
-import com.github.romualdrousseau.any2json.IRow;
 import com.github.romualdrousseau.shuju.math.Vector;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 class TextTable extends Table {
     public final static int ROWS_IN_MEMORY = 100000;
 
-    private int rowCount;
-
     public TextTable(BufferedReader reader, int rowCount) throws IOException {
-        this.reader = reader;
-        this.rowCount = rowCount - 1;
-        processOneTable();
-    }
-
-    public int getNumberOfColumns() {
-        return getNumberOfHeaders();
-    }
-
-    public int getNumberOfRows() {
-        return this.rowCount;
-    }
-
-    public IRow getRowAt(int i) {
-        if (i < 0 || i >= this.rowCount) {
-            throw new ArrayIndexOutOfBoundsException(i);
-        }
-
-        ensureRowsInMemory(i);
-
-        return this.rows.get(i % ROWS_IN_MEMORY);
-    }
-
-    private void processOneTable() throws IOException {
-
-        if (this.reader == null) {
+        // this.rowCount = rowCount - 1;
+        processOneTable(reader);
+        if (this.rows.size() == 0) {
             return;
         }
-
-        if (!processHeaders(this.reader.readLine())) {
-            return;
-        }
-
-        processRows(this.reader);
+        buildTable(0, 0, this.rows.get(0).getNumberOfCells(), this.rows.size() - 1, 0);
     }
 
-    private boolean processHeaders(String textLine) {
+    public TextTable(ArrayList<TextRow> rows, int firstColumn, int firstRow, int lastColumn, int lastRow, int groupId) {
+        this.rows = rows;
+        buildTable(firstColumn, firstRow, lastColumn, lastRow, groupId);
+    }
 
-        if (textLine == null) {
-            return false;
+    protected TextRow getInternalRowAt(int i) {
+        return (i < this.rows.size()) ? this.rows.get(i) : null;
+    }
+
+    protected TextTable createMetaTable(int firstColumn, int firstRow, int lastColumn, int lastRow, int groupId) {
+        return new TextTable(this.rows, firstColumn, firstRow, lastColumn, lastRow, groupId);
+    }
+
+    protected List<TableHeader> getHeadersAt(int i) {
+        ArrayList<TableHeader> result = new ArrayList<TableHeader>();
+
+        TextRow row = (i < this.rows.size()) ? this.rows.get(i) : null;
+        if (row == null) {
+            return result;
         }
 
-        this.separator = this.guessSeparator(textLine);
-
-        String[] textHeaders = parseOneRow(textLine);
-        for (int i = 0; i < textHeaders.length; i++) {
-            addHeader(new TableHeader().setColumnIndex(i).setNumberOfCells(1)
-                    .setName(StringUtility.cleanToken(textHeaders[i])).setTag(null));
+        for (int j = 0; j < row.getNumberOfCells(); j++) {
+            result.add(new TableHeader().setColumnIndex(j).setNumberOfCells(1)
+                    .setName(StringUtility.cleanToken(row.getCellValueAt(j))).setTag(null));
         }
 
-        return true;
+        return result;
+    }
+
+    private void processOneTable(BufferedReader reader) throws IOException {
+        this.rows = new ArrayList<TextRow>();
+        if (reader == null) {
+            return;
+        }
+        processRows(reader);
     }
 
     private void processRows(BufferedReader reader) throws IOException {
-
-        this.rows.clear();
-
+        boolean firstPass = true;
         for (String textRow; (textRow = reader.readLine()) != null;) {
+
+            if (firstPass) {
+                this.separator = this.guessSeparator(textRow);
+                firstPass = false;
+            }
 
             String[] tokens = parseOneRow(textRow);
 
-            String[] cells = new String[getNumberOfColumns()];
-            for (int j = 0; j < Math.min(tokens.length, cells.length); j++) {
+            String[] cells = new String[tokens.length];
+            for (int j = 0; j < tokens.length; j++) {
                 cells[j] = StringUtility.cleanToken(tokens[j]);
             }
 
             this.rows.add(new TextRow(cells));
-            processedCount++;
+            // this.processedCount++;
 
             if (this.rows.size() >= ROWS_IN_MEMORY) {
                 return;
@@ -151,18 +144,18 @@ class TextTable extends Table {
         return separators[new Vector(v).argmax()];
     }
 
-    private void ensureRowsInMemory(int i) {
-        try {
-            if (i >= this.processedCount) {
-                processRows(this.reader);
-            }
-        } catch (IOException x) {
-            throw new ArrayIndexOutOfBoundsException(i);
-        }
-    }
+    // private void ensureRowsInMemory(int i) {
+    // try {
+    // if (i >= this.processedCount) {
+    // processRows(this.reader);
+    // }
+    // } catch (IOException x) {
+    // throw new ArrayIndexOutOfBoundsException(i);
+    // }
+    // }
 
-    private BufferedReader reader;
-    private ArrayList<IRow> rows = new ArrayList<IRow>();
-    private int processedCount = 0;
+    private ArrayList<TextRow> rows;
     private String separator = null;
+    // private int processedCount = 0;
+    // private int rowCount;
 }

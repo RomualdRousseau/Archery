@@ -15,11 +15,11 @@ public class ExcelRow extends TableRow
 	}
 
 	public int getNumberOfCells() {
-		return this.table.lastColumn - this.table.firstColumn + 1;
+		return this.table.getNumberOfColumns();
     }
 
     public int getNumberOfMergedCellsAt(int i) {
-        Cell cell = this.row.getCell(this.table.firstColumn + i);
+        Cell cell = this.row.getCell(this.table.getFirstColumn() + i);
 		if(cell == null) {
 			return 1;
         }
@@ -64,18 +64,12 @@ public class ExcelRow extends TableRow
     }
 
 	private String getInternalCellValueAt(int i) {
-		Cell cell = this.row.getCell(this.table.firstColumn + i);
+		Cell cell = this.row.getCell(this.table.getFirstColumn() + i);
 		if(cell == null) {
 			return null;
         }
 
 		int type = this.table.evaluator.evaluateInCell(cell).getCellType();
-
-		//int type = cell.getCellType();
-		//if(type == Cell.CELL_TYPE_FORMULA) {
-		//	type = evaluator.evaluateInCell(cell).getCellType();
-		//}
-
 		String value = this.table.formatter.formatCellValue(cell);
 
 		// TRICKY: Get hidden decimals in case of a rounded numeric value
@@ -84,7 +78,7 @@ public class ExcelRow extends TableRow
 			value = (Math.floor(d) == d) ? value : String.valueOf(d);
 		}
 		else if(type == Cell.CELL_TYPE_ERROR) {
-			throw new UnsupportedOperationException("Unexceptected Cell Error at [" + row.getRowNum() + ";" + (this.table.firstColumn + i) + "]");
+			throw new UnsupportedOperationException("Unexceptected Cell Error at [" + row.getRowNum() + ";" + (this.table.getFirstColumn() + i) + "]");
 		}
 
 		return StringUtility.cleanToken(value);

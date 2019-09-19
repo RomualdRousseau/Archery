@@ -29,7 +29,8 @@ void setup() {
     new NgramList(JSON.loadJSONObject(dataPath("ngrams.json"))),
     new RegexList(JSON.loadJSONObject(dataPath("entities.json"))),
     new StopWordList(JSON.loadJSONArray(dataPath("stopwords.json"))),
-    new com.github.romualdrousseau.shuju.nlp.StringList(JSON.loadJSONObject(dataPath("tags.json"))));
+    new com.github.romualdrousseau.shuju.nlp.StringList(JSON.loadJSONObject(dataPath("tags.json"))),
+    new String[] {});
 
   if (new File(dataPath("brain.json")).exists()) {
     Brain.getModel().fromJSON(JSON.loadJSONArray(dataPath("brain.json")));
