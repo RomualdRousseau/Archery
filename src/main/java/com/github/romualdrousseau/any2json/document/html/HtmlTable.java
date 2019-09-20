@@ -1,10 +1,8 @@
 package com.github.romualdrousseau.any2json.document.html;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import com.github.romualdrousseau.any2json.Table;
-import com.github.romualdrousseau.any2json.TableHeader;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 import org.jsoup.nodes.Element;
@@ -16,12 +14,12 @@ class HtmlTable extends Table {
         if (this.rows.size() == 0) {
             return;
         }
-        buildTable(0, 0, this.rows.get(0).getNumberOfCells(), this.rows.size() - 1, 0);
+        buildDataTable(0, 0, this.rows.get(0).getNumberOfCells(), this.rows.size() - 1, 0);
     }
 
     public HtmlTable(ArrayList<HtmlRow> rows, int firstColumn, int firstRow, int lastColumn, int lastRow, int groupId) {
         this.rows = rows;
-        buildTable(firstColumn, firstRow, lastColumn, lastRow, groupId);
+        buildMetaTable(firstColumn, firstRow, lastColumn, lastRow, groupId);
     }
 
     protected HtmlRow getInternalRowAt(int i) {
@@ -30,22 +28,6 @@ class HtmlTable extends Table {
 
     protected HtmlTable createMetaTable(int firstColumn, int firstRow, int lastColumn, int lastRow, int groupId) {
         return new HtmlTable(this.rows, firstColumn, firstRow, lastColumn, lastRow, groupId);
-    }
-
-    protected List<TableHeader> getHeadersAt(int i) {
-        ArrayList<TableHeader> result = new ArrayList<TableHeader>();
-
-        HtmlRow row = (i < this.rows.size()) ? this.rows.get(i) : null;
-        if (row == null) {
-            return result;
-        }
-
-        for (int j = 0; j < row.getNumberOfCells(); j++) {
-            result.add(new TableHeader().setColumnIndex(j).setNumberOfCells(1)
-                    .setName(StringUtility.cleanToken(row.getCellValueAt(j))).setTag(null));
-        }
-
-        return result;
     }
 
     private void processOneTable(Elements htmlElements) {
@@ -65,7 +47,7 @@ class HtmlTable extends Table {
                 tokens[j] = StringUtility.cleanToken(htmlTableCells.get(j).text());
             }
 
-            this.rows.add(new HtmlRow(tokens));
+            this.rows.add(new HtmlRow(tokens, this.lastGroupId));
         }
     }
 

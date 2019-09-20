@@ -3,6 +3,10 @@ package com.github.romualdrousseau.any2json;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 public abstract class TableRow implements IRow {
+    public int getGroupId() {
+        return this.groupId;
+    }
+
     public boolean isEmpty(double ratioOfEmptiness) {
         if (getNumberOfCells() == 0) {
             return true;
@@ -28,18 +32,18 @@ public abstract class TableRow implements IRow {
         }
     }
 
-    public TableCell getCell(TableHeader header) {
+    public TableCell getCell(IHeader header) {
         return this.getCell(header, false);
     }
 
-    public TableCell getCell(TableHeader header, boolean mergeValues) {
+    public TableCell getCell(IHeader header, boolean mergeValues) {
         return new TableCell(header).setValue(this.getCellValue(header, mergeValues));
     }
 
-    public String getCellValue(TableHeader header, boolean mergeValues) {
+    public String getCellValue(IHeader header, boolean mergeValues) {
         if (mergeValues) {
             String result = "";
-            for(TableHeader current = header; current != null; current = current.next()) {
+            for(IHeader current = header; current != null; current = current.next()) {
                 String value = getCellValue(current);
                 if(value.contains(result)) {
                     result = value;
@@ -53,4 +57,6 @@ public abstract class TableRow implements IRow {
             return getCellValue(header);
         }
     }
+
+    protected int groupId;
 }

@@ -2,13 +2,13 @@ package com.github.romualdrousseau.any2json;
 
 public class HeaderTag
 {
-    public HeaderTag(TableHeader header, String value) {
+    public HeaderTag(IHeader header, String value) {
 		this.header = header;
 		this.value = value;
 		this.probability = 0.0f;
     }
 
-	public HeaderTag(TableHeader header, String value, float probability) {
+	public HeaderTag(IHeader header, String value, float probability) {
 		this.header = header;
 		this.value = value;
 		this.probability = probability;
@@ -18,7 +18,7 @@ public class HeaderTag
 		return this.value == null || value.equalsIgnoreCase("none");
 	}
 
-	public TableHeader getHeader() {
+	public IHeader getHeader() {
 		return this.header;
 	}
 
@@ -58,7 +58,7 @@ public class HeaderTag
 		}
 	}
 
-	private TableHeader header;
+	private IHeader header;
 	private String value;
 	private float probability;
 }

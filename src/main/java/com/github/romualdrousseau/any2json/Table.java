@@ -1,6 +1,5 @@
 package com.github.romualdrousseau.any2json;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -14,69 +13,31 @@ public abstract class Table implements ITable {
     }
 
     public boolean isMetaTable() {
-        return getNumberOfRows() == 0;
+        return getNumberOfRows() <= 0;
+    }
+
+    public int getNumberOfMetaTables() {
+        return this.metaTables.size();
+    }
+
+    public ITable getMetaTableAt(int tableIndex) {
+        return this.metaTables.get(tableIndex);
+    }
+
+    public Iterable<ITable> metatables() {
+        return this.metaTables;
     }
 
     public int getNumberOfMetas() {
         return this.firstRow - this.metaRow;
     }
 
-    public IRow getMetaAt(int i) {
-        if (i < 0 || i >= getNumberOfMetas()) {
-            throw new ArrayIndexOutOfBoundsException(i);
+    public IRow getMetaRowAt(int rowIndex) {
+        if (rowIndex < 0 || rowIndex >= getNumberOfMetas()) {
+            throw new ArrayIndexOutOfBoundsException(rowIndex);
         }
 
-        return getInternalRowAt(this.metaRow + i);
-    }
-
-    public List<ITable> getMetaTables() {
-        return this.metaTables;
-    }
-
-    public int getFirstColumn() {
-        return this.firstColumn;
-    }
-
-    public int getFirstRow() {
-        return this.firstRow;
-    }
-
-    public int getNumberOfColumns() {
-        return this.lastColumn - this.firstColumn + 1;
-    }
-
-    public int getNumberOfRows() {
-        return this.lastRow - this.firstRow - this.offsetRow + 1;
-    }
-
-    public Iterable<TableHeader> headers() {
-        return this.headers;
-    }
-
-    public int getNumberOfHeaders() {
-        return this.headers.size();
-    }
-
-    public TableHeader getHeaderAt(int colIndex) {
-        return this.headers.get(colIndex);
-    }
-
-    public TableHeader getHeaderByTag(String tagName) {
-        if (tagName == null) {
-            throw new IllegalArgumentException();
-        }
-
-        return this.headersByTag.get(tagName);
-    }
-
-    public TableHeader getHeaderByCleanName(String cleanName) {
-        TableHeader result = null;
-        for (TableHeader header : this.headers) {
-            if (header.getCleanName().equals(cleanName)) {
-                result = header;
-            }
-        }
-        return result;
+        return getInternalRowAt(this.metaRow + rowIndex);
     }
 
     public boolean hasHeaders() {
@@ -87,12 +48,91 @@ public abstract class Table implements ITable {
         this.headers.clear();
     }
 
+    public int getNumberOfHeaders() {
+        return this.headers.size();
+    }
+
+    public IHeader getHeaderAt(int colIndex) {
+        return this.headers.get(colIndex);
+    }
+
+    public IHeader getHeaderByTag(String tagName) {
+        if (tagName == null) {
+            throw new IllegalArgumentException();
+        }
+
+        return this.headersByTag.get(tagName);
+    }
+
+    public IHeader getHeaderByCleanName(String cleanName) {
+        IHeader result = null;
+        for (IHeader header : this.headers) {
+            if (header.getCleanName().equals(cleanName)) {
+                result = header;
+            }
+        }
+        return result;
+    }
+
+    public Iterable<IHeader> headers() {
+        return this.headers;
+    }
+
+    public int getFirstColumn() {
+        return this.firstColumn;
+    }
+
+    public int getFirstRow() {
+        return this.firstRow;
+    }
+
+    public int getLastColumn() {
+        return this.lastColumn;
+    }
+
+    public int getLastRow() {
+        return this.lastRow;
+    }
+
+    public int getNumberOfColumns() {
+        return this.lastColumn - this.firstColumn + 1;
+    }
+
+    public int getNumberOfRows() {
+        return this.lastRow - this.firstRow - this.offsetRow + 1;
+    }
+
+    public TableRow getRowAt(int rowIndex) {
+        if (rowIndex < 0 || rowIndex >= getNumberOfRows()) {
+            throw new ArrayIndexOutOfBoundsException(rowIndex);
+        }
+
+        if (rowIndex == 0) {
+            this.offsetRow = 0; // reset cursor if start from beginning
+            this.lastGroupId = this.groupId;
+        } else {
+            int currentOffset = this.offsetRow;
+            skipEmptyRows(0.5, this.firstRow + this.offsetRow + rowIndex);
+            if (this.offsetRow > currentOffset) {
+                if(skipDuplicateHeader(this.firstRow + this.offsetRow + rowIndex)) {
+                    addMetaTable(this.firstColumn, this.firstRow + currentOffset + rowIndex, this.lastColumn,
+                            this.firstRow + this.offsetRow + rowIndex - 2);
+                } else {
+                    addMetaTable(this.firstColumn, this.firstRow + currentOffset + rowIndex, this.lastColumn,
+                            this.firstRow + this.offsetRow + rowIndex - 1);
+                }
+            }
+        }
+
+        return getInternalRowAt(this.firstRow + this.offsetRow + rowIndex);
+    }
+
     public Iterable<IRow> rows() {
         return new RowIterable(this);
     }
 
     public void resetHeaderTags() {
-        for (TableHeader header : this.headers) {
+        for (IHeader header : this.headers) {
             header.resetTag();
         }
         this.headersByTag.clear();
@@ -101,56 +141,39 @@ public abstract class Table implements ITable {
     public void updateHeaderTags(ITagClassifier classifier) {
         assert classifier != null;
 
+        this.disableMetaTableProcessing = true;
+
         this.resetHeaderTags();
 
         if (Table.IsEmpty(this)) {
             return;
         }
 
-        for (TableHeader header : this.headers) {
+        for (IHeader header : this.headers) {
             header.setTagClassifier(classifier);
         }
 
-        for (TableHeader header : this.headers) {
+        for (IHeader header : this.headers) {
             header.updateTag(false);
         }
 
-        for (TableHeader header : this.headers) {
+        for (IHeader header : this.headers) {
             header.updateTag(true);
         }
 
-        for (TableHeader header : this.headers) {
+        for (IHeader header : this.headers) {
             if (header.hasTag() && !header.getTag().isUndefined()) {
-                TableHeader head = this.headersByTag.putIfAbsent(header.getTag().getValue(), header);
+                IHeader head = this.headersByTag.putIfAbsent(header.getTag().getValue(), header);
                 if (head != null) {
                     head.chain(header);
                 }
             }
         }
+
+        this.disableMetaTableProcessing = false;
     }
 
-    public TableRow getRowAt(int i) {
-        if (i < 0 || i >= getNumberOfRows()) {
-            throw new ArrayIndexOutOfBoundsException(i);
-        }
-
-        if (i == 0) {
-            this.offsetRow = 0; // reset offset if start from beginning;
-        } else {
-            int currentOffset = this.offsetRow;
-            skipEmptyRows(0.5, this.firstRow + this.offsetRow + i);
-            if (this.offsetRow > currentOffset) {
-                skipDuplicateHeader(this.firstRow + this.offsetRow + i);
-                this.lastGroupId++;
-                this.addMetaTable(createMetaTable(this.firstColumn, this.firstRow + currentOffset + i, this.lastColumn,
-                        this.firstRow + this.offsetRow + i - 1, this.lastGroupId));
-            }
-        }
-
-        return getInternalRowAt(this.firstRow + this.offsetRow + i);
-    }
-
-    protected void buildTable(int firstColumn, int firstRow, int lastColumn, int lastRow, int groupId) {
+    protected void buildDataTable(int firstColumn, int firstRow, int lastColumn, int lastRow, int groupId) {
         this.metaRow = firstRow;
         this.firstColumn = firstColumn;
         this.firstRow = firstRow + 1; // skip header as we supposed to always have a header
@@ -164,28 +187,86 @@ public abstract class Table implements ITable {
 
         processHeaders();
 
-        if (!isMetaTable()) {
-            this.lastGroupId++;
-            addMetaTable(createMetaTable(this.firstColumn, this.metaRow,
-                    this.lastColumn, this.firstRow - 1, this.lastGroupId));
+        if (isMetaTable()) {
+            this.firstRow = this.lastRow + 1;
+            processMetas();
+        } else {
+            addMetaTable(this.firstColumn, this.metaRow, this.lastColumn, this.firstRow - 2); // Do not include the headers, hence - 2
         }
     }
 
-    protected ITable addHeader(TableHeader header) {
-        this.headers.add(header);
-        header.setTable(this);
-        return this;
+    protected void buildMetaTable(int firstColumn, int firstRow, int lastColumn, int lastRow, int groupId) {
+        this.metaRow = firstRow;
+        this.firstColumn = firstColumn;
+        this.firstRow = lastRow + 1; // firstRow represents the first row of data and MetaTable don't have data
+        this.lastColumn = lastColumn;
+        this.lastRow = lastRow;
+        this.groupId = groupId;
+        this.lastGroupId = groupId;
+        this.offsetRow = 0;
+
+        processMetas();
     }
 
-    protected ITable addMetaTable(ITable subtable) {
-        this.metaTables.add(subtable);
-        return this;
+    protected abstract TableRow getInternalRowAt(int rowIndex);
+
+    protected abstract Table createMetaTable(int firstColumn, int firstRow, int lastColumn, int lastRow, int groupId);
+
+    private void processHeaders() {
+        this.headers.clear();
+        for (TableHeader header : getHeadersAt(this.firstRow - 1)) {
+            addHeaderOrMeta(header);
+        }
     }
 
-    protected void skipEmptyFirstRows(double ratioOfEmptiness) {
-        final int numberOfRows = Math.min(10, this.lastRow);
-        for (int i = 0; i < numberOfRows; i++) {
-            if (isEmptyRow(ratioOfEmptiness, this.firstRow - 1)) {
+    private void processMetas() {
+        this.headers.clear();
+
+        int index = 0;
+        for (int j = 0; j < getNumberOfMetas(); j++) {
+            IRow metas = getInternalRowAt(this.metaRow + j);
+            if (metas == null) {
+                continue;
+            }
+
+            int ignoreCells = 0;
+            for (int i = 0; i < metas.getNumberOfCells(); i++) {
+                if (ignoreCells > 0) {
+                    ignoreCells--;
+                    continue;
+                }
+
+                TableMeta meta = new TableMeta().setColumnIndex(index)
+                        .setNumberOfCells(metas.getNumberOfMergedCellsAt(i)).setName(metas.getCellValueAt(i))
+                        .setTag(null);
+
+                ignoreCells = meta.getNumberOfCells() - 1;
+
+                index++;
+
+                addHeaderOrMeta(meta);
+            }
+        }
+    }
+
+    private boolean skipDuplicateHeader(int fromRow) {
+        boolean duplicated = true;
+        for (TableHeader header : getHeadersAt(fromRow)) {
+            if (getHeaderByCleanName(header.getCleanName()) == null) {
+                duplicated = false;
+            }
+        }
+        if (duplicated) {
+            this.offsetRow++;
+        }
+        return duplicated;
+    }
+
+    private void skipEmptyFirstRows(double ratioOfEmptiness) {
+        final int fromRow = this.firstRow - 1;
+        final int toRows = Math.min(fromRow + 10, this.lastRow);
+        for (int i = fromRow; i <= toRows; i++) {
+            if (isEmptyRow(ratioOfEmptiness, i)) {
                 this.firstRow++;
             } else {
                 return;
@@ -193,9 +274,9 @@ public abstract class Table implements ITable {
         }
     }
 
-    protected void skipEmptyRows(double ratioOfEmptiness, int fromRow) {
-        final int numberOfRows = Math.min(fromRow + 10, this.lastRow);
-        for (int i = fromRow; i <= numberOfRows; i++) {
+    private void skipEmptyRows(double ratioOfEmptiness, int fromRow) {
+        final int toRow = Math.min(fromRow + 10, this.lastRow);
+        for (int i = fromRow; i <= toRow; i++) {
             if (isEmptyRow(ratioOfEmptiness, i)) {
                 this.offsetRow++;
             } else {
@@ -204,44 +285,67 @@ public abstract class Table implements ITable {
         }
     }
 
-    protected boolean isEmptyRow(double ratioOfEmptiness, int i) {
-        TableRow row = getInternalRowAt(i);
-        if (row != null) {
-            double emptinessFirstCell = Double.valueOf(row.getNumberOfMergedCellsAt(0))
-                    / Double.valueOf(row.getNumberOfCells());
-            if (emptinessFirstCell <= ratioOfEmptiness && !row.isEmpty(ratioOfEmptiness)) {
-                return false;
+    private boolean isEmptyRow(double ratioOfEmptiness, int rowIndex) {
+        TableRow row = getInternalRowAt(rowIndex);
+        if (row == null) {
+            return true;
+        }
+        double emptinessFirstCell = Double.valueOf(row.getNumberOfMergedCellsAt(0))
+                / Double.valueOf(row.getNumberOfCells());
+        return emptinessFirstCell > ratioOfEmptiness || row.isEmpty(ratioOfEmptiness);
+    }
+
+    private Iterable<TableHeader> getHeadersAt(int rowIndex) {
+        ArrayList<TableHeader> result = new ArrayList<TableHeader>();
+
+        IRow cells = getInternalRowAt(rowIndex);
+        if (cells == null) {
+            return result;
+        }
+
+        int ignoreCells = 0;
+        for (int i = 0; i < cells.getNumberOfCells(); i++) {
+            if (ignoreCells > 0) {
+                ignoreCells--;
+                continue;
             }
+
+            TableHeader header = new TableHeader().setColumnIndex(i).setNumberOfCells(cells.getNumberOfMergedCellsAt(i))
+                    .setName(cells.getCellValueAt(i)).setTag(null);
+
+            ignoreCells = header.getNumberOfCells() - 1;
+
+            result.add(header);
         }
-        return true;
+
+        return result;
     }
 
-    protected void processHeaders() {
-        for(TableHeader header: getHeadersAt(this.firstRow - 1)) {
-            addHeader(header);
+    private void addMetaTable(int firstColumn, int firstRow, int lastColumn, int lastRow) {
+        if (disableMetaTableProcessing) {
+            return;
+        }
+
+        if (firstRow > lastRow) {
+            return;
+        }
+
+        this.lastGroupId++;
+
+        if (this.metaTables.size() <= this.lastGroupId) { // check if metatable not already processed
+            this.metaTables.add(createMetaTable(firstColumn, firstRow, lastColumn, lastRow, this.lastGroupId));
         }
     }
 
-    protected void skipDuplicateHeader(int fromRow) {
-        boolean duplicated = true;
-        for(TableHeader header: getHeadersAt(fromRow)) {
-            if (getHeaderByCleanName(header.getCleanName()) == null) {
-                duplicated = false;
-            }
-        }
-        if (duplicated) {
-            this.offsetRow++;
-        }
+    private ITable addHeaderOrMeta(IHeader header) {
+        this.headers.add(header);
+        header.setTable(this);
+        return this;
     }
 
-    protected abstract TableRow getInternalRowAt(int i);
-
-    protected abstract Table createMetaTable(int firstColumn, int firstRow, int lastColumn, int lastRow, int groupId);
-
-    protected abstract List<TableHeader> getHeadersAt(int i);
-
-    protected ArrayList<TableHeader> headers = new ArrayList<TableHeader>();
-    protected HashMap<String, TableHeader> headersByTag = new HashMap<String, TableHeader>();
+    protected boolean disableMetaTableProcessing = false;
+    protected ArrayList<IHeader> headers = new ArrayList<IHeader>();
+    protected HashMap<String, IHeader> headersByTag = new HashMap<String, IHeader>();
     protected ArrayList<ITable> metaTables = new ArrayList<ITable>();
     protected int metaRow;
     protected int firstColumn;

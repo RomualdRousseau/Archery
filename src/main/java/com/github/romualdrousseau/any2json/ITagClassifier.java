@@ -2,19 +2,21 @@ package com.github.romualdrousseau.any2json;
 
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.DataSet;
-import com.github.romualdrousseau.shuju.nlp.BaseList;
+import com.github.romualdrousseau.shuju.nlp.NgramList;
+import com.github.romualdrousseau.shuju.nlp.RegexList;
 import com.github.romualdrousseau.shuju.nlp.StopWordList;
+import com.github.romualdrousseau.shuju.nlp.StringList;
 
 public interface ITagClassifier {
     int getSampleCount();
 
     StopWordList getStopWordList();
 
-    BaseList getEntityList();
+    RegexList getEntityList();
 
-    BaseList getWordList();
+    NgramList getWordList();
 
-    BaseList getTagList();
+    StringList getTagList();
 
     String[] getRequiredTagList();
 

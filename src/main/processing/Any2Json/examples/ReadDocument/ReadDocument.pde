@@ -42,28 +42,47 @@ void setup() {
   noSmooth();
   frameRate(1);
 
+  NGramNNClassifier classifier1 = new NGramNNClassifier(JSON.loadJSONObject(dataPath("brainColumnClassifier.json")));
+
   IDocument document = DocumentFactory.createInstance(dataPath("Book2.xlsx"), "UTF-8");
-  
+
   searchBitmap = document.getSheetAt(0).getSearchBitmap(25, 50);
   final Filter filter = new Filter(new Template(new int[][] { { 0, 0, 0 }, { 1, 0, 1 }, { 0, 0, 0 } }));
   filter.apply(searchBitmap, 1);
   filter.applyNeg(searchBitmap, 2);
   searchPoints = new RectangleExtractor().extractAll(searchBitmap);
-  
+
   tables = document.getSheetAt(0).findTables(25, 30);
-  
+
   for(ITable table: tables) {
     if(!table.isMetaTable()) {
+
+      table.updateHeaderTags(classifier1);
+
+      for(IHeader header: table.headers()) {
+          if(!header.hasTag()) {
+              continue;
+          }
+
+          println(header.getTag().getValue());
+      }
+
       for(IRow row: table.rows()) {
         if(row == null) {
           continue;
         }
-        ITable subtable = table.getMetaTables().get(table.getMetaTables().size() - 1);
-        println(subtable.isMetaTable(), subtable.getMetaAt(0).getCellValueAt(0), subtable.getMetaAt(1).getCellValueAt(0), row.getCellValueAt(0));
+
+        ITable metaTable = table.getMetaTableAt(table.getNumberOfMetaTables() - 1);
+        metaTable.updateHeaderTags(classifier1);
+        for(IHeader header: metaTable.headers()) {
+            print(header.hasTag(), header.getName(), header.getTag().getValue(), "");
+        }
+
+        println(row.getCellValueAt(0));
       }
     }
   }
-  
+
   document.close();
 }
 

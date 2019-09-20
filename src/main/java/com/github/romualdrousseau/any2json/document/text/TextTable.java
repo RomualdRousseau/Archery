@@ -1,12 +1,10 @@
 package com.github.romualdrousseau.any2json.document.text;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.io.IOException;
 import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.ArrayList;
 
 import com.github.romualdrousseau.any2json.Table;
-import com.github.romualdrousseau.any2json.TableHeader;
 import com.github.romualdrousseau.shuju.math.Vector;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
@@ -14,17 +12,16 @@ class TextTable extends Table {
     public final static int ROWS_IN_MEMORY = 100000;
 
     public TextTable(BufferedReader reader, int rowCount) throws IOException {
-        // this.rowCount = rowCount - 1;
         processOneTable(reader);
         if (this.rows.size() == 0) {
             return;
         }
-        buildTable(0, 0, this.rows.get(0).getNumberOfCells(), this.rows.size() - 1, 0);
+        buildDataTable(0, 0, this.rows.get(0).getNumberOfCells(), this.rows.size() - 1, 0);
     }
 
     public TextTable(ArrayList<TextRow> rows, int firstColumn, int firstRow, int lastColumn, int lastRow, int groupId) {
         this.rows = rows;
-        buildTable(firstColumn, firstRow, lastColumn, lastRow, groupId);
+        buildMetaTable(firstColumn, firstRow, lastColumn, lastRow, groupId);
     }
 
     protected TextRow getInternalRowAt(int i) {
@@ -33,22 +30,6 @@ class TextTable extends Table {
 
     protected TextTable createMetaTable(int firstColumn, int firstRow, int lastColumn, int lastRow, int groupId) {
         return new TextTable(this.rows, firstColumn, firstRow, lastColumn, lastRow, groupId);
-    }
-
-    protected List<TableHeader> getHeadersAt(int i) {
-        ArrayList<TableHeader> result = new ArrayList<TableHeader>();
-
-        TextRow row = (i < this.rows.size()) ? this.rows.get(i) : null;
-        if (row == null) {
-            return result;
-        }
-
-        for (int j = 0; j < row.getNumberOfCells(); j++) {
-            result.add(new TableHeader().setColumnIndex(j).setNumberOfCells(1)
-                    .setName(StringUtility.cleanToken(row.getCellValueAt(j))).setTag(null));
-        }
-
-        return result;
     }
 
     private void processOneTable(BufferedReader reader) throws IOException {
@@ -75,7 +56,7 @@ class TextTable extends Table {
                 cells[j] = StringUtility.cleanToken(tokens[j]);
             }
 
-            this.rows.add(new TextRow(cells));
+            this.rows.add(new TextRow(cells, this.lastGroupId));
             // this.processedCount++;
 
             if (this.rows.size() >= ROWS_IN_MEMORY) {

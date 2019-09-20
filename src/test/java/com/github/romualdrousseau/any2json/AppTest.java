@@ -24,7 +24,7 @@ public class AppTest {
         IDocument document = null;
         ISheet sheet = null;
         ITable table = null;
-        TableHeader header = null;
+        IHeader header = null;
         int fileNo = 0;
 
         for (String[] expectedValues : scenarios1) {
@@ -73,7 +73,7 @@ public class AppTest {
         IDocument document = null;
         ISheet sheet = null;
         ITable table = null;
-        TableHeader header = null;
+        IHeader header = null;
         int fileNo = 0;
 
         NGramNNClassifier Brain = new NGramNNClassifier(

@@ -23,7 +23,7 @@ public abstract class Sheet implements ISheet {
 
         List<ITable> tables = this.findTables(classifier.getSampleCount(), classifier.getSampleCount());
         for (ITable table : tables) {
-            if (Table.IsEmpty(table) || table.getNumberOfHeaders() < bestTable.getNumberOfHeaders()) {
+            if (Table.IsEmpty(table) || table.isMetaTable() || table.getNumberOfHeaders() < bestTable.getNumberOfHeaders()) {
                 continue;
             }
 
@@ -44,7 +44,7 @@ public abstract class Sheet implements ISheet {
         }
 
         int mask = 0;
-        for(TableHeader header: table.headers()) {
+        for(IHeader header: table.headers()) {
             for(int j = 0; j < requiredTagList.length; j++) {
                 if (header.hasTag() && !header.getTag().isUndefined() && header.getTag().getValue().equals(requiredTagList[j])) {
                     mask |= (1 << j);

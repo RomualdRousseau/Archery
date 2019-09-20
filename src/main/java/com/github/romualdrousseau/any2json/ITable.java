@@ -1,45 +1,51 @@
 package com.github.romualdrousseau.any2json;
 
-import java.util.List;
-
 public interface ITable {
     int getGroupId();
 
     boolean isMetaTable();
 
+    int getNumberOfMetaTables();
+
+    ITable getMetaTableAt(int tableIndex);
+
+    Iterable<ITable> metatables();
+
     int getNumberOfMetas();
 
-    List<ITable> getMetaTables();
-
-    IRow getMetaAt(int i);
+    IRow getMetaRowAt(int rowIndex);
 
     boolean hasHeaders();
 
-    Iterable<TableHeader> headers();
+    void clearHeaders();
 
     int getNumberOfHeaders();
 
-    TableHeader getHeaderAt(int colIndex);
+    IHeader getHeaderAt(int colIndex);
 
-    TableHeader getHeaderByTag(String tagName);
+    IHeader getHeaderByTag(String tagName);
 
-    TableHeader getHeaderByCleanName(String cleanName);
+    IHeader getHeaderByCleanName(String cleanName);
 
-    void clearHeaders();
-
-    //int getFirstColumn();
+    Iterable<IHeader> headers();
 
     int getNumberOfColumns();
 
-    Iterable<IRow> rows();
-
-    //int getFirstRow();
-
     int getNumberOfRows();
 
-    IRow getRowAt(int i);
+    IRow getRowAt(int rowIndex);
+
+    Iterable<IRow> rows();
 
     void resetHeaderTags();
 
     void updateHeaderTags(ITagClassifier classifier);
+
+    int getFirstColumn();
+
+    int getFirstRow();
+
+    int getLastColumn();
+
+    int getLastRow();
 }

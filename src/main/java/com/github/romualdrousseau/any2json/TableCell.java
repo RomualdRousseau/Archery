@@ -4,12 +4,12 @@ import com.github.romualdrousseau.shuju.util.StringUtility;
 import com.github.romualdrousseau.shuju.math.Vector;
 
 public class TableCell {
-    public TableCell(TableHeader header) {
+    public TableCell(IHeader header) {
         this.header = header;
         this.classifier = header.getTagClassifier();
     }
 
-    public TableHeader getHeader() {
+    public IHeader getHeader() {
         return this.header;
     }
 
@@ -43,6 +43,6 @@ public class TableCell {
     private String value;
     private String cleanValue;
     private Vector entityVector;
-    private TableHeader header;
+    private IHeader header;
     private ITagClassifier classifier;
 }

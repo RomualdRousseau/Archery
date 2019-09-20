@@ -35,6 +35,10 @@ public class NGramNNClassifier implements ITagClassifier {
     private float accuracy;
     private float mean;
 
+    public NGramNNClassifier(NgramList ngrams, RegexList entities, StopWordList stopwords, StringList tags) {
+        this(ngrams, entities, stopwords, tags, null);
+    }
+
     public NGramNNClassifier(NgramList ngrams, RegexList entities, StopWordList stopwords, StringList tags, String[] requiredTags) {
         this.accuracy = 0.0f;
         this.mean = 1.0f;

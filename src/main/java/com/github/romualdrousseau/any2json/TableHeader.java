@@ -6,22 +6,8 @@ import com.github.romualdrousseau.shuju.util.StringUtility;
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.math.Vector;
 
-public class TableHeader {
-    public String getName() {
-        return this.name;
-    }
-
-    public String getCleanName() {
-        if (this.name != null && this.cleanName == null) {
-            if (this.classifier != null) {
-                this.cleanName = StringUtility.cleanToken(this.classifier.getStopWordList().removeStopWords(this.name));
-            } else {
-                this.cleanName = StringUtility.cleanToken(this.name);
-            }
-        }
-        return this.cleanName;
-    }
-
+public class TableHeader implements IHeader
+{
     public Vector getWordVector() {
         if (this.classifier != null && this.wordVector == null) {
             this.wordVector = this.classifier.getWordList().word2vec(this.getCleanName());
@@ -41,6 +27,21 @@ public class TableHeader {
         return this.words2vec(conflictingHeaders);
     }
 
+    public String getName() {
+        return this.name;
+    }
+
+    public String getCleanName() {
+        if (this.name != null && this.cleanName == null) {
+            if (this.classifier != null) {
+                this.cleanName = this.classifier.getStopWordList().removeStopWords(this.name);
+            } else {
+                this.cleanName = this.name;
+            }
+        }
+        return this.cleanName;
+    }
+
     public TableHeader setName(String name) {
         this.name = name;
         return this;
@@ -50,8 +51,8 @@ public class TableHeader {
         return this.columnIndex;
     }
 
-    public TableHeader setColumnIndex(int columnIndex) {
-        this.columnIndex = columnIndex;
+    public TableHeader setColumnIndex(int index) {
+        this.columnIndex = index;
         return this;
     }
 
@@ -133,11 +134,11 @@ public class TableHeader {
                 .setLabel(this.classifier.getTagList().word2vec(tagValue));
     }
 
-    protected void chain(TableHeader other) {
+    public void chain(IHeader other) {
         this.next = other;
     }
 
-    protected TableHeader next() {
+    public IHeader next() {
         return this.next;
     }
 
@@ -158,9 +159,9 @@ public class TableHeader {
     private TableHeader[] findConflictingHeaders() {
         ArrayList<TableHeader> result = new ArrayList<TableHeader>();
 
-        for (TableHeader header : this.table.headers()) {
-            if (header != this && header.hasTag() && header.tag.equals(this.tag) && !header.tag.isUndefined()) {
-                result.add(header);
+        for (IHeader header : this.table.headers()) {
+            if (header != this && header instanceof TableHeader && header.hasTag() && !header.getTag().isUndefined() && header.getTag().equals(this.tag)) {
+                result.add((TableHeader) header);
             }
         }
 
@@ -213,5 +214,5 @@ public class TableHeader {
     private ITagClassifier classifier;
     private HeaderTag tag;
     private ITable table;
-    private TableHeader next = null;
+    private IHeader next = null;
 }

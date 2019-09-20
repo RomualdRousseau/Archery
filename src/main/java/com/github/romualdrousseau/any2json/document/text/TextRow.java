@@ -1,12 +1,13 @@
 package com.github.romualdrousseau.any2json.document.text;
 
 import com.github.romualdrousseau.any2json.TableRow;
-import com.github.romualdrousseau.any2json.TableHeader;
+import com.github.romualdrousseau.any2json.IHeader;
 
 class TextRow extends TableRow
 {
-	public TextRow(String[] tokens) {
-		this.cells = tokens;
+	public TextRow(String[] tokens, int groupId) {
+        this.cells = tokens;
+        this.groupId = groupId;
 	}
 
 	public int getNumberOfCells() {
@@ -17,7 +18,7 @@ class TextRow extends TableRow
         return 1;
     }
 
-	public String getCellValue(TableHeader header) {
+	public String getCellValue(IHeader header) {
 		if(header == null) {
 			throw new IllegalArgumentException();
 		}

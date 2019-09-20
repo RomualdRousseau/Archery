@@ -1,6 +1,6 @@
 package com.github.romualdrousseau.any2json.document.excel;
 
-import com.github.romualdrousseau.any2json.TableHeader;
+import com.github.romualdrousseau.any2json.IHeader;
 import com.github.romualdrousseau.any2json.TableRow;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
@@ -9,9 +9,10 @@ import org.apache.poi.ss.util.CellRangeAddress;
 
 public class ExcelRow extends TableRow
 {
-	public ExcelRow(ExcelTable table, org.apache.poi.ss.usermodel.Row row) {
+	public ExcelRow(ExcelTable table, org.apache.poi.ss.usermodel.Row row, int groupId) {
         this.table = table;
         this.row = row;
+        this.groupId = groupId;
 	}
 
 	public int getNumberOfCells() {
@@ -35,7 +36,15 @@ public class ExcelRow extends TableRow
 		return numberOfCells;
     }
 
-	public String getCellValue(TableHeader header) {
+    public String getCellValueAt(int i) {
+		if(i < 0 || i >= getNumberOfCells()) {
+			throw new ArrayIndexOutOfBoundsException(i);
+        }
+
+        return getInternalCellValueAt(i);
+    }
+
+	public String getCellValue(IHeader header) {
 		if(header == null) {
 			throw new IllegalArgumentException();
 		}
@@ -53,14 +62,6 @@ public class ExcelRow extends TableRow
 		}
 
 		return result;
-    }
-
-    public String getCellValueAt(int i) {
-		if(i < 0 || i >= getNumberOfCells()) {
-			throw new ArrayIndexOutOfBoundsException(i);
-        }
-
-        return getInternalCellValueAt(i);
     }
 
 	private String getInternalCellValueAt(int i) {
