@@ -13,7 +13,11 @@ public class ExcelRow extends TableRow
         this.table = table;
         this.row = row;
         this.groupId = groupId;
-	}
+    }
+
+    public ExcelTable getTable() {
+        return this.table;
+    }
 
 	public int getNumberOfCells() {
 		return this.table.getNumberOfColumns();

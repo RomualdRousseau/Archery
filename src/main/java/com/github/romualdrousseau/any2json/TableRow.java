@@ -32,6 +32,10 @@ public abstract class TableRow implements IRow {
         }
     }
 
+    public TableCell getCellAt(int index) {
+        return getCell(getTable().getHeaderAt(index));
+    }
+
     public TableCell getCell(IHeader header) {
         return this.getCell(header, false);
     }

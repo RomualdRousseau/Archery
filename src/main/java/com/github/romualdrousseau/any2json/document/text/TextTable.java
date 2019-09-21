@@ -56,7 +56,7 @@ class TextTable extends Table {
                 cells[j] = StringUtility.cleanToken(tokens[j]);
             }
 
-            this.rows.add(new TextRow(cells, this.lastGroupId));
+            this.rows.add(new TextRow(this, cells, this.lastGroupId));
             // this.processedCount++;
 
             if (this.rows.size() >= ROWS_IN_MEMORY) {

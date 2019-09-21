@@ -64,16 +64,6 @@ public abstract class Table implements ITable {
         return this.headersByTag.get(tagName);
     }
 
-    public IHeader getHeaderByCleanName(String cleanName) {
-        IHeader result = null;
-        for (IHeader header : this.headers) {
-            if (header.getCleanName().equals(cleanName)) {
-                result = header;
-            }
-        }
-        return result;
-    }
-
     public Iterable<IHeader> headers() {
         return this.headers;
     }
@@ -171,6 +161,22 @@ public abstract class Table implements ITable {
         }
 
         this.disableMetaTableProcessing = false;
+    }
+
+    public boolean checkValidity(String[] requiredTagList) {
+        if(requiredTagList == null || requiredTagList.length == 0) {
+            return true;
+        }
+
+        int mask = 0;
+        for(IHeader header: this.headers()) {
+            for(int j = 0; j < requiredTagList.length; j++) {
+                if (header.hasTag() && !header.getTag().isUndefined() && header.getTag().getValue().equals(requiredTagList[j])) {
+                    mask |= (1 << j);
+                }
+            }
+        }
+        return (mask == ((1 << requiredTagList.length) - 1));
     }
 
     protected void buildDataTable(int firstColumn, int firstRow, int lastColumn, int lastRow, int groupId) {
@@ -293,6 +299,16 @@ public abstract class Table implements ITable {
         double emptinessFirstCell = Double.valueOf(row.getNumberOfMergedCellsAt(0))
                 / Double.valueOf(row.getNumberOfCells());
         return emptinessFirstCell > ratioOfEmptiness || row.isEmpty(ratioOfEmptiness);
+    }
+
+    private IHeader getHeaderByCleanName(String cleanName) {
+        IHeader result = null;
+        for (IHeader header : this.headers) {
+            if (header.getCleanName().equals(cleanName)) {
+                result = header;
+            }
+        }
+        return result;
     }
 
     private Iterable<TableHeader> getHeadersAt(int rowIndex) {

@@ -5,10 +5,15 @@ import com.github.romualdrousseau.any2json.TableRow;
 
 class HtmlRow extends TableRow
 {
-	public HtmlRow(String[] cells, int groupId) {
+	public HtmlRow(HtmlTable table, String[] cells, int groupId) {
+        this.table = table;
         this.cells = cells;
         this.groupId = groupId;
-	}
+    }
+
+    public HtmlTable getTable() {
+        return this.table;
+    }
 
 	public int getNumberOfCells() {
 		return this.cells.length;
@@ -34,5 +39,6 @@ class HtmlRow extends TableRow
 		return this.cells[i];
 	}
 
-	private String[] cells = null;
+    private HtmlTable table;
+	private String[] cells;
 }

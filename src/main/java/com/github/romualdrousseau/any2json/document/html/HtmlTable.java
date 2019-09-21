@@ -47,7 +47,7 @@ class HtmlTable extends Table {
                 tokens[j] = StringUtility.cleanToken(htmlTableCells.get(j).text());
             }
 
-            this.rows.add(new HtmlRow(tokens, this.lastGroupId));
+            this.rows.add(new HtmlRow(this, tokens, this.lastGroupId));
         }
     }
 

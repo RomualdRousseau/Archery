@@ -1,6 +1,8 @@
 package com.github.romualdrousseau.any2json;
 
 public interface IRow {
+    ITable getTable();
+
     int getGroupId();
 
 	boolean isEmpty(double ratio);
@@ -8,6 +10,8 @@ public interface IRow {
     int getNumberOfCells();
 
     int getNumberOfMergedCellsAt(int imdex);
+
+    TableCell getCellAt(int index);
 
     TableCell getCell(IHeader header);
 

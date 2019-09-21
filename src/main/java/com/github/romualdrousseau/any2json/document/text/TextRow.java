@@ -5,10 +5,15 @@ import com.github.romualdrousseau.any2json.IHeader;
 
 class TextRow extends TableRow
 {
-	public TextRow(String[] tokens, int groupId) {
+	public TextRow(TextTable table, String[] tokens, int groupId) {
+        this.table = table;
         this.cells = tokens;
         this.groupId = groupId;
-	}
+    }
+
+    public TextTable getTable() {
+        return this.table;
+    }
 
 	public int getNumberOfCells() {
 		return this.cells.length;
@@ -34,5 +39,6 @@ class TextRow extends TableRow
 		return this.cells[i];
 	}
 
-	private String[] cells = null;
+    private TextTable table;
+	private String[] cells;
 }

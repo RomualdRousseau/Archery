@@ -25,8 +25,6 @@ public interface ITable {
 
     IHeader getHeaderByTag(String tagName);
 
-    IHeader getHeaderByCleanName(String cleanName);
-
     Iterable<IHeader> headers();
 
     int getNumberOfColumns();
@@ -40,12 +38,4 @@ public interface ITable {
     void resetHeaderTags();
 
     void updateHeaderTags(ITagClassifier classifier);
-
-    int getFirstColumn();
-
-    int getFirstRow();
-
-    int getLastColumn();
-
-    int getLastRow();
 }
