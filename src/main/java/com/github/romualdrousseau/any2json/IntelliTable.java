@@ -1,6 +1,7 @@
 package com.github.romualdrousseau.any2json;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 
 public class IntelliTable implements ITable {
@@ -13,6 +14,15 @@ public class IntelliTable implements ITable {
             }
         }
 
+        this.dataTables.sort(new Comparator<ITable>() {
+            @Override
+            public int compare(ITable t1, ITable t2) {
+                return t1.getFirstRow() - t2.getFirstRow();
+            }
+        });
+
+        updateHeaderTags(classifier);
+
         for (ITable table : this.dataTables) {
             for (IRow row : table.rows()) {
                 if (row != null) {
@@ -20,11 +30,6 @@ public class IntelliTable implements ITable {
                 }
             }
         }
-
-        // move invalid table to metaTable
-        // sort by read direction
-
-        updateHeaderTags(classifier);
     }
 
     public int getGroupId() {
@@ -73,11 +78,48 @@ public class IntelliTable implements ITable {
     }
 
     public IHeader getHeaderByTag(String tagName) {
+        for (ITable table : this.dataTables) {
+            IHeader header = table.getHeaderByTag(tagName);
+            if (header != null) {
+                return header;
+            }
+
+            for (ITable metaTable : table.metatables()) {
+                IHeader metaHeader = metaTable.getHeaderByTag(tagName);
+                if (metaHeader != null) {
+                    return metaHeader;
+                }
+            }
+        }
+
+        for (ITable table : this.metaTables) {
+            IHeader header = table.getHeaderByTag(tagName);
+            if (header != null) {
+                return header;
+            }
+        }
+
         return null;
     }
 
     public Iterable<IHeader> headers() {
         return this.headersAsList;
+    }
+
+    public int getFirstColumn() {
+        return 0;
+    }
+
+    public int getFirstRow() {
+        return 0;
+    }
+
+    public int getLastColumn() {
+        return getNumberOfColumns() - 1;
+    }
+
+    public int getLastRow() {
+        return getNumberOfRows() - 1;
     }
 
     public int getNumberOfColumns() {
@@ -89,7 +131,7 @@ public class IntelliTable implements ITable {
     }
 
     public IRow getRowAt(int rowIndex) {
-        return this.rowsAsList.get(rowIndex);
+        return new IntelliRow(this, this.rowsAsList.get(rowIndex));
     }
 
     public Iterable<IRow> rows() {
@@ -97,6 +139,8 @@ public class IntelliTable implements ITable {
     }
 
     public void resetHeaderTags() {
+        clearHeaders();
+
         for (ITable table : this.metaTables) {
             table.resetHeaderTags();
         }

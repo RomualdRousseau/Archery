@@ -3,6 +3,9 @@ package com.github.romualdrousseau.any2json;
 import java.util.ArrayList;
 
 import com.github.romualdrousseau.shuju.util.StringUtility;
+
+import org.apache.poi.ss.formula.eval.NotImplementedException;
+
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.math.Vector;
 
@@ -40,6 +43,10 @@ public class TableHeader implements IHeader
             }
         }
         return this.cleanName;
+    }
+
+    public String getValue() {
+        throw new NotImplementedException("Not implemented");
     }
 
     public TableHeader setName(String name) {

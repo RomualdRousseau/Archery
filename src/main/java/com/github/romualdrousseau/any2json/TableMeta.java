@@ -34,6 +34,11 @@ public class TableMeta implements IHeader {
         return this.cleanName;
     }
 
+    public String getValue() {
+        String v = this.classifier.getEntityList().find(this.name);
+        return (v == null) ? this.name : v;
+    }
+
     public TableMeta setName(String name) {
         this.name = name;
         return this;

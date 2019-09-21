@@ -35,7 +35,6 @@ import java.util.List;
 
 ISearchBitmap searchBitmap;
 List<SearchPoint[]> searchPoints;
-List<ITable> tables;
 
 void setup() {
   size(800, 800);
@@ -52,35 +51,25 @@ void setup() {
   filter.applyNeg(searchBitmap, 2);
   searchPoints = new RectangleExtractor().extractAll(searchBitmap);
 
-  tables = document.getSheetAt(0).findTables(25, 30);
+  ITable table = document.getSheetAt(0).findTableWithItelliTag(classifier1);
 
-  for(ITable table: tables) {
-    if(!table.isMetaTable()) {
+  for (IHeader header : table.headers()) {
+    println(header.getCleanName(), header.getTag().getValue());
+  }
 
-      table.updateHeaderTags(classifier1);
-
-      for(IHeader header: table.headers()) {
-          if(!header.hasTag()) {
-              continue;
-          }
-
-          println(header.getTag().getValue());
-      }
-
-      for(IRow row: table.rows()) {
-        if(row == null) {
-          continue;
-        }
-
-        ITable metaTable = table.getMetaTableAt(table.getNumberOfMetaTables() - 1);
-        metaTable.updateHeaderTags(classifier1);
-        for(IHeader header: metaTable.headers()) {
-            print(header.hasTag(), header.getName(), header.getTag().getValue(), "");
-        }
-
-        println(row.getCellValueAt(0));
-      }
+  for (IRow row : table.rows()) {
+    if (row == null) {
+      continue;
     }
+
+    for (IHeader header : table.headers()) {
+      String value = row.getCellValue(header, false);
+      if (value != null) {
+        print(value);
+      }
+      print("\t");
+    }
+    println();
   }
 
   document.close();

@@ -27,6 +27,14 @@ public interface ITable {
 
     Iterable<IHeader> headers();
 
+    int getFirstColumn();
+
+    int getFirstRow();
+
+    int getLastColumn();
+
+    int getLastRow();
+
     int getNumberOfColumns();
 
     int getNumberOfRows();

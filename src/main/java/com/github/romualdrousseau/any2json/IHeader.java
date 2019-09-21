@@ -14,6 +14,8 @@ public interface IHeader {
 
     String getCleanName();
 
+    String getValue();
+
     IHeader setName(String name);
 
     int getColumnIndex();

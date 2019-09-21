@@ -47,9 +47,14 @@ public class IntelliRow implements IRow {
         }
 
         for (IHeader current : this.table.getBucket(header)) {
-            if (current.getTable().getGroupId() == 0
-                    || this.row.getTable().getMetaTableAt(this.row.getGroupId()) == current.getTable()) {
-                return new TableCell(current).setValue(current.getName()); // do something
+            if (this.row.getTable().getMetaTableAt(this.row.getGroupId()) == current.getTable()) {
+                return new TableCell(current).setValue(current.getValue());
+            }
+        }
+
+        for (IHeader current : this.table.getBucket(header)) {
+            if (current.getTable().getGroupId() == 0) {
+                return new TableCell(current).setValue(current.getValue());
             }
         }
 
@@ -77,9 +82,14 @@ public class IntelliRow implements IRow {
         }
 
         for (IHeader current : this.table.getBucket(header)) {
-            if (current.getTable().getGroupId() == 0
-                    || this.row.getTable().getMetaTableAt(this.row.getGroupId()) == current.getTable()) {
-                return current.getName(); // do something
+            if (this.row.getTable().getMetaTableAt(this.row.getGroupId()) == current.getTable()) {
+                return current.getValue();
+            }
+        }
+
+        for (IHeader current : this.table.getBucket(header)) {
+            if (current.getTable().getGroupId() == 0) {
+                return current.getValue();
             }
         }
 
