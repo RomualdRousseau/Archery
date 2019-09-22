@@ -34,6 +34,10 @@ public class HtmlDocument implements IDocument {
     }
 
     private boolean openWithEncoding(File htmlFile, String encoding) {
+        if (htmlFile == null) {
+            throw new IllegalArgumentException();
+        }
+
         close();
 
         try {

@@ -60,36 +60,26 @@ public class ExcelSearchBitmap extends ISearchBitmap
 			return 0;
         }
 
-        int p = 1;
-
-		CellRangeAddress region = checkIfMergedCell(sheet, cell);
-		if(region != null) {
-            cell = row.getCell(region.getFirstColumn());
+        int firstColumn = checkIfMergedCell(sheet, cell);
+        if (firstColumn >= 0) {
+            cell = row.getCell(firstColumn);
         }
 
-        if(cell != null && checkIfCellIsBlank(cell)) {
-            cell = null;
-        }
-
-        if(cell == null) {
-            p = 0;
-        }
-
-		return p;
+		return (!checkIfCellHasData(cell)) ? 0 : 1;
     }
 
-    private boolean checkIfCellIsBlank(Cell cell) {
-        return cell.getCellType() == Cell.CELL_TYPE_BLANK && cell.getCellStyle().getFillBackgroundColorColor() == null;
+    private boolean checkIfCellHasData(Cell cell) {
+        return cell != null && (cell.getCellType() != Cell.CELL_TYPE_BLANK || cell.getCellStyle().getFillBackgroundColorColor() != null);
     }
 
-	private CellRangeAddress checkIfMergedCell(Sheet sheet, Cell cell) {
+	private int checkIfMergedCell(Sheet sheet, Cell cell) {
 		for(int i = 0; i < sheet.getNumMergedRegions(); i++) {
 			CellRangeAddress region = sheet.getMergedRegion(i);
 			if(region.isInRange(cell.getRowIndex(), cell.getColumnIndex())) {
-				return region;
+				return region.getFirstColumn();
 			}
 		}
-		return null;
+		return -1;
 	}
 
 	private int width;

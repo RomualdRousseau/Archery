@@ -6,6 +6,7 @@ import java.util.UnknownFormatConversionException;
 import com.github.romualdrousseau.any2json.document.excel.ExcelDocument;
 import com.github.romualdrousseau.any2json.document.html.HtmlDocument;
 import com.github.romualdrousseau.any2json.document.text.TextDocument;
+import com.github.romualdrousseau.any2json.document.xml.XmlDocument;
 
 public class DocumentFactory
 {
@@ -27,6 +28,11 @@ public class DocumentFactory
         }
 
 		IDocument document = new ExcelDocument();
+		if(document.open(file, encoding)) {
+			return document;
+        }
+
+        document = new XmlDocument();
 		if(document.open(file, encoding)) {
 			return document;
 		}

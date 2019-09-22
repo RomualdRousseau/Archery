@@ -39,7 +39,7 @@ void setup() {
   noSmooth();
   frameRate(1);
 
-  IDocument document = DocumentFactory.createInstance(dataPath("Продажи 06.19.xlsx"), "UTF-8");
+  IDocument document = DocumentFactory.createInstance(dataPath("Продажи 06.19.xls"), "UTF-8");
 
   NGramNNClassifier classifier1 = new NGramNNClassifier(JSON.loadJSONObject(dataPath("brainColumnClassifier.json")));
 
@@ -49,7 +49,7 @@ void setup() {
   filter.applyNeg(searchBitmap, 2);
   searchPoints = new RectangleExtractor().extractAll(searchBitmap);
 
-  ITable table = document.getSheetAt(0).findTableWithItelliTag(classifier1);
+  ITable table = document.getSheetAt(0).findTableWithIntelliTag(classifier1);
 
   for (IHeader header : table.headers()) {
     println(header.getCleanName(), header.getTag().getValue());

@@ -32,6 +32,10 @@ public class TextDocument implements IDocument {
     }
 
     private boolean openWithEncoding(File txtFile, String encoding) {
+        if (txtFile == null) {
+            throw new IllegalArgumentException();
+        }
+
         if (encoding == null) {
             encoding = "UTF-8";
         }
