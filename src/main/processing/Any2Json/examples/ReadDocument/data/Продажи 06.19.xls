@@ -41012,7 +41012,7 @@
 <Cell ss:Index="6" />
 <Cell ss:Index="7" />
 <Cell ss:Index="8" ss:MergeAcross="1" ss:StyleID="s7" >
-<Data ss:Type="String">Исполнитель:&#10;Отдел маркетинга  АвтозаказАпт&#10;Тел.: 58-82-73</Data>
+<Data ss:Type="String">Исполнитель:&#10Отдел маркетинга  АвтозаказАпт&#10Тел.: 58-82-73</Data>
 </Cell>
 <Cell ss:Index="10" />
 </Row>

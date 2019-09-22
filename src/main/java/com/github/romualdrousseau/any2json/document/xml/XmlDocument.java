@@ -1,5 +1,6 @@
 package com.github.romualdrousseau.any2json.document.xml;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -55,21 +56,22 @@ public class XmlDocument implements IDocument {
 
         try {
             ExcelReader reader = new ExcelReader();
-            this.workbook = reader.getWorkbook(new InputSource(new InputStreamReader(new FileInputStream(excelFile), encoding)));
+            this.workbook = reader.getWorkbook(new InputSource(new FixBadEntityReader(
+                    new BufferedReader(new InputStreamReader(new FileInputStream(excelFile), encoding)))));
 
             for (Worksheet sheet : this.workbook.getWorksheets()) {
                 this.sheets.add(new XmlSheet(sheet));
             }
         } catch (ParserConfigurationException x) {
-			close();
-		}  catch (SAXException x) {
-			close();
-		}  catch (IOException x) {
-			close();
-		}
+            close();
+        } catch (SAXException x) {
+            close();
+        } catch (IOException x) {
+            close();
+        }
 
-		return this.sheets.size() > 0;
-	}
+        return this.sheets.size() > 0;
+    }
 
     private Workbook workbook = null;
     private ArrayList<XmlSheet> sheets = new ArrayList<XmlSheet>();
