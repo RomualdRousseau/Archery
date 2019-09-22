@@ -65,7 +65,7 @@ public class XmlRow extends TableRow
 	private String getInternalCellValueAt(int i) {
 		Cell cell = this.row.getCellAt(this.table.getFirstColumn() + i + 1);
 		if(!cell.hasData()) {
-			return "";
+			return null;
         }
 
 		String type = cell.getXLDataType();
