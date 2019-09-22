@@ -1,5 +1,6 @@
 package com.github.romualdrousseau.any2json.classifiers;
 
+import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.DataSet;
@@ -66,7 +67,7 @@ public class NGramNNClassifier implements ITagClassifier {
     }
 
     public int getSampleCount() {
-        return 30;
+        return DocumentFactory.DEFAULT_SAMPLE_COUNT;
     }
 
     public StopWordList getStopWordList() {

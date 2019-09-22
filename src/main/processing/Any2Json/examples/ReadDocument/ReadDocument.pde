@@ -31,21 +31,19 @@ import com.github.romualdrousseau.any2json.document.html.*;
 import com.github.romualdrousseau.any2json.document.excel.*;
 import com.github.romualdrousseau.any2json.document.text.*;
 
-import java.util.List;
-
 ISearchBitmap searchBitmap;
-List<SearchPoint[]> searchPoints;
+Iterable<SearchPoint[]> searchPoints;
 
 void setup() {
   size(800, 800);
   noSmooth();
   frameRate(1);
 
+  IDocument document = DocumentFactory.createInstance(dataPath("Продажи 06.19.xlsx"), "UTF-8");
+
   NGramNNClassifier classifier1 = new NGramNNClassifier(JSON.loadJSONObject(dataPath("brainColumnClassifier.json")));
 
-  IDocument document = DocumentFactory.createInstance(dataPath("Book2.xlsx"), "UTF-8");
-
-  searchBitmap = document.getSheetAt(0).getSearchBitmap(25, 50);
+  searchBitmap = document.getSheetAt(0).getSearchBitmap(classifier1.getSampleCount(), classifier1.getSampleCount());
   final Filter filter = new Filter(new Template(new int[][] { { 0, 0, 0 }, { 1, 0, 1 }, { 0, 0, 0 } }));
   filter.apply(searchBitmap, 1);
   filter.applyNeg(searchBitmap, 2);
@@ -58,16 +56,9 @@ void setup() {
   }
 
   for (IRow row : table.rows()) {
-    if (row == null) {
-      continue;
-    }
-
     for (IHeader header : table.headers()) {
-      String value = row.getCellValue(header, false);
-      if (value != null) {
-        print(value);
-      }
-      print("\t");
+      String value = row.getCellValue(header);
+      print(value, "");
     }
     println();
   }

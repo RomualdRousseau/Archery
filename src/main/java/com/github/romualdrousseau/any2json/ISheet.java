@@ -14,8 +14,8 @@ public interface ISheet
 
     public Iterable<ITable> findTables(int headerColumns, int headerRows);
 
-    public ITable findTableWithItelliTag(ITagClassifier classifier);
+    public ITable findTableWithIntelliTag(ITagClassifier classifier);
 
-    public ITable findTableWithItelliTag(ITagClassifier classifier, String[] requiredTagList);
+    public ITable findTableWithIntelliTag(ITagClassifier classifier, String[] requiredTagList);
 }
 

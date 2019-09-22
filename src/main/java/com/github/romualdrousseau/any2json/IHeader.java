@@ -44,7 +44,7 @@ public interface IHeader {
 
     void updateTag(boolean checkForConflicts);
 
-    DataRow buildRow(String tagValue, TableHeader[] conflicts, boolean ensureWordsExists);
+    DataRow buildRow(String tagValue, IHeader[] conflicts, boolean ensureWordsExists);
 
     void chain(IHeader other);
 

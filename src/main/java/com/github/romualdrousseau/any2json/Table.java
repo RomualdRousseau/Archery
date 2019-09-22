@@ -102,7 +102,7 @@ public abstract class Table implements ITable {
             this.lastGroupId = this.groupId;
         } else {
             int currentOffset = this.offsetRow;
-            skipEmptyRows(0.5, this.firstRow + this.offsetRow + rowIndex);
+            skipEmptyRows(DocumentFactory.DEFAULT_RATIO_EMPTINESS, this.firstRow + this.offsetRow + rowIndex);
             if (this.offsetRow > currentOffset) {
                 if(skipDuplicateHeader(this.firstRow + this.offsetRow + rowIndex)) {
                     addMetaTable(this.firstColumn, this.firstRow + currentOffset + rowIndex, this.lastColumn,
@@ -189,7 +189,7 @@ public abstract class Table implements ITable {
         this.lastGroupId = groupId;
         this.offsetRow = 0;
 
-        skipEmptyFirstRows(0.5);
+        skipEmptyFirstRows(DocumentFactory.DEFAULT_RATIO_EMPTINESS);
 
         processHeaders();
 

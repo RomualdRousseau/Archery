@@ -9,8 +9,7 @@ import org.apache.poi.ss.formula.eval.NotImplementedException;
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.math.Vector;
 
-public class TableHeader implements IHeader
-{
+public class TableHeader implements IHeader {
     public Vector getWordVector() {
         if (this.classifier != null && this.wordVector == null) {
             this.wordVector = this.classifier.getWordList().word2vec(this.getCleanName());
@@ -20,7 +19,7 @@ public class TableHeader implements IHeader
 
     public Vector getEntityVector() {
         if (this.classifier != null && this.entityVector == null) {
-            this.entityVector = this.entity2vec(0.8f);
+            this.entityVector = this.entity2vec(DocumentFactory.DEFAULT_ENTITY_PROBABILITY);
         }
         return this.entityVector;
     }
@@ -116,7 +115,7 @@ public class TableHeader implements IHeader
     }
 
     public void updateTag(boolean checkForConflicts) {
-        if(StringUtility.isEmpty(this.getCleanName())) {
+        if (StringUtility.isEmpty(this.getCleanName())) {
             this.tag = new HeaderTag(this, "none");
         } else {
             DataRow data = new DataRow().addFeature(this.buildFeature(checkForConflicts));
@@ -125,15 +124,17 @@ public class TableHeader implements IHeader
         }
     }
 
-    public DataRow buildRow(String tagValue, TableHeader[] conflicts, boolean ensureWordsExists) {
+    public DataRow buildRow(String tagValue, IHeader[] conflicts, boolean ensureWordsExists) {
         if (ensureWordsExists) {
             this.classifier.getWordList().add(this.getCleanName());
             this.wordVector = null;
 
             if (conflicts != null) {
-                for (TableHeader conflict : conflicts) {
-                    this.classifier.getWordList().add(conflict.getCleanName());
-                    conflict.wordVector = null;
+                for (IHeader conflict : conflicts) {
+                    if(conflict instanceof TableHeader) {
+                        this.classifier.getWordList().add(conflict.getCleanName());
+                        ((TableHeader) conflict).wordVector = null;
+                    }
                 }
             }
         }
@@ -156,7 +157,7 @@ public class TableHeader implements IHeader
         return entity2vec.concat(word2vec).concat(conflict2vec);
     }
 
-    private Vector buildFeature(TableHeader[] conflicts) {
+    private Vector buildFeature(IHeader[] conflicts) {
         final Vector entity2vec = this.getEntityVector();
         final Vector word2vec = this.getWordVector();
         final Vector conflict2vec = this.words2vec(conflicts);
@@ -167,7 +168,8 @@ public class TableHeader implements IHeader
         ArrayList<TableHeader> result = new ArrayList<TableHeader>();
 
         for (IHeader header : this.table.headers()) {
-            if (header != this && header instanceof TableHeader && header.hasTag() && !header.getTag().isUndefined() && header.getTag().equals(this.tag)) {
+            if (header != this && header instanceof TableHeader && header.hasTag() && !header.getTag().isUndefined()
+                    && header.getTag().equals(this.tag)) {
                 result.add((TableHeader) header);
             }
         }
@@ -198,14 +200,14 @@ public class TableHeader implements IHeader
         return result;
     }
 
-    private Vector words2vec(TableHeader[] headers) {
+    private Vector words2vec(IHeader[] headers) {
         Vector result = new Vector(classifier.getWordList().getVectorSize());
 
         if (headers == null) {
             return result;
         }
 
-        for (TableHeader header : headers) {
+        for (IHeader header : headers) {
             result.add(header.getWordVector());
         }
 

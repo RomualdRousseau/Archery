@@ -9,11 +9,11 @@ public abstract class Sheet implements ISheet {
         throw new NotImplementedException("Not implemented");
     }
 
-    public ITable findTableWithItelliTag(ITagClassifier classifier) {
-        return this.findTableWithItelliTag(classifier, classifier.getRequiredTagList());
+    public ITable findTableWithIntelliTag(ITagClassifier classifier) {
+        return this.findTableWithIntelliTag(classifier, classifier.getRequiredTagList());
     }
 
-    public ITable findTableWithItelliTag(ITagClassifier classifier, String[] requiredTagList) {
+    public ITable findTableWithIntelliTag(ITagClassifier classifier, String[] requiredTagList) {
         Iterable<ITable> tables = this.findTables(classifier.getSampleCount(), classifier.getSampleCount());
         return new IntelliTable(this, tables, classifier, requiredTagList);
     }

@@ -40,20 +40,22 @@ public class IntelliRow implements IRow {
             return null;
         }
 
-        for (IHeader current : this.table.getBucket(header)) {
+        for (IHeader current: this.table.getBucket(header)) {
             if (this.row.getTable() == current.getTable()) {
                 return this.row.getCell(current, mergeValues);
             }
         }
 
-        for (IHeader current : this.table.getBucket(header)) {
-            if (this.row.getTable().getMetaTableAt(this.row.getGroupId()) == current.getTable()) {
-                return new TableCell(current).setValue(current.getValue());
+        if(this.row.getTable().getNumberOfMetaTables() > this.row.getGroupId()) {
+            for (IHeader current: this.table.getBucket(header)) {
+                if (current.getTable().isMetaTable() && this.row.getTable().getMetaTableAt(this.row.getGroupId()) == current.getTable()) {
+                    return new TableCell(current).setValue(current.getValue());
+                }
             }
         }
 
-        for (IHeader current : this.table.getBucket(header)) {
-            if (current.getTable().getGroupId() == 0) {
+        for (IHeader current: this.table.getBucket(header)) {
+            if (current.getTable().isMetaTable() && current.getTable().getGroupId() == 0) {
                 return new TableCell(current).setValue(current.getValue());
             }
         }
@@ -75,20 +77,22 @@ public class IntelliRow implements IRow {
             return null;
         }
 
-        for (IHeader current : this.table.getBucket(header)) {
+        for (IHeader current: this.table.getBucket(header)) {
             if (this.row.getTable() == current.getTable()) {
                 return this.row.getCellValue(current, mergeValues);
             }
         }
 
-        for (IHeader current : this.table.getBucket(header)) {
-            if (this.row.getTable().getMetaTableAt(this.row.getGroupId()) == current.getTable()) {
-                return current.getValue();
+        if(this.row.getTable().getNumberOfMetaTables() > this.row.getGroupId()) {
+            for (IHeader current: this.table.getBucket(header)) {
+                if (current.getTable().isMetaTable() && this.row.getTable().getMetaTableAt(this.row.getGroupId()) == current.getTable()) {
+                    return current.getValue();
+                }
             }
         }
 
-        for (IHeader current : this.table.getBucket(header)) {
-            if (current.getTable().getGroupId() == 0) {
+        for (IHeader current: this.table.getBucket(header)) {
+            if (current.getTable().isMetaTable() && current.getTable().getGroupId() == 0) {
                 return current.getValue();
             }
         }

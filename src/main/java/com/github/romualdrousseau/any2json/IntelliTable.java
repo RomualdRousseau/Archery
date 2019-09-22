@@ -25,7 +25,7 @@ public class IntelliTable implements ITable {
 
         for (ITable table : this.dataTables) {
             for (IRow row : table.rows()) {
-                if (row != null) {
+                if (row != null && !row.isEmpty(DocumentFactory.DEFAULT_RATIO_EMPTINESS)) {
                     this.rowsAsList.add(row);
                 }
             }

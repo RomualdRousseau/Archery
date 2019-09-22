@@ -108,7 +108,7 @@ public class TableMeta implements IHeader {
         this.tag = new HeaderTag(this, tagValue);
     }
 
-    public DataRow buildRow(String tagValue, TableHeader[] conflicts, boolean ensureWordsExists) {
+    public DataRow buildRow(String tagValue, IHeader[] conflicts, boolean ensureWordsExists) {
         return new DataRow().addFeature(this.buildFeature()).setLabel(this.classifier.getTagList().word2vec(tagValue));
     }
 
