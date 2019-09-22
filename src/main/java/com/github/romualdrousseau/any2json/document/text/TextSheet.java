@@ -4,11 +4,12 @@ import java.util.List;
 import java.util.ArrayList;
 
 import com.github.romualdrousseau.any2json.Sheet;
+import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.ITable;
 
 class TextSheet extends Sheet
 {
-	public TextSheet(String name, ITable table) {
+	public TextSheet(String name, Table table) {
 		this.name = name;
 		this.table = table;
 	}
@@ -18,6 +19,7 @@ class TextSheet extends Sheet
 	}
 
 	public ITable getTable() {
+        this.table.setMetaTableProcessing(false);
 		return this.table;
 	}
 
@@ -32,5 +34,5 @@ class TextSheet extends Sheet
     }
 
 	private String name;
-	private ITable table;
+	private Table table;
 }

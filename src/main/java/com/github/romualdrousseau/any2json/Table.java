@@ -10,6 +10,10 @@ public abstract class Table implements ITable {
         return table == null || table.getNumberOfHeaders() == 0;
     }
 
+    public void setMetaTableProcessing(boolean b) {
+        this.disableMetaTableProcessing = b;
+    }
+
     public int getGroupId() {
         return this.groupId;
     }
@@ -99,19 +103,21 @@ public abstract class Table implements ITable {
             throw new ArrayIndexOutOfBoundsException(rowIndex);
         }
 
-        if (rowIndex == 0) {
-            this.offsetRow = 0; // reset cursor if start from beginning
-            this.lastGroupId = this.groupId;
-        } else {
-            int currentOffset = this.offsetRow;
-            skipEmptyRows(DocumentFactory.DEFAULT_RATIO_EMPTINESS, this.firstRow + this.offsetRow + rowIndex);
-            if (this.offsetRow > currentOffset) {
-                if (skipDuplicateHeader(this.firstRow + this.offsetRow + rowIndex)) {
-                    addMetaTable(this.firstColumn, this.firstRow + currentOffset + rowIndex, this.lastColumn,
-                            this.firstRow + this.offsetRow + rowIndex - 2);
-                } else {
-                    addMetaTable(this.firstColumn, this.firstRow + currentOffset + rowIndex, this.lastColumn,
-                            this.firstRow + this.offsetRow + rowIndex - 1);
+        if(!this.disableMetaTableProcessing) {
+            if (rowIndex == 0) {
+                this.offsetRow = 0; // reset cursor if start from beginning
+                this.lastGroupId = this.groupId;
+            } else {
+                int currentOffset = this.offsetRow;
+                skipEmptyRows(DocumentFactory.DEFAULT_RATIO_EMPTINESS, this.firstRow + this.offsetRow + rowIndex);
+                if (this.offsetRow > currentOffset) {
+                    if (skipDuplicateHeader(this.firstRow + this.offsetRow + rowIndex)) {
+                        addMetaTable(this.firstColumn, this.firstRow + currentOffset + rowIndex, this.lastColumn,
+                                this.firstRow + this.offsetRow + rowIndex - 2);
+                    } else {
+                        addMetaTable(this.firstColumn, this.firstRow + currentOffset + rowIndex, this.lastColumn,
+                                this.firstRow + this.offsetRow + rowIndex - 1);
+                    }
                 }
             }
         }

@@ -36,6 +36,7 @@ class ExcelSheet extends Sheet {
         int lastColumnNum = this.estimateLastColumnNum(0, 0);
         if (this.table == null && lastColumnNum > 0) {
             this.table = new ExcelTable(this.sheet, this.evaluator, 0, 0, lastColumnNum, this.sheet.getLastRowNum(), 0);
+            this.table.setMetaTableProcessing(false);
         }
         return this.table;
     }
