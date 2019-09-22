@@ -43,7 +43,6 @@ public class XmlSearchBitmap extends ISearchBitmap {
             for (int x = 0; x < this.width; x++) {
                 this.data[y][x] = getInternalCellValueAt(sheet, x, y);
             }
-            System.out.println();
         }
     }
 

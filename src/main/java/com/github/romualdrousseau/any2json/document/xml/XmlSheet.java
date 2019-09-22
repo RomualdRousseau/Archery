@@ -87,14 +87,10 @@ class XmlSheet extends Sheet {
         }
         int colNum = x;
         Cell cell = row.getCellAt(colNum + 1);
-        while (cell.hasData() && this.cellValue(cell).length() > 0) {
+        while (cell.hasData() && !StringUtility.isEmpty(cell.getData$())) {
             cell = row.getCellAt((++colNum) + 1);
         }
         return colNum - 1;
-    }
-
-    private String cellValue(Cell cell) {
-        return StringUtility.cleanToken(cell.getData$());
     }
 
     private Worksheet sheet;

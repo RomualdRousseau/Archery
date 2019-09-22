@@ -88,15 +88,12 @@ class ExcelSheet extends Sheet {
             return 0;
         }
         int colNum = x;
+        DataFormatter formatter = new DataFormatter();
         Cell cell = row.getCell(colNum);
-        while (cell != null && this.cellValue(cell).length() > 0) {
+        while (cell != null && !StringUtility.isEmpty(formatter.formatCellValue(cell))) {
             cell = row.getCell(++colNum);
         }
         return colNum - 1;
-    }
-
-    private String cellValue(Cell cell) {
-        return StringUtility.cleanToken(new DataFormatter().formatCellValue(cell));
     }
 
     // private void debug(ExcelSearchBitmap searchBitmap, SearchPoint[] table) {

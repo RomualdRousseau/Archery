@@ -3,6 +3,8 @@ package com.github.romualdrousseau.any2json;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.github.romualdrousseau.shuju.util.StringUtility;
+
 public abstract class Table implements ITable {
     public static boolean IsEmpty(ITable table) {
         return table == null || table.getNumberOfHeaders() == 0;
@@ -104,7 +106,7 @@ public abstract class Table implements ITable {
             int currentOffset = this.offsetRow;
             skipEmptyRows(DocumentFactory.DEFAULT_RATIO_EMPTINESS, this.firstRow + this.offsetRow + rowIndex);
             if (this.offsetRow > currentOffset) {
-                if(skipDuplicateHeader(this.firstRow + this.offsetRow + rowIndex)) {
+                if (skipDuplicateHeader(this.firstRow + this.offsetRow + rowIndex)) {
                     addMetaTable(this.firstColumn, this.firstRow + currentOffset + rowIndex, this.lastColumn,
                             this.firstRow + this.offsetRow + rowIndex - 2);
                 } else {
@@ -132,7 +134,7 @@ public abstract class Table implements ITable {
     public void updateHeaderTags(ITagClassifier classifier) {
         assert classifier != null;
 
-        if(this.tagUpdated) {
+        if (this.tagUpdated) {
             return;
         }
 
@@ -167,21 +169,22 @@ public abstract class Table implements ITable {
 
         this.tagUpdated = true;
 
-        if(!isMetaTable() && !checkValidity(classifier.getRequiredTagList())) {
+        if (!isMetaTable() && !checkValidity(classifier.getRequiredTagList())) {
             transformToMetaTable();
             updateHeaderTags(classifier);
         }
     }
 
     public boolean checkValidity(String[] requiredTagList) {
-        if(requiredTagList == null || requiredTagList.length == 0) {
+        if (requiredTagList == null || requiredTagList.length == 0) {
             return true;
         }
 
         int mask = 0;
-        for(IHeader header: this.headers()) {
-            for(int j = 0; j < requiredTagList.length; j++) {
-                if (header.hasTag() && !header.getTag().isUndefined() && header.getTag().getValue().equals(requiredTagList[j])) {
+        for (IHeader header : this.headers()) {
+            for (int j = 0; j < requiredTagList.length; j++) {
+                if (header.hasTag() && !header.getTag().isUndefined()
+                        && header.getTag().getValue().equals(requiredTagList[j])) {
                     mask |= (1 << j);
                 }
             }
@@ -216,7 +219,8 @@ public abstract class Table implements ITable {
             this.firstRow = this.lastRow + 1;
             processMetas();
         } else {
-            addMetaTable(this.firstColumn, this.metaRow, this.lastColumn, this.firstRow - 2); // Do not include the headers, hence - 2
+            addMetaTable(this.firstColumn, this.metaRow, this.lastColumn, this.firstRow - 2); // Do not include the
+                                                                                              // headers, hence - 2
         }
     }
 
@@ -269,7 +273,9 @@ public abstract class Table implements ITable {
 
                 index++;
 
-                addHeaderOrMeta(meta);
+                if (!StringUtility.isEmpty(meta.getName())) {
+                    addHeaderOrMeta(meta);
+                }
             }
         }
     }

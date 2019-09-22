@@ -26,8 +26,6 @@ public class IntelliTable implements ITable {
             }
         });
 
-        updateHeaderTags(classifier);
-
         for (ITable table : this.dataTables) {
             for (IRow row : table.rows()) {
                 if (row != null && !row.isEmpty(DocumentFactory.DEFAULT_RATIO_EMPTINESS)) {
@@ -35,6 +33,8 @@ public class IntelliTable implements ITable {
                 }
             }
         }
+
+        updateHeaderTags(classifier);
     }
 
     public int getGroupId() {
