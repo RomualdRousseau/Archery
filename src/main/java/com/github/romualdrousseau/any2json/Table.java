@@ -126,18 +126,21 @@ public abstract class Table implements ITable {
             header.resetTag();
         }
         this.headersByTag.clear();
+        this.tagUpdated = false;
     }
 
     public void updateHeaderTags(ITagClassifier classifier) {
         assert classifier != null;
 
-        this.disableMetaTableProcessing = true;
-
-        this.resetHeaderTags();
+        if(this.tagUpdated) {
+            return;
+        }
 
         if (Table.IsEmpty(this)) {
             return;
         }
+
+        this.disableMetaTableProcessing = true;
 
         for (IHeader header : this.headers) {
             header.setTagClassifier(classifier);
@@ -161,6 +164,13 @@ public abstract class Table implements ITable {
         }
 
         this.disableMetaTableProcessing = false;
+
+        this.tagUpdated = true;
+
+        if(!isMetaTable() && !checkValidity(classifier.getRequiredTagList())) {
+            transformToMetaTable();
+            updateHeaderTags(classifier);
+        }
     }
 
     public boolean checkValidity(String[] requiredTagList) {
@@ -177,6 +187,15 @@ public abstract class Table implements ITable {
             }
         }
         return (mask == ((1 << requiredTagList.length) - 1));
+    }
+
+    public void transformToMetaTable() {
+        this.firstRow = lastRow + 1; // firstRow represents the first row of data and MetaTable don't have data
+        this.offsetRow = 0;
+
+        resetHeaderTags();
+        clearHeaders();
+        processMetas();
     }
 
     protected void buildDataTable(int firstColumn, int firstRow, int lastColumn, int lastRow, int groupId) {
@@ -359,7 +378,6 @@ public abstract class Table implements ITable {
         return this;
     }
 
-    protected boolean disableMetaTableProcessing = false;
     protected ArrayList<IHeader> headers = new ArrayList<IHeader>();
     protected HashMap<String, IHeader> headersByTag = new HashMap<String, IHeader>();
     protected ArrayList<ITable> metaTables = new ArrayList<ITable>();
@@ -371,4 +389,7 @@ public abstract class Table implements ITable {
     protected int groupId;
     protected int lastGroupId;
     protected int offsetRow;
+
+    private boolean tagUpdated = false;
+    private boolean disableMetaTableProcessing = false;
 }

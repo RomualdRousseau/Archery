@@ -5,12 +5,17 @@ import java.util.Comparator;
 import java.util.HashMap;
 
 public class IntelliTable implements ITable {
-    public IntelliTable(Sheet sheet, Iterable<ITable> tables, ITagClassifier classifier, String[] requiredTagList) {
+    public IntelliTable(Sheet sheet, Iterable<ITable> tables, ITagClassifier classifier) {
         for (ITable table : tables) {
             if (table.isMetaTable()) {
                 this.metaTables.add(table);
             } else {
-                this.dataTables.add(table);
+                table.updateHeaderTags(classifier);
+                if (table.isMetaTable()) {
+                    this.metaTables.add(table);
+                } else {
+                    this.dataTables.add(table);
+                }
             }
         }
 
