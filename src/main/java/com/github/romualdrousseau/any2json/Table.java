@@ -10,8 +10,8 @@ public abstract class Table implements ITable {
         return table == null || table.getNumberOfHeaders() == 0;
     }
 
-    public void setMetaTableProcessing(boolean b) {
-        this.disableMetaTableProcessing = b;
+    public void enableMetaTable(boolean b) {
+        this.enableMetaTable = b;
     }
 
     public int getGroupId() {
@@ -103,7 +103,7 @@ public abstract class Table implements ITable {
             throw new ArrayIndexOutOfBoundsException(rowIndex);
         }
 
-        if(!this.disableMetaTableProcessing) {
+        if (this.enableMetaTable) {
             if (rowIndex == 0) {
                 this.offsetRow = 0; // reset cursor if start from beginning
                 this.lastGroupId = this.groupId;
@@ -140,6 +140,10 @@ public abstract class Table implements ITable {
     public void updateHeaderTags(ITagClassifier classifier) {
         assert classifier != null;
 
+        if (!this.enableMetaTable) {
+            return;
+        }
+
         if (this.tagUpdated) {
             return;
         }
@@ -171,14 +175,14 @@ public abstract class Table implements ITable {
             }
         }
 
-        this.disableMetaTableProcessing = false;
-
         this.tagUpdated = true;
 
         if (!isMetaTable() && !checkValidity(classifier.getRequiredTagList())) {
             transformToMetaTable();
             updateHeaderTags(classifier);
         }
+
+        this.disableMetaTableProcessing = false;
     }
 
     public boolean checkValidity(String[] requiredTagList) {
@@ -198,7 +202,7 @@ public abstract class Table implements ITable {
         return (mask == ((1 << requiredTagList.length) - 1));
     }
 
-    public void transformToMetaTable() {
+    protected void transformToMetaTable() {
         this.firstRow = lastRow + 1; // firstRow represents the first row of data and MetaTable don't have data
         this.offsetRow = 0;
 
@@ -402,6 +406,7 @@ public abstract class Table implements ITable {
     protected int lastGroupId;
     protected int offsetRow;
 
-    private boolean tagUpdated = false;
+    private boolean enableMetaTable = true;
     private boolean disableMetaTableProcessing = false;
+    private boolean tagUpdated = false;
 }

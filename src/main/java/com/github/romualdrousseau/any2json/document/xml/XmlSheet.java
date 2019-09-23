@@ -35,8 +35,8 @@ class XmlSheet extends Sheet {
         int lastColumnNum = this.estimateLastColumnNum(0, 0);
         if (this.table == null && lastColumnNum > 0) {
             this.table = new XmlTable(this.sheet, 0, 0, lastColumnNum, this.sheet.getRows().size(), 0);
+            this.table.enableMetaTable(false);
         }
-        this.table.setMetaTableProcessing(false);
         return this.table;
     }
 

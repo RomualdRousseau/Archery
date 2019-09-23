@@ -19,7 +19,7 @@ class HtmlSheet extends Sheet
 	}
 
 	public ITable getTable() {
-        this.table.setMetaTableProcessing(false);
+        this.table.enableMetaTable(false);
 		return this.table;
 	}
 
