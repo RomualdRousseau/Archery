@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This is the configuration file for nl.fountain.xelem-packages.    -->
+<!-- You may change this file and thereby the configuration of xelem.  -->
+
+<!--
+	Do not change namespaces!
+-->
+<Xelem 	xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+		xmlns:o="urn:schemas-microsoft-com:office:office"
+		xmlns:x="urn:schemas-microsoft-com:office:excel"
+		xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+		xmlns:f="urn:schemas-fountain-nl:xelem:config"
+		xmlns:html="http://www.w3.org/TR/REC-html40">
+
+<!--
+	f:comment are the comments that will be passed in at the start of 
+	the Workbook document, just after the processing instruction.
+-->
+  <f:comment>      THIS IS AN EXCEL-FILE OF TYPE SpreadsheetML.        </f:comment>
+  <f:comment>                   IF YOU READ THIS                       </f:comment>
+  <f:comment>    YOU PROBABLY NEED A MORE RECENT VERSION OF EXCEL.     </f:comment>
+
+<!--
+	You could create styles in Excel, save the workbook in xml-format,
+	open the xml-file in a text-editor and copy-paste your styles
+	in this document. After that you can set styles on tables, cells, rows
+	and columns using the method [void setStyleID(String styleID)].
+	You can merge styles with the Workbook- or XFactory-method
+	[mergeStyles(String newID, String id1, String id2)].
+-->  
+  <Styles>
+  <!--
+  	A Workbook allways has a default-style with the ID Default.
+  	If no default-style is found in this document, XLWorkbook
+  	will construct a standard default-style.
+  -->
+    <Style ss:ID="Default" ss:Name="Normal">
+      <Alignment ss:Vertical="Bottom"/>
+      <Borders/>
+      <Font/>
+      <Interior/>
+      <NumberFormat/>
+      <Protection/>
+    </Style>
+    
+  <!--
+  	Here are some examples of other styles.
+  -->
+    <Style ss:ID="title">
+     <Font x:Family="Swiss" ss:Size="14" ss:Color="#000080" ss:Bold="1"/>
+    </Style>
+    
+    <Style ss:ID="bg_white">
+      <Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/>
+    </Style>
+    
+    <Style ss:ID="bg_yellow">
+      <Interior ss:Color="#FFFF99" ss:Pattern="Solid"/>
+    </Style>
+    
+    <Style ss:ID="table_heading">
+     <Alignment ss:Horizontal="Center" ss:Vertical="Bottom"/>
+     <Borders>
+      <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/>
+      <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/>
+     </Borders>
+     <Font x:Family="Swiss" ss:Color="#0000FF" ss:Bold="1"/>
+    </Style>
+  
+    <Style ss:ID="dec_0">
+     <NumberFormat ss:Format="#,##0"/>
+    </Style>
+
+    <Style ss:ID="hyperlink">
+     <Font ss:Color="#0000FF" ss:Underline="Single"/>
+    </Style>
+    
+    <Style ss:ID="date_time">
+     <NumberFormat ss:Format="dd/mm/yyyy\ hh:mm:ss"/>
+    </Style>
+    
+    <Style ss:ID="currency" ss:Name="Currency">
+      <NumberFormat ss:Format="_-&quot;€&quot;\ * #,##0.00_-;_-&quot;€&quot;\ * #,##0.00\-;_-&quot;€&quot;\ * &quot;-&quot;??_-;_-@_-"/>
+    </Style>
+    
+    <Style ss:ID="wrap">
+      <Alignment ss:Vertical="Top" ss:WrapText="1"/>
+    </Style>
+
+  </Styles>
+</Xelem>
