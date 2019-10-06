@@ -177,7 +177,7 @@
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
-                            <excludeGroupIds>com.github.romualdrousseau</excludeGroupIds>
+                            <excludeGroupIds>com.github.romualdrousseau,org.processing</excludeGroupIds>
                         </configuration>
                     </execution>
                 </executions>
