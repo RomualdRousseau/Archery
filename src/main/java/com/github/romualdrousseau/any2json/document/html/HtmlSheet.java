@@ -20,6 +20,7 @@ class HtmlSheet extends Sheet
 
 	public ITable getTable() {
         this.table.enableMetaTable(false);
+        this.table.enableIntelliTable(false);
 		return this.table;
 	}
 

@@ -16,12 +16,10 @@ class TextTable extends Table {
         if (this.rows.size() == 0) {
             return;
         }
-        buildDataTable(0, 0, this.rows.get(0).getNumberOfCells(), this.rows.size() - 1, 0);
-    }
 
-    public TextTable(ArrayList<TextRow> rows, int firstColumn, int firstRow, int lastColumn, int lastRow, int groupId) {
-        this.rows = rows;
-        buildMetaTable(firstColumn, firstRow, lastColumn, lastRow, groupId);
+        this.buildDataTable(0, 0, this.rows.get(0).getNumberOfCells(), this.rows.size() - 1, 0);
+
+        this.enableMetaTable(false);
     }
 
     protected TextRow getInternalRowAt(int i) {
@@ -29,7 +27,7 @@ class TextTable extends Table {
     }
 
     protected TextTable createMetaTable(int firstColumn, int firstRow, int lastColumn, int lastRow, int groupId) {
-        return new TextTable(this.rows, firstColumn, firstRow, lastColumn, lastRow, groupId);
+        throw new RuntimeException("Table doesn't support metatable");
     }
 
     private void processOneTable(BufferedReader reader) throws IOException {

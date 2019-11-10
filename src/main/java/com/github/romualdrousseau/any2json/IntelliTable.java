@@ -10,7 +10,7 @@ public class IntelliTable implements ITable {
             if (table.isMetaTable()) {
                 this.metaTables.add(table);
             } else {
-                table.updateHeaderTags(classifier);
+                table.updateHeaderTags(classifier, true);
                 if (table.isMetaTable()) {
                     this.metaTables.add(table);
                 } else {
@@ -34,7 +34,10 @@ public class IntelliTable implements ITable {
             }
         }
 
-        updateHeaderTags(classifier);
+        updateHeaderTags(classifier, true);
+    }
+
+    public void enableIntelliTable(boolean b) {
     }
 
     public int getGroupId() {
@@ -160,15 +163,19 @@ public class IntelliTable implements ITable {
     }
 
     public void updateHeaderTags(ITagClassifier classifier) {
+        updateHeaderTags(classifier, true);
+    }
+
+    public void updateHeaderTags(ITagClassifier classifier, boolean disableCheckValidity) {
         for (ITable table : this.metaTables) {
-            table.updateHeaderTags(classifier);
+            table.updateHeaderTags(classifier, false);
         }
 
         for (ITable table : this.dataTables) {
-            table.updateHeaderTags(classifier);
+            table.updateHeaderTags(classifier, disableCheckValidity);
 
             for (ITable metaTable : table.metatables()) {
-                metaTable.updateHeaderTags(classifier);
+                metaTable.updateHeaderTags(classifier, false);
             }
         }
 

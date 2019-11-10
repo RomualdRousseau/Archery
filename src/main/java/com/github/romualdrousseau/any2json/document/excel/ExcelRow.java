@@ -74,17 +74,24 @@ public class ExcelRow extends TableRow
 			return null;
         }
 
-		int type = this.table.evaluator.evaluateInCell(cell).getCellType();
-		String value = this.table.formatter.formatCellValue(cell);
+        int type = Cell.CELL_TYPE_ERROR;
+        String value = "ERROR";
+        try {
+            type = this.table.evaluator.evaluateInCell(cell).getCellType();
+            value = this.table.formatter.formatCellValue(cell);
+        } catch(Exception x) {
+            type = Cell.CELL_TYPE_ERROR;
+            value = "ERROR";
+        }
 
 		// TRICKY: Get hidden decimals in case of a rounded numeric value
 		if(type == Cell.CELL_TYPE_NUMERIC && value.matches("-?\\d+")) {
 			double d = cell.getNumericCellValue();
 			value = (Math.floor(d) == d) ? value : String.valueOf(d);
 		}
-		else if(type == Cell.CELL_TYPE_ERROR) {
-			throw new UnsupportedOperationException("Unexceptected Cell Error at [" + row.getRowNum() + ";" + (this.table.getFirstColumn() + i) + "]");
-		}
+		// else if(type == Cell.CELL_TYPE_ERROR) {
+            // throw new UnsupportedOperationException("Unexceptected Cell Error at [" + row.getRowNum() + ";" + (this.table.getFirstColumn() + i) + "]");
+		// }
 
 		return StringUtility.cleanToken(value);
     }

@@ -1,6 +1,8 @@
 package com.github.romualdrousseau.any2json;
 
 public interface ITable {
+    void enableIntelliTable(boolean b);
+
     int getGroupId();
 
     boolean isMetaTable();
@@ -46,4 +48,6 @@ public interface ITable {
     void resetHeaderTags();
 
     void updateHeaderTags(ITagClassifier classifier);
+
+    void updateHeaderTags(ITagClassifier classifier, boolean disableCheckValidity);
 }

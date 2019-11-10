@@ -39,7 +39,8 @@ void setup() {
   noSmooth();
   frameRate(1);
 
-  IDocument document = DocumentFactory.createInstance(dataPath("Продажи 06.19.xls"), "UTF-8");
+  //IDocument document = DocumentFactory.createInstance(dataPath("Продажи 06.19.xls"), "UTF-8");
+  IDocument document = DocumentFactory.createInstance(dataPath("Сервье июнь.xls"), "UTF-8");
 
   NGramNNClassifier classifier1 = new NGramNNClassifier(JSON.loadJSONObject(dataPath("brainColumnClassifier.json")));
 

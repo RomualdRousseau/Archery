@@ -1,5 +1,7 @@
 package com.github.romualdrousseau.any2json;
 
+import java.util.List;
+
 import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
 
 public interface ISheet
@@ -12,7 +14,7 @@ public interface ISheet
 
     public ITable findTable(int headerColumns, int headerRows);
 
-    public Iterable<ITable> findTables(int headerColumns, int headerRows);
+    public List<ITable> findTables(int headerColumns, int headerRows);
 
     public ITable findTableWithIntelliTag(ITagClassifier classifier);
 }

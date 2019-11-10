@@ -186,7 +186,12 @@ public class TableHeader implements IHeader {
 
         int n = 0;
         for (int i = 0; i < Math.min(this.table.getNumberOfRows(), this.classifier.getSampleCount()); i++) {
-            TableCell cell = this.table.getRowAt(i).getCell(this);
+            IRow row = this.table.getRowAt(i);
+            if(row == null) {
+                continue;
+            }
+
+            TableCell cell = row.getCell(this);
             if (cell.hasValue() && !cell.getEntityVector().isNull()) {
                 result.add(cell.getEntityVector());
                 n++;

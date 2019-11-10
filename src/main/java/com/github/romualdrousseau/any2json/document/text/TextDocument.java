@@ -12,14 +12,22 @@ import com.github.romualdrousseau.shuju.util.StringUtility;
 
 public class TextDocument implements IDocument {
     public boolean open(File txtFile, String encoding) {
-        if (openWithEncoding(txtFile, null)) {
+        if (openWithEncoding(txtFile, encoding)) {
             return true;
         } else {
-            return openWithEncoding(txtFile, encoding);
+            return openWithEncoding(txtFile, null);
         }
     }
 
     public void close() {
+        if(this.reader != null) {
+            try {
+                this.reader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            this.reader = null;
+        }
         this.sheet = null;
     }
 
@@ -53,18 +61,19 @@ public class TextDocument implements IDocument {
             return false;
         }
 
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(new FileInputStream(txtFile), encoding))) {
+        try {
+            this.reader = new BufferedReader(
+                new InputStreamReader(new FileInputStream(txtFile), encoding));
 
             if (encoding.equals("UTF-8")) {
                 // skip BOM if present
-                reader.mark(1);
-                if (reader.read() != StringUtility.BOM_CHAR) {
-                    reader.reset();
+                this.reader.mark(1);
+                if (this.reader.read() != StringUtility.BOM_CHAR) {
+                    this.reader.reset();
                 }
             }
 
-            TextTable table = new TextTable(reader, rowCount);
+            TextTable table = new TextTable(this.reader, rowCount);
             if (table.hasHeaders() && table.getNumberOfRows() > 0 && this.checkIfGoodEncoding(table)) {
                 String sheetName = StringUtility.removeExtension(txtFile.getName());
                 this.sheet = new TextSheet(sheetName, table);
@@ -85,4 +94,5 @@ public class TextDocument implements IDocument {
     }
 
     private TextSheet sheet = null;
+    private BufferedReader reader = null;
 }

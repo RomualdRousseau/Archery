@@ -14,6 +14,10 @@ public abstract class Table implements ITable {
         this.enableMetaTable = b;
     }
 
+    public void enableIntelliTable(boolean b) {
+        this.enableIntelliTable = b;
+    }
+
     public int getGroupId() {
         return this.groupId;
     }
@@ -138,9 +142,13 @@ public abstract class Table implements ITable {
     }
 
     public void updateHeaderTags(ITagClassifier classifier) {
+        updateHeaderTags(classifier, true);
+    }
+
+    public void updateHeaderTags(ITagClassifier classifier, boolean disableCheckValidity) {
         assert classifier != null;
 
-        if (!this.enableMetaTable) {
+        if (!this.enableIntelliTable) {
             return;
         }
 
@@ -177,9 +185,11 @@ public abstract class Table implements ITable {
 
         this.tagUpdated = true;
 
-        if (!isMetaTable() && !checkValidity(classifier.getRequiredTagList())) {
-            transformToMetaTable();
-            updateHeaderTags(classifier);
+        if(disableCheckValidity) {
+            if (!isMetaTable() && !checkValidity(classifier.getRequiredTagList())) {
+                transformToMetaTable();
+                updateHeaderTags(classifier, false);
+            }
         }
 
         this.disableMetaTableProcessing = false;
@@ -407,6 +417,7 @@ public abstract class Table implements ITable {
     protected int offsetRow;
 
     private boolean enableMetaTable = true;
+    private boolean enableIntelliTable = true;
     private boolean disableMetaTableProcessing = false;
     private boolean tagUpdated = false;
 }
