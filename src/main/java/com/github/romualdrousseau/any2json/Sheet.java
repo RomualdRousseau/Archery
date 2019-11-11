@@ -18,17 +18,17 @@ public abstract class Sheet implements ISheet {
         if (tables.size() == 0) {
             table = getTable();
             if(table != null) {
-                table.enableIntelliTable(false);
+                table.enableIntelliTable(true);
                 table.updateHeaderTags(classifier, false);
             }
         }
-        else if (tables.size() == 1) {
+        else if (tables.size() == 1 && !tables.get(0).isMetaTableEnabled()) {
             table = tables.get(0);
             table.updateHeaderTags(classifier, false);
         } else {
             table = new IntelliTable(this, tables, classifier);
             if(table.getNumberOfRows() == 0) {
-                table = tables.get(0);
+                table = findTable(classifier.getSampleCount(), classifier.getSampleCount());
                 table.updateHeaderTags(classifier, false);
             }
         }

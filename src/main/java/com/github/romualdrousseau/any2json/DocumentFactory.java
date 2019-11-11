@@ -13,6 +13,7 @@ public class DocumentFactory
     public final static int DEFAULT_SAMPLE_COUNT = 30;
     public final static float DEFAULT_RATIO_EMPTINESS = 0.5f;
     public final static float DEFAULT_ENTITY_PROBABILITY = 0.8f;
+    public final static int MAX_META_COUNT = 100;
 
 	public static IDocument createInstance(String filePath, String encoding) {
 		if(filePath == null) {

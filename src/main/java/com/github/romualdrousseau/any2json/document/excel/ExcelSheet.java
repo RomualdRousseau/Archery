@@ -33,7 +33,7 @@ class ExcelSheet extends Sheet {
     }
 
     public ITable getTable() {
-        int lastColumnNum = this.estimateLastColumnNum(0, 0);
+        int lastColumnNum = this.estimateLastColumnNum(0, 0, new DataFormatter());
         if (this.table == null && lastColumnNum > 0) {
             this.table = new ExcelTable(this.sheet, this.evaluator, 0, 0, lastColumnNum, this.sheet.getLastRowNum(), 0);
             this.table.enableMetaTable(false);
@@ -43,9 +43,10 @@ class ExcelSheet extends Sheet {
     }
 
     public ITable findTable(int headerColumns, int headerRows) {
-        final Filter filter = new Filter(new Template(new int[][] { { 0, 0, 0 }, { 1, 0, 1 }, { 0, 0, 0 } }));
-
         if (this.table == null) {
+            final Filter filter = new Filter(new Template(new int[][] { { 0, 0, 0 }, { 1, 0, 1 }, { 0, 0, 0 } }));
+            final DataFormatter formatter = new DataFormatter();
+
             ExcelSearchBitmap bitmap = new ExcelSearchBitmap(this.sheet, headerColumns, headerRows);
             filter.apply(bitmap, 1);
             filter.applyNeg(bitmap, 2);
@@ -54,43 +55,65 @@ class ExcelSheet extends Sheet {
             // debug(bitmap1, table);
             if (table != null && table[1].getX() > table[0].getX()) {
                 int lastColumnNum = Math.max(table[1].getX(),
-                        this.estimateLastColumnNum(table[0].getX(), table[0].getY()));
+                        this.estimateLastColumnNum(table[0].getX(), table[0].getY(), formatter));
                 this.table = new ExcelTable(this.sheet, this.evaluator, table[0].getX(), table[0].getY(), lastColumnNum,
                         this.sheet.getLastRowNum(), 0);
             }
         }
+
         return this.table;
     }
 
     public List<ITable> findTables(int headerColumns, int headerRows) {
         final Filter filter = new Filter(new Template(new int[][] { { 0, 0, 0 }, { 1, 0, 1 }, { 0, 0, 0 } }));
+        final DataFormatter formatter = new DataFormatter();
 
         ArrayList<ITable> result = new ArrayList<ITable>();
 
-        ExcelSearchBitmap bitmap = new ExcelSearchBitmap(this.sheet, headerColumns, headerRows);
+        ISearchBitmap bitmap = new ExcelSearchBitmap(this.sheet, headerColumns, headerRows);
+        ISearchBitmap bitmap2 = bitmap.clone();
         filter.apply(bitmap, 1);
         filter.applyNeg(bitmap, 2);
 
         List<SearchPoint[]> tables = new RectangleExtractor().extractAll(bitmap);
+
+        for (int y = 0; y < bitmap2.getHeight(); y++) {
+            for (int x = 0; x < bitmap2.getWidth(); x++) {
+                for (SearchPoint[] table : tables) {
+                    if (bitmap2.get(x, y) > 0 && SearchPoint.isInRange(table, x, y)) {
+                        bitmap2.set(x, y, 0);
+                    }
+                }
+            }
+        }
+
+        for (int y = 0; y < bitmap2.getHeight(); y++) {
+            for (int x = 0; x < bitmap2.getWidth(); x++) {
+                if (bitmap2.get(x - 1, y) == 0 && bitmap2.get(x, y) > 0 && bitmap2.get(x + 1, y) == 0) {
+                    tables.add(new SearchPoint[] { new SearchPoint(x, y, 0), new SearchPoint(x + 1, y, 0) });
+                }
+            }
+        }
+
         for (SearchPoint[] table : tables) {
             if (table[1].getX() > table[0].getX()) {
                 int lastColumnNum = Math.max(table[1].getX(),
-                        this.estimateLastColumnNum(table[0].getX(), table[0].getY()));
+                        this.estimateLastColumnNum(table[0].getX(), table[0].getY(), formatter));
                 int lastRowNum = ((table[1].getY() + 1) < headerRows) ? table[1].getY() : this.sheet.getLastRowNum();
                 result.add(new ExcelTable(this.sheet, this.evaluator, table[0].getX(), table[0].getY(), lastColumnNum,
                         lastRowNum, 0));
             }
         }
+
         return result;
     }
 
-    private int estimateLastColumnNum(int x, int y) {
+    private int estimateLastColumnNum(int x, int y, DataFormatter formatter) {
         Row row = this.sheet.getRow(y);
         if (row == null) {
             return 0;
         }
         int colNum = x;
-        DataFormatter formatter = new DataFormatter();
         Cell cell = row.getCell(colNum);
         while (cell != null && !StringUtility.isEmpty(formatter.formatCellValue(cell))) {
             cell = row.getCell(++colNum);

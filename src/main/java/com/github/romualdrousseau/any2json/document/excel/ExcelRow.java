@@ -7,9 +7,8 @@ import com.github.romualdrousseau.shuju.util.StringUtility;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.util.CellRangeAddress;
 
-public class ExcelRow extends TableRow
-{
-	public ExcelRow(ExcelTable table, org.apache.poi.ss.usermodel.Row row, int groupId) {
+public class ExcelRow extends TableRow {
+    public ExcelRow(ExcelTable table, org.apache.poi.ss.usermodel.Row row, int groupId) {
         this.table = table;
         this.row = row;
         this.groupId = groupId;
@@ -19,83 +18,85 @@ public class ExcelRow extends TableRow
         return this.table;
     }
 
-	public int getNumberOfCells() {
-		return this.table.getNumberOfColumns();
+    public int getNumberOfCells() {
+        return this.table.getNumberOfColumns();
     }
 
     public int getNumberOfMergedCellsAt(int i) {
         Cell cell = this.row.getCell(this.table.getFirstColumn() + i);
-		if(cell == null) {
-			return 1;
+        if (cell == null) {
+            return 1;
         }
 
-		int numberOfCells = 1;
-		for(int j = 0; j < this.table.sheet.getNumMergedRegions(); j++) {
-			CellRangeAddress region = this.table.sheet.getMergedRegion(j);
-			if(region.isInRange(cell.getRowIndex(), cell.getColumnIndex())) {
-				numberOfCells = (region.getLastColumn() - region.getFirstColumn()) + 1;
-			}
+        int numberOfCells = 1;
+        for (int j = 0; j < this.table.sheet.getNumMergedRegions(); j++) {
+            CellRangeAddress region = this.table.sheet.getMergedRegion(j);
+            if (region.isInRange(cell.getRowIndex(), cell.getColumnIndex())) {
+                numberOfCells = (region.getLastColumn() - region.getFirstColumn()) + 1;
+                break;
+            }
         }
 
-		return numberOfCells;
+        return numberOfCells;
     }
 
     public String getCellValueAt(int i) {
-		if(i < 0 || i >= getNumberOfCells()) {
-			throw new ArrayIndexOutOfBoundsException(i);
+        if (i < 0 || i >= getNumberOfCells()) {
+            throw new ArrayIndexOutOfBoundsException(i);
         }
 
         return getInternalCellValueAt(i);
     }
 
-	public String getCellValue(IHeader header) {
-		if(header == null) {
-			throw new IllegalArgumentException();
-		}
+    public String getCellValue(IHeader header) {
+        if (header == null) {
+            throw new IllegalArgumentException();
+        }
 
-		String result = getInternalCellValueAt(header.getColumnIndex());
-		if(result == null) {
-			result = "";
-		}
+        String result = getInternalCellValueAt(header.getColumnIndex());
+        if (result == null) {
+            result = "";
+        }
 
-		for(int i = 1; i < header.getNumberOfCells(); i++) {
-			String s = getInternalCellValueAt(header.getColumnIndex() + i);
-			if(s != null) {
-				result += s;
-			}
-		}
+        for (int i = 1; i < header.getNumberOfCells(); i++) {
+            String s = getInternalCellValueAt(header.getColumnIndex() + i);
+            if (s != null) {
+                result += s;
+            }
+        }
 
-		return result;
+        return result;
     }
 
-	private String getInternalCellValueAt(int i) {
-		Cell cell = this.row.getCell(this.table.getFirstColumn() + i);
-		if(cell == null) {
-			return null;
+    private String getInternalCellValueAt(int i) {
+        Cell cell = this.row.getCell(this.table.getFirstColumn() + i);
+        if (cell == null) {
+            return null;
         }
 
         int type = Cell.CELL_TYPE_ERROR;
-        String value = "ERROR";
+        String value = "#ERROR!";
         try {
             type = this.table.evaluator.evaluateInCell(cell).getCellType();
             value = this.table.formatter.formatCellValue(cell);
-        } catch(Exception x) {
+        } catch (Exception x) {
             type = Cell.CELL_TYPE_ERROR;
-            value = "ERROR";
+            value = "#ERROR!";
         }
 
-		// TRICKY: Get hidden decimals in case of a rounded numeric value
-		if(type == Cell.CELL_TYPE_NUMERIC && value.matches("-?\\d+")) {
-			double d = cell.getNumericCellValue();
-			value = (Math.floor(d) == d) ? value : String.valueOf(d);
-		}
-		// else if(type == Cell.CELL_TYPE_ERROR) {
+        // TRICKY: Get hidden decimals in case of a rounded numeric value
+        if (type == Cell.CELL_TYPE_NUMERIC && value.matches("-?\\d+")) {
+            double d = cell.getNumericCellValue();
+            value = (Math.floor(d) == d) ? value : String.valueOf(d);
+        }
+        else if(type == Cell.CELL_TYPE_ERROR) {
+            value = "#ERROR!";
             // throw new UnsupportedOperationException("Unexceptected Cell Error at [" + row.getRowNum() + ";" + (this.table.getFirstColumn() + i) + "]");
-		// }
+        }
 
-		return StringUtility.cleanToken(value);
+        return StringUtility.cleanToken(value);
     }
 
     private ExcelTable table;
-	private org.apache.poi.ss.usermodel.Row row;
+    private org.apache.poi.ss.usermodel.Row row;
 }

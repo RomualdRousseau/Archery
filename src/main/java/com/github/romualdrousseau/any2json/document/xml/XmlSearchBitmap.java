@@ -5,7 +5,7 @@ import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
 import nl.fountain.xelem.excel.Cell;
 import nl.fountain.xelem.excel.Worksheet;
 
-public class XmlSearchBitmap extends ISearchBitmap {
+public class XmlSearchBitmap implements ISearchBitmap {
     public XmlSearchBitmap(int columns, int rows) {
         this.width = columns;
         this.height = rows;
@@ -36,6 +36,16 @@ public class XmlSearchBitmap extends ISearchBitmap {
 
     public void set(int x, int y, int v) {
         this.data[y][x] = v;
+    }
+
+    public ISearchBitmap clone() {
+        XmlSearchBitmap result = new XmlSearchBitmap(width, height);
+        for(int y = 0; y < this.height; y++) {
+			for(int x = 0; x < this.width; x++) {
+                result.data[y][x] = this.data[y][x];
+			}
+        }
+        return result;
     }
 
     private void loadData(Worksheet sheet) {

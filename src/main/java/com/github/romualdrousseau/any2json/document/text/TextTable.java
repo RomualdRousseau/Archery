@@ -9,7 +9,7 @@ import com.github.romualdrousseau.shuju.math.Vector;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 class TextTable extends Table {
-    public final static int ROWS_IN_MEMORY = 100000;
+    public final static int ROWS_IN_MEMORY = 2000;
 
     public TextTable(BufferedReader reader, int rowCount) throws IOException {
         processOneTable(reader);

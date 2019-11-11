@@ -1,7 +1,13 @@
 package com.github.romualdrousseau.any2json;
 
 public interface ITable {
+    void enableMetaTable(boolean b);
+
     void enableIntelliTable(boolean b);
+
+    boolean isMetaTableEnabled();
+
+    boolean isIntelliTableEnabled();
 
     int getGroupId();
 

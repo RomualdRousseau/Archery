@@ -34,10 +34,21 @@ public class IntelliTable implements ITable {
             }
         }
 
-        updateHeaderTags(classifier, true);
+        updateHeaderTags(classifier, false);
+    }
+
+    public void enableMetaTable(boolean b) {
     }
 
     public void enableIntelliTable(boolean b) {
+    }
+
+    public boolean isMetaTableEnabled() {
+        return true;
+    }
+
+    public boolean isIntelliTableEnabled() {
+        return true;
     }
 
     public int getGroupId() {

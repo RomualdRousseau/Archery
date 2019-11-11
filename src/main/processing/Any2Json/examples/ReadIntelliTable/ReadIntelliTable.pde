@@ -31,24 +31,49 @@ import com.github.romualdrousseau.any2json.document.html.*;
 import com.github.romualdrousseau.any2json.document.excel.*;
 import com.github.romualdrousseau.any2json.document.text.*;
 
-ISearchBitmap searchBitmap;
-Iterable<SearchPoint[]> searchPoints;
+import java.util.List;
+
+ISearchBitmap searchBitmap, searchBitmap2, searchBitmap3;
+List<SearchPoint[]> searchPoints;
 
 void setup() {
   size(800, 800);
   noSmooth();
   frameRate(1);
 
-  //IDocument document = DocumentFactory.createInstance(dataPath("Продажи 06.19.xls"), "UTF-8");
-  IDocument document = DocumentFactory.createInstance(dataPath("Сервье июнь.xls"), "UTF-8");
+  // IDocument document = DocumentFactory.createInstance(dataPath("Продажи 06.19.xls"), "UTF-8");
+  // IDocument document = DocumentFactory.createInstance(dataPath("Сервье июнь.xls"), "UTF-8");
+  IDocument document = DocumentFactory.createInstance(dataPath("ДжиДиПи Сервье Отчёт по продажам для поставщиков по клиентам июнь 19.xlsx"), "UTF-8");
 
   NGramNNClassifier classifier1 = new NGramNNClassifier(JSON.loadJSONObject(dataPath("brainColumnClassifier.json")));
 
   searchBitmap = document.getSheetAt(0).getSearchBitmap(classifier1.getSampleCount(), classifier1.getSampleCount());
+  searchBitmap2 = searchBitmap.clone();
+  searchBitmap3 = searchBitmap.clone();
+
   final Filter filter = new Filter(new Template(new int[][] { { 0, 0, 0 }, { 1, 0, 1 }, { 0, 0, 0 } }));
   filter.apply(searchBitmap, 1);
   filter.applyNeg(searchBitmap, 2);
+
   searchPoints = new RectangleExtractor().extractAll(searchBitmap);
+
+  for (int y = 0; y < searchBitmap2.getHeight(); y++) {
+    for (int x = 0; x < searchBitmap2.getWidth(); x++) {
+      for (SearchPoint[] table : searchPoints) {
+        if (searchBitmap2.get(x, y) > 0 && SearchPoint.isInRange(table, x, y)) {
+          searchBitmap2.set(x, y, 0);
+        }
+      }
+    }
+  }
+
+  for (int y = 0; y < searchBitmap2.getHeight(); y++) {
+    for (int x = 0; x < searchBitmap2.getWidth(); x++) {
+      if (searchBitmap2.get(x - 1, y) == 0 && searchBitmap2.get(x, y) > 0 && searchBitmap2.get(x + 1, y) == 0) {
+        searchPoints.add(new SearchPoint[] { new SearchPoint(x, y, 0), new SearchPoint(x + 1, y, 0) });
+      }
+    }
+  }
 
   ITable table = document.getSheetAt(0).findTableWithIntelliTag(classifier1);
 
@@ -68,16 +93,16 @@ void setup() {
 }
 
 void draw() {
-  final float dx = width / searchBitmap.getWidth();
-  final float dy = height / searchBitmap.getHeight();
+  final float dx = width / searchBitmap3.getWidth();
+  final float dy = height / searchBitmap3.getHeight();
 
   background(51);
 
   stroke(128);
   strokeWeight(1);
-  for (int y = 0; y < searchBitmap.getHeight(); y++) {
-    for (int x = 0; x < searchBitmap.getWidth(); x++) {
-      fill(color(255 * searchBitmap.get(x, y)));
+  for (int y = 0; y < searchBitmap3.getHeight(); y++) {
+    for (int x = 0; x < searchBitmap3.getWidth(); x++) {
+      fill(color(255 * searchBitmap3.get(x, y)));
       rect(x * dx, y * dy, dx, dy);
     }
   }

@@ -77,7 +77,8 @@ public class XmlRow extends TableRow
 			value = (Math.floor(d) == d) ? value : String.valueOf(d);
 		}
 		else if(type == Cell.DATATYPE_ERROR) {
-			throw new UnsupportedOperationException("Unexceptected Cell Error at [" + row.getIndex() + ";" + (this.table.getFirstColumn() + i) + "]");
+            value = "#ERROR!";
+		    // throw new UnsupportedOperationException("Unexceptected Cell Error at [" + row.getIndex() + ";" + (this.table.getFirstColumn() + i) + "]");
 		}
 
 		return StringUtility.cleanToken(value);

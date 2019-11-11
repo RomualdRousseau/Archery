@@ -18,6 +18,14 @@ public abstract class Table implements ITable {
         this.enableIntelliTable = b;
     }
 
+    public boolean isMetaTableEnabled() {
+        return this.enableMetaTable;
+    }
+
+    public boolean isIntelliTableEnabled() {
+        return this.enableIntelliTable;
+    }
+
     public int getGroupId() {
         return this.groupId;
     }
@@ -185,7 +193,7 @@ public abstract class Table implements ITable {
 
         this.tagUpdated = true;
 
-        if(disableCheckValidity) {
+        if (disableCheckValidity) {
             if (!isMetaTable() && !checkValidity(classifier.getRequiredTagList())) {
                 transformToMetaTable();
                 updateHeaderTags(classifier, false);
@@ -217,7 +225,6 @@ public abstract class Table implements ITable {
         this.offsetRow = 0;
 
         resetHeaderTags();
-        clearHeaders();
         processMetas();
     }
 
@@ -263,7 +270,7 @@ public abstract class Table implements ITable {
 
     private void processHeaders() {
         this.headers.clear();
-        for (TableHeader header : getHeadersAt(this.firstRow - 1)) {
+        for (TableHeader header : createHeadersAt(this.firstRow - 1)) {
             addHeaderOrMeta(header);
         }
     }
@@ -272,7 +279,7 @@ public abstract class Table implements ITable {
         this.headers.clear();
 
         int index = 0;
-        for (int j = 0; j < getNumberOfMetas(); j++) {
+        for (int j = 0; j < Math.min(getNumberOfMetas(), DocumentFactory.MAX_META_COUNT); j++) {
             IRow metas = getInternalRowAt(this.metaRow + j);
             if (metas == null) {
                 continue;
@@ -302,7 +309,7 @@ public abstract class Table implements ITable {
 
     private boolean skipDuplicateHeader(int fromRow) {
         boolean duplicated = true;
-        for (TableHeader header : getHeadersAt(fromRow)) {
+        for (TableHeader header : createHeadersAt(fromRow)) {
             if (getHeaderByCleanName(header.getCleanName()) == null) {
                 duplicated = false;
             }
@@ -356,7 +363,7 @@ public abstract class Table implements ITable {
         return result;
     }
 
-    private Iterable<TableHeader> getHeadersAt(int rowIndex) {
+    private Iterable<TableHeader> createHeadersAt(int rowIndex) {
         ArrayList<TableHeader> result = new ArrayList<TableHeader>();
 
         IRow cells = getInternalRowAt(rowIndex);

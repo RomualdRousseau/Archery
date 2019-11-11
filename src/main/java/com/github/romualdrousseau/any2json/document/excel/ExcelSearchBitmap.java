@@ -7,7 +7,7 @@ import org.apache.poi.ss.util.CellRangeAddress;
 
 import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
 
-public class ExcelSearchBitmap extends ISearchBitmap
+public class ExcelSearchBitmap implements ISearchBitmap
 {
     public ExcelSearchBitmap(int columns, int rows) {
         this.width = columns;
@@ -39,7 +39,17 @@ public class ExcelSearchBitmap extends ISearchBitmap
 
 	public void set(int x, int y, int v) {
 		this.data[y][x] = v;
-	}
+    }
+
+    public ISearchBitmap clone() {
+        ExcelSearchBitmap result = new ExcelSearchBitmap(width, height);
+        for(int y = 0; y < this.height; y++) {
+			for(int x = 0; x < this.width; x++) {
+                result.data[y][x] = this.data[y][x];
+			}
+        }
+        return result;
+    }
 
 	private void loadData(Sheet sheet) {
 		for(int y = 0; y < this.height; y++) {
@@ -73,7 +83,7 @@ public class ExcelSearchBitmap extends ISearchBitmap
     }
 
 	private int checkIfMergedCell(Sheet sheet, Cell cell) {
-		for(int i = 0; i < sheet.getNumMergedRegions(); i++) {
+		for(int i = 0; i < Math.min(sheet.getNumMergedRegions(), 100); i++) {
 			CellRangeAddress region = sheet.getMergedRegion(i);
 			if(region.isInRange(cell.getRowIndex(), cell.getColumnIndex())) {
 				return region.getFirstColumn();
