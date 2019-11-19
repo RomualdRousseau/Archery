@@ -22,7 +22,7 @@ public class TableCell {
     }
 
     public String getCleanValue() {
-        if (value != null && this.cleanValue == null) {
+        if (this.value != null && this.cleanValue == null) {
             this.cleanValue = StringUtility.cleanToken(value);
         }
         return this.cleanValue;
@@ -37,6 +37,8 @@ public class TableCell {
 
     public TableCell setValue(String value) {
         this.value = value;
+        this.cleanValue = null;
+        this.entityVector = null;
         return this;
     }
 

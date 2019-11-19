@@ -35,6 +35,12 @@ public interface ITable {
 
     Iterable<IHeader> headers();
 
+    void resetHeaderTags();
+
+    void updateHeaderTags(ITagClassifier classifier);
+
+    void updateHeaderTags(ITagClassifier classifier, boolean disableCheckValidity);
+
     int getFirstColumn();
 
     int getFirstRow();
@@ -50,10 +56,4 @@ public interface ITable {
     IRow getRowAt(int rowIndex);
 
     Iterable<IRow> rows();
-
-    void resetHeaderTags();
-
-    void updateHeaderTags(ITagClassifier classifier);
-
-    void updateHeaderTags(ITagClassifier classifier, boolean disableCheckValidity);
 }

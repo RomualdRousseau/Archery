@@ -44,7 +44,7 @@ class ExcelSheet extends Sheet {
 
     public ITable findTable(int headerColumns, int headerRows) {
         if (this.table == null) {
-            final Filter filter = new Filter(new Template(new int[][] { { 0, 0, 0 }, { 1, 0, 1 }, { 0, 0, 0 } }));
+            final Filter filter = new Filter(new Template(new float[][] { { 0, 0, 0 }, { 1, 0, 1 }, { 0, 0, 0 } }));
             final DataFormatter formatter = new DataFormatter();
 
             ExcelSearchBitmap bitmap = new ExcelSearchBitmap(this.sheet, headerColumns, headerRows);
@@ -65,7 +65,7 @@ class ExcelSheet extends Sheet {
     }
 
     public List<ITable> findTables(int headerColumns, int headerRows) {
-        final Filter filter = new Filter(new Template(new int[][] { { 0, 0, 0 }, { 1, 0, 1 }, { 0, 0, 0 } }));
+        final Filter filter = new Filter(new Template(new float[][] { { 0, 0, 0 }, { 1, 0, 1 }, { 0, 0, 0 } }));
         final DataFormatter formatter = new DataFormatter();
 
         ArrayList<ITable> result = new ArrayList<ITable>();
@@ -80,7 +80,7 @@ class ExcelSheet extends Sheet {
         for (int y = 0; y < bitmap2.getHeight(); y++) {
             for (int x = 0; x < bitmap2.getWidth(); x++) {
                 for (SearchPoint[] table : tables) {
-                    if (bitmap2.get(x, y) > 0 && SearchPoint.isInRange(table, x, y)) {
+                    if (bitmap2.get(x, y) > 0 && SearchPoint.IsInRange(table, x, y)) {
                         bitmap2.set(x, y, 0);
                     }
                 }

@@ -42,7 +42,7 @@ class XmlSheet extends Sheet {
     }
 
     public ITable findTable(int headerColumns, int headerRows) {
-        final Filter filter = new Filter(new Template(new int[][] { { 0, 0, 0 }, { 1, 0, 1 }, { 0, 0, 0 } }));
+        final Filter filter = new Filter(new Template(new float[][] { { 0, 0, 0 }, { 1, 0, 1 }, { 0, 0, 0 } }));
 
         if (this.table == null) {
             XmlSearchBitmap bitmap = new XmlSearchBitmap(this.sheet, headerColumns, headerRows);
@@ -62,7 +62,7 @@ class XmlSheet extends Sheet {
     }
 
     public List<ITable> findTables(int headerColumns, int headerRows) {
-        final Filter filter = new Filter(new Template(new int[][] { { 0, 0, 0 }, { 1, 0, 1 }, { 0, 0, 0 } }));
+        final Filter filter = new Filter(new Template(new float[][] { { 0, 0, 0 }, { 1, 0, 1 }, { 0, 0, 0 } }));
 
         ArrayList<ITable> result = new ArrayList<ITable>();
 
