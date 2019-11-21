@@ -65,7 +65,7 @@ public class Row implements IRow {
 
     @Override
     public boolean isEmpty() {
-        return this.sparsity() == 1.0f;
+        return (this.sparsity() == 1.0f);
     }
 
     @Override

@@ -2,13 +2,14 @@ package com.github.romualdrousseau.any2json.v2.base;
 
 import com.github.romualdrousseau.any2json.v2.ISheet;
 import com.github.romualdrousseau.any2json.v2.ITable;
+import com.github.romualdrousseau.any2json.v2.intelli.DataTable;
 import com.github.romualdrousseau.any2json.ITagClassifier;
 
 public abstract class Sheet implements ISheet {
 
     @Override
     public ITable getTable(ITagClassifier classifier) {
-        ITable result = null;
+        Table result = null;
 
         int lastColumnNum = this.getLastColumnNum(0, 0);
         int lastRowNum = this.getLastRowNum();
@@ -16,7 +17,7 @@ public abstract class Sheet implements ISheet {
             result = new Table(this, 0, 0, lastColumnNum, lastRowNum, classifier);
         }
 
-        return result;
+        return new DataTable(result);
     }
 
     public abstract int getLastColumnNum(int colIndex, int rowIndex);

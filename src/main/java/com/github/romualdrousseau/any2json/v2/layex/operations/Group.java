@@ -1,7 +1,7 @@
 
 package com.github.romualdrousseau.any2json.v2.layex.operations;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 import com.github.romualdrousseau.any2json.v2.layex.Context;
 import com.github.romualdrousseau.any2json.v2.layex.LayexMatcher;
@@ -10,8 +10,8 @@ import com.github.romualdrousseau.any2json.v2.layex.ISymbol;
 
 public class Group implements LayexMatcher {
 
-    public Group(ArrayList<LayexMatcher> stack, int group) {
-      this.a = stack.remove(stack.size() - 1);
+    public Group(LinkedList<LayexMatcher> stack, int group) {
+      this.a = stack.pop();
       this.group = group;
     }
 

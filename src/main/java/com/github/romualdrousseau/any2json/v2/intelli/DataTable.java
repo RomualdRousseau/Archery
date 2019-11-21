@@ -23,6 +23,6 @@ public class DataTable extends Table {
             this.addHeader(new TaggedHeader(cell, colIndex, table.getClassifier()));
             colIndex += cell.getMergedCount();
         }
-        this.setOffset(1);
+        this.setOffsetRow(1);
     }
 }

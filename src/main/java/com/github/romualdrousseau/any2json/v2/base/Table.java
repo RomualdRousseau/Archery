@@ -5,12 +5,13 @@ import com.github.romualdrousseau.any2json.v2.IRow;
 import com.github.romualdrousseau.any2json.v2.ITable;
 
 import java.util.ArrayList;
-import java.util.TreeMap;
 
 import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.v2.RowIterable;
+import com.github.romualdrousseau.any2json.v2.util.RowStore;
+import com.github.romualdrousseau.any2json.v2.util.Visitable;
 
-public class Table implements ITable {
+public class Table implements ITable, Visitable {
 
     public Table(Sheet sheet, int firstColumn, int firstRow, int lastColumn, int lastRow, ITagClassifier classifier) {
         this.visited = false;
@@ -19,8 +20,9 @@ public class Table implements ITable {
         this.firstRow = firstRow;
         this.lastColumn = lastColumn;
         this.lastRow = lastRow;
-        this.rowOffset = 0;
         this.classifier = classifier;
+        this.offsetRow = 0;
+        this.parentOffsetRow = 0;
         this.cachedRows = null;
     }
 
@@ -31,16 +33,43 @@ public class Table implements ITable {
 
     public Table(Table parent, int firstRow, int lastRow) {
         this(parent.sheet, parent.firstColumn, firstRow, parent.lastColumn, lastRow, parent.classifier);
-        this.rowOffset = firstRow - parent.firstRow;
+        this.parentOffsetRow = this.firstRow - parent.firstRow;
         this.cachedRows = parent.cachedRows;
     }
 
+    @Override
+    public int getNumberOfColumns() {
+        return this.lastColumn - this.firstColumn + 1;
+    }
+
+    @Override
+    public int getNumberOfRows() {
+        return this.lastRow - this.firstRow + 1 - this.offsetRow;
+    }
+
+    @Override
+    public Iterable<IRow> rows() {
+        return new RowIterable(this);
+    }
+
+    @Override
+    public int getNumberOfHeaders() {
+        return this.headers.size();
+    }
+
+    @Override
+    public Iterable<IHeader> headers() {
+        return this.headers;
+    }
+
+    @Override
     public boolean isVisited() {
         return this.visited;
     }
 
-    public void setVisited(boolean visited) {
-        this.visited = visited;
+    @Override
+    public void setVisited(boolean flag) {
+        this.visited = flag;
     }
 
     public Sheet getSheet() {
@@ -67,8 +96,12 @@ public class Table implements ITable {
         return this.classifier;
     }
 
-    public void setOffset(int offset) {
-        this.rowOffset = offset;
+    public int getOffsetRow() {
+        return this.offsetRow;
+    }
+
+    public void setOffsetRow(int offset) {
+        this.offsetRow = offset;
     }
 
     public Row getRowAt(int rowIndex) {
@@ -77,41 +110,16 @@ public class Table implements ITable {
         }
 
         if(this.cachedRows == null) {
-            this.cachedRows = new TreeMap<Integer, Row>();
+            this.cachedRows = new RowStore();
         }
 
-        Row result = cachedRows.get(Integer.valueOf(this.rowOffset + rowIndex));
+        Row result = cachedRows.get(this.parentOffsetRow + this.offsetRow + rowIndex);
         if(result == null) {
             result = new Row(this, rowIndex, this.classifier);
-            cachedRows.put(Integer.valueOf(rowIndex), result);
+            cachedRows.put(rowIndex, result);
         }
 
         return result;
-    }
-
-    @Override
-    public int getNumberOfColumns() {
-        return this.lastColumn - this.firstColumn + 1;
-    }
-
-    @Override
-    public int getNumberOfRows() {
-        return this.lastRow - this.firstRow + 1;
-    }
-
-    @Override
-    public Iterable<IRow> rows() {
-        return new RowIterable(this);
-    }
-
-    @Override
-    public int getNumberOfHeaders() {
-        return this.headers.size();
-    }
-
-    @Override
-    public Iterable<IHeader> headers() {
-        return this.headers;
     }
 
     public void addHeader(IHeader header) {
@@ -124,8 +132,9 @@ public class Table implements ITable {
     private int firstRow;
     private int lastColumn;
     private int lastRow;
-    private int rowOffset;
+    private int parentOffsetRow;
+    private int offsetRow;
     private ITagClassifier classifier;
-    private TreeMap<Integer, Row> cachedRows;
+    private RowStore cachedRows;
     private ArrayList<IHeader> headers = new ArrayList<IHeader>();
 }

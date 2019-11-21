@@ -22,6 +22,7 @@ public abstract class Context<S extends ISymbol> {
         this.func(s);
 
         this.column++;
+
         if (s.getSymbol().equals("$")) {
             this.column = 0;
             this.row++;

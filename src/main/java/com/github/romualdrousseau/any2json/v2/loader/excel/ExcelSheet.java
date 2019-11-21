@@ -7,13 +7,17 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 import com.github.romualdrousseau.any2json.v2.intelli.IntelliSheet;
+import com.github.romualdrousseau.any2json.v2.util.RowTranslatable;
+import com.github.romualdrousseau.any2json.v2.util.RowTranslator;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
-class ExcelSheet extends IntelliSheet {
+class ExcelSheet extends IntelliSheet implements RowTranslatable {
+
     public ExcelSheet(org.apache.poi.ss.usermodel.Sheet sheet, FormulaEvaluator evaluator) {
         this.sheet = sheet;
         this.evaluator = evaluator;
         this.formatter = new DataFormatter();
+        this.rowTranslator = new RowTranslator(this, getLastRowNum() + 1);
     }
 
     @Override
@@ -23,26 +27,38 @@ class ExcelSheet extends IntelliSheet {
 
     @Override
     public int getLastColumnNum(int colIndex, int rowIndex) {
-        Row row = this.sheet.getRow(rowIndex);
+        final int translatedRow = this.rowTranslator.rebase(colIndex, rowIndex);
+        if(translatedRow == -1) {
+            return 0;
+        }
+
+        Row row = this.sheet.getRow(translatedRow);
         if (row == null) {
             return 0;
         }
+
         int colNum = colIndex;
         Cell cell = row.getCell(colNum);
         while (cell != null && !StringUtility.isEmpty(this.formatter.formatCellValue(cell))) {
             cell = row.getCell(++colNum);
         }
+
         return colNum - 1;
     }
 
     @Override
     public int getLastRowNum() {
-        return this.sheet.getLastRowNum();
+        return this.sheet.getLastRowNum() + 1;
     }
 
     @Override
     public String getInternalCellValueAt(int colIndex, int rowIndex) {
-        Row row = this.sheet.getRow(rowIndex);
+        final int translatedRow = this.rowTranslator.rebase(colIndex, rowIndex);
+        if(translatedRow == -1) {
+            return null;
+        }
+
+        Row row = this.sheet.getRow(translatedRow);
         if(row == null) {
             return null;
         }
@@ -74,7 +90,12 @@ class ExcelSheet extends IntelliSheet {
 
     @Override
     public int getNumberOfMergedCellsAt(int colIndex, int rowIndex) {
-        Row row = this.sheet.getRow(rowIndex);
+        final int translatedRow = this.rowTranslator.rebase(colIndex, rowIndex);
+        if(translatedRow == -1) {
+            return 1;
+        }
+
+        Row row = this.sheet.getRow(translatedRow);
         if(row == null) {
             return 1;
         }
@@ -96,7 +117,18 @@ class ExcelSheet extends IntelliSheet {
         return numberOfCells;
     }
 
+    @Override
+    public boolean isSeparatorRow(int colIndex, int rowIndex) {
+        Row row = this.sheet.getRow(rowIndex);
+        if(row == null) {
+            return false;
+        }
+        double height = row.getHeight() * 0.07; // Rougly convert in pixels
+        return (height < IntelliSheet.SEPARATOR_ROW_THRESHOLD);
+    }
+
     private org.apache.poi.ss.usermodel.Sheet sheet;
     private FormulaEvaluator evaluator;
     private DataFormatter formatter;
+    private RowTranslator rowTranslator;
 }

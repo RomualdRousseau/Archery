@@ -1,7 +1,7 @@
 
 package com.github.romualdrousseau.any2json.v2.layex.operations;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 import com.github.romualdrousseau.any2json.v2.layex.Context;
 import com.github.romualdrousseau.any2json.v2.layex.LayexMatcher;
@@ -10,9 +10,9 @@ import com.github.romualdrousseau.any2json.v2.layex.ISymbol;
 
 public class Or implements LayexMatcher {
 
-    public Or(ArrayList<LayexMatcher> stack) {
-        this.a = stack.remove(stack.size() - 1);
-        this.b = stack.remove(stack.size() - 1);
+    public Or(LinkedList<LayexMatcher> stack) {
+        this.a = stack.pop();
+        this.b = stack.pop();
     }
 
     @Override

@@ -9,7 +9,7 @@ import com.github.romualdrousseau.any2json.v2.layex.IStream;
 
 public class TableStream implements IStream<Cell, TableStream.Cursor> {
 
-    public class Cursor {
+    class Cursor {
 
         public Cursor(int colIndex, int rowIndex) {
             this.colIndex = colIndex;
@@ -49,6 +49,7 @@ public class TableStream implements IStream<Cell, TableStream.Cursor> {
 
         Row row = this.table.getRowAt(this.rowIndex);
         if(row.isEmpty()) {
+            this.colIndex = 0;
             this.rowIndex++;
             return Cell.EndOfRow;
         }

@@ -1,6 +1,6 @@
 package com.github.romualdrousseau.any2json.v2.layex;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 import com.github.romualdrousseau.any2json.v2.layex.operations.Closure;
 import com.github.romualdrousseau.any2json.v2.layex.operations.Concat;
@@ -15,7 +15,7 @@ public class Layex {
     }
 
     public LayexMatcher compile() {
-        this.stack = new ArrayList<LayexMatcher>();
+        this.stack = new LinkedList<LayexMatcher>();
         this.groupCounter = 0;
         return this.r();
     }
@@ -46,8 +46,8 @@ public class Layex {
             if (e2 instanceof Nop) { // Small optimization
                 return e1;
             } else {
-                this.stack.add(e2);
-                this.stack.add(e1);
+                this.stack.push(e2);
+                this.stack.push(e1);
                 return new Concat(this.stack);
             }
         }
@@ -64,7 +64,7 @@ public class Layex {
             this.acceptPreviousSymbol();
             LayexMatcher e = r();
             this.acceptSymbol(")");
-            this.stack.add(r3(e));
+            this.stack.push(r3(e));
             return new Group(this.stack, this.groupCounter++);
         } else if (c.equals("[")) {
             this.acceptPreviousSymbol();
@@ -81,15 +81,15 @@ public class Layex {
 
         if (c.equals("?")) {
             this.acceptPreviousSymbol();
-            this.stack.add(e);
+            this.stack.push(e);
             return new Closure(this.stack, 0, 1);
         } else if (c.equals("*")) {
             this.acceptPreviousSymbol();
-            this.stack.add(e);
+            this.stack.push(e);
             return new Closure(this.stack, 0, Integer.MAX_VALUE);
         } else if (c.equals("+")) {
             this.acceptPreviousSymbol();
-            this.stack.add(e);
+            this.stack.push(e);
             return new Closure(this.stack, 1, Integer.MAX_VALUE);
         } else if (c.equals("{")) {
             this.acceptPreviousSymbol();
@@ -99,8 +99,8 @@ public class Layex {
         } else if (c.equals("|")) {
             this.acceptPreviousSymbol();
             LayexMatcher e2 = r();
-            this.stack.add(e2);
-            this.stack.add(e);
+            this.stack.push(e2);
+            this.stack.push(e);
             return new Or(this.stack);
         } else {
             return e;
@@ -113,7 +113,7 @@ public class Layex {
         if (c.charAt(0) >= '0' && c.charAt(0) <= '9') {
             this.acceptPreviousSymbol();
             int n = Integer.valueOf(c);
-            this.stack.add(e);
+            this.stack.push(e);
             return new Closure(this.stack, n, n);
         } else {
             throw new RuntimeException("Syntax Error: " + c);
@@ -134,7 +134,7 @@ public class Layex {
         }
     }
 
-    private ArrayList<LayexMatcher> stack;
+    private LinkedList<LayexMatcher> stack;
     private StringStream pattern;
     private int groupCounter;
 }

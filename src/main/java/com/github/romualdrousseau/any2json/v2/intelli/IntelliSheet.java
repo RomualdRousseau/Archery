@@ -3,7 +3,6 @@ package com.github.romualdrousseau.any2json.v2.intelli;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.romualdrousseau.any2json.v2.IHeader;
 import com.github.romualdrousseau.any2json.v2.ITable;
 import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.v2.SheetBitmap;
@@ -11,7 +10,10 @@ import com.github.romualdrousseau.any2json.v2.TableStream;
 import com.github.romualdrousseau.any2json.v2.base.Row;
 import com.github.romualdrousseau.any2json.v2.base.Sheet;
 import com.github.romualdrousseau.any2json.v2.base.Table;
+import com.github.romualdrousseau.any2json.v2.layex.Layex;
 import com.github.romualdrousseau.any2json.v2.layex.LayexMatcher;
+import com.github.romualdrousseau.any2json.v2.util.TableGraph;
+import com.github.romualdrousseau.any2json.v2.util.Visitable;
 import com.github.romualdrousseau.shuju.cv.Filter;
 import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
 import com.github.romualdrousseau.shuju.cv.SearchPoint;
@@ -21,56 +23,53 @@ import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.Recta
 
 public abstract class IntelliSheet extends Sheet {
 
-    class Graph {
-        Table value;
-        Graph parent;
-        ArrayList<Graph> children = new ArrayList<Graph>();
-    }
+    public final static int SEPARATOR_ROW_THRESHOLD = 10;
 
     @Override
     public ITable getTable(ITagClassifier classifier) {
-        return super.getTable(classifier);
-    }
+        List<LayexMatcher> metaLayexes = new ArrayList<LayexMatcher>();
+        List<LayexMatcher> dataLayexes = new ArrayList<LayexMatcher>();
+        this.compileLayexes(metaLayexes, dataLayexes);
 
-    public ITable getIntelliTable(ITagClassifier classifier, List<LayexMatcher> metaLayexes,
-            List<LayexMatcher> dataLayexes) {
         List<Table> tables = this.findAllTables(classifier);
         List<DataTable> dataTables = this.getDataTables(tables, dataLayexes);
         List<MetaTable> metaTables = this.getMetaTables(tables, metaLayexes);
-        Graph root = this.buildGraph(metaTables, dataTables);
+        TableGraph root = this.buildTableGraph(metaTables, dataTables);
 
-        this.walkThroughGraph(root, 0);
-
-        // return new IntelliTable(root);
-        return null;
+        return new IntelliTable(root);
     }
 
-    private void walkThroughGraph(Graph root, int indent) {
-        if (root.value != null) {
-            for(int i = 0; i < indent; i++) {
-                System.out.print("|- ");
-            }
-            for (IHeader header : root.value.headers()) {
-                System.out.print(header.getName() + " ");
-            }
-            System.out.println();
+    private void compileLayexes(List<LayexMatcher> metaLayexes, List<LayexMatcher> dataLayexes) {
+        // Simple key value table
+        metaLayexes.add(new Layex("(v[v|m]$)+").compile());
+
+        // Simple table
+        dataLayexes.add(new Layex("(v{2}v+$)([v|m|s]{2}[v|m|s]+$)+").compile());
+
+        // Complex table with meta and pivot
+        dataLayexes.add(new Layex("(ms*$v+m*$)([v|m|s]{2}[v|m|s]+$)+").compile());
+        // dataLayexes.add(new Layex("(ms*$v+m*$)([v|m|s]{2}[v|m|s]+$)+([v|m|s]{2}$)?").compile());
+
+        for (LayexMatcher layex : metaLayexes) {
+            System.out.println(layex.toString());
         }
 
-        for (Graph child : root.children) {
-            walkThroughGraph(child, indent + 1);
+        for (LayexMatcher layex : dataLayexes) {
+            System.out.println(layex.toString());
         }
     }
 
-    private Graph buildGraph(List<MetaTable> metaTables, List<DataTable> dataTables) {
-        Graph root = new Graph();
+    private TableGraph buildTableGraph(List<MetaTable> metaTables, List<DataTable> dataTables) {
+        TableGraph root = new TableGraph();
+
+        for (Visitable e : metaTables) {
+            e.setVisited(false);
+        }
 
         // First attach all not snapped metaTables to the root nodes
         for (MetaTable metaTable : metaTables) {
             if (!isSnapped(metaTable, dataTables)) {
-                Graph child = new Graph();
-                child.parent = root;
-                child.value = metaTable;
-                root.children.add(child);
+                root.addChild(new TableGraph(metaTable));
                 metaTable.setVisited(true);
             }
         }
@@ -80,20 +79,16 @@ public abstract class IntelliSheet extends Sheet {
             if (metaTable.isVisited()) {
                 continue;
             }
-            Graph parent = findClosestParent(root, metaTable, false);
-            Graph child = new Graph();
-            child.value = metaTable;
-            child.parent = parent;
-            parent.children.add(child);
+
+            TableGraph parent = findClosestMetaGraph(root, metaTable, 0, 0);
+            parent.addChild(new TableGraph(metaTable));
+            metaTable.setVisited(true);
         }
 
         // Third attach datatables to the closest metadatas
         for (DataTable dataTable : dataTables) {
-            Graph parent = findClosestParent(root, dataTable, true);
-            Graph child = new Graph();
-            child.value = dataTable;
-            child.parent = parent;
-            parent.children.add(child);
+            TableGraph parent = findClosestMetaGraph(root, dataTable, 0, 1);
+            parent.addChild(new TableGraph(dataTable));
         }
 
         return root;
@@ -101,6 +96,11 @@ public abstract class IntelliSheet extends Sheet {
 
     private List<DataTable> getDataTables(List<Table> tables, List<LayexMatcher> dataLayexes) {
         ArrayList<DataTable> result = new ArrayList<DataTable>();
+
+        for (Visitable e : tables) {
+            e.setVisited(false);
+        }
+
         for (Table table : tables) {
             for (LayexMatcher dataLayex : dataLayexes) {
                 if (dataLayex.match(new TableStream(table), null)) {
@@ -109,27 +109,36 @@ public abstract class IntelliSheet extends Sheet {
                 }
             }
         }
+
         return result;
     }
 
     private List<MetaTable> getMetaTables(List<Table> tables, List<LayexMatcher> metaLayexes) {
         ArrayList<MetaTable> result = new ArrayList<MetaTable>();
+
         for (Table table : tables) {
             if (table.isVisited()) {
                 continue;
             }
+
+            boolean foundMatch = false;
             for (LayexMatcher metaLayex : metaLayexes) {
                 if (metaLayex.match(new TableStream(table), null)) {
                     result.add(new MetaTable(table, metaLayex));
-                } else {
-                    result.add(new MetaTable(table));
+                    foundMatch = true;
                 }
             }
+            if (!foundMatch) {
+                result.add(new MetaTable(table));
+            }
+
+            table.setVisited(true);
         }
+
         return result;
     }
 
-    private List<Table> findAllTables(ITagClassifier classifier) {
+    public List<Table> findAllTables(ITagClassifier classifier) {
         ArrayList<Table> result = new ArrayList<Table>();
 
         List<SearchPoint[]> rectangles = findAllRectangles(classifier.getSampleCount(), this.getLastRowNum());
@@ -147,7 +156,9 @@ public abstract class IntelliSheet extends Sheet {
                 Row row = table.getRowAt(i);
                 if (row.sparsity() >= 0.5) {
                     int currRowNum = table.getFirstRow() + i;
-                    result.add(new Table(table, firstRowNum, currRowNum - 1));
+                    if (firstRowNum <= (currRowNum - 1)) {
+                        result.add(new Table(table, firstRowNum, currRowNum - 1));
+                    }
                     result.add(new Table(table, currRowNum, currRowNum));
                     firstRowNum = currRowNum + 1;
                     isSplitted |= true;
@@ -156,7 +167,7 @@ public abstract class IntelliSheet extends Sheet {
 
             if (!isSplitted) {
                 result.add(table);
-            } else {
+            } else if (firstRowNum <= lastRowNum) {
                 result.add(new Table(table, firstRowNum, lastRowNum));
             }
         }
@@ -164,7 +175,7 @@ public abstract class IntelliSheet extends Sheet {
         return result;
     }
 
-    public List<SearchPoint[]> findAllRectangles(int columns, int rows) {
+    private List<SearchPoint[]> findAllRectangles(int columns, int rows) {
         ISearchBitmap original = new SheetBitmap(this, columns, rows);
         ISearchBitmap filtered = original.clone();
 
@@ -200,22 +211,22 @@ public abstract class IntelliSheet extends Sheet {
         return false;
     }
 
-    private Graph findClosestParent(Graph root, Table table, boolean rec) {
-        Graph result = root;
+    private TableGraph findClosestMetaGraph(TableGraph root, Table table, int level, int maxLevel) {
+        TableGraph result = root;
+
+        if (level > maxLevel) {
+            return result;
+        }
+
         double minDist = Double.MAX_VALUE;
-        for (Graph child : root.children) {
-            if (!(child.value instanceof MetaTable)) {
+        for (TableGraph child : root.children()) {
+            if (!(child.getTable() instanceof MetaTable)) {
                 continue;
             }
 
-            double dist2 = distanceBetweenTables(child.value, table);
-
-            Graph grandChild = null;
-            double dist1 = dist2;
-            if(rec) {
-                grandChild = findClosestParent(child, table, false);
-                dist1 = distanceBetweenTables(grandChild.value, table);
-            }
+            TableGraph grandChild = findClosestMetaGraph(child, table, level + 1, maxLevel);
+            double dist1 = distanceBetweenTables(grandChild.getTable(), table);
+            double dist2 = distanceBetweenTables(child.getTable(), table);
 
             if (dist1 < dist2) {
                 if (dist1 < minDist) {
@@ -229,14 +240,15 @@ public abstract class IntelliSheet extends Sheet {
                 }
             }
         }
+
         return result;
     }
 
     private double distanceBetweenTables(Table table1, Table table2) {
         int vx = table2.getFirstColumn() - table1.getFirstColumn();
         int vy = table2.getFirstRow() - table1.getLastRow() - 1;
-        if (vy >= 0) {
-            return Math.sqrt(vx * vx + vy * vy);
+        if (vx >= 0 && vy >= 0) {
+            return vx + vy;
         } else {
             return Double.MAX_VALUE;
         }

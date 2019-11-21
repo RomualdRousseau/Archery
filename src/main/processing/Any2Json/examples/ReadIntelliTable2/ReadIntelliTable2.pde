@@ -35,9 +35,51 @@ import com.github.romualdrousseau.any2json.v2.layex.*;
 
 import java.util.List;
 
-ISearchBitmap original;
-List<SearchPoint[]> rectangles;
+ITagClassifier classifier;
+List<LayexMatcher> dataLayexes = new ArrayList<LayexMatcher>();
+List<LayexMatcher> metaLayexes = new ArrayList<LayexMatcher>();
+
+PGraphics documentImage;
 boolean documentLoaded = false;
+int dx, dy;
+int y = 0;
+
+void loadDocument(String filePath) {
+  IDocument document = DocumentFactory.createInstance(filePath, "UTF-8");
+
+  IntelliSheet sheet = (IntelliSheet) document.getSheetAt(0);
+
+  ISearchBitmap original = new SheetBitmap(sheet, classifier.getSampleCount(), sheet.getLastRowNum());
+
+  println("Loading tables ... ");
+  List<com.github.romualdrousseau.any2json.v2.base.Table> tables = sheet.getIntelliTable(classifier, metaLayexes, dataLayexes);
+  println("ok.");
+
+  dx = width / original.getWidth();
+  dy = 10;
+
+  documentImage = createGraphics(classifier.getSampleCount() * dx, sheet.getLastRowNum() * dy);
+  documentImage.beginDraw();
+  documentImage.stroke(128);
+  documentImage.strokeWeight(1);
+  for (int y = 0; y < original.getHeight(); y++) {
+    for (int x = 0; x < original.getWidth(); x++) {
+      documentImage.fill(color(255 * (float) original.get(x, y)));
+      documentImage.rect(x * dx, y * dy, dx, dy);
+    }
+  }
+
+  documentImage.stroke(0, 0, 255);
+  documentImage.strokeWeight(2);
+  for (com.github.romualdrousseau.any2json.v2.base.Table table : tables) {
+    documentImage.noFill();
+    documentImage.rect(table.getFirstColumn() * dx, table.getFirstRow() * dy, table.getNumberOfColumns() * dx, table.getNumberOfRows() * dy);
+  }
+
+  documentImage.endDraw();
+
+  document.close();
+}
 
 void setup() {
   size(800, 800);
@@ -46,24 +88,13 @@ void setup() {
 
   classifier = new NGramNNClassifier(JSON.loadJSONObject(dataPath("brainColumnClassifier.json")));
 
-  metaLayexes.add(new Layex("(v{2}$)([v|m|s]{2}[v|m|s]+$)+").compile());
-
-  dataLayexes.add(new Layex("(v{2}v+$)([v|m|s]{2}[v|m|s]+$)+").compile());
-  dataLayexes.add(new Layex("(ms*$v+m*$)([v|m|s][v|m|s][v|m|s]+$)+").compile());
-  //dataLayexes.add(new Layex("(ms*$v+m*$)([v|m|s]{2}[v|m|s]+$)+([v|m|s]{2}$)?").compile());
-
-  for (LayexMatcher layex : dataLayexes) {
-    println(layex.toString());
-  }
-
   selectInput("Select a file to process:", "fileSelected");
 }
 
 void fileSelected(File selection) {
-  if (selection == null) {
-    println("Window was closed or the user hit cancel.");
-  } else {
+  if (selection != null) {
     documentLoaded = false;
+    y = 0;
     loadDocument(selection.getAbsolutePath());
     documentLoaded = true;
   }
@@ -75,29 +106,22 @@ void keyPressed() {
   }
 }
 
+void mouseWheel(MouseEvent event) {
+  float e = event.getCount();
+  y = (int) constrain(y + e * dy * 4, 0, max(0, documentImage.height - height));
+}
+
 void draw() {
+  background(51);
+
   if (!documentLoaded) {
     return;
   }
 
-  final float dx = width / original.getWidth();
-  final float dy = height / original.getHeight();
+  image(documentImage, 0, -y);
 
-  background(51);
-
-  stroke(128);
-  strokeWeight(1);
-  for (int y = 0; y < original.getHeight(); y++) {
-    for (int x = 0; x < original.getWidth(); x++) {
-      fill(color(255 * (float) original.get(x, y)));
-      rect(x * dx, y * dy, dx, dy);
-    }
-  }
-
-  stroke(0, 0, 255);
-  strokeWeight(2);
-  for (SearchPoint[] table : rectangles) {
-    noFill();
-    rect(table[0].getX() * dx, table[0].getY() * dy, (table[1].getX() - table[0].getX() + 1) * dx, (table[1].getY() - table[0].getY() + 1) * dy);
-  }
+  fill(255, 0, 0);
+  int xs = floor(mouseX / dx) + 1;
+  int ys = floor((mouseY + y) / dy) + 1;
+  text("(" + xs + ",  " + ys + ")", width - 100, height - 10);
 }
