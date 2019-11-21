@@ -8,10 +8,6 @@ public interface ICell {
 
     String getValue();
 
-    ICell setValue(String value);
-
-    String getCleanValue();
-
     Vector getEntityVector();
 
     int getMergedCount();

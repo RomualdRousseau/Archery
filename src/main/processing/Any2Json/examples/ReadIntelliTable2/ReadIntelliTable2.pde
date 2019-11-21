@@ -35,56 +35,24 @@ import com.github.romualdrousseau.any2json.v2.layex.*;
 
 import java.util.List;
 
-List<LayexMatcher> layexes = new ArrayList<LayexMatcher>();
-ITagClassifier classifier;
-
 ISearchBitmap original;
 List<SearchPoint[]> rectangles;
 boolean documentLoaded = false;
 
-void loadDocument(String filePath) {
-
-  documentLoaded = false;
-
-  IDocument document = DocumentFactory.createInstance(filePath, "UTF-8");
-
-  IntelliSheet sheet = (IntelliSheet) document.getSheetAt(0);
-
-  original = new SheetBitmap(sheet, classifier.getSampleCount(), 200);
-  rectangles = sheet.findAllRectangles(classifier.getSampleCount(), 200);
-
-  print("Loading tables ... ");
-  List<ITable> tables = sheet.findAllTables(classifier);
-  println("ok.");
-
-  println("Extracting layout ...");
-  for(ITable table : tables) {
-      for(LayexMatcher layex : layexes) {
-          if(layex.match(new TableStream(table), null)) {
-              layex.match(new TableStream(table), new TableContext());
-              println("end");
-          }
-      }
-  }
-  println("ok.");
-
-  document.close();
-
-  documentLoaded = true;
-}
-
 void setup() {
   size(800, 800);
   noSmooth();
-  frameRate(1);
+  frameRate(10);
 
   classifier = new NGramNNClassifier(JSON.loadJSONObject(dataPath("brainColumnClassifier.json")));
 
-  layexes.add(new Layex("(v{2}v+$)([v|m|s]{2}[v|m|s]+$)+").compile());
-  layexes.add(new Layex("(ms*$v+m*$)([v|m|s][v|m|s][v|m|s]+$)+").compile());
-  //layexes.add(new Layex("(ms*$v+m*$)([v|m|s]{2}[v|m|s]+$)+([v|m|s]{2}$)?").compile());
+  metaLayexes.add(new Layex("(v{2}$)([v|m|s]{2}[v|m|s]+$)+").compile());
 
-  for(LayexMatcher layex : layexes) {
+  dataLayexes.add(new Layex("(v{2}v+$)([v|m|s]{2}[v|m|s]+$)+").compile());
+  dataLayexes.add(new Layex("(ms*$v+m*$)([v|m|s][v|m|s][v|m|s]+$)+").compile());
+  //dataLayexes.add(new Layex("(ms*$v+m*$)([v|m|s]{2}[v|m|s]+$)+([v|m|s]{2}$)?").compile());
+
+  for (LayexMatcher layex : dataLayexes) {
     println(layex.toString());
   }
 
@@ -95,12 +63,16 @@ void fileSelected(File selection) {
   if (selection == null) {
     println("Window was closed or the user hit cancel.");
   } else {
+    documentLoaded = false;
     loadDocument(selection.getAbsolutePath());
+    documentLoaded = true;
   }
 }
 
 void keyPressed() {
-  selectInput("Select a file to process:", "fileSelected");
+  if (key == ' ') {
+    selectInput("Select a file to process:", "fileSelected");
+  }
 }
 
 void draw() {
@@ -124,7 +96,7 @@ void draw() {
 
   stroke(0, 0, 255);
   strokeWeight(2);
-  for (SearchPoint[] table : rectangles) if(table[1].getX() >= table[0].getX()) {
+  for (SearchPoint[] table : rectangles) {
     noFill();
     rect(table[0].getX() * dx, table[0].getY() * dy, (table[1].getX() - table[0].getX() + 1) * dx, (table[1].getY() - table[0].getY() + 1) * dy);
   }

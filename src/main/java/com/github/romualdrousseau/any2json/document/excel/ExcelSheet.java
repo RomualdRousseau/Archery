@@ -80,7 +80,7 @@ class ExcelSheet extends Sheet {
         for (int y = 0; y < bitmap2.getHeight(); y++) {
             for (int x = 0; x < bitmap2.getWidth(); x++) {
                 for (SearchPoint[] table : tables) {
-                    if (bitmap2.get(x, y) > 0 && SearchPoint.IsInRange(table, x, y)) {
+                    if (bitmap2.get(x, y) > 0 && SearchPoint.IsInside(table, x, y)) {
                         bitmap2.set(x, y, 0);
                     }
                 }

@@ -8,5 +8,7 @@ public interface ITable {
 
     Iterable<IRow> rows();
 
-    Iterable<ICell> cells();
+    int getNumberOfHeaders();
+
+    Iterable<IHeader> headers();
 }

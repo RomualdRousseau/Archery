@@ -18,6 +18,10 @@ public class Cell implements ICell, ISymbol {
         this.classifier = classifier;
     }
 
+    public ITagClassifier getClassifier() {
+        return this.classifier;
+    }
+
     @Override
     public boolean hasValue() {
         return !StringUtility.isEmpty(this.value);
@@ -28,18 +32,8 @@ public class Cell implements ICell, ISymbol {
         return this.value;
     }
 
-    @Override
-    public String getCleanValue() {
-        if (this.value != null && this.cleanValue == null) {
-            this.cleanValue = StringUtility.cleanToken(value);
-        }
-        return this.cleanValue;
-    }
-
-    @Override
     public ICell setValue(String value) {
         this.value = value;
-        this.cleanValue = null;
         this.entityVector = null;
         return this;
     }
@@ -47,7 +41,7 @@ public class Cell implements ICell, ISymbol {
     @Override
     public Vector getEntityVector() {
         if (this.classifier != null && this.entityVector == null) {
-            this.entityVector = this.classifier.getEntityList().word2vec(this.getCleanValue());
+            this.entityVector = this.classifier.getEntityList().word2vec(this.value);
         }
         return this.entityVector;
     }
@@ -76,7 +70,6 @@ public class Cell implements ICell, ISymbol {
     }
 
     private String value;
-    private String cleanValue;
     private int mergedCount;
     private Vector entityVector;
     private ITagClassifier classifier;

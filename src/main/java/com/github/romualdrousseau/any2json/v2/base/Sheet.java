@@ -13,7 +13,7 @@ public abstract class Sheet implements ISheet {
         int lastColumnNum = this.getLastColumnNum(0, 0);
         int lastRowNum = this.getLastRowNum();
         if (lastColumnNum > 0 && lastRowNum > 0) {
-            result = new Table(this, 0, 0, lastColumnNum, lastRowNum, 0, classifier);
+            result = new Table(this, 0, 0, lastColumnNum, lastRowNum, classifier);
         }
 
         return result;

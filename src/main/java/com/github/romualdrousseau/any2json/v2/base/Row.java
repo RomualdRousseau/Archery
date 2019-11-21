@@ -4,8 +4,6 @@ import com.github.romualdrousseau.any2json.v2.CellIterable;
 import com.github.romualdrousseau.any2json.v2.ICell;
 import com.github.romualdrousseau.any2json.v2.IRow;
 
-import java.util.HashMap;
-
 import com.github.romualdrousseau.any2json.ITagClassifier;
 
 public class Row implements IRow {
@@ -17,6 +15,7 @@ public class Row implements IRow {
         this.cellCount = 0;
         this.emptyCellCount = 0;
         this.cellCountUpdated = false;
+        this.cachedCells = new Cell[table.getNumberOfColumns()];
     }
 
     public Table getTable() {
@@ -55,10 +54,10 @@ public class Row implements IRow {
             throw new ArrayIndexOutOfBoundsException(colIndex);
         }
 
-        Cell result = cachedCells.get(Integer.valueOf(colIndex));
+        Cell result = cachedCells[colIndex];
         if(result == null) {
             result = new Cell(this.getCellValueAt(colIndex), this.getNumberOfMergedCellsAt(colIndex), this.classifier);
-            cachedCells.put(Integer.valueOf(colIndex), result);
+            cachedCells[colIndex] = result;
         }
 
         return result;
@@ -100,5 +99,5 @@ public class Row implements IRow {
     private int emptyCellCount;
     private boolean cellCountUpdated;
     private ITagClassifier classifier;
-    private HashMap<Integer, Cell> cachedCells = new HashMap<Integer, Cell>();
+    private Cell[] cachedCells;
 }
