@@ -1,15 +1,15 @@
-package com.github.romualdrousseau.any2json.v2.intelli;
+package com.github.romualdrousseau.any2json.v2.intelli.header;
 
 import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.v2.ICell;
-import com.github.romualdrousseau.any2json.v2.IHeader;
+import com.github.romualdrousseau.any2json.v2.base.Header;
 
-public class MetaKeyValueHeader implements IHeader {
+public class MetaKeyValueHeader extends Header {
 
     public MetaKeyValueHeader(ICell key, ICell value, ITagClassifier classifier) {
+        super(classifier);
         this.key = key;
         this.value = value;
-        //this.classifier = classifier;
     }
 
     public String getName() {
@@ -26,5 +26,4 @@ public class MetaKeyValueHeader implements IHeader {
 
     private ICell key;
     private ICell value;
-    //private ITagClassifier classifier;
 }

@@ -5,11 +5,11 @@ import java.util.List;
 
 import com.github.romualdrousseau.any2json.v2.ITable;
 import com.github.romualdrousseau.any2json.ITagClassifier;
-import com.github.romualdrousseau.any2json.v2.SheetBitmap;
-import com.github.romualdrousseau.any2json.v2.TableStream;
 import com.github.romualdrousseau.any2json.v2.base.Row;
 import com.github.romualdrousseau.any2json.v2.base.Sheet;
+import com.github.romualdrousseau.any2json.v2.base.SheetBitmap;
 import com.github.romualdrousseau.any2json.v2.base.Table;
+import com.github.romualdrousseau.any2json.v2.base.TableStream;
 import com.github.romualdrousseau.any2json.v2.layex.Layex;
 import com.github.romualdrousseau.any2json.v2.layex.LayexMatcher;
 import com.github.romualdrousseau.any2json.v2.util.TableGraph;
@@ -27,28 +27,40 @@ public abstract class IntelliSheet extends Sheet {
 
     @Override
     public ITable getTable(ITagClassifier classifier) {
+        System.out.println("Start Intelli analysing ...");
+
         List<LayexMatcher> metaLayexes = new ArrayList<LayexMatcher>();
         List<LayexMatcher> dataLayexes = new ArrayList<LayexMatcher>();
         this.compileLayexes(metaLayexes, dataLayexes);
 
-        List<Table> tables = this.findAllTables(classifier);
+        System.out.println("Generate image ...");
+        ISearchBitmap image = new SheetBitmap(this, classifier.getSampleCount(), this.getLastRowNum());
+        System.out.println("Extract all tables from image ...");
+        List<Table> tables = this.findAllTables(classifier, image);
+        System.out.println("Build DataTable list ...");
         List<DataTable> dataTables = this.getDataTables(tables, dataLayexes);
+        System.out.println("Build MetaTable list ...");
         List<MetaTable> metaTables = this.getMetaTables(tables, metaLayexes);
+        System.out.println("Build TableGraph ...");
         TableGraph root = this.buildTableGraph(metaTables, dataTables);
+        System.out.println("done.");
+
+        debugBitmap = image;
+        debugTables = tables;
 
         return new IntelliTable(root);
     }
 
     private void compileLayexes(List<LayexMatcher> metaLayexes, List<LayexMatcher> dataLayexes) {
         // Simple key value table
-        metaLayexes.add(new Layex("(v[v|m]$)+").compile());
+        metaLayexes.add(new Layex("(v[v|m|s]$)+").compile());
 
         // Simple table
         dataLayexes.add(new Layex("(v{2}v+$)([v|m|s]{2}[v|m|s]+$)+").compile());
 
         // Complex table with meta and pivot
-        dataLayexes.add(new Layex("(ms*$v+m*$)([v|m|s]{2}[v|m|s]+$)+").compile());
-        // dataLayexes.add(new Layex("(ms*$v+m*$)([v|m|s]{2}[v|m|s]+$)+([v|m|s]{2}$)?").compile());
+        // dataLayexes.add(new Layex("(ms*$v+m*$)([v|m|s]{2}[v|m|s]+$)+").compile());
+        dataLayexes.add(new Layex("(ms*$v+m*$)([v|m|s]{2}[v|m|s]+$)+([v|m|s]{2}$)?").compile());
 
         for (LayexMatcher layex : metaLayexes) {
             System.out.println(layex.toString());
@@ -138,11 +150,10 @@ public abstract class IntelliSheet extends Sheet {
         return result;
     }
 
-    public List<Table> findAllTables(ITagClassifier classifier) {
+    private List<Table> findAllTables(ITagClassifier classifier, ISearchBitmap image) {
         ArrayList<Table> result = new ArrayList<Table>();
 
-        List<SearchPoint[]> rectangles = findAllRectangles(classifier.getSampleCount(), this.getLastRowNum());
-
+        List<SearchPoint[]> rectangles = findAllRectangles(image);
         for (SearchPoint[] rectangle : rectangles) {
             int firstColumnNum = rectangle[0].getX();
             int firstRowNum = rectangle[0].getY();
@@ -175,8 +186,7 @@ public abstract class IntelliSheet extends Sheet {
         return result;
     }
 
-    private List<SearchPoint[]> findAllRectangles(int columns, int rows) {
-        ISearchBitmap original = new SheetBitmap(this, columns, rows);
+    private List<SearchPoint[]> findAllRectangles(ISearchBitmap original) {
         ISearchBitmap filtered = original.clone();
 
         final Filter filter = new Filter(new Template(new float[][] { { 0, 0, 0 }, { 1, 1, 0 }, { 0, 0, 0 } }));
@@ -184,22 +194,25 @@ public abstract class IntelliSheet extends Sheet {
         List<SearchPoint[]> rectangles = new RectangleExtractor().extractAll(filtered);
 
         for (SearchPoint[] rectangle : rectangles) {
-            rectangle[0] = new SearchPoint(Math.max(0, rectangle[0].getX() - 1), rectangle[0].getY(),
-                    rectangle[0].getSAD());
+            rectangle[0].setX(Math.max(0, rectangle[0].getX() - 1));
         }
 
-        final TemplateMatcher pointTemplate = new TemplateMatcher(
-                new Template(new float[][] { { 0, 0, 0 }, { 0, 1, 1 }, { 0, 0, 0 } }));
-        List<SearchPoint> points = pointTemplate.matchAll(filtered, 0, 0, filtered.getWidth(), filtered.getHeight(),
-                0.9);
+        List<SearchPoint> points = extractAllPoints(filtered);
+
         for (SearchPoint point : points) {
-            rectangles
-                    .add(new SearchPoint[] { point, new SearchPoint(point.getX() + 1, point.getY(), point.getSAD()) });
+            SearchPoint neighboor = new SearchPoint(point.getX() + 1, point.getY(), point.getSAD());
+            rectangles.add(new SearchPoint[] { point, neighboor });
         }
 
         rectangles = SearchPoint.TrimInX(SearchPoint.MergeInX(SearchPoint.RemoveOverlaps(rectangles)), original);
 
         return rectangles;
+    }
+
+    private List<SearchPoint> extractAllPoints(ISearchBitmap filtered) {
+        final TemplateMatcher pointTemplate = new TemplateMatcher(
+                new Template(new float[][] { { 0, 0, 0 }, { 0, 1, 1 }, { 0, 0, 0 } }));
+        return pointTemplate.matchAll(filtered, 0, 0, filtered.getWidth(), filtered.getHeight(), 0.9);
     }
 
     private boolean isSnapped(MetaTable metaTable, List<DataTable> dataTables) {
@@ -253,4 +266,7 @@ public abstract class IntelliSheet extends Sheet {
             return Double.MAX_VALUE;
         }
     }
+
+    public ISearchBitmap debugBitmap;
+    public List<Table> debugTables;
 }

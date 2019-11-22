@@ -19,7 +19,7 @@ public abstract class Context<S extends ISymbol> {
     }
 
     public void notify(S s) {
-        this.func(s);
+        this.processSymbolFunc(s);
 
         this.column++;
 
@@ -29,7 +29,7 @@ public abstract class Context<S extends ISymbol> {
         }
     }
 
-    public abstract void func(S s);
+    public abstract void processSymbolFunc(S s);
 
     private int group = 0;
     private int column = 0;

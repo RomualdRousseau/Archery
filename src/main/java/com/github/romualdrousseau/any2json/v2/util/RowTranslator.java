@@ -26,7 +26,7 @@ public class RowTranslator {
             return -1;
         }
 
-        if(this.translatable.isSeparatorRow(colIndex, translatedRow)) {
+        if(this.translatable.isTranslatableRow(colIndex, translatedRow)) {
             for(int i = rowIndex; i < this.rowTranslators.length; i++) {
                 this.rowTranslators[i]++;
             }

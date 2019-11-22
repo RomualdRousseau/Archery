@@ -43,24 +43,35 @@ public class IntelliTable implements ITable {
 
     private int walkThroughTableGraph(TableGraph graph, int indent, int counter) {
         if (!graph.isRoot()) { // && graph.getTable() instanceof DataTable) {
+            StringBuffer out = new StringBuffer();
+
             for (int i = 0; i < indent; i++) {
-                System.out.print("|- ");
+                out.append("|- ");
             }
 
             for (IHeader header : graph.getTable().headers()) {
-                System.out.print(header.getName() + " ");
+                out.append(header.getName()).append(" ");
             }
 
-            System.out.println(graph.getTable().getFirstColumn() + " "
-                    + graph.getTable().getFirstRow() + " " + graph.getTable().getLastColumn() + " "
-                    + graph.getTable().getLastRow() + " " + graph.getTable().getNumberOfRows() + " ");
+            if (graph.getTable() instanceof DataTable) {
+                out.append("DATA(");
+            } else {
+                out.append("META(");
+            }
+            out.append(graph.getTable().getFirstColumn()).append(", ");
+            out.append(graph.getTable().getFirstRow()).append(", ");
+            out.append(graph.getTable().getLastColumn()).append(", ");
+            out.append(graph.getTable().getLastRow()).append(", ");
+            out.append(graph.getTable().getLastRow() - graph.getTable().getFirstRow() + 1).append(", ");
+            out.append(graph.getTable().getNumberOfRows());
+            out.append(")");
 
             if(graph.getTable() instanceof DataTable) {
-                System.out.println(counter + 1);
+                out.append(" (").append(counter + 1).append(")");
                 counter++;
-            } else {
-                System.out.println();
             }
+
+            System.out.println(out.toString());
         }
 
         for (TableGraph child : graph.children()) {

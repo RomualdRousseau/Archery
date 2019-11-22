@@ -7,7 +7,7 @@ import com.github.romualdrousseau.any2json.v2.ITable;
 import java.util.ArrayList;
 
 import com.github.romualdrousseau.any2json.ITagClassifier;
-import com.github.romualdrousseau.any2json.v2.RowIterable;
+import com.github.romualdrousseau.any2json.v2.util.RowIterable;
 import com.github.romualdrousseau.any2json.v2.util.RowStore;
 import com.github.romualdrousseau.any2json.v2.util.Visitable;
 
@@ -21,7 +21,8 @@ public class Table implements ITable, Visitable {
         this.lastColumn = lastColumn;
         this.lastRow = lastRow;
         this.classifier = classifier;
-        this.offsetRow = 0;
+        this.firstOffsetRow = 0;
+        this.lastOffsetRow = 0;
         this.parentOffsetRow = 0;
         this.cachedRows = null;
     }
@@ -44,7 +45,7 @@ public class Table implements ITable, Visitable {
 
     @Override
     public int getNumberOfRows() {
-        return this.lastRow - this.firstRow + 1 - this.offsetRow;
+        return (this.lastRow + this.lastOffsetRow) - (this.firstRow + this.firstOffsetRow) + 1;
     }
 
     @Override
@@ -96,12 +97,20 @@ public class Table implements ITable, Visitable {
         return this.classifier;
     }
 
-    public int getOffsetRow() {
-        return this.offsetRow;
+    public int getFirstOffsetRow() {
+        return this.firstOffsetRow;
     }
 
-    public void setOffsetRow(int offset) {
-        this.offsetRow = offset;
+    public void setFirstOffsetRow(int offset) {
+        this.firstOffsetRow = offset;
+    }
+
+    public int getLastOffsetRow() {
+        return this.lastOffsetRow;
+    }
+
+    public void setLastOffsetRow(int offset) {
+        this.lastOffsetRow = offset;
     }
 
     public Row getRowAt(int rowIndex) {
@@ -113,7 +122,7 @@ public class Table implements ITable, Visitable {
             this.cachedRows = new RowStore();
         }
 
-        Row result = cachedRows.get(this.parentOffsetRow + this.offsetRow + rowIndex);
+        Row result = cachedRows.get(this.parentOffsetRow + this.firstOffsetRow + rowIndex);
         if(result == null) {
             result = new Row(this, rowIndex, this.classifier);
             cachedRows.put(rowIndex, result);
@@ -133,7 +142,8 @@ public class Table implements ITable, Visitable {
     private int lastColumn;
     private int lastRow;
     private int parentOffsetRow;
-    private int offsetRow;
+    private int firstOffsetRow;
+    private int lastOffsetRow;
     private ITagClassifier classifier;
     private RowStore cachedRows;
     private ArrayList<IHeader> headers = new ArrayList<IHeader>();

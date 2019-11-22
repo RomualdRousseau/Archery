@@ -10,14 +10,12 @@ public abstract class Sheet implements ISheet {
     @Override
     public ITable getTable(ITagClassifier classifier) {
         Table result = null;
-
         int lastColumnNum = this.getLastColumnNum(0, 0);
         int lastRowNum = this.getLastRowNum();
         if (lastColumnNum > 0 && lastRowNum > 0) {
-            result = new Table(this, 0, 0, lastColumnNum, lastRowNum, classifier);
+            result = new DataTable(new Table(this, 0, 0, lastColumnNum, lastRowNum, classifier));
         }
-
-        return new DataTable(result);
+        return result;
     }
 
     public abstract int getLastColumnNum(int colIndex, int rowIndex);

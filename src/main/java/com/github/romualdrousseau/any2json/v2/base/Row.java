@@ -1,9 +1,8 @@
 package com.github.romualdrousseau.any2json.v2.base;
 
-import com.github.romualdrousseau.any2json.v2.CellIterable;
 import com.github.romualdrousseau.any2json.v2.ICell;
 import com.github.romualdrousseau.any2json.v2.IRow;
-
+import com.github.romualdrousseau.any2json.v2.util.CellIterable;
 import com.github.romualdrousseau.any2json.ITagClassifier;
 
 public class Row implements IRow {

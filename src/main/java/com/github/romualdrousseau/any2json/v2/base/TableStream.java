@@ -1,10 +1,8 @@
-package com.github.romualdrousseau.any2json.v2;
+package com.github.romualdrousseau.any2json.v2.base;
 
 import java.util.ArrayList;
 
-import com.github.romualdrousseau.any2json.v2.base.Cell;
-import com.github.romualdrousseau.any2json.v2.base.Row;
-import com.github.romualdrousseau.any2json.v2.base.Table;
+import com.github.romualdrousseau.any2json.v2.ITable;
 import com.github.romualdrousseau.any2json.v2.layex.IStream;
 
 public class TableStream implements IStream<Cell, TableStream.Cursor> {

@@ -24,19 +24,15 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
 
     @Override
     public int getLastColumnNum(int colIndex, int rowIndex) {
-        final int translatedRow = this.rowTranslator.rebase(colIndex, rowIndex);
-        if(translatedRow == -1) {
-            return 0;
-        }
-
-        Row row = this.sheet.getRowAt(translatedRow + 1);
+        Row row = this.getRowAt(rowIndex);
         if (row == null) {
             return 0;
         }
 
         int colNum = colIndex;
         Cell cell = row.getCellAt(colNum + 1);
-        while (cell.hasData() && !StringUtility.isEmpty(cell.getData$())) {
+        while (cell.hasData()) {
+        // while (cell.hasData() && !StringUtility.isEmpty(cell.getData$())) {
             cell = row.getCellAt((++colNum) + 1);
         }
 
@@ -50,38 +46,50 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
 
     @Override
     public String getInternalCellValueAt(int colIndex, int rowIndex) {
-        final int translatedRow = this.rowTranslator.rebase(colIndex, rowIndex);
-        if(translatedRow == -1) {
-            return null;
+        Cell cell = this.getCellAt(colIndex, rowIndex);
+		if(cell == null) {
+			return null;
         }
-
-        Cell cell = sheet.getCellAt(translatedRow + 1, colIndex + 1);
-        if(!cell.hasData()) {
-            return null;
-        }
-
         return StringUtility.cleanToken(cell.getData$());
     }
 
     @Override
     public int getNumberOfMergedCellsAt(int colIndex, int rowIndex) {
-        final int translatedRow = this.rowTranslator.rebase(colIndex, rowIndex);
-        if(translatedRow == -1) {
-            return 1;
-        }
-
-        Cell cell = sheet.getCellAt(translatedRow + 1, colIndex + 1);
-		if(!cell.hasData()) {
+        Cell cell = this.getCellAt(colIndex, rowIndex);
+		if(cell == null) {
 			return 1;
         }
-
 		return cell.getMergeAcross() + 1;
     }
 
     @Override
-    public boolean isSeparatorRow(int colIndex, int rowIndex) {
+    public boolean isTranslatableRow(int colIndex, int rowIndex) {
         double height = this.sheet.getRowAt(rowIndex + 1).getHeight();
         return (height < IntelliSheet.SEPARATOR_ROW_THRESHOLD);
+    }
+
+    private Row getRowAt(int rowIndex) {
+        final int translatedRow = this.rowTranslator.rebase(0, rowIndex);
+        if(translatedRow == -1) {
+            return null;
+        }
+        Row row = this.sheet.getRowAt(translatedRow + 1);
+        if (row == null) {
+            return null;
+        }
+        return row;
+    }
+
+    private Cell getCellAt(int colIndex, int rowIndex) {
+        final int translatedRow = this.rowTranslator.rebase(0, rowIndex);
+        if(translatedRow == -1) {
+            return null;
+        }
+        Cell cell = this.sheet.getCellAt(translatedRow + 1, colIndex + 1);
+        if(!cell.hasData()) {
+			return null;
+        }
+        return cell;
     }
 
     private Worksheet sheet;

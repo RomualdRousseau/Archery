@@ -1,8 +1,9 @@
 package com.github.romualdrousseau.any2json.v2.intelli;
 
 import com.github.romualdrousseau.any2json.v2.ICell;
-import com.github.romualdrousseau.any2json.v2.TableStream;
 import com.github.romualdrousseau.any2json.v2.base.Table;
+import com.github.romualdrousseau.any2json.v2.base.TableStream;
+import com.github.romualdrousseau.any2json.v2.intelli.header.TaggedHeader;
 import com.github.romualdrousseau.any2json.v2.layex.LayexMatcher;
 
 public class DataTable extends Table {
@@ -23,6 +24,6 @@ public class DataTable extends Table {
             this.addHeader(new TaggedHeader(cell, colIndex, table.getClassifier()));
             colIndex += cell.getMergedCount();
         }
-        this.setOffsetRow(1);
+        this.setFirstOffsetRow(1);
     }
 }

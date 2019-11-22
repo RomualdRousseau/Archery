@@ -1,6 +1,7 @@
 package com.github.romualdrousseau.any2json.v2.intelli;
 
 import com.github.romualdrousseau.any2json.v2.base.Cell;
+import com.github.romualdrousseau.any2json.v2.intelli.header.MetaKeyValueHeader;
 import com.github.romualdrousseau.any2json.v2.layex.Context;
 
 public class MetaTableContext extends Context<Cell> {
@@ -9,7 +10,7 @@ public class MetaTableContext extends Context<Cell> {
         this.metaTable = metaTable;
     }
 
-    public void func(Cell cell) {
+    public void processSymbolFunc(Cell cell) {
         if (this.getColumn() == 0) {
             this.key = cell;
         } else if (this.getColumn() == 1) {

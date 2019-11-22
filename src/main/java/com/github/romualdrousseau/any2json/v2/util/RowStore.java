@@ -6,7 +6,6 @@ import java.util.LinkedHashMap;
 import com.github.romualdrousseau.any2json.v2.base.Row;
 
 public class RowStore extends LinkedHashMap<Integer, Row> {
-
     private static final long serialVersionUID = 1L;
 
     public static final int MAX_ROWS = 10000;

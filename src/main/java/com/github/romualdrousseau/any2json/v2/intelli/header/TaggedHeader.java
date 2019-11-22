@@ -1,19 +1,19 @@
-package com.github.romualdrousseau.any2json.v2.intelli;
+package com.github.romualdrousseau.any2json.v2.intelli.header;
 
 import com.github.romualdrousseau.any2json.ITagClassifier;
-import com.github.romualdrousseau.any2json.v2.IHeader;
+import com.github.romualdrousseau.any2json.v2.base.Header;
 import com.github.romualdrousseau.any2json.v2.ICell;
 
-public class PivotHeader implements IHeader {
+public class TaggedHeader extends Header {
 
-    public PivotHeader(ICell cell, int colIndex, ITagClassifier classifier) {
+    public TaggedHeader(ICell cell, int colIndex, ITagClassifier classifier) {
+        super(classifier);
         this.cell = cell;
         this.colIndex = colIndex;
-        this.classifier = classifier;
     }
 
     public String getName() {
-        return this.classifier.getEntityList().get(this.cell.getEntityVector().argmax());
+        return this.cell.getValue();
     }
 
     public String getValue() {
@@ -26,5 +26,4 @@ public class PivotHeader implements IHeader {
 
     private ICell cell;
     private int colIndex;
-    private ITagClassifier classifier;
 }

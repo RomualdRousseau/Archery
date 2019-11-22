@@ -6,6 +6,8 @@ import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddress;
 
+import java.util.ArrayList;
+
 import com.github.romualdrousseau.any2json.v2.intelli.IntelliSheet;
 import com.github.romualdrousseau.any2json.v2.util.RowTranslatable;
 import com.github.romualdrousseau.any2json.v2.util.RowTranslator;
@@ -18,6 +20,17 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
         this.evaluator = evaluator;
         this.formatter = new DataFormatter();
         this.rowTranslator = new RowTranslator(this, getLastRowNum() + 1);
+
+        this.evaluator.setIgnoreMissingWorkbooks(true);
+
+        this.cachedRegion = new ArrayList<CellRangeAddress>();
+        for (int j = 0; j < this.sheet.getNumMergedRegions(); j++) {
+            CellRangeAddress region = this.sheet.getMergedRegion(j);
+            this.cachedRegion.add(region);
+        }
+
+        this.lastCachedRowIndex = -1;
+        this.lastCachedRow = null;
     }
 
     @Override
@@ -27,19 +40,16 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
 
     @Override
     public int getLastColumnNum(int colIndex, int rowIndex) {
-        final int translatedRow = this.rowTranslator.rebase(colIndex, rowIndex);
-        if(translatedRow == -1) {
-            return 0;
-        }
-
-        Row row = this.sheet.getRow(translatedRow);
+        Row row = this.getRowAt(rowIndex);
         if (row == null) {
             return 0;
         }
 
         int colNum = colIndex;
         Cell cell = row.getCell(colNum);
-        while (cell != null && !StringUtility.isEmpty(this.formatter.formatCellValue(cell))) {
+        while (!isCellBlank(cell)) {
+            // while (!isCellBlank(cell) &&
+            // !StringUtility.isEmpty(this.formatter.formatCellValue(cell))) {
             cell = row.getCell(++colNum);
         }
 
@@ -53,36 +63,32 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
 
     @Override
     public String getInternalCellValueAt(int colIndex, int rowIndex) {
-        final int translatedRow = this.rowTranslator.rebase(colIndex, rowIndex);
-        if(translatedRow == -1) {
+        Cell cell = this.getCellAt(colIndex, rowIndex);
+        if (this.isCellBlank(cell)) {
             return null;
         }
 
-        Row row = this.sheet.getRow(translatedRow);
-        if(row == null) {
-            return null;
+        int type = cell.getCellType();
+        if (type == Cell.CELL_TYPE_FORMULA) {
+            type = cell.getCachedFormulaResultType();
         }
 
-        Cell cell = row.getCell(colIndex);
-        if (cell == null || (cell.getCellType() == Cell.CELL_TYPE_BLANK
-                && cell.getCellStyle().getFillBackgroundColorColor() == null)) {
-            return null;
-        }
+        String value = "";
 
-        int type = Cell.CELL_TYPE_ERROR;
-        String value = "#ERROR!";
-        try {
-            type = this.evaluator.evaluateInCell(cell).getCellType();
-            value = this.formatter.formatCellValue(cell);
-        } catch (Exception x) {
-            type = Cell.CELL_TYPE_ERROR;
-            value = "#ERROR!";
-        }
-
-        if (type == Cell.CELL_TYPE_NUMERIC && value.matches("-?\\d+")) {
-            // TRICKY: Get hidden decimals in case of a rounded numeric value
-            double d = cell.getNumericCellValue();
-            value = (Math.floor(d) == d) ? value : String.valueOf(d);
+        if (type == Cell.CELL_TYPE_ERROR) {
+            value = "#ERROR?";
+        } else if (type == Cell.CELL_TYPE_BOOLEAN) {
+            value = cell.getBooleanCellValue() ? "TRUE" : "FALSE";
+        } else if (type == Cell.CELL_TYPE_STRING) {
+            value = cell.getStringCellValue();
+        } else if (type == Cell.CELL_TYPE_NUMERIC) {
+            value = this.formatter.formatCellValue(cell, evaluator);
+            if (value.matches("-?\\d+")) {
+                double d = cell.getNumericCellValue();
+                if (d != Math.rint(d)) {
+                    value = String.valueOf(d);
+                }
+            }
         }
 
         return StringUtility.cleanToken(value);
@@ -90,24 +96,17 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
 
     @Override
     public int getNumberOfMergedCellsAt(int colIndex, int rowIndex) {
-        final int translatedRow = this.rowTranslator.rebase(colIndex, rowIndex);
-        if(translatedRow == -1) {
+        if (this.cachedRegion.size() == 0) {
             return 1;
         }
 
-        Row row = this.sheet.getRow(translatedRow);
-        if(row == null) {
-            return 1;
-        }
-
-        Cell cell = row.getCell(colIndex);
+        Cell cell = this.getCellAt(colIndex, rowIndex);
         if (cell == null) {
             return 1;
         }
 
         int numberOfCells = 1;
-        for (int j = 0; j < this.sheet.getNumMergedRegions(); j++) {
-            CellRangeAddress region = this.sheet.getMergedRegion(j);
+        for (CellRangeAddress region : this.cachedRegion) {
             if (region.isInRange(cell.getRowIndex(), cell.getColumnIndex())) {
                 numberOfCells = (region.getLastColumn() - region.getFirstColumn()) + 1;
                 break;
@@ -118,17 +117,49 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
     }
 
     @Override
-    public boolean isSeparatorRow(int colIndex, int rowIndex) {
-        Row row = this.sheet.getRow(rowIndex);
-        if(row == null) {
+    public boolean isTranslatableRow(int colIndex, int rowIndex) {
+        Row row = this.getCachedRowAt(rowIndex);
+        if (row == null) {
             return false;
         }
         double height = row.getHeight() * 0.07; // Rougly convert in pixels
         return (height < IntelliSheet.SEPARATOR_ROW_THRESHOLD);
     }
 
+    private Row getRowAt(int rowIndex) {
+        final int translatedRow = this.rowTranslator.rebase(0, rowIndex);
+        if (translatedRow == -1) {
+            return null;
+        }
+        return this.getCachedRowAt(translatedRow);
+    }
+
+    private Cell getCellAt(int colIndex, int rowIndex) {
+        Row row = this.getRowAt(rowIndex);
+        if (row == null) {
+            return null;
+        }
+        return this.lastCachedRow.getCell(colIndex);
+    }
+
+    private boolean isCellBlank(Cell cell) {
+        return (cell == null || (cell.getCellType() == Cell.CELL_TYPE_BLANK
+                && cell.getCellStyle().getFillBackgroundColorColor() == null));
+    }
+
+    private Row getCachedRowAt(int rowIndex) {
+        if (rowIndex != this.lastCachedRowIndex) {
+            this.lastCachedRow = this.sheet.getRow(rowIndex);
+            this.lastCachedRowIndex = rowIndex;
+        }
+        return this.lastCachedRow;
+    }
+
     private org.apache.poi.ss.usermodel.Sheet sheet;
     private FormulaEvaluator evaluator;
     private DataFormatter formatter;
     private RowTranslator rowTranslator;
+    private ArrayList<CellRangeAddress> cachedRegion;
+    private int lastCachedRowIndex;
+    private Row lastCachedRow;
 }

@@ -36,79 +36,17 @@ import com.github.romualdrousseau.any2json.v2.layex.*;
 import java.util.List;
 
 ITagClassifier classifier;
-List<LayexMatcher> dataLayexes = new ArrayList<LayexMatcher>();
-List<LayexMatcher> metaLayexes = new ArrayList<LayexMatcher>();
 
 PGraphics documentImage;
-boolean documentLoaded = false;
-int dx, dy;
-int y = 0;
-
-void loadDocument(String filePath) {
-  IDocument document = DocumentFactory.createInstance(filePath, "UTF-8");
-
-  IntelliSheet sheet = (IntelliSheet) document.getSheetAt(0);
-
-  ISearchBitmap original = new SheetBitmap(sheet, classifier.getSampleCount(), sheet.getLastRowNum());
-
-  println("Loading tables ... ");
-  List<com.github.romualdrousseau.any2json.v2.base.Table> tables = sheet.getIntelliTable(classifier, metaLayexes, dataLayexes);
-  println("ok.");
-
-  dx = width / original.getWidth();
-  dy = 10;
-
-  documentImage = createGraphics(classifier.getSampleCount() * dx, sheet.getLastRowNum() * dy);
-  documentImage.beginDraw();
-  documentImage.stroke(128);
-  documentImage.strokeWeight(1);
-  for (int y = 0; y < original.getHeight(); y++) {
-    for (int x = 0; x < original.getWidth(); x++) {
-      documentImage.fill(color(255 * (float) original.get(x, y)));
-      documentImage.rect(x * dx, y * dy, dx, dy);
-    }
-  }
-
-  documentImage.stroke(0, 0, 255);
-  documentImage.strokeWeight(2);
-  for (com.github.romualdrousseau.any2json.v2.base.Table table : tables) {
-    documentImage.noFill();
-    documentImage.rect(table.getFirstColumn() * dx, table.getFirstRow() * dy, table.getNumberOfColumns() * dx, table.getNumberOfRows() * dy);
-  }
-
-  documentImage.endDraw();
-
-  document.close();
-}
+volatile boolean documentLoaded = false;
+int dx, dy = 10, y = 0, sy = 5;
 
 void setup() {
   size(800, 800);
   noSmooth();
-  frameRate(10);
-
+  frameRate(20);
   classifier = new NGramNNClassifier(JSON.loadJSONObject(dataPath("brainColumnClassifier.json")));
-
   selectInput("Select a file to process:", "fileSelected");
-}
-
-void fileSelected(File selection) {
-  if (selection != null) {
-    documentLoaded = false;
-    y = 0;
-    loadDocument(selection.getAbsolutePath());
-    documentLoaded = true;
-  }
-}
-
-void keyPressed() {
-  if (key == ' ') {
-    selectInput("Select a file to process:", "fileSelected");
-  }
-}
-
-void mouseWheel(MouseEvent event) {
-  float e = event.getCount();
-  y = (int) constrain(y + e * dy * 4, 0, max(0, documentImage.height - height));
 }
 
 void draw() {
@@ -121,7 +59,67 @@ void draw() {
   image(documentImage, 0, -y);
 
   fill(255, 0, 0);
-  int xs = floor(mouseX / dx) + 1;
-  int ys = floor((mouseY + y) / dy) + 1;
+  int xs = floor(mouseX / dx);
+  int ys = floor((mouseY + y) / dy);
   text("(" + xs + ",  " + ys + ")", width - 100, height - 10);
+}
+
+void fileSelected(File selection) {
+  if (selection != null) {
+    noLoop();
+    documentLoaded = false;
+    loadDocument(selection.getAbsolutePath());
+    documentLoaded = true;
+    loop();
+  }
+}
+
+void keyPressed() {
+  if (key == ' ') {
+    selectInput("Select a file to process:", "fileSelected");
+  }
+}
+
+void mouseWheel(MouseEvent event) {
+  y = (int) constrain(y + event.getCount() * dy * sy, -dy, max(0, documentImage.height - height) + dy);
+}
+
+void loadDocument(String filePath) {
+  IDocument document = DocumentFactory.createInstance(filePath, "UTF-8");
+
+  IntelliSheet sheet = (IntelliSheet) document.getSheetAt(0);
+
+  println("Loading tables ... ");
+  sheet.getTable(classifier);
+  println("ok.");
+
+  buildImage(sheet);
+
+  document.close();
+}
+
+void buildImage(IntelliSheet sheet) {
+  dx = width / sheet.debugBitmap.getWidth();
+  y = 0;
+  
+  documentImage = createGraphics(classifier.getSampleCount() * dx, Math.min(5000, sheet.getLastRowNum()) * dy);
+  
+  documentImage.beginDraw();
+  documentImage.stroke(128);
+  documentImage.strokeWeight(1);
+  for (int y = 0; y < sheet.debugBitmap.getHeight(); y++) {
+    for (int x = 0; x < sheet.debugBitmap.getWidth(); x++) {
+      documentImage.fill(color(255 * sheet.debugBitmap.get(x, y)));
+      documentImage.rect(x * dx, y * dy, dx, dy);
+    }
+  }
+
+  documentImage.stroke(0, 0, 255);
+  documentImage.strokeWeight(2);
+  for (com.github.romualdrousseau.any2json.v2.base.Table table : sheet.debugTables) {
+    documentImage.noFill();
+    documentImage.rect(table.getFirstColumn() * dx, table.getFirstRow() * dy, table.getNumberOfColumns() * dx, table.getNumberOfRows() * dy);
+  }
+
+  documentImage.endDraw();
 }
