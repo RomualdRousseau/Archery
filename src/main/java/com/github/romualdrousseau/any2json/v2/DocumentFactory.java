@@ -8,12 +8,13 @@ import com.github.romualdrousseau.any2json.v2.loader.xml.XmlDocument;
 // import com.github.romualdrousseau.any2json.v2.loader.html.HtmlDocument;
 // import com.github.romualdrousseau.any2json.v2.loader.text.TextDocument;
 
-public class DocumentFactory
-{
-    public final static int DEFAULT_SAMPLE_COUNT = 30;
-    public final static float DEFAULT_RATIO_EMPTINESS = 0.5f;
-    public final static float DEFAULT_ENTITY_PROBABILITY = 0.8f;
-    public final static int MAX_META_COUNT = 100;
+public class DocumentFactory {
+
+    public final static int DEFAULT_SAMPLE_COUNT = 50;
+    public final static float DEFAULT_RATIO_SCARSITY = 0.5f;
+    public final static float DEFAULT_RATIO_DENSITY = 0.5f;
+    public final static int SEPARATOR_ROW_THRESHOLD = 10;
+    public static final String PIVOT_SUFFIX = "#PIVOT?";
 
 	public static IDocument createInstance(String filePath, String encoding) {
 		if(filePath == null) {

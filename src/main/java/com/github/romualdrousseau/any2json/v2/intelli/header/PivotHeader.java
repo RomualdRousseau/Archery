@@ -3,28 +3,52 @@ package com.github.romualdrousseau.any2json.v2.intelli.header;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.romualdrousseau.any2json.ITagClassifier;
+import com.github.romualdrousseau.any2json.v2.DocumentFactory;
+import com.github.romualdrousseau.any2json.v2.base.Cell;
 import com.github.romualdrousseau.any2json.v2.base.Header;
-import com.github.romualdrousseau.any2json.v2.ICell;
 
-public class PivotHeader extends Header {
+public class PivotHeader extends MetaHeader {
 
-    public PivotHeader(ICell cell, int colIndex, ITagClassifier classifier) {
-        super(classifier);
-        this.cell = cell;
+    public PivotHeader(Cell cell, int colIndex) {
+        super(cell);
+        this.isPivotalKey = true;
         this.colIndexes.add(colIndex);
     }
 
+    private PivotHeader(Cell cell, List<Integer> colIndexes, boolean isPivotalKey) {
+        super(cell);
+        this.isPivotalKey = isPivotalKey;
+        this.colIndexes.addAll(colIndexes);
+    }
+
+    @Override
     public String getName() {
-        return this.classifier.getEntityList().get(this.cell.getEntityVector().argmax());
+        if (this.name == null) {
+            String v1 = this.getCell().getValue();
+            String v2 = this.getCell().getClassifier().getEntityList().anonymize(v1);
+            this.name = this.getCell().getClassifier().getStopWordList().removeStopWords(v2);
+            this.name += " " + DocumentFactory.PIVOT_SUFFIX;
+        }
+        return this.name;
     }
 
+    @Override
     public String getValue() {
-        return this.cell.getValue();
+        return this.getCell().getValue();
     }
 
-    public int getColumnIndex() {
-        return this.colIndexes.get(0);
+    @Override
+    public Header clone() {
+        return new PivotHeader(this.getCell(), colIndexes, true);
+    }
+
+    public boolean isKey() {
+        return this.isPivotalKey;
+    }
+
+    public Header getValueHeader() {
+        Cell valueCell = new Cell(DocumentFactory.PIVOT_SUFFIX, 1, this.getCell().getClassifier());
+        return new PivotHeader(valueCell, colIndexes, false);
     }
 
     public List<Integer> getColumnIndexes() {
@@ -35,6 +59,7 @@ public class PivotHeader extends Header {
         this.colIndexes.add(colIndex);
     }
 
-    private ICell cell;
+    private String name;
+    private boolean isPivotalKey;
     private ArrayList<Integer> colIndexes = new ArrayList<Integer>();
 }

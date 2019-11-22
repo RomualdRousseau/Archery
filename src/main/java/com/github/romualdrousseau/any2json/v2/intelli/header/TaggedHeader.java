@@ -1,29 +1,32 @@
 package com.github.romualdrousseau.any2json.v2.intelli.header;
 
-import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.v2.base.Header;
-import com.github.romualdrousseau.any2json.v2.ICell;
+import com.github.romualdrousseau.any2json.v2.base.Cell;
 
 public class TaggedHeader extends Header {
 
-    public TaggedHeader(ICell cell, int colIndex, ITagClassifier classifier) {
-        super(classifier);
-        this.cell = cell;
-        this.colIndex = colIndex;
+    public TaggedHeader(Cell cell, int colIndex) {
+        super(cell, colIndex);
     }
 
+    @Override
     public String getName() {
-        return this.cell.getValue();
+        if (this.name == null) {
+            String v1 = this.getCell().getValue();
+            this.name = this.getCell().getClassifier().getStopWordList().removeStopWords(v1);
+        }
+        return this.name;
     }
 
+    @Override
     public String getValue() {
-        return this.cell.getValue();
+        return "#VALUE?";
     }
 
-    public int getColumnIndex() {
-        return this.colIndex;
+    @Override
+    public Header clone() {
+        return new TaggedHeader(this.getCell(), this.getColumnIndex());
     }
 
-    private ICell cell;
-    private int colIndex;
+    private String name;
 }

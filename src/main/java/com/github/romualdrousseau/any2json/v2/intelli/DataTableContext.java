@@ -34,18 +34,18 @@ public class DataTableContext extends Context<Cell> {
                     }
                     if (foundPivot == null) {
                         this.dataTable
-                                .addHeader(new PivotHeader(cell, this.getColumn(), this.dataTable.getClassifier()));
+                                .addHeader(new PivotHeader(cell, this.getColumn()));
                     } else {
                         foundPivot.addColumnIndex(this.getColumn());
                     }
                 } else {
-                    this.dataTable.addHeader(new MetaHeader(cell, this.dataTable.getClassifier()));
+                    this.dataTable.addHeader(new MetaHeader(cell));
                 }
             } else if (symbol.equals("$")) {
                 this.dataTable.setFirstOffsetRow(this.getRow() - this.dataTable.getFirstRow() + 1);
                 this.canStartPivot = false;
             } else {
-                this.dataTable.addHeader(new TaggedHeader(cell, this.getColumn(), this.dataTable.getClassifier()));
+                this.dataTable.addHeader(new TaggedHeader(cell, this.getColumn()));
                 this.canStartPivot = true;
             }
             break;

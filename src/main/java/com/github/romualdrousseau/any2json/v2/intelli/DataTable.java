@@ -1,6 +1,7 @@
 package com.github.romualdrousseau.any2json.v2.intelli;
 
 import com.github.romualdrousseau.any2json.v2.ICell;
+import com.github.romualdrousseau.any2json.v2.base.Cell;
 import com.github.romualdrousseau.any2json.v2.base.Table;
 import com.github.romualdrousseau.any2json.v2.base.TableStream;
 import com.github.romualdrousseau.any2json.v2.intelli.header.TaggedHeader;
@@ -21,7 +22,7 @@ public class DataTable extends Table {
     private void buildSimpleTable(Table table) {
         int colIndex = 0;
         for (ICell cell : table.getRowAt(0).cells()) {
-            this.addHeader(new TaggedHeader(cell, colIndex, table.getClassifier()));
+            this.addHeader(new TaggedHeader((Cell) cell, colIndex) );
             colIndex += cell.getMergedCount();
         }
         this.setFirstOffsetRow(1);

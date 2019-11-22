@@ -1,8 +1,10 @@
 package com.github.romualdrousseau.any2json.v2.intelli;
 
 import com.github.romualdrousseau.any2json.v2.base.Cell;
+import com.github.romualdrousseau.any2json.v2.intelli.header.MetaHeader;
 import com.github.romualdrousseau.any2json.v2.intelli.header.MetaKeyValueHeader;
 import com.github.romualdrousseau.any2json.v2.layex.Context;
+import com.github.romualdrousseau.shuju.util.StringUtility;
 
 public class MetaTableContext extends Context<Cell> {
 
@@ -16,7 +18,11 @@ public class MetaTableContext extends Context<Cell> {
         } else if (this.getColumn() == 1) {
             this.value = cell;
         } else if (cell.getSymbol().equals("$")) {
-            this.metaTable.addHeader(new MetaKeyValueHeader(this.key, this.value, this.metaTable.getClassifier()));
+            if (StringUtility.isEmpty(this.value.getValue())) {
+                this.metaTable.addHeader(new MetaHeader(this.key));
+            } else {
+                this.metaTable.addHeader(new MetaKeyValueHeader(this.key, this.value));
+            }
         }
     }
 

@@ -1,7 +1,12 @@
 package com.github.romualdrousseau.any2json.classifiers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.ITagClassifier;
+import com.github.romualdrousseau.any2json.v2.layex.Layex;
+import com.github.romualdrousseau.any2json.v2.layex.LayexMatcher;
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.DataSet;
 import com.github.romualdrousseau.shuju.json.JSON;
@@ -88,6 +93,22 @@ public class NGramNNClassifier implements ITagClassifier {
 
     public String[] getRequiredTagList() {
         return this.requiredTags;
+    }
+
+    public List<LayexMatcher> getMetaLayexes() {
+        List<LayexMatcher> metaLayexes = new ArrayList<LayexMatcher>();
+        // Key/Value table
+        metaLayexes.add(new Layex("(v[v|m|s]$)+").compile());
+        return metaLayexes;
+    }
+
+    public List<LayexMatcher> getDataLayexes() {
+        List<LayexMatcher> dataLayexes = new ArrayList<LayexMatcher>();
+        // Table with pivot
+        dataLayexes.add(new Layex("(v[v|m][v|m]+$)([v|m|s]{2}[v|m|s]+$)+([v|m|s]{2}$)?").compile());
+        // Table with meta and pivot
+        dataLayexes.add(new Layex("(ms*$v[v|m][v|m]+$)([v|m|s]{2}[v|m|s]+$)+([v|m|s]{2}$)?").compile());
+        return dataLayexes;
     }
 
     public Model getModel() {

@@ -8,6 +8,7 @@ import org.apache.poi.ss.util.CellRangeAddress;
 
 import java.util.ArrayList;
 
+import com.github.romualdrousseau.any2json.v2.DocumentFactory;
 import com.github.romualdrousseau.any2json.v2.intelli.IntelliSheet;
 import com.github.romualdrousseau.any2json.v2.util.RowTranslatable;
 import com.github.romualdrousseau.any2json.v2.util.RowTranslator;
@@ -123,7 +124,7 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
             return false;
         }
         double height = row.getHeight() * 0.07; // Rougly convert in pixels
-        return (height < IntelliSheet.SEPARATOR_ROW_THRESHOLD);
+        return (height < DocumentFactory.SEPARATOR_ROW_THRESHOLD);
     }
 
     private Row getRowAt(int rowIndex) {

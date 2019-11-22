@@ -6,6 +6,7 @@ import nl.fountain.xelem.excel.Cell;
 import nl.fountain.xelem.excel.Row;
 import nl.fountain.xelem.excel.Worksheet;
 
+import com.github.romualdrousseau.any2json.v2.DocumentFactory;
 import com.github.romualdrousseau.any2json.v2.intelli.IntelliSheet;
 import com.github.romualdrousseau.any2json.v2.util.RowTranslatable;
 import com.github.romualdrousseau.any2json.v2.util.RowTranslator;
@@ -65,7 +66,7 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
     @Override
     public boolean isTranslatableRow(int colIndex, int rowIndex) {
         double height = this.sheet.getRowAt(rowIndex + 1).getHeight();
-        return (height < IntelliSheet.SEPARATOR_ROW_THRESHOLD);
+        return (height < DocumentFactory.SEPARATOR_ROW_THRESHOLD);
     }
 
     private Row getRowAt(int rowIndex) {

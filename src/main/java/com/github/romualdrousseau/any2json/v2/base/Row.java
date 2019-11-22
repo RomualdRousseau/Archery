@@ -13,6 +13,7 @@ public class Row implements IRow {
         this.classifier = classifier;
         this.cellCount = 0;
         this.emptyCellCount = 0;
+        this.islandCellCount = 0;
         this.cellCountUpdated = false;
         this.cachedCells = new Cell[table.getNumberOfColumns()];
     }
@@ -28,6 +29,10 @@ public class Row implements IRow {
             return Float.valueOf(this.emptyCellCount) / Float.valueOf(this.cellCount);
         }
     }
+
+    public float density() {
+		return 1.0f / Float.valueOf(this.islandCellCount);
+	}
 
     public int getNumberOfMergedCellsAt(int colIndex) {
         if (colIndex < 0 || colIndex >= this.getTable().getNumberOfColumns()) {
@@ -82,10 +87,15 @@ public class Row implements IRow {
     }
 
     private void updateCellCount() {
+        int n = 0;
         for (int i = 0; i < this.getTable().getNumberOfColumns();) {
             Cell cell = this.getCellAt(i);
             if (!cell.hasValue()) {
                 this.emptyCellCount++;
+                n = 0;
+            } else {
+                if(n == 0) this.islandCellCount++;
+                n++;
             }
             this.cellCount++;
             i += cell.getMergedCount();
@@ -96,6 +106,7 @@ public class Row implements IRow {
     private int rowIndex;
     private int cellCount;
     private int emptyCellCount;
+    private int islandCellCount;
     private boolean cellCountUpdated;
     private ITagClassifier classifier;
     private Cell[] cachedCells;

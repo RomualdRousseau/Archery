@@ -2,6 +2,7 @@ package com.github.romualdrousseau.any2json.v2.intelli;
 
 import com.github.romualdrousseau.any2json.v2.ICell;
 import com.github.romualdrousseau.any2json.v2.IRow;
+import com.github.romualdrousseau.any2json.v2.base.Cell;
 import com.github.romualdrousseau.any2json.v2.base.Table;
 import com.github.romualdrousseau.any2json.v2.base.TableStream;
 import com.github.romualdrousseau.any2json.v2.intelli.header.MetaHeader;
@@ -23,7 +24,7 @@ public class MetaTable extends Table {
         for (IRow row : table.rows()) {
             for (ICell cell : row.cells()) {
                 if(cell.hasValue()) {
-                    this.addHeader(new MetaHeader(cell, this.getClassifier()));
+                    this.addHeader(new MetaHeader((Cell) cell));
                 }
             }
         }

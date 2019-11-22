@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.romualdrousseau.any2json.v2.ITable;
+import com.github.romualdrousseau.any2json.v2.DocumentFactory;
 import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.v2.base.Row;
 import com.github.romualdrousseau.any2json.v2.base.Sheet;
 import com.github.romualdrousseau.any2json.v2.base.SheetBitmap;
 import com.github.romualdrousseau.any2json.v2.base.Table;
 import com.github.romualdrousseau.any2json.v2.base.TableStream;
-import com.github.romualdrousseau.any2json.v2.layex.Layex;
 import com.github.romualdrousseau.any2json.v2.layex.LayexMatcher;
 import com.github.romualdrousseau.any2json.v2.util.TableGraph;
 import com.github.romualdrousseau.any2json.v2.util.Visitable;
@@ -23,15 +23,12 @@ import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.Recta
 
 public abstract class IntelliSheet extends Sheet {
 
-    public final static int SEPARATOR_ROW_THRESHOLD = 10;
-
     @Override
     public ITable getTable(ITagClassifier classifier) {
         System.out.println("Start Intelli analysing ...");
 
-        List<LayexMatcher> metaLayexes = new ArrayList<LayexMatcher>();
-        List<LayexMatcher> dataLayexes = new ArrayList<LayexMatcher>();
-        this.compileLayexes(metaLayexes, dataLayexes);
+        List<LayexMatcher> metaLayexes = classifier.getMetaLayexes();
+        List<LayexMatcher> dataLayexes = classifier.getDataLayexes();
 
         System.out.println("Generate image ...");
         ISearchBitmap image = new SheetBitmap(this, classifier.getSampleCount(), this.getLastRowNum());
@@ -49,26 +46,6 @@ public abstract class IntelliSheet extends Sheet {
         debugTables = tables;
 
         return new IntelliTable(root);
-    }
-
-    private void compileLayexes(List<LayexMatcher> metaLayexes, List<LayexMatcher> dataLayexes) {
-        // Simple key value table
-        metaLayexes.add(new Layex("(v[v|m|s]$)+").compile());
-
-        // Simple table
-        dataLayexes.add(new Layex("(v{2}v+$)([v|m|s]{2}[v|m|s]+$)+").compile());
-
-        // Complex table with meta and pivot
-        // dataLayexes.add(new Layex("(ms*$v+m*$)([v|m|s]{2}[v|m|s]+$)+").compile());
-        dataLayexes.add(new Layex("(ms*$v+m*$)([v|m|s]{2}[v|m|s]+$)+([v|m|s]{2}$)?").compile());
-
-        for (LayexMatcher layex : metaLayexes) {
-            System.out.println(layex.toString());
-        }
-
-        for (LayexMatcher layex : dataLayexes) {
-            System.out.println(layex.toString());
-        }
     }
 
     private TableGraph buildTableGraph(List<MetaTable> metaTables, List<DataTable> dataTables) {
@@ -114,10 +91,12 @@ public abstract class IntelliSheet extends Sheet {
         }
 
         for (Table table : tables) {
+            boolean foundMatch = false;
             for (LayexMatcher dataLayex : dataLayexes) {
-                if (dataLayex.match(new TableStream(table), null)) {
+                if (!foundMatch && dataLayex.match(new TableStream(table), null)) {
                     result.add(new DataTable(table, dataLayex));
                     table.setVisited(true);
+                    foundMatch = true;
                 }
             }
         }
@@ -135,7 +114,7 @@ public abstract class IntelliSheet extends Sheet {
 
             boolean foundMatch = false;
             for (LayexMatcher metaLayex : metaLayexes) {
-                if (metaLayex.match(new TableStream(table), null)) {
+                if (!foundMatch && metaLayex.match(new TableStream(table), null)) {
                     result.add(new MetaTable(table, metaLayex));
                     foundMatch = true;
                 }
@@ -165,7 +144,7 @@ public abstract class IntelliSheet extends Sheet {
             boolean isSplitted = false;
             for (int i = 0; i < table.getNumberOfRows(); i++) {
                 Row row = table.getRowAt(i);
-                if (row.sparsity() >= 0.5) {
+                if (row.sparsity() >= DocumentFactory.DEFAULT_RATIO_SCARSITY && row.density() >= DocumentFactory.DEFAULT_RATIO_DENSITY) {
                     int currRowNum = table.getFirstRow() + i;
                     if (firstRowNum <= (currRowNum - 1)) {
                         result.add(new Table(table, firstRowNum, currRowNum - 1));
@@ -188,9 +167,9 @@ public abstract class IntelliSheet extends Sheet {
 
     private List<SearchPoint[]> findAllRectangles(ISearchBitmap original) {
         ISearchBitmap filtered = original.clone();
-
         final Filter filter = new Filter(new Template(new float[][] { { 0, 0, 0 }, { 1, 1, 0 }, { 0, 0, 0 } }));
         filter.apply(original, filtered, 0.5);
+
         List<SearchPoint[]> rectangles = new RectangleExtractor().extractAll(filtered);
 
         for (SearchPoint[] rectangle : rectangles) {
