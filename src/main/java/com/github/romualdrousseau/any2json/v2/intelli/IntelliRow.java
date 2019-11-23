@@ -7,31 +7,15 @@ public class IntelliRow extends AbstractRow {
 
     public IntelliRow(IntelliTable table) {
         super(table, -1);
-        this.cells = new AbstractCell[table.getNumberOfHeaders() + 1];
-        this.cellsSize = 0;
-    }
-
-    public IntelliRow(IntelliRow parent) {
-        super(parent.getTable(), -1);
-        this.cells = new AbstractCell[parent.cells.length];
-        this.cellsSize = 0;
-
-        for(AbstractCell cell : parent.cells) {
-            this.addCell(cell);
-        }
-    }
-
-    public IntelliRow clone() {
-        return new IntelliRow(this);
+        this.cellsData = new AbstractCell[table.getNumberOfHeaders() + 2]; // Account for possible pivot value
+        this.cellsIndex = 0;
     }
 
     @Override
     public AbstractCell getCellAt(int colIndex) {
-        if (colIndex < 0 || colIndex >= this.getTable().getNumberOfColumns()) {
-            throw new ArrayIndexOutOfBoundsException(colIndex);
-        }
-
-        return this.cells[colIndex];
+        assert(colIndex >= 0 && colIndex < this.getTable().getNumberOfColumns());
+        AbstractCell cell = this.cellsData[colIndex];
+        return (cell == null) ? AbstractCell.Empty : cell;
     }
 
     public void addEmptyCell() {
@@ -43,14 +27,18 @@ public class IntelliRow extends AbstractRow {
     }
 
     public void addCell(AbstractCell cell) {
-        assert(this.cellsSize < this.cells.length);
+        assert(this.cellsIndex < this.cellsData.length);
         if(cell.getMergedCount() == 1) {
-            this.cells[this.cellsSize++] = cell;
+            this.cellsData[this.cellsIndex++] = cell;
         } else {
-            this.cells[this.cellsSize++] = new AbstractCell(cell.getValue(), 0, 1, this.getClassifier());
+            this.cellsData[this.cellsIndex++] = new AbstractCell(cell.getValue(), 0, 1, this.getClassifier());
         }
     }
 
-    private AbstractCell[] cells;
-    private int cellsSize;
+    public int getToTo() {
+        return cellsIndex;
+    }
+
+    private AbstractCell[] cellsData;
+    private int cellsIndex;
 }

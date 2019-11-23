@@ -4,9 +4,9 @@ import com.github.romualdrousseau.any2json.v2.Header;
 
 public abstract class AbstractHeader implements Header {
 
-    public AbstractHeader(AbstractCell cell, int colIndex) {
+    public AbstractHeader(AbstractCell cell) {
         this.cell = cell;
-        this.colIndex = colIndex;
+        this.colIndex = cell.getColumnIndex();
     }
 
     public int getColumnIndex() {

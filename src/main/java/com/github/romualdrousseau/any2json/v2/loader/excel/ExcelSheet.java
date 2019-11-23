@@ -1,6 +1,7 @@
 package com.github.romualdrousseau.any2json.v2.loader.excel;
 
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.ss.formula.eval.NotImplementedException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
@@ -73,7 +74,11 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
         } else if (type == Cell.CELL_TYPE_STRING) {
             value = cell.getStringCellValue();
         } else if (type == Cell.CELL_TYPE_NUMERIC) {
-            value = this.formatter.formatCellValue(cell, evaluator);
+            try {
+                value = this.formatter.formatCellValue(cell, evaluator);
+            } catch(NotImplementedException x) {
+                value = "#ERROR?";
+            }
             if (value.matches("-?\\d+")) {
                 double d = cell.getNumericCellValue();
                 if (d != Math.rint(d)) {

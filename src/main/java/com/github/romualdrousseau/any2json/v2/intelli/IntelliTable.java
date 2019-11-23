@@ -9,7 +9,8 @@ import com.github.romualdrousseau.any2json.v2.base.AbstractHeader;
 import com.github.romualdrousseau.any2json.v2.base.AbstractRow;
 import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
 import com.github.romualdrousseau.any2json.v2.intelli.header.MetaHeader;
-import com.github.romualdrousseau.any2json.v2.intelli.header.PivotHeader;
+import com.github.romualdrousseau.any2json.v2.intelli.header.MetaTableHeader;
+import com.github.romualdrousseau.any2json.v2.intelli.header.PivotTableHeader;
 import com.github.romualdrousseau.any2json.v2.intelli.header.TaggedHeader;
 import com.github.romualdrousseau.any2json.v2.util.TableGraph;
 
@@ -43,21 +44,17 @@ public class IntelliTable extends AbstractTable {
     private void buildHeaders(TableGraph graph) {
         for (TableGraph child : graph.children()) {
             for (Header header : child.getTable().headers()) {
-                if (this.checkIfHeaderExists((AbstractHeader) header)) {
+                AbstractHeader abstractHeader = (AbstractHeader) header;
+                if (this.checkIfHeaderExists(abstractHeader)) {
                     continue;
                 }
 
-                if (header instanceof PivotHeader) {
-                    PivotHeader pivotHeader = (PivotHeader) header;
-                    AbstractHeader newHeader = pivotHeader.clone();
-                    newHeader.setColumnIndex(this.getNumberOfHeaders());
-                    this.addHeader(newHeader);
+                AbstractHeader newHeader = abstractHeader.clone();
+                newHeader.setColumnIndex(this.getNumberOfHeaders());
+                this.addHeader(newHeader);
 
-                    newHeader = pivotHeader.getValueHeader();
-                    newHeader.setColumnIndex(this.getNumberOfHeaders());
-                    this.addHeader(newHeader);
-                } else  {
-                    AbstractHeader newHeader = ((AbstractHeader) header).clone();
+                if (header instanceof PivotTableHeader) {
+                    newHeader = ((PivotTableHeader) abstractHeader).getValueHeader();
                     newHeader.setColumnIndex(this.getNumberOfHeaders());
                     this.addHeader(newHeader);
                 }
@@ -91,53 +88,62 @@ public class IntelliTable extends AbstractTable {
     private ArrayList<IntelliRow> buildFromOneRow(DataTable orgTable, AbstractRow orgRow) {
         ArrayList<IntelliRow> newRows = new ArrayList<IntelliRow>();
 
+        PivotTableHeader foundPivot = null;
+        for (Header header : this.headers()) {
+            if (header instanceof PivotTableHeader) {
+                foundPivot = (PivotTableHeader) header;
+            }
+        }
+
+        if (foundPivot == null) {
+            newRows.add(buildOneRow(orgTable, orgRow, null));
+        } else {
+            for (PivotTableHeader.PivotEntry e : foundPivot.getEntries()) {
+                newRows.add(buildOneRow(orgTable, orgRow, e));
+            }
+        }
+
+        return newRows;
+    }
+
+    private IntelliRow buildOneRow(DataTable orgTable, AbstractRow orgRow, PivotTableHeader.PivotEntry e) {
         IntelliRow newRow = new IntelliRow(this);
 
         for (Header header : this.headers()) {
-            if (header instanceof PivotHeader) {
-                PivotHeader pivotHeader = (PivotHeader) header;
-                if (!pivotHeader.isPivotalKey()) {
-                    continue;
-                }
+            AbstractHeader abstractHeader = orgTable.findHeader((AbstractHeader) header);
 
-                boolean firstPass = true;
-                PivotHeader orgHeader = (PivotHeader) orgTable.findHeader((AbstractHeader) header);
-                if(orgHeader != null) {
-                    for (int i : orgHeader.getColumnIndexes()) {
-                        if(firstPass) {
-                            firstPass = false;
-                        } else {
-                            IntelliRow prevRow = newRow.clone();
-                            newRows.add(newRow);
-                            newRow = prevRow;
-                        }
-                        newRow.addCell(orgTable.getRowAt(orgTable.getHeaderRowOffset()).getCellAt(i));
-                        newRow.addCell(orgRow.getCellAt(i));
-                    }
+            if (header instanceof TaggedHeader) {
+                if(abstractHeader != null) {
+                    newRow.addCell(orgRow.getCellAt(abstractHeader.getColumnIndex()));
                 } else {
                     newRow.addEmptyCell();
+                }
+            } else if (header instanceof PivotTableHeader) {
+                if(((PivotTableHeader) header).isPivotalKey()) {
+                    if(abstractHeader != null && e != null) {
+                        newRow.addStringCell(e.getValue());
+                        newRow.addCell(orgRow.getCellAt(e.getColumnIndex()));
+                    } else {
+                        newRow.addEmptyCell();
+                        newRow.addEmptyCell();
+                    }
+                }
+            } else if (header instanceof MetaTableHeader) {
+                if(abstractHeader != null) {
+                    newRow.addStringCell(abstractHeader.getValue());
+                } else {
                     newRow.addEmptyCell();
                 }
             } else if (header instanceof MetaHeader) {
-                AbstractHeader orgHeader = orgTable.findHeader((AbstractHeader) header);
-                if(orgHeader != null) {
-                    newRow.addStringCell(orgHeader.getValue());
+                if(abstractHeader != null) {
+                    newRow.addStringCell(abstractHeader.getValue());
                 } else {
                     newRow.addStringCell(header.getValue());
-                }
-            } else if (header instanceof TaggedHeader) {
-                AbstractHeader orgHeader = orgTable.findHeader((AbstractHeader) header);
-                if(orgHeader != null) {
-                    newRow.addCell(orgRow.getCellAt(orgHeader.getColumnIndex()));
-                } else {
-                    newRow.addEmptyCell();
                 }
             }
         }
 
-        newRows.add(newRow);
-
-        return newRows;
+        return newRow;
     }
 
     private ArrayList<IntelliRow> rows = new ArrayList<IntelliRow>();

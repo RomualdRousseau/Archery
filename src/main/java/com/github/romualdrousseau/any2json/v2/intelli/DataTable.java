@@ -20,10 +20,8 @@ public class DataTable extends AbstractTable {
     }
 
     private void buildSimpleTable(AbstractTable table) {
-        int colIndex = 0;
         for (Cell cell : table.getRowAt(0).cells()) {
-            this.addHeader(new TaggedHeader((AbstractCell) cell, colIndex) );
-            colIndex += cell.getMergedCount();
+            this.addHeader(new TaggedHeader((AbstractCell) cell) );
         }
         this.setFirstRowOffset(1);
     }

@@ -7,18 +7,38 @@ import com.github.romualdrousseau.any2json.v2.DocumentFactory;
 import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
 import com.github.romualdrousseau.any2json.v2.base.AbstractHeader;
 
-public class PivotHeader extends MetaHeader {
+public class PivotTableHeader extends MetaHeader {
 
-    public PivotHeader(AbstractCell cell, int colIndex) {
-        super(cell);
-        this.isPivotalKey = true;
-        this.colIndexes.add(colIndex);
+    public class PivotEntry {
+
+        public PivotEntry(AbstractCell cell) {
+            this.value = cell.getValue();
+            this.colIndex = cell.getColumnIndex();
+        }
+
+        public String getValue() {
+            return this.value;
+        }
+
+        public int getColumnIndex() {
+            return this.colIndex;
+        }
+
+        private String value;
+        private int colIndex;
     }
 
-    private PivotHeader(AbstractCell cell, List<Integer> colIndexes, boolean isPivotalKey) {
+    public PivotTableHeader(AbstractCell cell) {
+        super(cell);
+        this.isPivotalKey = true;
+        this.entries = new ArrayList<PivotEntry>();
+        this.entries.add(new PivotEntry(cell));
+    }
+
+    private PivotTableHeader(AbstractCell cell, ArrayList<PivotEntry> entries, boolean isPivotalKey) {
         super(cell);
         this.isPivotalKey = isPivotalKey;
-        this.colIndexes.addAll(colIndexes);
+        this.entries = entries;
     }
 
     @Override
@@ -39,27 +59,27 @@ public class PivotHeader extends MetaHeader {
 
     @Override
     public AbstractHeader clone() {
-        return new PivotHeader(this.getCell(), this.colIndexes, true);
+        return new PivotTableHeader(this.getCell(), this.entries, true);
     }
 
     public AbstractHeader getValueHeader() {
         AbstractCell valueCell = new AbstractCell(DocumentFactory.PIVOT_SUFFIX, 0, 1, this.getCell().getClassifier());
-        return new PivotHeader(valueCell, this.colIndexes, false);
+        return new PivotTableHeader(valueCell, this.entries, false);
     }
 
     public boolean isPivotalKey() {
         return this.isPivotalKey;
     }
 
-    public List<Integer> getColumnIndexes() {
-        return this.colIndexes;
+    public List<PivotEntry> getEntries() {
+        return this.entries;
     }
 
-    public void addColumnIndex(int colIndex) {
-        this.colIndexes.add(colIndex);
+    public void addEntry(PivotEntry entry) {
+        this.entries.add(entry);
     }
 
     private String name;
     private boolean isPivotalKey;
-    private ArrayList<Integer> colIndexes = new ArrayList<Integer>();
+    private ArrayList<PivotEntry> entries;
 }

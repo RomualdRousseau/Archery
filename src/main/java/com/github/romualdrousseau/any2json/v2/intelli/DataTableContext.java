@@ -2,8 +2,8 @@ package com.github.romualdrousseau.any2json.v2.intelli;
 
 import com.github.romualdrousseau.any2json.v2.Header;
 import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
-import com.github.romualdrousseau.any2json.v2.intelli.header.MetaHeader;
-import com.github.romualdrousseau.any2json.v2.intelli.header.PivotHeader;
+import com.github.romualdrousseau.any2json.v2.intelli.header.MetaTableHeader;
+import com.github.romualdrousseau.any2json.v2.intelli.header.PivotTableHeader;
 import com.github.romualdrousseau.any2json.v2.intelli.header.TaggedHeader;
 import com.github.romualdrousseau.any2json.v2.layex.Context;
 
@@ -26,27 +26,26 @@ public class DataTableContext extends Context<AbstractCell> {
         case TABLE_HEADER:
             if (symbol.equals("m")) {
                 if (this.canStartPivot) {
-                    PivotHeader foundPivot = null;
+                    PivotTableHeader foundPivot = null;
                     for (Header header : this.dataTable.headers()) {
-                        if (header instanceof PivotHeader) {
-                            foundPivot = (PivotHeader) header;
+                        if (header instanceof PivotTableHeader) {
+                            foundPivot = (PivotTableHeader) header;
                         }
                     }
                     if (foundPivot == null) {
-                        this.dataTable
-                                .addHeader(new PivotHeader(cell, cell.getColumnIndex()));
+                        this.dataTable.addHeader(new PivotTableHeader(cell));
                     } else {
-                        foundPivot.addColumnIndex(cell.getColumnIndex());
+                        foundPivot.addEntry(foundPivot.new PivotEntry(cell));
                     }
                 } else {
-                    this.dataTable.addHeader(new MetaHeader(cell));
+                    this.dataTable.addHeader(new MetaTableHeader(cell));
                 }
             } else if (symbol.equals("$")) {
                 this.dataTable.setFirstRowOffset(this.getRow() + 1);
                 this.canStartPivot = false;
             } else {
                 this.dataTable.setHeaderRowOffset(this.getRow());
-                this.dataTable.addHeader(new TaggedHeader(cell, cell.getColumnIndex()));
+                this.dataTable.addHeader(new TaggedHeader(cell));
                 this.canStartPivot = true;
             }
             break;

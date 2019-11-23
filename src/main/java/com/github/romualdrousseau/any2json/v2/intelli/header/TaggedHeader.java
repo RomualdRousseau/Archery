@@ -5,8 +5,8 @@ import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
 
 public class TaggedHeader extends AbstractHeader {
 
-    public TaggedHeader(AbstractCell cell, int colIndex) {
-        super(cell, colIndex);
+    public TaggedHeader(AbstractCell cell) {
+        super(cell);
     }
 
     @Override
@@ -25,7 +25,7 @@ public class TaggedHeader extends AbstractHeader {
 
     @Override
     public AbstractHeader clone() {
-        return new TaggedHeader(this.getCell(), this.getColumnIndex());
+        return new TaggedHeader(this.getCell());
     }
 
     private String name;

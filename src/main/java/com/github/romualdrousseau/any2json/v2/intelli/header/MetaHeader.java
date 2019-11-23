@@ -6,7 +6,7 @@ import com.github.romualdrousseau.any2json.v2.base.AbstractHeader;
 public class MetaHeader extends AbstractHeader {
 
     public MetaHeader(AbstractCell cell) {
-        super(cell, -1);
+        super(cell);
     }
 
     @Override
