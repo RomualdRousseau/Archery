@@ -4,8 +4,8 @@ import java.util.LinkedList;
 
 import com.github.romualdrousseau.any2json.v2.layex.Context;
 import com.github.romualdrousseau.any2json.v2.layex.LayexMatcher;
-import com.github.romualdrousseau.any2json.v2.layex.IStream;
-import com.github.romualdrousseau.any2json.v2.layex.ISymbol;
+import com.github.romualdrousseau.any2json.v2.layex.Lexer;
+import com.github.romualdrousseau.any2json.v2.layex.Symbol;
 
 public class Concat implements LayexMatcher {
 
@@ -15,7 +15,7 @@ public class Concat implements LayexMatcher {
     }
 
     @Override
-    public <S extends ISymbol, C> boolean match(IStream<S, C> stream, Context<S> context) {
+    public <S extends Symbol, C> boolean match(Lexer<S, C> stream, Context<S> context) {
         if(!this.a.match(stream, context)) {
             return false;
         } else {

@@ -1,6 +1,6 @@
 package com.github.romualdrousseau.any2json.v2.layex;
 
-public abstract class Context<S extends ISymbol> {
+public abstract class Context<S extends Symbol> {
 
     public int getGroup() {
         return this.group;

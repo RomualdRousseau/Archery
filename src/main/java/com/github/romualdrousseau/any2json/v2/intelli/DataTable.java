@@ -1,28 +1,28 @@
 package com.github.romualdrousseau.any2json.v2.intelli;
 
-import com.github.romualdrousseau.any2json.v2.ICell;
-import com.github.romualdrousseau.any2json.v2.base.Cell;
-import com.github.romualdrousseau.any2json.v2.base.Table;
-import com.github.romualdrousseau.any2json.v2.base.TableStream;
+import com.github.romualdrousseau.any2json.v2.Cell;
+import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
+import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
+import com.github.romualdrousseau.any2json.v2.base.TableLexer;
 import com.github.romualdrousseau.any2json.v2.intelli.header.TaggedHeader;
 import com.github.romualdrousseau.any2json.v2.layex.LayexMatcher;
 
-public class DataTable extends Table {
+public class DataTable extends AbstractTable {
 
-    public DataTable(Table table) {
+    public DataTable(AbstractTable table) {
         super(table);
         this.buildSimpleTable(table);
     }
 
-    public DataTable(Table table, LayexMatcher layex) {
+    public DataTable(AbstractTable table, LayexMatcher layex) {
         super(table);
-        layex.match(new TableStream(table), new DataTableContext(this));
+        layex.match(new TableLexer(table), new DataTableContext(this));
     }
 
-    private void buildSimpleTable(Table table) {
+    private void buildSimpleTable(AbstractTable table) {
         int colIndex = 0;
-        for (ICell cell : table.getRowAt(0).cells()) {
-            this.addHeader(new TaggedHeader((Cell) cell, colIndex) );
+        for (Cell cell : table.getRowAt(0).cells()) {
+            this.addHeader(new TaggedHeader((AbstractCell) cell, colIndex) );
             colIndex += cell.getMergedCount();
         }
         this.setFirstOffsetRow(1);

@@ -11,7 +11,7 @@ import com.github.romualdrousseau.any2json.v2.layex.operations.Value;
 
 public class Layex {
     public Layex(String pattern) {
-        this.pattern = new StringStream(pattern);
+        this.pattern = new StringLexer(pattern);
     }
 
     public LayexMatcher compile() {
@@ -135,6 +135,6 @@ public class Layex {
     }
 
     private LinkedList<LayexMatcher> stack;
-    private StringStream pattern;
+    private StringLexer pattern;
     private int groupCounter;
 }

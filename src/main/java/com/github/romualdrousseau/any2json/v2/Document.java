@@ -2,7 +2,7 @@ package com.github.romualdrousseau.any2json.v2;
 
 import java.io.File;
 
-public interface IDocument extends AutoCloseable {
+public interface Document extends AutoCloseable {
 
 	public boolean open(File excelFile, String encoding);
 
@@ -10,5 +10,5 @@ public interface IDocument extends AutoCloseable {
 
 	public int getNumberOfSheets();
 
-	public ISheet getSheetAt(int i);
+	public Sheet getSheetAt(int i);
 }

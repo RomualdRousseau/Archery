@@ -1,10 +1,10 @@
 package com.github.romualdrousseau.any2json.v2;
 
-public interface IRow {
+public interface Row {
 
 	boolean isEmpty();
 
     int getNumberOfCells();
 
-    Iterable<ICell> cells();
+    Iterable<Cell> cells();
 }

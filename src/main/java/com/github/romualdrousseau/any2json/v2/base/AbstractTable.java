@@ -1,19 +1,19 @@
 package com.github.romualdrousseau.any2json.v2.base;
 
-import com.github.romualdrousseau.any2json.v2.IHeader;
-import com.github.romualdrousseau.any2json.v2.IRow;
-import com.github.romualdrousseau.any2json.v2.ITable;
+import com.github.romualdrousseau.any2json.v2.Header;
+import com.github.romualdrousseau.any2json.v2.Row;
+import com.github.romualdrousseau.any2json.v2.Table;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.v2.util.RowIterable;
 import com.github.romualdrousseau.any2json.v2.util.RowStore;
 import com.github.romualdrousseau.any2json.v2.util.Visitable;
 
-public class Table implements ITable, Visitable {
+public class AbstractTable implements Table, Visitable {
 
-    public Table(Sheet sheet, int firstColumn, int firstRow, int lastColumn, int lastRow, ITagClassifier classifier) {
+    public AbstractTable(AbstractSheet sheet, int firstColumn, int firstRow, int lastColumn, int lastRow, ITagClassifier classifier) {
         this.visited = false;
         this.sheet = sheet;
         this.firstColumn = firstColumn;
@@ -27,12 +27,16 @@ public class Table implements ITable, Visitable {
         this.cachedRows = null;
     }
 
-    public Table(Table parent) {
+    public AbstractTable(ITagClassifier classifier) {
+        this(null, 0, 0, 0, 0, classifier);
+    }
+
+    public AbstractTable(AbstractTable parent) {
         this(parent.sheet, parent.firstColumn, parent.firstRow, parent.lastColumn, parent.lastRow, parent.classifier);
         this.cachedRows = parent.cachedRows;
     }
 
-    public Table(Table parent, int firstRow, int lastRow) {
+    public AbstractTable(AbstractTable parent, int firstRow, int lastRow) {
         this(parent.sheet, parent.firstColumn, firstRow, parent.lastColumn, lastRow, parent.classifier);
         this.parentOffsetRow = this.firstRow - parent.firstRow;
         this.cachedRows = parent.cachedRows;
@@ -49,7 +53,7 @@ public class Table implements ITable, Visitable {
     }
 
     @Override
-    public Iterable<IRow> rows() {
+    public Iterable<Row> rows() {
         return new RowIterable(this);
     }
 
@@ -59,7 +63,7 @@ public class Table implements ITable, Visitable {
     }
 
     @Override
-    public Iterable<IHeader> headers() {
+    public Iterable<Header> headers() {
         return this.headers;
     }
 
@@ -73,7 +77,7 @@ public class Table implements ITable, Visitable {
         this.visited = flag;
     }
 
-    public Sheet getSheet() {
+    public AbstractSheet getSheet() {
         return this.sheet;
     }
 
@@ -113,7 +117,7 @@ public class Table implements ITable, Visitable {
         this.lastOffsetRow = offset;
     }
 
-    public Row getRowAt(int rowIndex) {
+    public AbstractRow getRowAt(int rowIndex) {
         if (rowIndex < 0 || rowIndex >= getNumberOfRows()) {
             throw new ArrayIndexOutOfBoundsException(rowIndex);
         }
@@ -122,21 +126,25 @@ public class Table implements ITable, Visitable {
             this.cachedRows = new RowStore();
         }
 
-        Row result = cachedRows.get(this.parentOffsetRow + this.firstOffsetRow + rowIndex);
+        AbstractRow result = cachedRows.get(this.parentOffsetRow + this.firstOffsetRow + rowIndex);
         if(result == null) {
-            result = new Row(this, rowIndex, this.classifier);
+            result = new AbstractRow(this, rowIndex, this.classifier);
             cachedRows.put(rowIndex, result);
         }
 
         return result;
     }
 
-    public void addHeader(IHeader header) {
-        this.headers.add(header);
-	}
+    public void addHeader(AbstractHeader header) {
+        this.headers.addLast(header);
+    }
+
+    public boolean checkIfHeaderExists(AbstractHeader header) {
+        return this.headers.contains(header);
+    }
 
     private boolean visited;
-    private Sheet sheet;
+    private AbstractSheet sheet;
     private int firstColumn;
     private int firstRow;
     private int lastColumn;
@@ -146,5 +154,5 @@ public class Table implements ITable, Visitable {
     private int lastOffsetRow;
     private ITagClassifier classifier;
     private RowStore cachedRows;
-    private ArrayList<IHeader> headers = new ArrayList<IHeader>();
+    private LinkedList<Header> headers = new LinkedList<Header>();
 }

@@ -4,18 +4,18 @@ import java.util.List;
 
 import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
 
-public interface ISheet
-{
-    public String getName();
+public interface ISheet {
 
-    public ISearchBitmap getSearchBitmap(int headerColumns, int headerRows);
+    String getName();
 
-	public ITable getTable();
+    ISearchBitmap getSearchBitmap(int headerColumns, int headerRows);
 
-    public ITable findTable(int headerColumns, int headerRows);
+	ITable getTable();
 
-    public List<ITable> findTables(int headerColumns, int headerRows);
+    ITable findTable(int headerColumns, int headerRows);
 
-    public ITable findTableWithIntelliTag(ITagClassifier classifier);
+    List<ITable> findTables(int headerColumns, int headerRows);
+
+    ITable findTableWithIntelliTag(ITagClassifier classifier);
 }
 

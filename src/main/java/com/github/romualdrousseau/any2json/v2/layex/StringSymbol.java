@@ -1,6 +1,6 @@
 package com.github.romualdrousseau.any2json.v2.layex;
 
-public class StringSymbol implements ISymbol {
+public class StringSymbol implements Symbol {
 
     public static final StringSymbol EndOfStream = new StringSymbol('$');
 

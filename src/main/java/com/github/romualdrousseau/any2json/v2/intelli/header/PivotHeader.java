@@ -4,18 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.romualdrousseau.any2json.v2.DocumentFactory;
-import com.github.romualdrousseau.any2json.v2.base.Cell;
-import com.github.romualdrousseau.any2json.v2.base.Header;
+import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
+import com.github.romualdrousseau.any2json.v2.base.AbstractHeader;
 
 public class PivotHeader extends MetaHeader {
 
-    public PivotHeader(Cell cell, int colIndex) {
+    public PivotHeader(AbstractCell cell, int colIndex) {
         super(cell);
         this.isPivotalKey = true;
         this.colIndexes.add(colIndex);
     }
 
-    private PivotHeader(Cell cell, List<Integer> colIndexes, boolean isPivotalKey) {
+    private PivotHeader(AbstractCell cell, List<Integer> colIndexes, boolean isPivotalKey) {
         super(cell);
         this.isPivotalKey = isPivotalKey;
         this.colIndexes.addAll(colIndexes);
@@ -38,7 +38,7 @@ public class PivotHeader extends MetaHeader {
     }
 
     @Override
-    public Header clone() {
+    public AbstractHeader clone() {
         return new PivotHeader(this.getCell(), colIndexes, true);
     }
 
@@ -46,8 +46,8 @@ public class PivotHeader extends MetaHeader {
         return this.isPivotalKey;
     }
 
-    public Header getValueHeader() {
-        Cell valueCell = new Cell(DocumentFactory.PIVOT_SUFFIX, 1, this.getCell().getClassifier());
+    public AbstractHeader getValueHeader() {
+        AbstractCell valueCell = new AbstractCell(DocumentFactory.PIVOT_SUFFIX, 1, this.getCell().getClassifier());
         return new PivotHeader(valueCell, colIndexes, false);
     }
 

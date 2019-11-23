@@ -1,14 +1,14 @@
 package com.github.romualdrousseau.any2json.v2;
 
-public interface ITable {
+public interface Table {
 
     int getNumberOfColumns();
 
     int getNumberOfRows();
 
-    Iterable<IRow> rows();
+    Iterable<Row> rows();
 
     int getNumberOfHeaders();
 
-    Iterable<IHeader> headers();
+    Iterable<Header> headers();
 }

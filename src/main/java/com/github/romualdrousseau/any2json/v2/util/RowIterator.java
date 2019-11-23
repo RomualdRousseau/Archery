@@ -2,12 +2,12 @@ package com.github.romualdrousseau.any2json.v2.util;
 
 import java.util.Iterator;
 
-import com.github.romualdrousseau.any2json.v2.IRow;
-import com.github.romualdrousseau.any2json.v2.base.Table;
+import com.github.romualdrousseau.any2json.v2.Row;
+import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
 
-public class RowIterator implements Iterator<IRow>
+public class RowIterator implements Iterator<Row>
 {
-	public RowIterator(Table table) {
+	public RowIterator(AbstractTable table) {
 		this.table = table;
 		this.currRowIdx = 0;
 	}
@@ -16,11 +16,11 @@ public class RowIterator implements Iterator<IRow>
 		return this.currRowIdx < this.table.getNumberOfRows();
 	}
 
-	public IRow next() {
+	public Row next() {
 		return this.table.getRowAt(this.currRowIdx++);
 	}
 
-	private Table table;
+	private AbstractTable table;
 	private int currRowIdx;
 }
 

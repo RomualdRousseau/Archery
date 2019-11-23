@@ -2,10 +2,10 @@ package com.github.romualdrousseau.any2json.v2.base;
 
 import java.util.ArrayList;
 
-import com.github.romualdrousseau.any2json.v2.ITable;
-import com.github.romualdrousseau.any2json.v2.layex.IStream;
+import com.github.romualdrousseau.any2json.v2.Table;
+import com.github.romualdrousseau.any2json.v2.layex.Lexer;
 
-public class TableStream implements IStream<Cell, TableStream.Cursor> {
+public class TableLexer implements Lexer<AbstractCell, TableLexer.Cursor> {
 
     class Cursor {
 
@@ -26,51 +26,51 @@ public class TableStream implements IStream<Cell, TableStream.Cursor> {
         private int rowIndex;
     }
 
-    public TableStream(ITable table) {
+    public TableLexer(Table table) {
         this.stack = new ArrayList<Cursor>();
-        this.table = (Table) table;
+        this.table = (AbstractTable) table;
         this.colIndex = 0;
         this.rowIndex = 0;
     }
 
     @Override
-    public Cell read() {
+    public AbstractCell read() {
         if(this.rowIndex >= this.table.getNumberOfRows()) {
-            return Cell.EndOfStream;
+            return AbstractCell.EndOfStream;
         }
 
         if(this.colIndex >= this.table.getNumberOfColumns()) {
             this.colIndex = 0;
             this.rowIndex++;
-            return Cell.EndOfRow;
+            return AbstractCell.EndOfRow;
         }
 
-        Row row = this.table.getRowAt(this.rowIndex);
+        AbstractRow row = this.table.getRowAt(this.rowIndex);
         if(row.isEmpty()) {
             this.colIndex = 0;
             this.rowIndex++;
-            return Cell.EndOfRow;
+            return AbstractCell.EndOfRow;
         }
 
-        Cell cell = row.getCellAt(colIndex);
+        AbstractCell cell = row.getCellAt(colIndex);
         colIndex += cell.getMergedCount();
 
         return cell;
     }
 
     @Override
-    public Cell peek() {
+    public AbstractCell peek() {
         if(this.rowIndex >= this.table.getNumberOfRows()) {
-            return Cell.EndOfStream;
+            return AbstractCell.EndOfStream;
         }
 
         if(this.colIndex >= this.table.getNumberOfColumns()) {
-            return Cell.EndOfRow;
+            return AbstractCell.EndOfRow;
         }
 
-        Row row = this.table.getRowAt(this.rowIndex);
+        AbstractRow row = this.table.getRowAt(this.rowIndex);
         if(row.isEmpty()) {
-            return Cell.EndOfRow;
+            return AbstractCell.EndOfRow;
         }
 
         return row.getCellAt(colIndex);
@@ -93,7 +93,7 @@ public class TableStream implements IStream<Cell, TableStream.Cursor> {
     }
 
     private ArrayList<Cursor> stack;
-    private Table table;
+    private AbstractTable table;
     private int colIndex;
     private int rowIndex;
 }

@@ -1,6 +1,6 @@
 package com.github.romualdrousseau.any2json.v2.layex;
 
-public interface IStream<S extends ISymbol, C> {
+public interface Lexer<S extends Symbol, C> {
 
     S read();
 

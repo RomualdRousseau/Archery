@@ -2,18 +2,18 @@ package com.github.romualdrousseau.any2json.v2.util;
 
 import java.util.Iterator;
 
-import com.github.romualdrousseau.any2json.v2.IRow;
-import com.github.romualdrousseau.any2json.v2.base.Table;
+import com.github.romualdrousseau.any2json.v2.Row;
+import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
 
-public class RowIterable implements Iterable<IRow>
+public class RowIterable implements Iterable<Row>
 {
-	public RowIterable(Table table) {
+	public RowIterable(AbstractTable table) {
 		this.table = table;
 	}
 
-	public Iterator<IRow> iterator() {
+	public Iterator<Row> iterator() {
 		return new RowIterator(this.table);
 	}
 
-	private Table table;
+	private AbstractTable table;
 }

@@ -10,10 +10,10 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.poifs.filesystem.NotOLE2FileException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
-import com.github.romualdrousseau.any2json.v2.IDocument;
-import com.github.romualdrousseau.any2json.v2.ISheet;
+import com.github.romualdrousseau.any2json.v2.Document;
+import com.github.romualdrousseau.any2json.v2.Sheet;
 
-public class ExcelDocument implements IDocument {
+public class ExcelDocument implements Document {
 	public boolean open(File excelFile, String encoding) {
 		if(excelFile == null) {
             throw new IllegalArgumentException();
@@ -62,7 +62,7 @@ public class ExcelDocument implements IDocument {
 		return this.sheets.size();
 	}
 
-	public ISheet getSheetAt(int i) {
+	public Sheet getSheetAt(int i) {
 		return this.sheets.get(i);
 	}
 

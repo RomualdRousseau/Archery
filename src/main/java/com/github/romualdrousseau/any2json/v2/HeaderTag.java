@@ -2,16 +2,16 @@ package com.github.romualdrousseau.any2json.v2;
 
 public class HeaderTag
 {
-    public HeaderTag(IHeader header, String value) {
+    public HeaderTag(Header header, String value) {
 		this.header = header;
 		this.value = value;
     }
 
-	public IHeader getHeader() {
+	public Header getHeader() {
 		return this.header;
 	}
 
-	public HeaderTag setHeader(IHeader header) {
+	public HeaderTag setHeader(Header header) {
 		this.header = header;
 		return this;
 	}
@@ -42,6 +42,6 @@ public class HeaderTag
 		}
 	}
 
-	private IHeader header;
+	private Header header;
 	private String value;
 }

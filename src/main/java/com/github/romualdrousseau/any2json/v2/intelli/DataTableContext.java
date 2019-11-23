@@ -1,13 +1,13 @@
 package com.github.romualdrousseau.any2json.v2.intelli;
 
-import com.github.romualdrousseau.any2json.v2.IHeader;
-import com.github.romualdrousseau.any2json.v2.base.Cell;
+import com.github.romualdrousseau.any2json.v2.Header;
+import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
 import com.github.romualdrousseau.any2json.v2.intelli.header.MetaHeader;
 import com.github.romualdrousseau.any2json.v2.intelli.header.PivotHeader;
 import com.github.romualdrousseau.any2json.v2.intelli.header.TaggedHeader;
 import com.github.romualdrousseau.any2json.v2.layex.Context;
 
-public class DataTableContext extends Context<Cell> {
+public class DataTableContext extends Context<AbstractCell> {
 
     public static final int TABLE_HEADER = 0;
     public static final int TABLE_BODY = 1;
@@ -19,7 +19,7 @@ public class DataTableContext extends Context<Cell> {
         this.footerProcessed = false;
     }
 
-    public void processSymbolFunc(Cell cell) {
+    public void processSymbolFunc(AbstractCell cell) {
         String symbol = cell.getSymbol();
 
         switch (this.getGroup()) {
@@ -27,7 +27,7 @@ public class DataTableContext extends Context<Cell> {
             if (symbol.equals("m")) {
                 if (this.canStartPivot) {
                     PivotHeader foundPivot = null;
-                    for (IHeader header : this.dataTable.headers()) {
+                    for (Header header : this.dataTable.headers()) {
                         if (header instanceof PivotHeader) {
                             foundPivot = (PivotHeader) header;
                         }

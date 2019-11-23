@@ -1,18 +1,18 @@
 package com.github.romualdrousseau.any2json.v2.base;
 
 import com.github.romualdrousseau.shuju.util.StringUtility;
-import com.github.romualdrousseau.any2json.v2.ICell;
-import com.github.romualdrousseau.any2json.v2.layex.ISymbol;
+import com.github.romualdrousseau.any2json.v2.Cell;
+import com.github.romualdrousseau.any2json.v2.layex.Symbol;
 import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.shuju.math.Vector;
 
-public class Cell implements ICell, ISymbol {
+public class AbstractCell implements Cell, Symbol {
 
-    public final static Cell EndOfRow = new Cell(null, 0, null);
+    public final static AbstractCell EndOfRow = new AbstractCell(null, 0, null);
 
-    public final static Cell EndOfStream = new Cell(null, 0, null);
+    public final static AbstractCell EndOfStream = new AbstractCell(null, 0, null);
 
-    public Cell(String value, int mergedCount, ITagClassifier classifier) {
+    public AbstractCell(String value, int mergedCount, ITagClassifier classifier) {
         this.value = value;
         this.mergedCount = mergedCount;
         this.classifier = classifier;
@@ -32,7 +32,7 @@ public class Cell implements ICell, ISymbol {
         return this.value;
     }
 
-    public ICell setValue(String value) {
+    public Cell setValue(String value) {
         this.value = value;
         this.entityVector = null;
         return this;
@@ -54,9 +54,9 @@ public class Cell implements ICell, ISymbol {
     @Override
     public String getSymbol() {
         if(this.symbol == null) {
-            if (this == Cell.EndOfStream) {
+            if (this == AbstractCell.EndOfStream) {
                 this.symbol = "";
-            } else if (this == Cell.EndOfRow) {
+            } else if (this == AbstractCell.EndOfRow) {
                 this.symbol = "$";
             } else if (!this.hasValue()) {
                 this.symbol = "s";

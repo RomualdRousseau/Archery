@@ -5,8 +5,8 @@ import java.util.LinkedList;
 
 import com.github.romualdrousseau.any2json.v2.layex.Context;
 import com.github.romualdrousseau.any2json.v2.layex.LayexMatcher;
-import com.github.romualdrousseau.any2json.v2.layex.IStream;
-import com.github.romualdrousseau.any2json.v2.layex.ISymbol;
+import com.github.romualdrousseau.any2json.v2.layex.Lexer;
+import com.github.romualdrousseau.any2json.v2.layex.Symbol;
 
 public class Closure implements LayexMatcher {
 
@@ -17,7 +17,7 @@ public class Closure implements LayexMatcher {
     }
 
     @Override
-    public <S extends ISymbol, C> boolean match(IStream<S, C> stream, Context<S> context) {
+    public <S extends Symbol, C> boolean match(Lexer<S, C> stream, Context<S> context) {
         int count = 0;
         while (true) {
             stream.push();

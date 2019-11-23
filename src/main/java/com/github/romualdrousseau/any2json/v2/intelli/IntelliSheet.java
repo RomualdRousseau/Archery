@@ -3,14 +3,19 @@ package com.github.romualdrousseau.any2json.v2.intelli;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.romualdrousseau.any2json.v2.ITable;
+import com.github.romualdrousseau.any2json.v2.Table;
 import com.github.romualdrousseau.any2json.v2.DocumentFactory;
 import com.github.romualdrousseau.any2json.ITagClassifier;
-import com.github.romualdrousseau.any2json.v2.base.Row;
-import com.github.romualdrousseau.any2json.v2.base.Sheet;
+import com.github.romualdrousseau.any2json.v2.base.AbstractRow;
+import com.github.romualdrousseau.any2json.v2.base.AbstractSheet;
 import com.github.romualdrousseau.any2json.v2.base.SheetBitmap;
-import com.github.romualdrousseau.any2json.v2.base.Table;
-import com.github.romualdrousseau.any2json.v2.base.TableStream;
+import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
+import com.github.romualdrousseau.any2json.v2.base.TableLexer;
+import com.github.romualdrousseau.any2json.v2.intelli.event.AllTablesExtractedEvent;
+import com.github.romualdrousseau.any2json.v2.intelli.event.BitmapGeneratedEvent;
+import com.github.romualdrousseau.any2json.v2.intelli.event.DataTableListBuiltEvent;
+import com.github.romualdrousseau.any2json.v2.intelli.event.MetaTableListBuiltEvent;
+import com.github.romualdrousseau.any2json.v2.intelli.event.TableGraphBuiltEvent;
 import com.github.romualdrousseau.any2json.v2.layex.LayexMatcher;
 import com.github.romualdrousseau.any2json.v2.util.TableGraph;
 import com.github.romualdrousseau.any2json.v2.util.Visitable;
@@ -21,31 +26,26 @@ import com.github.romualdrousseau.shuju.cv.Template;
 import com.github.romualdrousseau.shuju.cv.templatematching.TemplateMatcher;
 import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.RectangleExtractor;
 
-public abstract class IntelliSheet extends Sheet {
+public abstract class IntelliSheet extends AbstractSheet {
 
     @Override
-    public ITable getTable(ITagClassifier classifier) {
-        System.out.println("Start Intelli analysing ...");
-
-        List<LayexMatcher> metaLayexes = classifier.getMetaLayexes();
-        List<LayexMatcher> dataLayexes = classifier.getDataLayexes();
-
-        System.out.println("Generate image ...");
+    public Table getTable(ITagClassifier classifier) {
         ISearchBitmap image = new SheetBitmap(this, classifier.getSampleCount(), this.getLastRowNum());
-        System.out.println("Extract all tables from image ...");
-        List<Table> tables = this.findAllTables(classifier, image);
-        System.out.println("Build DataTable list ...");
-        List<DataTable> dataTables = this.getDataTables(tables, dataLayexes);
-        System.out.println("Build MetaTable list ...");
-        List<MetaTable> metaTables = this.getMetaTables(tables, metaLayexes);
-        System.out.println("Build TableGraph ...");
+        this.notifyStepCompleted(new BitmapGeneratedEvent(this, image));
+
+        List<AbstractTable> tables = this.findAllTables(classifier, image);
+        this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables));
+
+        List<DataTable> dataTables = this.getDataTables(tables, classifier.getDataLayexes());
+        this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables));
+
+        List<MetaTable> metaTables = this.getMetaTables(tables, classifier.getMetaLayexes());
+        this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables));
+
         TableGraph root = this.buildTableGraph(metaTables, dataTables);
-        System.out.println("done.");
+        this.notifyStepCompleted(new TableGraphBuiltEvent(this, root));
 
-        debugBitmap = image;
-        debugTables = tables;
-
-        return new IntelliTable(root);
+        return new IntelliTable(root, classifier);
     }
 
     private TableGraph buildTableGraph(List<MetaTable> metaTables, List<DataTable> dataTables) {
@@ -83,17 +83,17 @@ public abstract class IntelliSheet extends Sheet {
         return root;
     }
 
-    private List<DataTable> getDataTables(List<Table> tables, List<LayexMatcher> dataLayexes) {
+    private List<DataTable> getDataTables(List<AbstractTable> tables, List<LayexMatcher> dataLayexes) {
         ArrayList<DataTable> result = new ArrayList<DataTable>();
 
         for (Visitable e : tables) {
             e.setVisited(false);
         }
 
-        for (Table table : tables) {
+        for (AbstractTable table : tables) {
             boolean foundMatch = false;
             for (LayexMatcher dataLayex : dataLayexes) {
-                if (!foundMatch && dataLayex.match(new TableStream(table), null)) {
+                if (!foundMatch && dataLayex.match(new TableLexer(table), null)) {
                     result.add(new DataTable(table, dataLayex));
                     table.setVisited(true);
                     foundMatch = true;
@@ -104,17 +104,17 @@ public abstract class IntelliSheet extends Sheet {
         return result;
     }
 
-    private List<MetaTable> getMetaTables(List<Table> tables, List<LayexMatcher> metaLayexes) {
+    private List<MetaTable> getMetaTables(List<AbstractTable> tables, List<LayexMatcher> metaLayexes) {
         ArrayList<MetaTable> result = new ArrayList<MetaTable>();
 
-        for (Table table : tables) {
+        for (AbstractTable table : tables) {
             if (table.isVisited()) {
                 continue;
             }
 
             boolean foundMatch = false;
             for (LayexMatcher metaLayex : metaLayexes) {
-                if (!foundMatch && metaLayex.match(new TableStream(table), null)) {
+                if (!foundMatch && metaLayex.match(new TableLexer(table), null)) {
                     result.add(new MetaTable(table, metaLayex));
                     foundMatch = true;
                 }
@@ -129,8 +129,8 @@ public abstract class IntelliSheet extends Sheet {
         return result;
     }
 
-    private List<Table> findAllTables(ITagClassifier classifier, ISearchBitmap image) {
-        ArrayList<Table> result = new ArrayList<Table>();
+    private List<AbstractTable> findAllTables(ITagClassifier classifier, ISearchBitmap image) {
+        ArrayList<AbstractTable> result = new ArrayList<AbstractTable>();
 
         List<SearchPoint[]> rectangles = findAllRectangles(image);
         for (SearchPoint[] rectangle : rectangles) {
@@ -139,17 +139,17 @@ public abstract class IntelliSheet extends Sheet {
             int lastColumnNum = Math.max(rectangle[1].getX(), this.getLastColumnNum(firstColumnNum, firstRowNum));
             int lastRowNum = rectangle[1].getY();
 
-            Table table = new Table(this, firstColumnNum, firstRowNum, lastColumnNum, lastRowNum, classifier);
+            AbstractTable table = new AbstractTable(this, firstColumnNum, firstRowNum, lastColumnNum, lastRowNum, classifier);
 
             boolean isSplitted = false;
             for (int i = 0; i < table.getNumberOfRows(); i++) {
-                Row row = table.getRowAt(i);
+                AbstractRow row = table.getRowAt(i);
                 if (row.sparsity() >= DocumentFactory.DEFAULT_RATIO_SCARSITY && row.density() >= DocumentFactory.DEFAULT_RATIO_DENSITY) {
                     int currRowNum = table.getFirstRow() + i;
                     if (firstRowNum <= (currRowNum - 1)) {
-                        result.add(new Table(table, firstRowNum, currRowNum - 1));
+                        result.add(new AbstractTable(table, firstRowNum, currRowNum - 1));
                     }
-                    result.add(new Table(table, currRowNum, currRowNum));
+                    result.add(new AbstractTable(table, currRowNum, currRowNum));
                     firstRowNum = currRowNum + 1;
                     isSplitted |= true;
                 }
@@ -158,7 +158,7 @@ public abstract class IntelliSheet extends Sheet {
             if (!isSplitted) {
                 result.add(table);
             } else if (firstRowNum <= lastRowNum) {
-                result.add(new Table(table, firstRowNum, lastRowNum));
+                result.add(new AbstractTable(table, firstRowNum, lastRowNum));
             }
         }
 
@@ -203,7 +203,7 @@ public abstract class IntelliSheet extends Sheet {
         return false;
     }
 
-    private TableGraph findClosestMetaGraph(TableGraph root, Table table, int level, int maxLevel) {
+    private TableGraph findClosestMetaGraph(TableGraph root, AbstractTable table, int level, int maxLevel) {
         TableGraph result = root;
 
         if (level > maxLevel) {
@@ -236,7 +236,7 @@ public abstract class IntelliSheet extends Sheet {
         return result;
     }
 
-    private double distanceBetweenTables(Table table1, Table table2) {
+    private double distanceBetweenTables(AbstractTable table1, AbstractTable table2) {
         int vx = table2.getFirstColumn() - table1.getFirstColumn();
         int vy = table2.getFirstRow() - table1.getLastRow() - 1;
         if (vx >= 0 && vy >= 0) {
@@ -245,7 +245,4 @@ public abstract class IntelliSheet extends Sheet {
             return Double.MAX_VALUE;
         }
     }
-
-    public ISearchBitmap debugBitmap;
-    public List<Table> debugTables;
 }

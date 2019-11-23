@@ -1,30 +1,30 @@
 package com.github.romualdrousseau.any2json.v2.intelli;
 
-import com.github.romualdrousseau.any2json.v2.ICell;
-import com.github.romualdrousseau.any2json.v2.IRow;
-import com.github.romualdrousseau.any2json.v2.base.Cell;
-import com.github.romualdrousseau.any2json.v2.base.Table;
-import com.github.romualdrousseau.any2json.v2.base.TableStream;
+import com.github.romualdrousseau.any2json.v2.Cell;
+import com.github.romualdrousseau.any2json.v2.Row;
+import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
+import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
+import com.github.romualdrousseau.any2json.v2.base.TableLexer;
 import com.github.romualdrousseau.any2json.v2.intelli.header.MetaHeader;
 import com.github.romualdrousseau.any2json.v2.layex.LayexMatcher;
 
-public class MetaTable extends Table {
+public class MetaTable extends AbstractTable {
 
-    public MetaTable(Table table) {
+    public MetaTable(AbstractTable table) {
         super(table);
         this.buildSimpleMeta(table);
     }
 
-    public MetaTable(Table table, LayexMatcher layex) {
+    public MetaTable(AbstractTable table, LayexMatcher layex) {
         super(table);
-        layex.match(new TableStream(table), new MetaTableContext(this));
+        layex.match(new TableLexer(table), new MetaTableContext(this));
     }
 
-    private void buildSimpleMeta(Table table) {
-        for (IRow row : table.rows()) {
-            for (ICell cell : row.cells()) {
+    private void buildSimpleMeta(AbstractTable table) {
+        for (Row row : table.rows()) {
+            for (Cell cell : row.cells()) {
                 if(cell.hasValue()) {
-                    this.addHeader(new MetaHeader((Cell) cell));
+                    this.addHeader(new MetaHeader((AbstractCell) cell));
                 }
             }
         }

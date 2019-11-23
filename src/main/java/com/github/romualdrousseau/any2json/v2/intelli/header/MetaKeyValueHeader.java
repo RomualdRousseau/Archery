@@ -1,11 +1,11 @@
 package com.github.romualdrousseau.any2json.v2.intelli.header;
 
-import com.github.romualdrousseau.any2json.v2.base.Cell;
-import com.github.romualdrousseau.any2json.v2.base.Header;
+import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
+import com.github.romualdrousseau.any2json.v2.base.AbstractHeader;
 
 public class MetaKeyValueHeader extends MetaHeader {
 
-    public MetaKeyValueHeader(Cell key, Cell value) {
+    public MetaKeyValueHeader(AbstractCell key, AbstractCell value) {
         super(key);
         this.value = value;
     }
@@ -25,10 +25,10 @@ public class MetaKeyValueHeader extends MetaHeader {
     }
 
     @Override
-    public Header clone() {
+    public AbstractHeader clone() {
         return new MetaKeyValueHeader(this.getCell(), this.value);
     }
 
-    private Cell value;
+    private AbstractCell value;
     private String name;
 }

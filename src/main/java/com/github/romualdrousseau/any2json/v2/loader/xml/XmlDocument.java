@@ -13,13 +13,13 @@ import nl.fountain.xelem.excel.Workbook;
 import nl.fountain.xelem.excel.Worksheet;
 import nl.fountain.xelem.lex.ExcelReader;
 
-import com.github.romualdrousseau.any2json.v2.IDocument;
-import com.github.romualdrousseau.any2json.v2.ISheet;
+import com.github.romualdrousseau.any2json.v2.Document;
+import com.github.romualdrousseau.any2json.v2.Sheet;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public class XmlDocument implements IDocument {
+public class XmlDocument implements Document {
     public boolean open(File excelFile, String encoding) {
         if (openWithEncoding(excelFile, null)) {
             return true;
@@ -39,7 +39,7 @@ public class XmlDocument implements IDocument {
         return this.sheets.size();
     }
 
-    public ISheet getSheetAt(int i) {
+    public Sheet getSheetAt(int i) {
         return this.sheets.get(i);
     }
 

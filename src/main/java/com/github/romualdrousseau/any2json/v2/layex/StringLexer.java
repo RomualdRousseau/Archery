@@ -2,9 +2,9 @@ package com.github.romualdrousseau.any2json.v2.layex;
 
 import java.util.ArrayList;
 
-public class StringStream implements IStream<StringSymbol, Integer> {
+public class StringLexer implements Lexer<StringSymbol, Integer> {
 
-    public StringStream(String s) {
+    public StringLexer(String s) {
       this.stack = new ArrayList<Integer>();
       this.s = s;
       this.i = 0;

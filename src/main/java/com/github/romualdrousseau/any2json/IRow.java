@@ -1,6 +1,7 @@
 package com.github.romualdrousseau.any2json;
 
 public interface IRow {
+
     ITable getTable();
 
     int getGroupId();

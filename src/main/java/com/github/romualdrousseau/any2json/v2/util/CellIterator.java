@@ -2,12 +2,12 @@ package com.github.romualdrousseau.any2json.v2.util;
 
 import java.util.Iterator;
 
-import com.github.romualdrousseau.any2json.v2.ICell;
-import com.github.romualdrousseau.any2json.v2.base.Row;
+import com.github.romualdrousseau.any2json.v2.Cell;
+import com.github.romualdrousseau.any2json.v2.base.AbstractRow;
 
-public class CellIterator implements Iterator<ICell>
+public class CellIterator implements Iterator<Cell>
 {
-	public CellIterator(Row row) {
+	public CellIterator(AbstractRow row) {
 		this.row = row;
 		this.currColIdx = 0;
 	}
@@ -16,13 +16,13 @@ public class CellIterator implements Iterator<ICell>
 		return this.currColIdx < this.row.getTable().getNumberOfColumns();
 	}
 
-	public ICell next() {
-        ICell cell = this.row.getCellAt(this.currColIdx);
+	public Cell next() {
+        Cell cell = this.row.getCellAt(this.currColIdx);
         this.currColIdx += cell.getMergedCount();
         return cell;
 	}
 
-	private Row row;
+	private AbstractRow row;
 	private int currColIdx;
 }
 

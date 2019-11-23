@@ -1,10 +1,10 @@
 package com.github.romualdrousseau.any2json.v2.base;
 
-import com.github.romualdrousseau.any2json.v2.IHeader;
+import com.github.romualdrousseau.any2json.v2.Header;
 
-public abstract class Header implements IHeader {
+public abstract class AbstractHeader implements Header {
 
-    public Header(Cell cell, int colIndex) {
+    public AbstractHeader(AbstractCell cell, int colIndex) {
         this.cell = cell;
         this.colIndex = colIndex;
     }
@@ -17,21 +17,21 @@ public abstract class Header implements IHeader {
         this.colIndex = colIndex;
     }
 
-    public Cell getCell() {
+    public AbstractCell getCell() {
         return this.cell;
     }
 
-    public boolean equals(Header o) {
+    public boolean equals(AbstractHeader o) {
         return this.getName().equals(o.getName());
     }
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof Header && this.equals((Header) o);
+        return o instanceof AbstractHeader && this.equals((AbstractHeader) o);
     }
 
-    public abstract Header clone();
+    public abstract AbstractHeader clone();
 
-    private Cell cell;
+    private AbstractCell cell;
     private int colIndex;
 }

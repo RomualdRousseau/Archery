@@ -16,7 +16,7 @@ public class DocumentFactory {
     public final static int SEPARATOR_ROW_THRESHOLD = 10;
     public static final String PIVOT_SUFFIX = "#PIVOT?";
 
-	public static IDocument createInstance(String filePath, String encoding) {
+	public static Document createInstance(String filePath, String encoding) {
 		if(filePath == null) {
             throw new IllegalArgumentException();
         }
@@ -24,12 +24,12 @@ public class DocumentFactory {
 		return DocumentFactory.createInstance(new File(filePath), encoding);
 	}
 
-	public static IDocument createInstance(File file, String encoding) {
+	public static Document createInstance(File file, String encoding) {
 		if(file == null) {
             throw new IllegalArgumentException();
         }
 
-		IDocument document = new ExcelDocument();
+		Document document = new ExcelDocument();
 		if(document.open(file, encoding)) {
 			return document;
         }
