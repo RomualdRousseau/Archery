@@ -14,9 +14,7 @@ public class IntelliTable extends AbstractTable {
 
         this.buildHeaders(root);
 
-        for (Header header : this.headers()) {
-            System.out.println(header.getName() + ": " + header.getValue());
-        }
+        this.buildRows(root);
     }
 
     private void buildHeaders(TableGraph graph) {
@@ -42,6 +40,19 @@ public class IntelliTable extends AbstractTable {
 
         for (TableGraph child : graph.children()) {
             buildHeaders(child);
+        }
+    }
+
+    private void buildRows(TableGraph graph) {
+        for (TableGraph child : graph.children()) {
+            if(child.getTable() instanceof DataTable) {
+
+
+            }
+        }
+
+        for (TableGraph child : graph.children()) {
+            buildRows(child);
         }
     }
 }

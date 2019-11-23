@@ -25,6 +25,6 @@ public class DataTable extends AbstractTable {
             this.addHeader(new TaggedHeader((AbstractCell) cell, colIndex) );
             colIndex += cell.getMergedCount();
         }
-        this.setFirstOffsetRow(1);
+        this.setFirstRowOffset(1);
     }
 }

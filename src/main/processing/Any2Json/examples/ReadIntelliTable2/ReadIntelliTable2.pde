@@ -1,29 +1,4 @@
-import com.github.romualdrousseau.shuju.columns.*;
-import com.github.romualdrousseau.shuju.cv.*;
-import com.github.romualdrousseau.shuju.*;
-import com.github.romualdrousseau.shuju.json.jackson.*;
-import com.github.romualdrousseau.shuju.json.processing.*;
-import com.github.romualdrousseau.shuju.ml.nn.activation.*;
-import com.github.romualdrousseau.shuju.ml.nn.*;
-import com.github.romualdrousseau.shuju.ml.nn.loss.*;
-import com.github.romualdrousseau.shuju.ml.nn.optimizer.*;
-import com.github.romualdrousseau.shuju.ml.nn.scheduler.*;
-import com.github.romualdrousseau.shuju.ml.slr.*;
-import com.github.romualdrousseau.shuju.nlp.*;
-import com.github.romualdrousseau.shuju.genetic.*;
-import com.github.romualdrousseau.shuju.math.*;
-import com.github.romualdrousseau.shuju.ml.nn.initializer.*;
-import com.github.romualdrousseau.shuju.ml.nn.normalizer.*;
-import com.github.romualdrousseau.shuju.ml.qlearner.*;
-import com.github.romualdrousseau.shuju.nlp.impl.*;
-import com.github.romualdrousseau.shuju.transforms.*;
-import com.github.romualdrousseau.shuju.cv.templatematching.*;
 import com.github.romualdrousseau.shuju.json.*;
-import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.*;
-import com.github.romualdrousseau.shuju.ml.nn.optimizer.builder.*;
-import com.github.romualdrousseau.shuju.ml.kmean.*;
-import com.github.romualdrousseau.shuju.util.*;
-import com.github.romualdrousseau.shuju.ml.knn.*;
 
 import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.classifiers.*;
@@ -31,37 +6,47 @@ import com.github.romualdrousseau.any2json.classifiers.*;
 import com.github.romualdrousseau.any2json.v2.*;
 import com.github.romualdrousseau.any2json.v2.base.*;
 import com.github.romualdrousseau.any2json.v2.intelli.*;
+import com.github.romualdrousseau.any2json.v2.intelli.event.*;
+import com.github.romualdrousseau.any2json.v2.intelli.header.*;
 import com.github.romualdrousseau.any2json.v2.layex.*;
 
 import java.util.List;
+import java.awt.event.KeyEvent;
 
 ITagClassifier classifier;
+int scrollSpeed;
+int gridSize;
 
+volatile boolean documentLoaded = true;
 PGraphics documentImage;
-volatile boolean documentLoaded = false;
-int dx, dy = 10, y = 0, sy = 5;
+int documentTopY;
+
+void configure() {
+  classifier = new NGramNNClassifier(JSON.loadJSONObject(dataPath("brainColumnClassifier.json")));
+
+  scrollSpeed = 100; // 100px per scroll  
+
+  gridSize = 10; // 10px
+}
 
 void setup() {
-  size(800, 800);
+  size(1000, 800);
   noSmooth();
   frameRate(20);
-  classifier = new NGramNNClassifier(JSON.loadJSONObject(dataPath("brainColumnClassifier.json")));
-  selectInput("Select a file to process:", "fileSelected");
+
+  configure();
+
+  buildEmptyImage();
 }
 
 void draw() {
-  background(51);
-
   if (!documentLoaded) {
     return;
   }
 
-  image(documentImage, 0, -y);
-
-  fill(255, 0, 0);
-  int xs = floor(mouseX / dx);
-  int ys = floor((mouseY + y) / dy);
-  text("(" + xs + ",  " + ys + ")", width - 100, height - 10);
+  background(51);
+  image(documentImage, 0, -documentTopY);
+  displayHUD();
 }
 
 void fileSelected(File selection) {
@@ -69,57 +54,166 @@ void fileSelected(File selection) {
     noLoop();
     documentLoaded = false;
     loadDocument(selection.getAbsolutePath());
+    documentTopY = 0;
     documentLoaded = true;
     loop();
   }
 }
 
 void keyPressed() {
-  if (key == ' ') {
+  if (keyCode == KeyEvent.VK_F3) {
     selectInput("Select a file to process:", "fileSelected");
+  }
+  if (keyCode == KeyEvent.VK_HOME) {
+    documentTopY = 0;
+  }
+  if (keyCode == KeyEvent.VK_END) {
+    documentTopY = max(0, documentImage.height - height + 17);
+  }
+  if (keyCode == KeyEvent.VK_PAGE_UP ) {
+    documentTopY = (int) constrain(documentTopY - height, -gridSize, max(0, documentImage.height - height + 17) + gridSize);
+  }
+  if (keyCode == KeyEvent.VK_PAGE_DOWN ) {
+    documentTopY = (int) constrain(documentTopY + height, -gridSize, max(0, documentImage.height - height + 17) + gridSize);
   }
 }
 
 void mouseWheel(MouseEvent event) {
-  y = (int) constrain(y + event.getCount() * dy * sy, -dy, max(0, documentImage.height - height) + dy);
+  documentTopY = (int) constrain(documentTopY + event.getCount() * scrollSpeed, -gridSize, max(0, documentImage.height - height + 17) + gridSize);
 }
 
 void loadDocument(String filePath) {
-  IDocument document = DocumentFactory.createInstance(filePath, "UTF-8");
+  println("Loading document ... ");
+  Document document = DocumentFactory.createInstance(filePath, "UTF-8");
 
-  IntelliSheet sheet = (IntelliSheet) document.getSheetAt(0);
+  Sheet sheet = document.getSheetAt(0);
+  sheet.addSheetListener(new SheetListener() {
+    public void stepCompleted(SheetEvent e) {
+      buildImage(e);
+    }
+  }
+  );
 
-  println("Loading tables ... ");
-  sheet.getTable(classifier);
-  println("ok.");
-
-  buildImage(sheet);
+  com.github.romualdrousseau.any2json.v2.Table table = sheet.getTable(classifier);
+  println("Tables loaded.");
+  println("done.");
 
   document.close();
+
+  println();
+  for (Header header : table.headers()) {
+    print(header.getName(), " ");
+  }
+  println();
 }
 
-void buildImage(IntelliSheet sheet) {
-  dx = width / sheet.debugBitmap.getWidth();
-  y = 0;
+void buildEmptyImage() {
+  int dx = width / classifier.getSampleCount();
+  int dy = gridSize;
   
-  documentImage = createGraphics(classifier.getSampleCount() * dx, Math.min(5000, sheet.getLastRowNum()) * dy);
-  
+  documentImage = createGraphics(width, height);
+
   documentImage.beginDraw();
   documentImage.stroke(128);
   documentImage.strokeWeight(1);
-  for (int y = 0; y < sheet.debugBitmap.getHeight(); y++) {
-    for (int x = 0; x < sheet.debugBitmap.getWidth(); x++) {
-      documentImage.fill(color(255 * sheet.debugBitmap.get(x, y)));
+  for (int y = 0; y < height / dy; y++) {
+    for (int x = 0; x < width / dx; x++) {
+      documentImage.fill(0);
       documentImage.rect(x * dx, y * dy, dx, dy);
     }
   }
+  documentImage.endDraw();
+}
 
-  documentImage.stroke(0, 0, 255);
-  documentImage.strokeWeight(2);
-  for (com.github.romualdrousseau.any2json.v2.base.Table table : sheet.debugTables) {
-    documentImage.noFill();
-    documentImage.rect(table.getFirstColumn() * dx, table.getFirstRow() * dy, table.getNumberOfColumns() * dx, table.getNumberOfRows() * dy);
+void buildImage(SheetEvent e) {
+  IntelliSheet sheet = (IntelliSheet) e.getSource();
+  int dx = width / classifier.getSampleCount();
+
+  if (e instanceof BitmapGeneratedEvent) {
+    SheetBitmap bitmap = ((BitmapGeneratedEvent) e).getBitmap();
+
+    // Max rows set to 5000 to prevent heap overflow
+    documentImage = createGraphics(width, Math.min(sheet.getLastRowNum(), 5000) * gridSize);
+
+    documentImage.beginDraw();
+    documentImage.stroke(128);
+    documentImage.strokeWeight(1);
+    for (int y = 0; y < bitmap.getHeight(); y++) {
+      for (int x = 0; x < bitmap.getWidth(); x++) {
+        documentImage.fill(color(255 * bitmap.get(x, y)));
+        documentImage.rect(x * dx, y * gridSize, dx, gridSize);
+      }
+    }
+    documentImage.endDraw();
+    
+    println("Image generated.");
   }
 
-  documentImage.endDraw();
+  if (e instanceof AllTablesExtractedEvent) {
+    documentImage.beginDraw();
+    documentImage.stroke(0, 0, 255);
+    documentImage.strokeWeight(2);
+    documentImage.noFill();
+    for (AbstractTable table : ((AllTablesExtractedEvent) e).getTables()) {
+      documentImage.rect(table.getFirstColumn() * dx, table.getFirstRow() * gridSize, table.getNumberOfColumns() * dx, table.getNumberOfRows() * gridSize);
+    }
+    documentImage.endDraw();
+
+    println("Tables extracted from image.");
+  }
+  
+  if(e instanceof DataTableListBuiltEvent) {
+    documentImage.beginDraw();
+    documentImage.noStroke();
+    
+    for (DataTable table : ((DataTableListBuiltEvent) e).getDataTables()) {
+      documentImage.fill(color(255, 128, 0), 128);
+      documentImage.rect(table.getFirstColumn() * dx, table.getFirstRow() * gridSize, table.getNumberOfColumns() * dx, table.getFirstRowOffset() * gridSize);
+      documentImage.fill(color(0, 255, 0), 128);
+      documentImage.rect(table.getFirstColumn() * dx, (table.getFirstRow() + table.getHeaderRowOffset()) * gridSize, table.getNumberOfColumns() * dx, gridSize);
+      documentImage.fill(color(0, 255, 0), 64);
+      documentImage.rect(table.getFirstColumn() * dx, (table.getFirstRow() + table.getFirstRowOffset()) * gridSize, table.getNumberOfColumns() * dx, table.getNumberOfRows() * gridSize);
+      documentImage.fill(color(0, 0, 0), 64);
+      documentImage.rect(table.getFirstColumn() * dx, (table.getLastRow() + table.getLastRowOffset() + 1) * gridSize, table.getNumberOfColumns() * dx, -table.getLastRowOffset() * gridSize);
+    }
+    documentImage.endDraw();
+
+    println("DataTable list built.");
+  
+  }
+  
+  if(e instanceof MetaTableListBuiltEvent) {
+    documentImage.beginDraw();
+    documentImage.noStroke();
+    documentImage.fill(color(255, 128, 0), 128);
+    for (MetaTable table : ((MetaTableListBuiltEvent) e).getMetaTables()) {
+      documentImage.rect(table.getFirstColumn() * dx, table.getFirstRow() * gridSize, table.getNumberOfColumns() * dx, table.getNumberOfRows() * gridSize);
+    }
+    documentImage.endDraw();
+    
+    println("MetaTable list built.");
+  
+  }
+
+  if (e instanceof TableGraphBuiltEvent) {
+    println("TableGraph generated.");
+    println("============================ DUMP TABLEGRAPH ============================");
+    ((TableGraphBuiltEvent) e).dumpTableGraph();
+    println("================================== END ==================================");
+  }
+}
+
+void displayHUD() {
+  fill(0);
+  stroke(255);
+  rect(0, height - 17, width - 1, 16);
+
+  fill(255);
+  text("F3: Open a document", 4, height - 4);
+
+  fill(255, 0, 0);
+  int x = floor(mouseX * classifier.getSampleCount() / width);
+  int y = floor((mouseY + documentTopY) / gridSize);
+  String s = String.format("(%d, %d)", x, y);
+  text(s, width - textWidth(s) - 4, height - 4);
 }

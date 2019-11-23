@@ -18,6 +18,25 @@ public class AbstractRow implements Row {
         this.cachedCells = new AbstractCell[table.getNumberOfColumns()];
     }
 
+    @Override
+    public boolean isEmpty() {
+        return (this.sparsity() == 1.0f);
+    }
+
+    @Override
+    public int getNumberOfCells() {
+        if (!this.cellCountUpdated) {
+            this.updateCellCount();
+            this.cellCountUpdated = true;
+        }
+        return this.cellCount;
+    }
+
+    @Override
+    public Iterable<Cell> cells() {
+        return new CellIterable(this);
+    }
+
     public AbstractTable getTable() {
         return this.table;
     }
@@ -65,25 +84,6 @@ public class AbstractRow implements Row {
         }
 
         return result;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return (this.sparsity() == 1.0f);
-    }
-
-    @Override
-    public int getNumberOfCells() {
-        if (!this.cellCountUpdated) {
-            this.updateCellCount();
-            this.cellCountUpdated = true;
-        }
-        return this.cellCount;
-    }
-
-    @Override
-    public Iterable<Cell> cells() {
-        return new CellIterable(this);
     }
 
     private void updateCellCount() {

@@ -7,6 +7,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import com.github.romualdrousseau.any2json.v2.DocumentFactory;
 import com.github.romualdrousseau.any2json.v2.intelli.IntelliSheet;
@@ -20,7 +21,7 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
         this.sheet = sheet;
         this.evaluator = evaluator;
         this.formatter = new DataFormatter();
-        this.rowTranslator = new RowTranslator(this, getLastRowNum() + 1);
+        this.rowTranslator = new RowTranslator(this);
 
         this.evaluator.setIgnoreMissingWorkbooks(true);
 
@@ -29,9 +30,6 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
             CellRangeAddress region = this.sheet.getMergedRegion(j);
             this.cachedRegion.add(region);
         }
-
-        this.lastCachedRowIndex = -1;
-        this.lastCachedRow = null;
     }
 
     @Override
@@ -40,21 +38,13 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
     }
 
     @Override
-    public int getLastColumnNum(int colIndex, int rowIndex) {
+    public int getLastColumnNum(int rowIndex) {
         Row row = this.getRowAt(rowIndex);
         if (row == null) {
             return 0;
         }
 
-        int colNum = colIndex;
-        Cell cell = row.getCell(colNum);
-        while (!isCellBlank(cell)) {
-            // while (!isCellBlank(cell) &&
-            // !StringUtility.isEmpty(this.formatter.formatCellValue(cell))) {
-            cell = row.getCell(++colNum);
-        }
-
-        return colNum - 1;
+        return row.getLastCellNum();
     }
 
     @Override
@@ -118,21 +108,34 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
     }
 
     @Override
-    public boolean isTranslatableRow(int colIndex, int rowIndex) {
-        Row row = this.getCachedRowAt(rowIndex);
-        if (row == null) {
+    public boolean isIgnorableRow(int rowIndex) {
+        if (rowIndex > (this.sheet.getLastRowNum() + 1)) {
             return false;
         }
+
+        Row row = this.sheet.getRow(rowIndex);
+        if (row == null || rowIndex > this.sheet.getLastRowNum()) {
+            return false;
+        }
+
         double height = row.getHeight() * 0.07; // Rougly convert in pixels
-        return (height < DocumentFactory.SEPARATOR_ROW_THRESHOLD);
+
+        float sparcity = Float.valueOf(row.getPhysicalNumberOfCells())
+                / Float.valueOf(row.getLastCellNum() - row.getFirstCellNum());
+
+        boolean candidate = false;
+        candidate |= (height < DocumentFactory.SEPARATOR_ROW_THRESHOLD);
+        candidate |= this.checkIfRowMergedVertically(row);
+        candidate &= (sparcity >= DocumentFactory.DEFAULT_RATIO_SCARSITY);
+        return candidate;
     }
 
     private Row getRowAt(int rowIndex) {
-        final int translatedRow = this.rowTranslator.rebase(0, rowIndex);
+        final int translatedRow = this.rowTranslator.rebase(rowIndex);
         if (translatedRow == -1) {
             return null;
         }
-        return this.getCachedRowAt(translatedRow);
+        return this.sheet.getRow(translatedRow);
     }
 
     private Cell getCellAt(int colIndex, int rowIndex) {
@@ -140,7 +143,7 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
         if (row == null) {
             return null;
         }
-        return this.lastCachedRow.getCell(colIndex);
+        return row.getCell(colIndex);
     }
 
     private boolean isCellBlank(Cell cell) {
@@ -148,12 +151,28 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
                 && cell.getCellStyle().getFillBackgroundColorColor() == null));
     }
 
-    private Row getCachedRowAt(int rowIndex) {
-        if (rowIndex != this.lastCachedRowIndex) {
-            this.lastCachedRow = this.sheet.getRow(rowIndex);
-            this.lastCachedRowIndex = rowIndex;
+    private boolean checkIfRowMergedVertically(Row row) {
+        boolean result= false;
+
+        if (this.cachedRegion.size()== 0) {
+            return false;
         }
-        return this.lastCachedRow;
+
+        Iterator<Cell> it = row.cellIterator();
+        while (!result && it.hasNext()) {
+            Cell cell = it.next();
+            if(!isCellBlank(cell)) {
+                continue;
+            }
+
+            for (CellRangeAddress region : this.cachedRegion) {
+                if (region.isInRange(cell.getRowIndex(), cell.getColumnIndex())) {
+                    result |= (region.getLastRow() > region.getFirstRow());
+                }
+            }
+        }
+
+        return result;
     }
 
     private org.apache.poi.ss.usermodel.Sheet sheet;
@@ -161,6 +180,4 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
     private DataFormatter formatter;
     private RowTranslator rowTranslator;
     private ArrayList<CellRangeAddress> cachedRegion;
-    private int lastCachedRowIndex;
-    private Row lastCachedRow;
 }

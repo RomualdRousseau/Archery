@@ -1,40 +1,49 @@
 package com.github.romualdrousseau.any2json.v2.util;
 
+import java.util.TreeMap;
+import java.util.Map.Entry;
+
 public class RowTranslator {
 
-    public RowTranslator(RowTranslatable translatable, int capacity) {
+    public RowTranslator(RowTranslatable translatable) {
         this.translatable = translatable;
-
-        this.rowTranslators = new byte[capacity];
-
-        for(int i = 0; i < this.rowTranslators.length; i++) {
-            this.rowTranslators[i] = 0;
-        }
+        this.rowTranslators = new TreeMap<Integer, Integer>();
+        this.lastAccessedRowIndex = -1;
+        this.ignoredRowCount = 0;
     }
 
-    public int rebase(int colIndex, int rowIndex) {
-        if(this.rowTranslators == null) {
-            return rowIndex;
+    public int getIgnoredRowCount() {
+        return this.ignoredRowCount;
+    }
+
+    public int rebase(int rowIndex) {
+        if (rowIndex == this.lastAccessedRowIndex) {
+            return lastTranslatedRow;
         }
 
-        if(rowIndex >= this.rowTranslators.length) {
-            return -1;
-        }
-
-        int translatedRow = this.rowTranslators[rowIndex] + rowIndex;
-        if(translatedRow >= this.rowTranslators.length) {
-            return -1;
-        }
-
-        if(this.translatable.isTranslatableRow(colIndex, translatedRow)) {
-            for(int i = rowIndex; i < this.rowTranslators.length; i++) {
-                this.rowTranslators[i]++;
+        int physicalRowIndex = rowIndex;
+        for(Entry<Integer, Integer> x : this.rowTranslators.entrySet()) {
+            if(x.getKey() > rowIndex) {
+                break;
             }
+            physicalRowIndex += x.getValue();
         }
 
-        return this.rowTranslators[rowIndex] + rowIndex;
+        while (translatable.isIgnorableRow(physicalRowIndex)) {
+            this.rowTranslators.put(rowIndex, this.rowTranslators.getOrDefault(rowIndex, 0) + 1);
+            physicalRowIndex++;
+            this.ignoredRowCount++;
+        }
+
+        this.lastAccessedRowIndex = rowIndex;
+        this.lastTranslatedRow = physicalRowIndex;
+
+        return physicalRowIndex;
     }
 
     private RowTranslatable translatable;
-    private byte[] rowTranslators;
+    private TreeMap<Integer, Integer> rowTranslators;
+    private int lastAccessedRowIndex;
+    private int lastTranslatedRow;
+    private int ignoredRowCount;
 }

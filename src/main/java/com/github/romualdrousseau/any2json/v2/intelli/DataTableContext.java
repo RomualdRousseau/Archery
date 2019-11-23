@@ -42,9 +42,10 @@ public class DataTableContext extends Context<AbstractCell> {
                     this.dataTable.addHeader(new MetaHeader(cell));
                 }
             } else if (symbol.equals("$")) {
-                this.dataTable.setFirstOffsetRow(this.getRow() - this.dataTable.getFirstRow() + 1);
+                this.dataTable.setFirstRowOffset(this.getRow() + 1);
                 this.canStartPivot = false;
             } else {
+                this.dataTable.setHeaderRowOffset(this.getRow());
                 this.dataTable.addHeader(new TaggedHeader(cell, this.getColumn()));
                 this.canStartPivot = true;
             }
@@ -53,7 +54,8 @@ public class DataTableContext extends Context<AbstractCell> {
         case TABLE_FOOTER:
             if (symbol.equals("$")) {
                 if (!this.footerProcessed) {
-                    this.dataTable.setLastOffsetRow(-(this.dataTable.getLastRow() - this.getRow() + 1));
+                    int n = this.dataTable.getLastRow() - this.dataTable.getFirstRow();
+                    this.dataTable.setLastRowOffset(this.getRow() - n - 1);
                     this.footerProcessed = true;
                 }
             }

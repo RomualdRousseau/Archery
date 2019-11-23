@@ -30,7 +30,7 @@ public abstract class IntelliSheet extends AbstractSheet {
 
     @Override
     public Table getTable(ITagClassifier classifier) {
-        ISearchBitmap image = new SheetBitmap(this, classifier.getSampleCount(), this.getLastRowNum());
+        SheetBitmap image = new SheetBitmap(this, classifier.getSampleCount(), this.getLastRowNum());
         this.notifyStepCompleted(new BitmapGeneratedEvent(this, image));
 
         List<AbstractTable> tables = this.findAllTables(classifier, image);
@@ -129,14 +129,14 @@ public abstract class IntelliSheet extends AbstractSheet {
         return result;
     }
 
-    private List<AbstractTable> findAllTables(ITagClassifier classifier, ISearchBitmap image) {
+    private List<AbstractTable> findAllTables(ITagClassifier classifier, SheetBitmap image) {
         ArrayList<AbstractTable> result = new ArrayList<AbstractTable>();
 
         List<SearchPoint[]> rectangles = findAllRectangles(image);
         for (SearchPoint[] rectangle : rectangles) {
             int firstColumnNum = rectangle[0].getX();
             int firstRowNum = rectangle[0].getY();
-            int lastColumnNum = Math.max(rectangle[1].getX(), this.getLastColumnNum(firstColumnNum, firstRowNum));
+            int lastColumnNum = rectangle[1].getX();
             int lastRowNum = rectangle[1].getY();
 
             AbstractTable table = new AbstractTable(this, firstColumnNum, firstRowNum, lastColumnNum, lastRowNum, classifier);
@@ -165,7 +165,7 @@ public abstract class IntelliSheet extends AbstractSheet {
         return result;
     }
 
-    private List<SearchPoint[]> findAllRectangles(ISearchBitmap original) {
+    private List<SearchPoint[]> findAllRectangles(SheetBitmap original) {
         ISearchBitmap filtered = original.clone();
         final Filter filter = new Filter(new Template(new float[][] { { 0, 0, 0 }, { 1, 1, 0 }, { 0, 0, 0 } }));
         filter.apply(original, filtered, 0.5);

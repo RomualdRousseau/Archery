@@ -1,11 +1,11 @@
 package com.github.romualdrousseau.any2json.v2.layex;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class StringLexer implements Lexer<StringSymbol, Integer> {
 
     public StringLexer(String s) {
-      this.stack = new ArrayList<Integer>();
+      this.stack = new LinkedList<Integer>();
       this.s = s;
       this.i = 0;
     }
@@ -27,18 +27,18 @@ public class StringLexer implements Lexer<StringSymbol, Integer> {
     }
 
     public void push() {
-      this.stack.add(this.i);
+      this.stack.push(this.i);
     }
 
     public Integer pop() {
-      return this.stack.remove(this.stack.size() - 1);
+      return this.stack.pop();
     }
 
     public void seek(Integer i) {
       this.i = i;
     }
 
-    ArrayList<Integer> stack;
+    LinkedList<Integer> stack;
     String s;
     int i;
   }

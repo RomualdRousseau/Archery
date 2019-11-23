@@ -8,7 +8,7 @@ import com.github.romualdrousseau.any2json.v2.base.AbstractRow;
 public class RowStore extends LinkedHashMap<Integer, AbstractRow> {
     private static final long serialVersionUID = 1L;
 
-    public static final int MAX_ROWS = 10000;
+    public static final int MAX_ROWS = 50000;
 
     public RowStore() {
         super(RowStore.MAX_ROWS, 0.75F, true);
