@@ -147,7 +147,7 @@ public class AbstractTable implements Table, Visitable {
 
         AbstractRow result = cachedRows.get(this.parentOffsetRow + this.firstRowOffset + rowIndex);
         if(result == null) {
-            result = new AbstractRow(this, rowIndex, this.classifier);
+            result = new AbstractRow(this, rowIndex);
             cachedRows.put(rowIndex, result);
         }
 
@@ -160,6 +160,15 @@ public class AbstractTable implements Table, Visitable {
 
     public boolean checkIfHeaderExists(AbstractHeader header) {
         return this.headers.contains(header);
+    }
+
+    public AbstractHeader findHeader(AbstractHeader headerToFind) {
+        for(Header header : this.headers) {
+            if(header.equals(headerToFind)) {
+                return (AbstractHeader) header;
+            }
+        }
+        return null;
     }
 
     private boolean visited;

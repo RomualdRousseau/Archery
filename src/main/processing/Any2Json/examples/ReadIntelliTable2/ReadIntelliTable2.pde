@@ -10,6 +10,11 @@ import com.github.romualdrousseau.any2json.v2.intelli.event.*;
 import com.github.romualdrousseau.any2json.v2.intelli.header.*;
 import com.github.romualdrousseau.any2json.v2.layex.*;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.io.IOException;
 import java.util.List;
 import java.awt.event.KeyEvent;
 
@@ -84,7 +89,24 @@ void mouseWheel(MouseEvent event) {
 
 void loadDocument(String filePath) {
   println("Loading document ... ");
-  Document document = DocumentFactory.createInstance(filePath, "UTF-8");
+
+  File tempFile = null;
+  try {
+    tempFile = File.createTempFile("temp", null);
+    tempFile.deleteOnExit();
+    Path oldFile = Paths.get(filePath);  
+    Path newFile = tempFile.toPath();
+    Files.copy(oldFile, newFile, StandardCopyOption.REPLACE_EXISTING);
+  } 
+  catch (IOException e) {
+    e.printStackTrace();
+  }
+
+  if (tempFile == null) {
+    return;
+  }
+
+  Document document = DocumentFactory.createInstance(tempFile.getAbsolutePath(), "UTF-8");
 
   Sheet sheet = document.getSheetAt(0);
   sheet.addSheetListener(new SheetListener() {
@@ -102,15 +124,22 @@ void loadDocument(String filePath) {
 
   println();
   for (Header header : table.headers()) {
-    print(header.getName(), " ");
+    print(header.getName(), " | ");
   }
   println();
+  for (Row row : table.rows()) {
+    for (Cell cell : row.cells()) {
+      println(cell.getValue(), " | ");
+    }
+    println();
+    break;
+  }
 }
 
 void buildEmptyImage() {
   int dx = width / classifier.getSampleCount();
   int dy = gridSize;
-  
+
   documentImage = createGraphics(width, height);
 
   documentImage.beginDraw();
@@ -145,7 +174,7 @@ void buildImage(SheetEvent e) {
       }
     }
     documentImage.endDraw();
-    
+
     println("Image generated.");
   }
 
@@ -161,11 +190,11 @@ void buildImage(SheetEvent e) {
 
     println("Tables extracted from image.");
   }
-  
-  if(e instanceof DataTableListBuiltEvent) {
+
+  if (e instanceof DataTableListBuiltEvent) {
     documentImage.beginDraw();
     documentImage.noStroke();
-    
+
     for (DataTable table : ((DataTableListBuiltEvent) e).getDataTables()) {
       documentImage.fill(color(255, 128, 0), 128);
       documentImage.rect(table.getFirstColumn() * dx, table.getFirstRow() * gridSize, table.getNumberOfColumns() * dx, table.getFirstRowOffset() * gridSize);
@@ -179,10 +208,9 @@ void buildImage(SheetEvent e) {
     documentImage.endDraw();
 
     println("DataTable list built.");
-  
   }
-  
-  if(e instanceof MetaTableListBuiltEvent) {
+
+  if (e instanceof MetaTableListBuiltEvent) {
     documentImage.beginDraw();
     documentImage.noStroke();
     documentImage.fill(color(255, 128, 0), 128);
@@ -190,9 +218,8 @@ void buildImage(SheetEvent e) {
       documentImage.rect(table.getFirstColumn() * dx, table.getFirstRow() * gridSize, table.getNumberOfColumns() * dx, table.getNumberOfRows() * gridSize);
     }
     documentImage.endDraw();
-    
+
     println("MetaTable list built.");
-  
   }
 
   if (e instanceof TableGraphBuiltEvent) {

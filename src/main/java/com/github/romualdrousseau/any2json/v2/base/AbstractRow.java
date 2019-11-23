@@ -7,10 +7,10 @@ import com.github.romualdrousseau.any2json.ITagClassifier;
 
 public class AbstractRow implements Row {
 
-    public AbstractRow(AbstractTable table, int rowIndex, ITagClassifier classifier) {
+    public AbstractRow(AbstractTable table, int rowIndex) {
         this.table = table;
         this.rowIndex = rowIndex;
-        this.classifier = classifier;
+        this.classifier = table.getClassifier();
         this.cellCount = 0;
         this.emptyCellCount = 0;
         this.islandCellCount = 0;
@@ -41,6 +41,20 @@ public class AbstractRow implements Row {
         return this.table;
     }
 
+    public ITagClassifier getClassifier() {
+        return this.classifier;
+    }
+
+    public AbstractCell getCellAt(int colIndex) {
+        assert(colIndex >= 0 && colIndex < this.table.getNumberOfColumns());
+        AbstractCell result = cachedCells[colIndex];
+        if(result == null) {
+            result = new AbstractCell(this.getCellValueAt(colIndex), colIndex, this.getNumberOfMergedCellsAt(colIndex), this.classifier);
+            cachedCells[colIndex] = result;
+        }
+        return result;
+    }
+
     public float sparsity() {
         if (this.getNumberOfCells() == 0) {
             return 1.0f;
@@ -53,42 +67,23 @@ public class AbstractRow implements Row {
 		return 1.0f / Float.valueOf(this.islandCellCount);
 	}
 
-    public int getNumberOfMergedCellsAt(int colIndex) {
-        if (colIndex < 0 || colIndex >= this.getTable().getNumberOfColumns()) {
-            throw new ArrayIndexOutOfBoundsException(colIndex);
-        }
-        int col = this.getTable().getFirstColumn() + colIndex;
-        int row = this.getTable().getFirstRow() + this.rowIndex;
-        return this.getTable().getSheet().getNumberOfMergedCellsAt(col, row);
+    private int getNumberOfMergedCellsAt(int colIndex) {
+        assert(colIndex >= 0 && colIndex < this.table.getNumberOfColumns());
+        int col = this.table.getFirstColumn() + colIndex;
+        int row = this.table.getFirstRow() + this.rowIndex;
+        return this.table.getSheet().getNumberOfMergedCellsAt(col, row);
     }
 
-    public String getCellValueAt(int colIndex) {
-        if (colIndex < 0 || colIndex >= this.getTable().getNumberOfColumns()) {
-            throw new ArrayIndexOutOfBoundsException(colIndex);
-        }
-
-        int col = this.getTable().getFirstColumn() + colIndex;
-        int row = this.getTable().getFirstRow() + this.rowIndex;
-        return this.getTable().getSheet().getInternalCellValueAt(col, row);
-    }
-
-    public AbstractCell getCellAt(int colIndex) {
-        if (colIndex < 0 || colIndex >= this.getTable().getNumberOfColumns()) {
-            throw new ArrayIndexOutOfBoundsException(colIndex);
-        }
-
-        AbstractCell result = cachedCells[colIndex];
-        if(result == null) {
-            result = new AbstractCell(this.getCellValueAt(colIndex), this.getNumberOfMergedCellsAt(colIndex), this.classifier);
-            cachedCells[colIndex] = result;
-        }
-
-        return result;
+    private String getCellValueAt(int colIndex) {
+        assert(colIndex >= 0 && colIndex < this.table.getNumberOfColumns());
+        int col = this.table.getFirstColumn() + colIndex;
+        int row = this.table.getFirstRow() + this.rowIndex;
+        return this.table.getSheet().getInternalCellValueAt(col, row);
     }
 
     private void updateCellCount() {
         int n = 0;
-        for (int i = 0; i < this.getTable().getNumberOfColumns();) {
+        for (int i = 0; i < this.table.getNumberOfColumns();) {
             AbstractCell cell = this.getCellAt(i);
             if (!cell.hasValue()) {
                 this.emptyCellCount++;

@@ -39,16 +39,16 @@ public class PivotHeader extends MetaHeader {
 
     @Override
     public AbstractHeader clone() {
-        return new PivotHeader(this.getCell(), colIndexes, true);
-    }
-
-    public boolean isKey() {
-        return this.isPivotalKey;
+        return new PivotHeader(this.getCell(), this.colIndexes, true);
     }
 
     public AbstractHeader getValueHeader() {
-        AbstractCell valueCell = new AbstractCell(DocumentFactory.PIVOT_SUFFIX, 1, this.getCell().getClassifier());
-        return new PivotHeader(valueCell, colIndexes, false);
+        AbstractCell valueCell = new AbstractCell(DocumentFactory.PIVOT_SUFFIX, 0, 1, this.getCell().getClassifier());
+        return new PivotHeader(valueCell, this.colIndexes, false);
+    }
+
+    public boolean isPivotalKey() {
+        return this.isPivotalKey;
     }
 
     public List<Integer> getColumnIndexes() {

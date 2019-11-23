@@ -20,7 +20,7 @@ public class TaggedHeader extends AbstractHeader {
 
     @Override
     public String getValue() {
-        return "#VALUE?";
+        return null;
     }
 
     @Override

@@ -34,9 +34,9 @@ public class DataTableContext extends Context<AbstractCell> {
                     }
                     if (foundPivot == null) {
                         this.dataTable
-                                .addHeader(new PivotHeader(cell, this.getColumn()));
+                                .addHeader(new PivotHeader(cell, cell.getColumnIndex()));
                     } else {
-                        foundPivot.addColumnIndex(this.getColumn());
+                        foundPivot.addColumnIndex(cell.getColumnIndex());
                     }
                 } else {
                     this.dataTable.addHeader(new MetaHeader(cell));
@@ -46,7 +46,7 @@ public class DataTableContext extends Context<AbstractCell> {
                 this.canStartPivot = false;
             } else {
                 this.dataTable.setHeaderRowOffset(this.getRow());
-                this.dataTable.addHeader(new TaggedHeader(cell, this.getColumn()));
+                this.dataTable.addHeader(new TaggedHeader(cell, cell.getColumnIndex()));
                 this.canStartPivot = true;
             }
             break;

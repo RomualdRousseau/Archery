@@ -8,18 +8,17 @@ import com.github.romualdrousseau.shuju.math.Vector;
 
 public class AbstractCell implements Cell, Symbol {
 
-    public final static AbstractCell EndOfRow = new AbstractCell(null, 0, null);
+    public final static AbstractCell Empty = new AbstractCell("", 0, 1, null);
 
-    public final static AbstractCell EndOfStream = new AbstractCell(null, 0, null);
+    public final static AbstractCell EndOfRow = new AbstractCell(null, 0, 0, null);
 
-    public AbstractCell(String value, int mergedCount, ITagClassifier classifier) {
+    public final static AbstractCell EndOfStream = new AbstractCell(null, 0, 0, null);
+
+    public AbstractCell(String value, int colIndex, int mergedCount, ITagClassifier classifier) {
         this.value = value;
+        this.colIndex = colIndex;
         this.mergedCount = mergedCount;
         this.classifier = classifier;
-    }
-
-    public ITagClassifier getClassifier() {
-        return this.classifier;
     }
 
     @Override
@@ -69,7 +68,16 @@ public class AbstractCell implements Cell, Symbol {
         return this.symbol;
     }
 
+    public ITagClassifier getClassifier() {
+        return this.classifier;
+    }
+
+    public int getColumnIndex() {
+        return this.colIndex;
+    }
+
     private String value;
+    private int colIndex;
     private int mergedCount;
     private Vector entityVector;
     private ITagClassifier classifier;
