@@ -17,16 +17,8 @@ public class IntelliTable extends AbstractTable {
     public IntelliTable(final TableGraph root, final ITagClassifier classifier) {
         super(classifier);
         this.buildHeaders(root);
-
-        PivotTableHeader pivot = null;
-        for (final Header header : this.headers()) {
-            if (header instanceof PivotTableHeader) {
-                pivot = (PivotTableHeader) header;
-                break;
-            }
-        }
-
-        this.buildTable(root, pivot);
+        this.buildTable(root, findPivotHeader());
+        this.updateHeaderTags();
     }
 
     @Override
@@ -57,11 +49,13 @@ public class IntelliTable extends AbstractTable {
                 }
 
                 AbstractHeader newHeader = abstractHeader.clone();
+                newHeader.setTable(this);
                 newHeader.setColumnIndex(this.getNumberOfHeaders());
                 this.addHeader(newHeader);
 
                 if (header instanceof PivotTableHeader) {
                     newHeader = ((PivotTableHeader) abstractHeader).cloneAsValueHeader();
+                    newHeader.setTable(this);
                     newHeader.setColumnIndex(this.getNumberOfHeaders());
                     this.addHeader(newHeader);
                 }
@@ -71,6 +65,17 @@ public class IntelliTable extends AbstractTable {
         for (final TableGraph child : graph.children()) {
             buildHeaders(child);
         }
+    }
+
+    private PivotTableHeader findPivotHeader() {
+        PivotTableHeader result = null;
+        for (final Header header : this.headers()) {
+            if (header instanceof PivotTableHeader) {
+                result = (PivotTableHeader) header;
+                break;
+            }
+        }
+        return result;
     }
 
     private void buildTable(final TableGraph graph, final PivotTableHeader pivot) {

@@ -4,6 +4,7 @@ import com.github.romualdrousseau.any2json.v2.Header;
 import com.github.romualdrousseau.any2json.v2.Row;
 import com.github.romualdrousseau.any2json.v2.Table;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import com.github.romualdrousseau.any2json.ITagClassifier;
@@ -170,6 +171,27 @@ public class AbstractTable implements Table, Visitable {
         return null;
     }
 
+    public void updateHeaderTags() {
+        assert(this.classifier != null) : "Classifier must exist";
+
+        for (Header header : this.headers) {
+            ((AbstractHeader) header).updateTag(false);
+        }
+
+        for (Header header : this.headers) {
+            ((AbstractHeader) header).updateTag(true);
+        }
+
+        for (Header header : this.headers) {
+            if (header.hasTag() && !header.getTag().isUndefined()) {
+                Header head = this.headersByTag.putIfAbsent(header.getTag().getValue(), header);
+                if (head != null) {
+                    ((AbstractHeader) head).mergeTo((AbstractHeader) header);
+                }
+            }
+        }
+    }
+
     private boolean visited;
     private final AbstractSheet sheet;
     private final int firstColumn;
@@ -183,4 +205,5 @@ public class AbstractTable implements Table, Visitable {
     private final ITagClassifier classifier;
     private RowStore cachedRows;
     private final LinkedList<Header> headers = new LinkedList<Header>();
+    private final HashMap<String, Header> headersByTag = new HashMap<String, Header>();
 }

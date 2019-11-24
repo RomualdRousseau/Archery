@@ -10,5 +10,5 @@ public interface Row {
 
     Cell getCell(Header header);
 
-    String getCellValue(Header header, boolean merged);
+    Cell getCellAt(int coldIndex);
 }

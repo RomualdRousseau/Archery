@@ -12,7 +12,7 @@ public class IntelliRow extends AbstractRow {
 
     @Override
     public AbstractCell getCellAt(final int colIndex) {
-        assert (colIndex >= 0 && colIndex < this.getTable().getNumberOfColumns());
+        assert (colIndex >= 0 && colIndex < this.getTable().getNumberOfColumns()) : "column index out of bound";
         final AbstractCell cell = this.cellsData[colIndex];
         return (cell == null) ? AbstractCell.Empty : cell;
     }
@@ -24,7 +24,7 @@ public class IntelliRow extends AbstractRow {
     }
 
     public void setCell(final int colIndex, final AbstractCell cell) {
-        assert (colIndex < this.cellsData.length);
+        assert (colIndex < this.cellsData.length) : "column index out of bound";
         if (cell.hasValue()) {
             if (cell.getMergedCount() == 1) {
                 this.cellsData[colIndex] = cell;

@@ -41,17 +41,13 @@ public class AbstractRow implements Row {
         return ((AbstractHeader) header).getCell(this);
     }
 
-    @Override
-    public String getCellValue(Header header, boolean merged) {
-        return ((AbstractHeader) header).getCellValue(this, merged);
-    }
-
     public AbstractTable getTable() {
         return this.table;
     }
 
+    @Override
     public AbstractCell getCellAt(final int colIndex) {
-        assert (colIndex >= 0 && colIndex < this.table.getNumberOfColumns());
+        assert (colIndex >= 0 && colIndex < this.table.getNumberOfColumns()) : "column index out of bound";
         AbstractCell result = cachedCells[colIndex];
         if (result == null) {
             result = new AbstractCell(this.getCellValueAt(colIndex), colIndex, this.getNumberOfMergedCellsAt(colIndex),
@@ -74,14 +70,14 @@ public class AbstractRow implements Row {
     }
 
     private int getNumberOfMergedCellsAt(final int colIndex) {
-        assert (colIndex >= 0 && colIndex < this.table.getNumberOfColumns());
+        assert (colIndex >= 0 && colIndex < this.table.getNumberOfColumns()) : "column index out of bound";
         final int col = this.table.getFirstColumn() + colIndex;
         final int row = this.table.getFirstRow() + this.rowIndex;
         return this.table.getSheet().getNumberOfMergedCellsAt(col, row);
     }
 
     private String getCellValueAt(final int colIndex) {
-        assert (colIndex >= 0 && colIndex < this.table.getNumberOfColumns());
+        assert (colIndex >= 0 && colIndex < this.table.getNumberOfColumns()) : "column index out of bound";
         final int col = this.table.getFirstColumn() + colIndex;
         final int row = this.table.getFirstRow() + this.rowIndex;
         return this.table.getSheet().getInternalCellValueAt(col, row);

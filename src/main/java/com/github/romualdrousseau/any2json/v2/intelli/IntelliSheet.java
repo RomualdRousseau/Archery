@@ -10,14 +10,15 @@ import com.github.romualdrousseau.any2json.v2.base.AbstractRow;
 import com.github.romualdrousseau.any2json.v2.base.AbstractSheet;
 import com.github.romualdrousseau.any2json.v2.base.SheetBitmap;
 import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
-import com.github.romualdrousseau.any2json.v2.base.TableLexer;
 import com.github.romualdrousseau.any2json.v2.intelli.event.AllTablesExtractedEvent;
 import com.github.romualdrousseau.any2json.v2.intelli.event.BitmapGeneratedEvent;
 import com.github.romualdrousseau.any2json.v2.intelli.event.DataTableListBuiltEvent;
+import com.github.romualdrousseau.any2json.v2.intelli.event.IntelliTableReadyEvent;
 import com.github.romualdrousseau.any2json.v2.intelli.event.MetaTableListBuiltEvent;
 import com.github.romualdrousseau.any2json.v2.intelli.event.TableGraphBuiltEvent;
 import com.github.romualdrousseau.any2json.v2.layex.LayexMatcher;
 import com.github.romualdrousseau.any2json.v2.util.TableGraph;
+import com.github.romualdrousseau.any2json.v2.util.TableLexer;
 import com.github.romualdrousseau.any2json.v2.util.Visitable;
 import com.github.romualdrousseau.shuju.cv.Filter;
 import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
@@ -45,7 +46,10 @@ public abstract class IntelliSheet extends AbstractSheet {
         final TableGraph root = this.buildTableGraph(metaTables, dataTables);
         this.notifyStepCompleted(new TableGraphBuiltEvent(this, root));
 
-        return new IntelliTable(root, classifier);
+        Table table = new IntelliTable(root, classifier);
+        this.notifyStepCompleted(new IntelliTableReadyEvent(this, table));
+
+        return table;
     }
 
     private TableGraph buildTableGraph(final List<MetaTable> metaTables, final List<DataTable> dataTables) {

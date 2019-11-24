@@ -11,4 +11,6 @@ public interface Table {
     int getNumberOfHeaders();
 
     Iterable<Header> headers();
+
+    void updateHeaderTags();
 }

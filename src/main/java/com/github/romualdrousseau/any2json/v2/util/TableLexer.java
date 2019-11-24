@@ -1,8 +1,11 @@
-package com.github.romualdrousseau.any2json.v2.base;
+package com.github.romualdrousseau.any2json.v2.util;
 
 import java.util.ArrayList;
 
 import com.github.romualdrousseau.any2json.v2.Table;
+import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
+import com.github.romualdrousseau.any2json.v2.base.AbstractRow;
+import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
 import com.github.romualdrousseau.any2json.v2.layex.Lexer;
 
 public class TableLexer implements Lexer<AbstractCell, TableLexer.Cursor> {

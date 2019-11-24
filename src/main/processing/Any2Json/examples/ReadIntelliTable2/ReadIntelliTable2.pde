@@ -124,13 +124,13 @@ void loadDocument(String filePath) {
 
   println();
   for (Header header : table.headers()) {
-    print(header.getName(), " ", ((AbstractHeader) header).getColumnIndex(), " | ");
+    print(header.getName(), " ", ((AbstractHeader) header).getColumnIndex(), " ", ((AbstractHeader) header).getTag().getValue(), "| ");
   }
   println();
   int n = 0;
   for (Row row : table.rows()) {
     for (Cell cell : row.cells()) {
-      print(cell.getValue(), " | ");
+      print(cell.getValue(), "| ");
     }
     println();
     if(n++ >= 50) break;
