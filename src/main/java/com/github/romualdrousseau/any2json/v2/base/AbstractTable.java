@@ -73,6 +73,16 @@ public class AbstractTable implements Table, Visitable {
     }
 
     @Override
+    public int getNumberOfHeaderTags() {
+        return this.headersByTag.size();
+    }
+
+    @Override
+    public Iterable<Header> headerTags() {
+        return this.headersByTag.values();
+    }
+
+    @Override
     public boolean isVisited() {
         return this.visited;
     }
@@ -172,7 +182,9 @@ public class AbstractTable implements Table, Visitable {
     }
 
     public void updateHeaderTags() {
-        assert(this.classifier != null) : "Classifier must exist";
+        if(this.classifier == null) {
+            return;
+        }
 
         for (Header header : this.headers) {
             ((AbstractHeader) header).updateTag(false);

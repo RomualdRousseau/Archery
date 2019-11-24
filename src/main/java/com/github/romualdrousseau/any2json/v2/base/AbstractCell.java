@@ -41,11 +41,6 @@ public class AbstractCell implements Cell, Symbol {
     }
 
     @Override
-    public int getMergedCount() {
-        return this.mergedCount;
-    }
-
-    @Override
     public String getSymbol() {
         if (this.symbol == null) {
             if (this == AbstractCell.EndOfStream) {
@@ -61,6 +56,10 @@ public class AbstractCell implements Cell, Symbol {
             }
         }
         return this.symbol;
+    }
+
+    public int getMergedCount() {
+        return this.mergedCount;
     }
 
     public int getColumnIndex() {

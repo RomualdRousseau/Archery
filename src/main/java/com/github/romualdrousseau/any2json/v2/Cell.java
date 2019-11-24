@@ -9,6 +9,4 @@ public interface Cell {
     String getValue();
 
     Vector getEntityVector();
-
-    int getMergedCount();
 }

@@ -21,6 +21,11 @@ public abstract class AbstractSheet implements Sheet {
     public abstract int getNumberOfMergedCellsAt(int colIndex, int rowIndex);
 
     @Override
+    public Table getTable() {
+        return this.getTable(null);
+    }
+
+    @Override
     public Table getTable(final ITagClassifier classifier) {
         AbstractTable result = null;
         final int lastColumnNum = this.getLastColumnNum(0);

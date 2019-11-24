@@ -12,5 +12,9 @@ public interface Table {
 
     Iterable<Header> headers();
 
+    int getNumberOfHeaderTags();
+
+    Iterable<Header> headerTags();
+
     void updateHeaderTags();
 }

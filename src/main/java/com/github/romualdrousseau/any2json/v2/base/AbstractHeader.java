@@ -11,7 +11,7 @@ import com.github.romualdrousseau.shuju.util.StringUtility;
 
 public abstract class AbstractHeader implements Header {
 
-    public abstract AbstractCell getCell(AbstractRow row);
+    public abstract AbstractCell getCellForRow(AbstractRow row);
 
     public abstract AbstractHeader clone();
 
@@ -84,11 +84,11 @@ public abstract class AbstractHeader implements Header {
 
     public String getCellMergedValue(final AbstractRow row) {
         final StringBuffer buffer = new StringBuffer();
-        buffer.append(this.getCell(row).getValue());
+        buffer.append(this.getCellForRow(row).getValue());
 
         AbstractHeader curr = this;
         while(curr.nextSibbling != null) {
-            buffer.append(this.getCell(row).getValue());
+            buffer.append(this.getCellForRow(row).getValue());
             curr = curr.nextSibbling;
         }
 

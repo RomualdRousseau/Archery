@@ -32,7 +32,7 @@ public class TaggedHeader extends AbstractHeader {
     }
 
     @Override
-    public AbstractCell getCell(final AbstractRow row) {
+    public AbstractCell getCellForRow(final AbstractRow row) {
         return row.getCellAt(this.getColumnIndex());
     }
 

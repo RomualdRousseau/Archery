@@ -37,17 +37,26 @@ public class AbstractRow implements Row {
     }
 
     @Override
-    public Cell getCell(final Header header) {
-        return ((AbstractHeader) header).getCell(this);
+    public AbstractCell getCell(final Header header) {
+        return ((AbstractHeader) header).getCellForRow(this);
     }
 
-    public AbstractTable getTable() {
-        return this.table;
+    @Override
+    public AbstractCell getCell(Header header, boolean merged) {
+        if (merged) {
+            AbstractHeader abstractHeader = (AbstractHeader) header;
+            String value = abstractHeader.getCellMergedValue(this);
+            return new AbstractCell(value, abstractHeader.getColumnIndex(), 1, this.getTable().getClassifier());
+        } else {
+            return this.getCell(header);
+        }
     }
 
     @Override
     public AbstractCell getCellAt(final int colIndex) {
-        assert (colIndex >= 0 && colIndex < this.table.getNumberOfColumns()) : "column index out of bound";
+        if (colIndex < 0 || colIndex >= this.table.getNumberOfColumns()) {
+            throw new IndexOutOfBoundsException();
+        }
         AbstractCell result = cachedCells[colIndex];
         if (result == null) {
             result = new AbstractCell(this.getCellValueAt(colIndex), colIndex, this.getNumberOfMergedCellsAt(colIndex),
@@ -55,6 +64,10 @@ public class AbstractRow implements Row {
             cachedCells[colIndex] = result;
         }
         return result;
+    }
+
+    public AbstractTable getTable() {
+        return this.table;
     }
 
     public float sparsity() {

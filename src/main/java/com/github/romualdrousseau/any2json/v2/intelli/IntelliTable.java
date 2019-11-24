@@ -129,7 +129,7 @@ public class IntelliTable extends AbstractTable {
                 }
             } else {
                 if (orgHeader != null) {
-                    newRow.setCell(abstractHeader.getColumnIndex(), orgHeader.getCell(orgRow));
+                    newRow.setCell(abstractHeader.getColumnIndex(), orgHeader.getCellForRow(orgRow));
                 } else {
                     newRow.setCellValue(abstractHeader.getColumnIndex(), abstractHeader.getValue());
                 }

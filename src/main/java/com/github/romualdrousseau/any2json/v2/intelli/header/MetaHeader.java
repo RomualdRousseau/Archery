@@ -37,7 +37,7 @@ public class MetaHeader extends AbstractHeader {
     }
 
     @Override
-    public AbstractCell getCell(final AbstractRow row) {
+    public AbstractCell getCellForRow(final AbstractRow row) {
         return new AbstractCell(this.getValue(), 0, 1, this.getTable().getClassifier());
     }
 

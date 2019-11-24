@@ -8,7 +8,9 @@ public interface Row {
 
     Iterable<Cell> cells();
 
+    Cell getCellAt(int coldIndex);
+
     Cell getCell(Header header);
 
-    Cell getCellAt(int coldIndex);
+    Cell getCell(Header header, boolean merged);
 }
