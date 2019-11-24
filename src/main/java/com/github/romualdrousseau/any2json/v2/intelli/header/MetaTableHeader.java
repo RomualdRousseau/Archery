@@ -2,7 +2,6 @@ package com.github.romualdrousseau.any2json.v2.intelli.header;
 
 import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
 import com.github.romualdrousseau.any2json.v2.base.AbstractHeader;
-import com.github.romualdrousseau.any2json.v2.base.AbstractRow;
 import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
 
 public class MetaTableHeader extends MetaHeader {
@@ -18,11 +17,6 @@ public class MetaTableHeader extends MetaHeader {
     @Override
     public String getValue() {
         return null;
-    }
-
-    @Override
-    public AbstractCell getCell(final AbstractRow row) {
-        return new AbstractCell(super.getValue(), 0, 1, this.getTable().getClassifier());
     }
 
     @Override

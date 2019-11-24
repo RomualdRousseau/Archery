@@ -12,14 +12,14 @@ public class PivotTableHeader extends MetaHeader {
 
     public PivotTableHeader(final AbstractTable table, final AbstractCell cell) {
         super(table, cell);
-        this.isPivotalKey = true;
+        this.isPivotalValue = false;
         this.entries = new ArrayList<AbstractCell>();
         this.entries.add(cell);
     }
 
-    private PivotTableHeader(final PivotTableHeader parent, final AbstractCell cell, final boolean isPivotalKey) {
+    private PivotTableHeader(final PivotTableHeader parent, final AbstractCell cell, final boolean isPovitalValue) {
         super(parent.getTable(), cell);
-        this.isPivotalKey = isPivotalKey;
+        this.isPivotalValue = isPovitalValue;
         this.entries = parent.entries;
     }
 
@@ -36,17 +36,17 @@ public class PivotTableHeader extends MetaHeader {
 
     @Override
     public AbstractHeader clone() {
-        return new PivotTableHeader(this, this.getCell(), true);
+        return new PivotTableHeader(this, this.getCell(), false);
     }
 
     public AbstractHeader cloneAsValueHeader() {
         final AbstractCell valueCell = new AbstractCell(DocumentFactory.PIVOT_SUFFIX, 0, 1,
                 this.getTable().getClassifier());
-        return new PivotTableHeader(this, valueCell, false);
+        return new PivotTableHeader(this, valueCell, true);
     }
 
-    public boolean isPivotalKey() {
-        return this.isPivotalKey;
+    public boolean isPivotalValue() {
+        return this.isPivotalValue;
     }
 
     public List<AbstractCell> getEntries() {
@@ -58,6 +58,6 @@ public class PivotTableHeader extends MetaHeader {
     }
 
     private String name;
-    private final boolean isPivotalKey;
+    private final boolean isPivotalValue;
     private final ArrayList<AbstractCell> entries;
 }

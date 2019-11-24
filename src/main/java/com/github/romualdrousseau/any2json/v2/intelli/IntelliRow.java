@@ -18,7 +18,9 @@ public class IntelliRow extends AbstractRow {
     }
 
     public void setCellValue(final int colIndex, final String value) {
-        this.setCell(colIndex, new AbstractCell(value, 0, 1, this.getTable().getClassifier()));
+        if(value != null) {
+            this.setCell(colIndex, new AbstractCell(value, 0, 1, this.getTable().getClassifier()));
+        }
     }
 
     public void setCell(final int colIndex, final AbstractCell cell) {

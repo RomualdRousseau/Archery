@@ -116,16 +116,16 @@ public class IntelliTable extends AbstractTable {
 
             if (header instanceof PivotTableHeader && pivotCell != null) {
                 if (orgHeader != null) {
-                    if (((PivotTableHeader) header).isPivotalKey()) {
-                        newRow.setCellValue(abstractHeader.getColumnIndex(), pivotCell.getValue());
-                    } else {
+                    if (((PivotTableHeader) header).isPivotalValue()) {
                         newRow.setCell(abstractHeader.getColumnIndex(), orgRow.getCellAt(pivotCell.getColumnIndex()));
+                    } else {
+                        newRow.setCellValue(abstractHeader.getColumnIndex(), pivotCell.getValue());
                     }
                 }
             } else {
                 if (orgHeader != null) {
                     newRow.setCell(abstractHeader.getColumnIndex(), orgHeader.getCell(orgRow));
-                } else if (abstractHeader.getValue() != null) {
+                } else {
                     newRow.setCellValue(abstractHeader.getColumnIndex(), abstractHeader.getValue());
                 }
             }
