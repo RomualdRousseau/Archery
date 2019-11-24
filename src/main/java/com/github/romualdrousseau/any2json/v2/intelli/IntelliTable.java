@@ -54,7 +54,7 @@ public class IntelliTable extends AbstractTable {
                 this.addHeader(newHeader);
 
                 if (header instanceof PivotTableHeader) {
-                    newHeader = ((PivotTableHeader) abstractHeader).cloneAsValueHeader();
+                    newHeader = ((PivotTableHeader) abstractHeader).getPivotValue();
                     newHeader.setTable(this);
                     newHeader.setColumnIndex(this.getNumberOfHeaders());
                     this.addHeader(newHeader);
@@ -121,11 +121,8 @@ public class IntelliTable extends AbstractTable {
 
             if (header instanceof PivotTableHeader && pivotCell != null) {
                 if (orgHeader != null) {
-                    if (((PivotTableHeader) header).isPivotalValue()) {
-                        newRow.setCell(abstractHeader.getColumnIndex(), orgRow.getCellAt(pivotCell.getColumnIndex()));
-                    } else {
-                        newRow.setCellValue(abstractHeader.getColumnIndex(), pivotCell.getValue());
-                    }
+                    newRow.setCellValue(abstractHeader.getColumnIndex(), pivotCell.getValue());
+                    newRow.setCell(abstractHeader.getColumnIndex() + 1, orgRow.getCellAt(pivotCell.getColumnIndex()));
                 }
             } else {
                 if (orgHeader != null) {

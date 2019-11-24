@@ -7,19 +7,18 @@ import com.github.romualdrousseau.any2json.v2.DocumentFactory;
 import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
 import com.github.romualdrousseau.any2json.v2.base.AbstractHeader;
 import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
+import com.github.romualdrousseau.shuju.math.Vector;
 
 public class PivotTableHeader extends MetaHeader {
 
     public PivotTableHeader(final AbstractTable table, final AbstractCell cell) {
         super(table, cell);
-        this.isPivotalValue = false;
         this.entries = new ArrayList<AbstractCell>();
         this.entries.add(cell);
     }
 
-    private PivotTableHeader(final PivotTableHeader parent, final AbstractCell cell, final boolean isPovitalValue) {
-        super(parent.getTable(), cell);
-        this.isPivotalValue = isPovitalValue;
+    private PivotTableHeader(final PivotTableHeader parent) {
+        super(parent.getTable(), parent.getCell());
         this.entries = parent.entries;
     }
 
@@ -36,17 +35,12 @@ public class PivotTableHeader extends MetaHeader {
 
     @Override
     public AbstractHeader clone() {
-        return new PivotTableHeader(this, this.getCell(), false);
+        return new PivotTableHeader(this);
     }
 
-    public AbstractHeader cloneAsValueHeader() {
-        final AbstractCell valueCell = new AbstractCell(DocumentFactory.PIVOT_SUFFIX, 0, 1,
-                this.getTable().getClassifier());
-        return new PivotTableHeader(this, valueCell, true);
-    }
-
-    public boolean isPivotalValue() {
-        return this.isPivotalValue;
+    @Override
+    protected Vector buildEntityVector() {
+        return this.getCell().getEntityVector();
     }
 
     public List<AbstractCell> getEntries() {
@@ -57,7 +51,10 @@ public class PivotTableHeader extends MetaHeader {
         this.entries.add(entry);
     }
 
+    public PivotValueHeader getPivotValue() {
+        return new PivotValueHeader(this);
+    }
+
     private String name;
-    private final boolean isPivotalValue;
     private final ArrayList<AbstractCell> entries;
 }

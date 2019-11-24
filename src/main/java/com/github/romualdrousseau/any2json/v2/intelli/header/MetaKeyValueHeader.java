@@ -3,6 +3,7 @@ package com.github.romualdrousseau.any2json.v2.intelli.header;
 import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
 import com.github.romualdrousseau.any2json.v2.base.AbstractHeader;
 import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
+import com.github.romualdrousseau.shuju.math.Vector;
 
 public class MetaKeyValueHeader extends MetaHeader {
 
@@ -33,6 +34,11 @@ public class MetaKeyValueHeader extends MetaHeader {
     @Override
     public AbstractHeader clone() {
         return new MetaKeyValueHeader(this);
+    }
+
+    @Override
+    protected Vector buildEntityVector() {
+        return this.value.getEntityVector();
     }
 
     private final AbstractCell value;

@@ -119,22 +119,10 @@ void loadDocument(String filePath) {
   com.github.romualdrousseau.any2json.v2.Table table = sheet.getTable(classifier);
   println("Tables loaded.");
   println("done.");
+  
+  dumpTable(table);
 
   document.close();
-
-  println();
-  for (Header header : table.headers()) {
-    print(header.getName(), " ", ((AbstractHeader) header).getColumnIndex(), " ", ((AbstractHeader) header).getTag().getValue(), "| ");
-  }
-  println();
-  int n = 0;
-  for (Row row : table.rows()) {
-    for (Cell cell : row.cells()) {
-      print(cell.getValue(), "| ");
-    }
-    println();
-    if(n++ >= 50) break;
-  }
 }
 
 void buildEmptyImage() {
@@ -244,4 +232,29 @@ void displayHUD() {
   int y = floor((mouseY + documentTopY) / gridSize);
   String s = String.format("(%d, %d)", x, y);
   text(s, width - textWidth(s) - 4, height - 4);
+}
+
+void dumpTable(com.github.romualdrousseau.any2json.v2.Table table) {
+  println();
+  for (Header header : table.headers()) {
+    AbstractHeader abstractHeader = (AbstractHeader) header;
+    
+    println(abstractHeader.getName());
+    println(abstractHeader.getColumnIndex());
+    println(abstractHeader.getTag().getValue());
+    println(abstractHeader.getEntityVector());
+    //println(abstractHeader.getWordVector());
+    //println(abstractHeader.getConflictVector(true));
+    println("--");
+  }
+  println();
+  
+  int n = 0;
+  for (Row row : table.rows()) {
+    for (Cell cell : row.cells()) {
+      print(cell.getValue(), "| ");
+    }
+    println();
+    if(n++ >= 10) break;
+  }
 }

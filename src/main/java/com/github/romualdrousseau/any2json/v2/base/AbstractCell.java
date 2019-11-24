@@ -34,7 +34,7 @@ public class AbstractCell implements Cell, Symbol {
 
     @Override
     public Vector getEntityVector() {
-        if (this.classifier != null && this.entityVector == null) {
+        if (this.entityVector == null) {
             this.entityVector = this.classifier.getEntityList().word2vec(this.value);
         }
         return this.entityVector;

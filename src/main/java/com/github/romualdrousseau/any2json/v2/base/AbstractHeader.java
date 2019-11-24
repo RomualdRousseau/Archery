@@ -15,10 +15,6 @@ public abstract class AbstractHeader implements Header {
 
     public abstract AbstractHeader clone();
 
-    protected abstract AbstractHeader[] findConflictingHeaders();
-
-    protected abstract Vector entity2vec();
-
     public AbstractHeader(final AbstractTable table, final AbstractCell cell) {
         this.table = table;
         this.cell = cell;
@@ -37,17 +33,43 @@ public abstract class AbstractHeader implements Header {
 
     @Override
     public Vector getEntityVector() {
-        if (this.table.getClassifier() != null && this.entityVector == null) {
-            this.entityVector = this.entity2vec();
-        } else {
-            this.entityVector = new Vector(this.table.getClassifier().getEntityList().getVectorSize());
+        if (this.entityVector == null) {
+            this.entityVector = this.buildEntityVector();
         }
         return this.entityVector;
     }
 
+    public Vector getWordVector() {
+        if (this.wordVector == null) {
+            this.wordVector = this.buildWordVector();
+            if(this.wordVector == null) {
+                this.wordVector = new Vector(this.table.getClassifier().getWordList().getVectorSize());
+            }
+        }
+        return this.wordVector;
+    }
+
+    public Vector getConflictVector(boolean checkForConflicts) {
+        final Vector result = new Vector(this.table.getClassifier().getWordList().getVectorSize());
+
+        if(!checkForConflicts) {
+            return result;
+        }
+
+        AbstractHeader[] conflicts = this.findConflictingHeaders();
+        if (conflicts == null) {
+            return result;
+        }
+
+        for (final Header conflict : conflicts) {
+            result.add(((AbstractHeader) conflict).getWordVector());
+        }
+
+        return result.constrain(0, 1);
+    }
+
     @Override
-    public DataRow buildTrainingRow(final String tagValue, final Header[] conflicts,
-            final boolean ensureWordsExists) {
+    public DataRow buildTrainingRow(final String tagValue, final Header[] conflicts, final boolean ensureWordsExists) {
         if (ensureWordsExists) {
             this.ensureWordExist();
             this.wordVector = null;
@@ -58,8 +80,9 @@ public abstract class AbstractHeader implements Header {
                 }
             }
         }
-        return new DataRow().addFeature(this.buildFeature(conflicts))
-                .setLabel(this.table.getClassifier().getTagList().word2vec(tagValue));
+
+        Vector label = this.table.getClassifier().getTagList().word2vec(tagValue);
+        return new DataRow().addFeature(this.buildFeature(true)).setLabel(label);
     }
 
     public int getColumnIndex() {
@@ -76,7 +99,7 @@ public abstract class AbstractHeader implements Header {
 
     public void setTable(final IntelliTable table) {
         this.table = table;
-	}
+    }
 
     public AbstractCell getCell() {
         return this.cell;
@@ -87,12 +110,12 @@ public abstract class AbstractHeader implements Header {
         buffer.append(this.getCellForRow(row).getValue());
 
         AbstractHeader curr = this;
-        while(curr.nextSibbling != null) {
+        while (curr.nextSibbling != null) {
             buffer.append(this.getCellForRow(row).getValue());
             curr = curr.nextSibbling;
         }
 
-		return buffer.toString();
+        return buffer.toString();
     }
 
     public void mergeTo(final AbstractHeader other) {
@@ -125,12 +148,30 @@ public abstract class AbstractHeader implements Header {
         return o instanceof AbstractHeader && this.equals((AbstractHeader) o);
     }
 
-    protected AbstractHeader[] findConflictingHeaders(final AbstractHeader header, final HeaderTag tag,
-            final Iterable<Header> others) {
+    protected Vector buildEntityVector() {
+        return this.getCell().getEntityVector();
+    }
+
+    protected Vector buildWordVector() {
+        return this.getTable().getClassifier().getWordList().word2vec(this.getName());
+    }
+
+    protected void ensureWordExist() {
+        this.getTable().getClassifier().getWordList().add(this.getName());
+    }
+
+    private Vector buildFeature(boolean checkForConflicts) {
+        final Vector entity2vec = this.getEntityVector();
+        final Vector word2vec = this.getWordVector();
+        final Vector conflict2vec = this.getConflictVector(checkForConflicts);
+        return entity2vec.concat(word2vec).concat(conflict2vec);
+    }
+
+    private AbstractHeader[] findConflictingHeaders() {
         final ArrayList<AbstractHeader> result = new ArrayList<AbstractHeader>();
 
-        for (final Header other : others) {
-            if (other != header && other.hasTag() && !other.getTag().isUndefined() && other.getTag().equals(tag)) {
+        for (final Header other : this.getTable().headers()) {
+            if (other != this && other.hasTag() && !other.getTag().isUndefined() && other.getTag().equals(this.getTag())) {
                 result.add((AbstractHeader) other);
             }
         }
@@ -140,51 +181,6 @@ public abstract class AbstractHeader implements Header {
         } else {
             return result.toArray(new AbstractHeader[result.size()]);
         }
-    }
-
-    private Vector getWordVector() {
-        if (this.table.getClassifier() != null && this.wordVector == null) {
-            this.wordVector = this.table.getClassifier().getWordList().word2vec(this.getName());
-        } else {
-            this.wordVector = new Vector(this.table.getClassifier().getWordList().getVectorSize());
-        }
-        return this.wordVector;
-    }
-
-    private void ensureWordExist() {
-        this.getTable().getClassifier().getWordList().add(this.getName());
-    }
-
-    private Vector getConflictVector(final boolean checkForConflicts) {
-        final AbstractHeader[] conflicts = checkForConflicts ? this.findConflictingHeaders() : null;
-        return this.buildConflitVector(conflicts);
-    }
-
-    private Vector buildFeature(final boolean checkForConflicts) {
-        final Vector entity2vec = this.getEntityVector();
-        final Vector word2vec = this.getWordVector();
-        final Vector conflict2vec = this.getConflictVector(checkForConflicts);
-        return entity2vec.concat(word2vec).concat(conflict2vec);
-    }
-
-    private Vector buildFeature(final Header[] conflicts) {
-        final Vector entity2vec = this.getEntityVector();
-        final Vector word2vec = this.getWordVector();
-        final Vector conflict2vec = this.buildConflitVector(conflicts);
-        return entity2vec.concat(word2vec).concat(conflict2vec);
-    }
-
-    private Vector buildConflitVector(final Header[] conflicts) {
-        final Vector result = new Vector(this.table.getClassifier().getWordList().getVectorSize());
-
-        if (conflicts == null) {
-            return result;
-        }
-
-        for (final Header conflict : conflicts) {
-            result.add(((AbstractHeader) conflict).getWordVector());
-        }
-        return result.constrain(0, 1);
     }
 
     private AbstractTable table;

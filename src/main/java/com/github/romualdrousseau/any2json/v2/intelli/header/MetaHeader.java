@@ -4,7 +4,6 @@ import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
 import com.github.romualdrousseau.any2json.v2.base.AbstractHeader;
 import com.github.romualdrousseau.any2json.v2.base.AbstractRow;
 import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
-import com.github.romualdrousseau.shuju.math.Vector;
 
 public class MetaHeader extends AbstractHeader {
 
@@ -44,16 +43,6 @@ public class MetaHeader extends AbstractHeader {
     @Override
     public AbstractHeader clone() {
         return new MetaHeader(this);
-    }
-
-    @Override
-    protected AbstractHeader[] findConflictingHeaders() {
-        return null;
-    }
-
-    @Override
-    protected Vector entity2vec() {
-        return this.getCell().getEntityVector();
     }
 
     private String name;

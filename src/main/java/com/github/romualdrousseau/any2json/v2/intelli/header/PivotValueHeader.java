@@ -1,45 +1,34 @@
 package com.github.romualdrousseau.any2json.v2.intelli.header;
 
-import com.github.romualdrousseau.any2json.v2.base.AbstractHeader;
-import com.github.romualdrousseau.any2json.v2.base.AbstractRow;
-import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
-import com.github.romualdrousseau.shuju.math.Vector;
-
 import com.github.romualdrousseau.any2json.v2.DocumentFactory;
 import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
+import com.github.romualdrousseau.any2json.v2.base.AbstractRow;
+import com.github.romualdrousseau.shuju.math.Vector;
 
-public class TaggedHeader extends AbstractHeader {
+public class PivotValueHeader extends PivotTableHeader {
 
-    public TaggedHeader(final AbstractTable table, final AbstractCell cell) {
-        super(table, cell);
-    }
-
-    private TaggedHeader(final TaggedHeader parent) {
+    public PivotValueHeader(final PivotTableHeader parent) {
         super(parent.getTable(), parent.getCell());
     }
 
     @Override
     public String getName() {
         if (this.name == null) {
-            final String v1 = this.getCell().getValue();
-            this.name = this.getTable().getClassifier().getStopWordList().removeStopWords(v1);
+            this.name = "";
+            final Vector v = this.buildEntityVector();
+            if(v.sparsity() < 1.0f) {
+                final int i = v.argmax();
+                this.name = this.getTable().getClassifier().getEntityList().get(i) + " ";
+            }
+            this.name += DocumentFactory.PIVOT_SUFFIX;
+
         }
         return this.name;
     }
 
     @Override
-    public String getValue() {
-        return null;
-    }
-
-    @Override
-    public AbstractCell getCellForRow(final AbstractRow row) {
-        return row.getCellAt(this.getColumnIndex());
-    }
-
-    @Override
-    public AbstractHeader clone() {
-        return new TaggedHeader(this);
+    public PivotValueHeader clone() {
+        return new PivotValueHeader(this);
     }
 
     @Override
