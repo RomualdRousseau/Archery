@@ -6,7 +6,7 @@ import com.github.romualdrousseau.any2json.v2.base.SheetBitmap;
 
 public class BitmapGeneratedEvent extends SheetEvent {
 
-    public BitmapGeneratedEvent(Sheet source, SheetBitmap bitmap) {
+    public BitmapGeneratedEvent(final Sheet source, final SheetBitmap bitmap) {
         super(source);
         this.bitmap = bitmap;
     }
@@ -15,5 +15,5 @@ public class BitmapGeneratedEvent extends SheetEvent {
         return this.bitmap;
     }
 
-    private SheetBitmap bitmap;
+    private final SheetBitmap bitmap;
 }

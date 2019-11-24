@@ -8,7 +8,7 @@ import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
 
 public class AllTablesExtractedEvent extends SheetEvent {
 
-    public AllTablesExtractedEvent(Sheet source, List<AbstractTable> tables) {
+    public AllTablesExtractedEvent(final Sheet source, final List<AbstractTable> tables) {
         super(source);
         this.tables = tables;
     }
@@ -17,5 +17,5 @@ public class AllTablesExtractedEvent extends SheetEvent {
         return this.tables;
     }
 
-    private List<AbstractTable> tables;
+    private final List<AbstractTable> tables;
 }

@@ -5,40 +5,32 @@ import com.github.romualdrousseau.any2json.v2.base.AbstractRow;
 
 public class IntelliRow extends AbstractRow {
 
-    public IntelliRow(IntelliTable table) {
+    public IntelliRow(final IntelliTable table) {
         super(table, -1);
-        this.cellsData = new AbstractCell[table.getNumberOfHeaders() + 2]; // Account for possible pivot value
-        this.cellsIndex = 0;
+        this.cellsData = new AbstractCell[table.getNumberOfHeaders()];
     }
 
     @Override
-    public AbstractCell getCellAt(int colIndex) {
-        assert(colIndex >= 0 && colIndex < this.getTable().getNumberOfColumns());
-        AbstractCell cell = this.cellsData[colIndex];
+    public AbstractCell getCellAt(final int colIndex) {
+        assert (colIndex >= 0 && colIndex < this.getTable().getNumberOfColumns());
+        final AbstractCell cell = this.cellsData[colIndex];
         return (cell == null) ? AbstractCell.Empty : cell;
     }
 
-    public void addEmptyCell() {
-        this.addCell(AbstractCell.Empty);
+    public void setCellValue(final int colIndex, final String value) {
+        this.setCell(colIndex, new AbstractCell(value, 0, 1, this.getTable().getClassifier()));
     }
 
-    public void addStringCell(String value) {
-        this.addCell(new AbstractCell(value, 0, 1, this.getClassifier()));
-    }
-
-    public void addCell(AbstractCell cell) {
-        assert(this.cellsIndex < this.cellsData.length);
-        if(cell.getMergedCount() == 1) {
-            this.cellsData[this.cellsIndex++] = cell;
-        } else {
-            this.cellsData[this.cellsIndex++] = new AbstractCell(cell.getValue(), 0, 1, this.getClassifier());
+    public void setCell(final int colIndex, final AbstractCell cell) {
+        assert (colIndex < this.cellsData.length);
+        if (cell.hasValue()) {
+            if (cell.getMergedCount() == 1) {
+                this.cellsData[colIndex] = cell;
+            } else {
+                this.cellsData[colIndex] = new AbstractCell(cell.getValue(), 0, 1, this.getTable().getClassifier());
+            }
         }
     }
 
-    public int getToTo() {
-        return cellsIndex;
-    }
-
-    private AbstractCell[] cellsData;
-    private int cellsIndex;
+    private final AbstractCell[] cellsData;
 }

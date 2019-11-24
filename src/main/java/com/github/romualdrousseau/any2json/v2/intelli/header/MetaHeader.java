@@ -2,19 +2,25 @@ package com.github.romualdrousseau.any2json.v2.intelli.header;
 
 import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
 import com.github.romualdrousseau.any2json.v2.base.AbstractHeader;
+import com.github.romualdrousseau.any2json.v2.base.AbstractRow;
+import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
 
 public class MetaHeader extends AbstractHeader {
 
-    public MetaHeader(AbstractCell cell) {
-        super(cell);
+    public MetaHeader(final AbstractTable table, final AbstractCell cell) {
+        super(table, cell);
+    }
+
+    private MetaHeader(final MetaHeader parent) {
+        super(parent.getTable(), parent.getCell());
     }
 
     @Override
     public String getName() {
         if (this.name == null) {
-            String v1 = this.getCell().getValue();
-            String v2 = this.getCell().getClassifier().getEntityList().anonymize(v1);
-            this.name = this.getCell().getClassifier().getStopWordList().removeStopWords(v2);
+            final String v1 = this.getCell().getValue();
+            final String v2 = this.getTable().getClassifier().getEntityList().anonymize(v1);
+            this.name = this.getTable().getClassifier().getStopWordList().removeStopWords(v2);
         }
         return this.name;
     }
@@ -22,16 +28,26 @@ public class MetaHeader extends AbstractHeader {
     @Override
     public String getValue() {
         if (this.value == null) {
-            String v1 = this.getCell().getValue();
-            String v2 = this.getCell().getClassifier().getEntityList().find(v1);
+            final String v1 = this.getCell().getValue();
+            final String v2 = this.getTable().getClassifier().getEntityList().find(v1);
             this.value = (v2 == null) ? v1 : v2;
         }
         return this.value;
     }
 
     @Override
+    public AbstractCell getCell(final AbstractRow row) {
+        return new AbstractCell(this.getValue(), 0, 1, this.getTable().getClassifier());
+    }
+
+    @Override
     public AbstractHeader clone() {
-        return new MetaHeader(this.getCell());
+        return new MetaHeader(this);
+    }
+
+    @Override
+    protected AbstractHeader[] findConflictingHeaders() {
+        return null;
     }
 
     private String name;

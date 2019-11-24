@@ -8,7 +8,7 @@ import com.github.romualdrousseau.any2json.v2.intelli.MetaTable;
 
 public class MetaTableListBuiltEvent extends SheetEvent {
 
-    public MetaTableListBuiltEvent(Sheet source, List<MetaTable> tables) {
+    public MetaTableListBuiltEvent(final Sheet source, final List<MetaTable> tables) {
         super(source);
         this.MetaTables = tables;
     }
@@ -17,5 +17,5 @@ public class MetaTableListBuiltEvent extends SheetEvent {
         return this.MetaTables;
     }
 
-    private List<MetaTable> MetaTables;
+    private final List<MetaTable> MetaTables;
 }

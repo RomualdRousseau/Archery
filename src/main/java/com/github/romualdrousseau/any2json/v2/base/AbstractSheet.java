@@ -21,10 +21,10 @@ public abstract class AbstractSheet implements Sheet {
     public abstract int getNumberOfMergedCellsAt(int colIndex, int rowIndex);
 
     @Override
-    public Table getTable(ITagClassifier classifier) {
+    public Table getTable(final ITagClassifier classifier) {
         AbstractTable result = null;
-        int lastColumnNum = this.getLastColumnNum(0);
-        int lastRowNum = this.getLastRowNum();
+        final int lastColumnNum = this.getLastColumnNum(0);
+        final int lastRowNum = this.getLastRowNum();
         if (lastColumnNum > 0 && lastRowNum > 0) {
             result = new DataTable(new AbstractTable(this, 0, 0, lastColumnNum, lastRowNum, classifier));
         }
@@ -32,15 +32,15 @@ public abstract class AbstractSheet implements Sheet {
     }
 
     @Override
-    public void addSheetListener(SheetListener listener) {
+    public void addSheetListener(final SheetListener listener) {
         this.listeners.add(listener);
     }
 
-    public void notifyStepCompleted(SheetEvent e) {
-        for(SheetListener listener : listeners) {
+    public void notifyStepCompleted(final SheetEvent e) {
+        for (final SheetListener listener : listeners) {
             listener.stepCompleted(e);
         }
     }
 
-    private ArrayList<SheetListener> listeners = new ArrayList<SheetListener>();
+    private final ArrayList<SheetListener> listeners = new ArrayList<SheetListener>();
 }

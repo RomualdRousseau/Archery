@@ -10,21 +10,21 @@ import com.github.romualdrousseau.any2json.v2.layex.LayexMatcher;
 
 public class MetaTable extends AbstractTable {
 
-    public MetaTable(AbstractTable table) {
+    public MetaTable(final AbstractTable table) {
         super(table);
         this.buildSimpleMeta(table);
     }
 
-    public MetaTable(AbstractTable table, LayexMatcher layex) {
+    public MetaTable(final AbstractTable table, final LayexMatcher layex) {
         super(table);
         layex.match(new TableLexer(table), new MetaTableContext(this));
     }
 
-    private void buildSimpleMeta(AbstractTable table) {
-        for (Row row : table.rows()) {
-            for (Cell cell : row.cells()) {
+    private void buildSimpleMeta(final AbstractTable table) {
+        for (final Row row : table.rows()) {
+            for (final Cell cell : row.cells()) {
                 if(cell.hasValue()) {
-                    this.addHeader(new MetaHeader((AbstractCell) cell));
+                    this.addHeader(new MetaHeader(this, (AbstractCell) cell));
                 }
             }
         }

@@ -1,47 +1,29 @@
 package com.github.romualdrousseau.any2json.v2;
 
-public class HeaderTag
-{
-    public HeaderTag(Header header, String value) {
-		this.header = header;
+public class HeaderTag {
+
+    public final static HeaderTag None = new HeaderTag("none");
+
+    public HeaderTag(String value) {
 		this.value = value;
     }
-
-	public Header getHeader() {
-		return this.header;
-	}
-
-	public HeaderTag setHeader(Header header) {
-		this.header = header;
-		return this;
-	}
 
 	public String getValue() {
 		return this.value;
 	}
 
-	public HeaderTag setValue(String value) {
-		this.value = value;
-		return this;
-    }
-
     public boolean isUndefined() {
-		return this.value == null || value.equalsIgnoreCase("none");
+		return this.value == null || value.equalsIgnoreCase(HeaderTag.None.getValue());
 	}
 
     public boolean equals(HeaderTag other) {
-        return !this.isUndefined() && !other.isUndefined() && this.value.equals(other.value);
+        return !this.isUndefined() && !other.isUndefined() && this.value.equalsIgnoreCase(other.value);
     }
 
-	public String toString() {
-		if(this.isUndefined()) {
-			return String.format("[%s, <undefined>]", this.header);
-		}
-		else {
-			return String.format("[%s, %s]", this.header, this.value);
-		}
-	}
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof HeaderTag && this.equals((HeaderTag) o);
+    }
 
-	private Header header;
 	private String value;
 }

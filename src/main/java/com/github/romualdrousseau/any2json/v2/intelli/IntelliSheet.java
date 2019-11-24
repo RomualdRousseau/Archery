@@ -29,34 +29,34 @@ import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.Recta
 public abstract class IntelliSheet extends AbstractSheet {
 
     @Override
-    public Table getTable(ITagClassifier classifier) {
-        SheetBitmap image = new SheetBitmap(this, classifier.getSampleCount(), this.getLastRowNum());
+    public Table getTable(final ITagClassifier classifier) {
+        final SheetBitmap image = new SheetBitmap(this, classifier.getSampleCount(), this.getLastRowNum());
         this.notifyStepCompleted(new BitmapGeneratedEvent(this, image));
 
-        List<AbstractTable> tables = this.findAllTables(classifier, image);
+        final List<AbstractTable> tables = this.findAllTables(classifier, image);
         this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables));
 
-        List<DataTable> dataTables = this.getDataTables(tables, classifier.getDataLayexes());
+        final List<DataTable> dataTables = this.getDataTables(tables, classifier.getDataLayexes());
         this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables));
 
-        List<MetaTable> metaTables = this.getMetaTables(tables, classifier.getMetaLayexes());
+        final List<MetaTable> metaTables = this.getMetaTables(tables, classifier.getMetaLayexes());
         this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables));
 
-        TableGraph root = this.buildTableGraph(metaTables, dataTables);
+        final TableGraph root = this.buildTableGraph(metaTables, dataTables);
         this.notifyStepCompleted(new TableGraphBuiltEvent(this, root));
 
         return new IntelliTable(root, classifier);
     }
 
-    private TableGraph buildTableGraph(List<MetaTable> metaTables, List<DataTable> dataTables) {
-        TableGraph root = new TableGraph();
+    private TableGraph buildTableGraph(final List<MetaTable> metaTables, final List<DataTable> dataTables) {
+        final TableGraph root = new TableGraph();
 
-        for (Visitable e : metaTables) {
+        for (final Visitable e : metaTables) {
             e.setVisited(false);
         }
 
         // First attach all not snapped metaTables to the root nodes
-        for (MetaTable metaTable : metaTables) {
+        for (final MetaTable metaTable : metaTables) {
             if (!isSnapped(metaTable, dataTables)) {
                 root.addChild(new TableGraph(metaTable));
                 metaTable.setVisited(true);
@@ -64,35 +64,35 @@ public abstract class IntelliSheet extends AbstractSheet {
         }
 
         // Second attach all snapped metaTables to the closest nodes
-        for (MetaTable metaTable : metaTables) {
+        for (final MetaTable metaTable : metaTables) {
             if (metaTable.isVisited()) {
                 continue;
             }
 
-            TableGraph parent = findClosestMetaGraph(root, metaTable, 0, 0);
+            final TableGraph parent = findClosestMetaGraph(root, metaTable, 0, 0);
             parent.addChild(new TableGraph(metaTable));
             metaTable.setVisited(true);
         }
 
         // Third attach datatables to the closest metadatas
-        for (DataTable dataTable : dataTables) {
-            TableGraph parent = findClosestMetaGraph(root, dataTable, 0, 1);
+        for (final DataTable dataTable : dataTables) {
+            final TableGraph parent = findClosestMetaGraph(root, dataTable, 0, 1);
             parent.addChild(new TableGraph(dataTable));
         }
 
         return root;
     }
 
-    private List<DataTable> getDataTables(List<AbstractTable> tables, List<LayexMatcher> dataLayexes) {
-        ArrayList<DataTable> result = new ArrayList<DataTable>();
+    private List<DataTable> getDataTables(final List<AbstractTable> tables, final List<LayexMatcher> dataLayexes) {
+        final ArrayList<DataTable> result = new ArrayList<DataTable>();
 
-        for (Visitable e : tables) {
+        for (final Visitable e : tables) {
             e.setVisited(false);
         }
 
-        for (AbstractTable table : tables) {
+        for (final AbstractTable table : tables) {
             boolean foundMatch = false;
-            for (LayexMatcher dataLayex : dataLayexes) {
+            for (final LayexMatcher dataLayex : dataLayexes) {
                 if (!foundMatch && dataLayex.match(new TableLexer(table), null)) {
                     result.add(new DataTable(table, dataLayex));
                     table.setVisited(true);
@@ -104,16 +104,16 @@ public abstract class IntelliSheet extends AbstractSheet {
         return result;
     }
 
-    private List<MetaTable> getMetaTables(List<AbstractTable> tables, List<LayexMatcher> metaLayexes) {
-        ArrayList<MetaTable> result = new ArrayList<MetaTable>();
+    private List<MetaTable> getMetaTables(final List<AbstractTable> tables, final List<LayexMatcher> metaLayexes) {
+        final ArrayList<MetaTable> result = new ArrayList<MetaTable>();
 
-        for (AbstractTable table : tables) {
+        for (final AbstractTable table : tables) {
             if (table.isVisited()) {
                 continue;
             }
 
             boolean foundMatch = false;
-            for (LayexMatcher metaLayex : metaLayexes) {
+            for (final LayexMatcher metaLayex : metaLayexes) {
                 if (!foundMatch && metaLayex.match(new TableLexer(table), null)) {
                     result.add(new MetaTable(table, metaLayex));
                     foundMatch = true;
@@ -129,23 +129,25 @@ public abstract class IntelliSheet extends AbstractSheet {
         return result;
     }
 
-    private List<AbstractTable> findAllTables(ITagClassifier classifier, SheetBitmap image) {
-        ArrayList<AbstractTable> result = new ArrayList<AbstractTable>();
+    private List<AbstractTable> findAllTables(final ITagClassifier classifier, final SheetBitmap image) {
+        final ArrayList<AbstractTable> result = new ArrayList<AbstractTable>();
 
-        List<SearchPoint[]> rectangles = findAllRectangles(image);
-        for (SearchPoint[] rectangle : rectangles) {
-            int firstColumnNum = rectangle[0].getX();
+        final List<SearchPoint[]> rectangles = findAllRectangles(image);
+        for (final SearchPoint[] rectangle : rectangles) {
+            final int firstColumnNum = rectangle[0].getX();
             int firstRowNum = rectangle[0].getY();
-            int lastColumnNum = rectangle[1].getX();
-            int lastRowNum = rectangle[1].getY();
+            final int lastColumnNum = rectangle[1].getX();
+            final int lastRowNum = rectangle[1].getY();
 
-            AbstractTable table = new AbstractTable(this, firstColumnNum, firstRowNum, lastColumnNum, lastRowNum, classifier);
+            final AbstractTable table = new AbstractTable(this, firstColumnNum, firstRowNum, lastColumnNum, lastRowNum,
+                    classifier);
 
             boolean isSplitted = false;
             for (int i = 0; i < table.getNumberOfRows(); i++) {
-                AbstractRow row = table.getRowAt(i);
-                if (row.sparsity() >= DocumentFactory.DEFAULT_RATIO_SCARSITY && row.density() >= DocumentFactory.DEFAULT_RATIO_DENSITY) {
-                    int currRowNum = table.getFirstRow() + i;
+                final AbstractRow row = table.getRowAt(i);
+                if (row.sparsity() >= DocumentFactory.DEFAULT_RATIO_SCARSITY
+                        && row.density() >= DocumentFactory.DEFAULT_RATIO_DENSITY) {
+                    final int currRowNum = table.getFirstRow() + i;
                     if (firstRowNum <= (currRowNum - 1)) {
                         result.add(new AbstractTable(table, firstRowNum, currRowNum - 1));
                     }
@@ -165,21 +167,21 @@ public abstract class IntelliSheet extends AbstractSheet {
         return result;
     }
 
-    private List<SearchPoint[]> findAllRectangles(SheetBitmap original) {
-        ISearchBitmap filtered = original.clone();
+    private List<SearchPoint[]> findAllRectangles(final SheetBitmap original) {
+        final ISearchBitmap filtered = original.clone();
         final Filter filter = new Filter(new Template(new float[][] { { 0, 0, 0 }, { 1, 1, 0 }, { 0, 0, 0 } }));
         filter.apply(original, filtered, 0.5);
 
         List<SearchPoint[]> rectangles = new RectangleExtractor().extractAll(filtered);
 
-        for (SearchPoint[] rectangle : rectangles) {
+        for (final SearchPoint[] rectangle : rectangles) {
             rectangle[0].setX(Math.max(0, rectangle[0].getX() - 1));
         }
 
-        List<SearchPoint> points = extractAllPoints(filtered);
+        final List<SearchPoint> points = extractAllPoints(filtered);
 
-        for (SearchPoint point : points) {
-            SearchPoint neighboor = new SearchPoint(point.getX() + 1, point.getY(), point.getSAD());
+        for (final SearchPoint point : points) {
+            final SearchPoint neighboor = new SearchPoint(point.getX() + 1, point.getY(), point.getSAD());
             rectangles.add(new SearchPoint[] { point, neighboor });
         }
 
@@ -188,14 +190,14 @@ public abstract class IntelliSheet extends AbstractSheet {
         return rectangles;
     }
 
-    private List<SearchPoint> extractAllPoints(ISearchBitmap filtered) {
+    private List<SearchPoint> extractAllPoints(final ISearchBitmap filtered) {
         final TemplateMatcher pointTemplate = new TemplateMatcher(
                 new Template(new float[][] { { 0, 0, 0 }, { 0, 1, 1 }, { 0, 0, 0 } }));
         return pointTemplate.matchAll(filtered, 0, 0, filtered.getWidth(), filtered.getHeight(), 0.9);
     }
 
-    private boolean isSnapped(MetaTable metaTable, List<DataTable> dataTables) {
-        for (DataTable dataTable : dataTables) {
+    private boolean isSnapped(final MetaTable metaTable, final List<DataTable> dataTables) {
+        for (final DataTable dataTable : dataTables) {
             if (distanceBetweenTables(metaTable, dataTable) == 0) {
                 return true;
             }
@@ -203,7 +205,8 @@ public abstract class IntelliSheet extends AbstractSheet {
         return false;
     }
 
-    private TableGraph findClosestMetaGraph(TableGraph root, AbstractTable table, int level, int maxLevel) {
+    private TableGraph findClosestMetaGraph(final TableGraph root, final AbstractTable table, final int level,
+            final int maxLevel) {
         TableGraph result = root;
 
         if (level > maxLevel) {
@@ -211,14 +214,14 @@ public abstract class IntelliSheet extends AbstractSheet {
         }
 
         double minDist = Double.MAX_VALUE;
-        for (TableGraph child : root.children()) {
+        for (final TableGraph child : root.children()) {
             if (!(child.getTable() instanceof MetaTable)) {
                 continue;
             }
 
-            TableGraph grandChild = findClosestMetaGraph(child, table, level + 1, maxLevel);
-            double dist1 = distanceBetweenTables(grandChild.getTable(), table);
-            double dist2 = distanceBetweenTables(child.getTable(), table);
+            final TableGraph grandChild = findClosestMetaGraph(child, table, level + 1, maxLevel);
+            final double dist1 = distanceBetweenTables(grandChild.getTable(), table);
+            final double dist2 = distanceBetweenTables(child.getTable(), table);
 
             if (dist1 < dist2) {
                 if (dist1 < minDist) {
@@ -236,9 +239,9 @@ public abstract class IntelliSheet extends AbstractSheet {
         return result;
     }
 
-    private double distanceBetweenTables(AbstractTable table1, AbstractTable table2) {
-        int vx = table2.getFirstColumn() - table1.getFirstColumn();
-        int vy = table2.getFirstRow() - table1.getLastRow() - 1;
+    private double distanceBetweenTables(final AbstractTable table1, final AbstractTable table2) {
+        final int vx = table2.getFirstColumn() - table1.getFirstColumn();
+        final int vy = table2.getFirstRow() - table1.getLastRow() - 1;
         if (vx >= 0 && vy >= 0) {
             return vx + vy;
         } else {

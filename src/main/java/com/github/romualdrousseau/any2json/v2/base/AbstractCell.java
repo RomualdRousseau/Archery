@@ -14,7 +14,8 @@ public class AbstractCell implements Cell, Symbol {
 
     public final static AbstractCell EndOfStream = new AbstractCell("", 0, 0, null);
 
-    public AbstractCell(String value, int colIndex, int mergedCount, ITagClassifier classifier) {
+    public AbstractCell(final String value, final int colIndex, final int mergedCount,
+            final ITagClassifier classifier) {
         this.value = (value == null) ? "" : value;
         this.colIndex = colIndex;
         this.mergedCount = mergedCount;
@@ -23,7 +24,7 @@ public class AbstractCell implements Cell, Symbol {
 
     @Override
     public boolean hasValue() {
-        return !StringUtility.isEmpty(this.value);
+        return !StringUtility.isFastEmpty(this.value);
     }
 
     @Override
@@ -46,7 +47,7 @@ public class AbstractCell implements Cell, Symbol {
 
     @Override
     public String getSymbol() {
-        if(this.symbol == null) {
+        if (this.symbol == null) {
             if (this == AbstractCell.EndOfStream) {
                 this.symbol = "";
             } else if (this == AbstractCell.EndOfRow) {
@@ -62,18 +63,14 @@ public class AbstractCell implements Cell, Symbol {
         return this.symbol;
     }
 
-    public ITagClassifier getClassifier() {
-        return this.classifier;
-    }
-
     public int getColumnIndex() {
         return this.colIndex;
     }
 
-    private String value;
-    private int colIndex;
-    private int mergedCount;
+    private final String value;
+    private final int colIndex;
+    private final int mergedCount;
     private Vector entityVector;
-    private ITagClassifier classifier;
+    private final ITagClassifier classifier;
     private String symbol;
 }

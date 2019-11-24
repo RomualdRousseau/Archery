@@ -9,7 +9,7 @@ public class TableLexer implements Lexer<AbstractCell, TableLexer.Cursor> {
 
     class Cursor {
 
-        public Cursor(int colIndex, int rowIndex) {
+        public Cursor(final int colIndex, final int rowIndex) {
             this.colIndex = colIndex;
             this.rowIndex = rowIndex;
         }
@@ -22,11 +22,11 @@ public class TableLexer implements Lexer<AbstractCell, TableLexer.Cursor> {
             return this.rowIndex;
         }
 
-        private int colIndex;
-        private int rowIndex;
+        private final int colIndex;
+        private final int rowIndex;
     }
 
-    public TableLexer(Table table) {
+    public TableLexer(final Table table) {
         this.stack = new ArrayList<Cursor>();
         this.table = (AbstractTable) table;
         this.colIndex = 0;
@@ -35,24 +35,24 @@ public class TableLexer implements Lexer<AbstractCell, TableLexer.Cursor> {
 
     @Override
     public AbstractCell read() {
-        if(this.rowIndex >= this.table.getNumberOfRows()) {
+        if (this.rowIndex >= this.table.getNumberOfRows()) {
             return AbstractCell.EndOfStream;
         }
 
-        if(this.colIndex >= this.table.getNumberOfColumns()) {
+        if (this.colIndex >= this.table.getNumberOfColumns()) {
             this.colIndex = 0;
             this.rowIndex++;
             return AbstractCell.EndOfRow;
         }
 
-        AbstractRow row = this.table.getRowAt(this.rowIndex);
-        if(row.isEmpty()) {
+        final AbstractRow row = this.table.getRowAt(this.rowIndex);
+        if (row.isEmpty()) {
             this.colIndex = 0;
             this.rowIndex++;
             return AbstractCell.EndOfRow;
         }
 
-        AbstractCell cell = row.getCellAt(colIndex);
+        final AbstractCell cell = row.getCellAt(colIndex);
         colIndex += cell.getMergedCount();
 
         return cell;
@@ -60,16 +60,16 @@ public class TableLexer implements Lexer<AbstractCell, TableLexer.Cursor> {
 
     @Override
     public AbstractCell peek() {
-        if(this.rowIndex >= this.table.getNumberOfRows()) {
+        if (this.rowIndex >= this.table.getNumberOfRows()) {
             return AbstractCell.EndOfStream;
         }
 
-        if(this.colIndex >= this.table.getNumberOfColumns()) {
+        if (this.colIndex >= this.table.getNumberOfColumns()) {
             return AbstractCell.EndOfRow;
         }
 
-        AbstractRow row = this.table.getRowAt(this.rowIndex);
-        if(row.isEmpty()) {
+        final AbstractRow row = this.table.getRowAt(this.rowIndex);
+        if (row.isEmpty()) {
             return AbstractCell.EndOfRow;
         }
 
@@ -87,13 +87,13 @@ public class TableLexer implements Lexer<AbstractCell, TableLexer.Cursor> {
     }
 
     @Override
-    public void seek(Cursor c) {
+    public void seek(final Cursor c) {
         this.colIndex = c.getColIndex();
         this.rowIndex = c.getRowIndex();
     }
 
-    private ArrayList<Cursor> stack;
-    private AbstractTable table;
+    private final ArrayList<Cursor> stack;
+    private final AbstractTable table;
     private int colIndex;
     private int rowIndex;
 }

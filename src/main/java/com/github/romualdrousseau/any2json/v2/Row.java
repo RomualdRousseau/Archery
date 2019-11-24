@@ -7,4 +7,8 @@ public interface Row {
     int getNumberOfCells();
 
     Iterable<Cell> cells();
+
+    Cell getCell(Header header);
+
+    String getCellValue(Header header, boolean merged);
 }

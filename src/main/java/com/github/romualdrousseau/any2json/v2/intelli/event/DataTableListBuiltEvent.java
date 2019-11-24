@@ -8,7 +8,7 @@ import com.github.romualdrousseau.any2json.v2.intelli.DataTable;
 
 public class DataTableListBuiltEvent extends SheetEvent {
 
-    public DataTableListBuiltEvent(Sheet source, List<DataTable> tables) {
+    public DataTableListBuiltEvent(final Sheet source, final List<DataTable> tables) {
         super(source);
         this.dataTables = tables;
     }
@@ -17,5 +17,5 @@ public class DataTableListBuiltEvent extends SheetEvent {
         return this.dataTables;
     }
 
-    private List<DataTable> dataTables;
+    private final List<DataTable> dataTables;
 }

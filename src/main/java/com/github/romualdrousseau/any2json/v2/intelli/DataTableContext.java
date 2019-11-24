@@ -13,39 +13,39 @@ public class DataTableContext extends Context<AbstractCell> {
     public static final int TABLE_BODY = 1;
     public static final int TABLE_FOOTER = 2;
 
-    public DataTableContext(DataTable dataTable) {
+    public DataTableContext(final DataTable dataTable) {
         this.dataTable = dataTable;
         this.canStartPivot = false;
         this.footerProcessed = false;
     }
 
-    public void processSymbolFunc(AbstractCell cell) {
-        String symbol = cell.getSymbol();
+    public void processSymbolFunc(final AbstractCell cell) {
+        final String symbol = cell.getSymbol();
 
         switch (this.getGroup()) {
         case TABLE_HEADER:
             if (symbol.equals("m")) {
                 if (this.canStartPivot) {
                     PivotTableHeader foundPivot = null;
-                    for (Header header : this.dataTable.headers()) {
+                    for (final Header header : this.dataTable.headers()) {
                         if (header instanceof PivotTableHeader) {
                             foundPivot = (PivotTableHeader) header;
                         }
                     }
                     if (foundPivot == null) {
-                        this.dataTable.addHeader(new PivotTableHeader(cell));
+                        this.dataTable.addHeader(new PivotTableHeader(this.dataTable, cell));
                     } else {
-                        foundPivot.addEntry(foundPivot.new PivotEntry(cell));
+                        foundPivot.addEntry(cell);
                     }
                 } else {
-                    this.dataTable.addHeader(new MetaTableHeader(cell));
+                    this.dataTable.addHeader(new MetaTableHeader(this.dataTable, cell));
                 }
             } else if (symbol.equals("$")) {
                 this.dataTable.setFirstRowOffset(this.getRow() + 1);
                 this.canStartPivot = false;
             } else {
                 this.dataTable.setHeaderRowOffset(this.getRow());
-                this.dataTable.addHeader(new TaggedHeader(cell));
+                this.dataTable.addHeader(new TaggedHeader(this.dataTable, cell));
                 this.canStartPivot = true;
             }
             break;
@@ -53,7 +53,7 @@ public class DataTableContext extends Context<AbstractCell> {
         case TABLE_FOOTER:
             if (symbol.equals("$")) {
                 if (!this.footerProcessed) {
-                    int n = this.dataTable.getLastRow() - this.dataTable.getFirstRow();
+                    final int n = this.dataTable.getLastRow() - this.dataTable.getFirstRow();
                     this.dataTable.setLastRowOffset(this.getRow() - n - 1);
                     this.footerProcessed = true;
                 }
@@ -62,7 +62,7 @@ public class DataTableContext extends Context<AbstractCell> {
         }
     }
 
-    private DataTable dataTable;
+    private final DataTable dataTable;
     private boolean canStartPivot;
     private boolean footerProcessed;
 }

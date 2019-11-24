@@ -13,9 +13,10 @@ import com.github.romualdrousseau.any2json.v2.util.Visitable;
 
 public class AbstractTable implements Table, Visitable {
 
-    public AbstractTable(AbstractSheet sheet, int firstColumn, int firstRow, int lastColumn, int lastRow, ITagClassifier classifier) {
-        assert(firstColumn <= lastColumn);
-        assert(firstRow <= lastRow);
+    public AbstractTable(final AbstractSheet sheet, final int firstColumn, final int firstRow, final int lastColumn,
+            final int lastRow, final ITagClassifier classifier) {
+        assert (firstColumn <= lastColumn) : "fisrt column must be before last column";
+        assert (firstRow <= lastRow) : "first row must be before last row";
         this.visited = false;
         this.sheet = sheet;
         this.firstColumn = firstColumn;
@@ -30,19 +31,17 @@ public class AbstractTable implements Table, Visitable {
         this.cachedRows = null;
     }
 
-    public AbstractTable(ITagClassifier classifier) {
+    public AbstractTable(final ITagClassifier classifier) {
         this(null, 0, 0, 0, 0, classifier);
     }
 
-    public AbstractTable(AbstractTable parent) {
+    public AbstractTable(final AbstractTable parent) {
         this(parent.sheet, parent.firstColumn, parent.firstRow, parent.lastColumn, parent.lastRow, parent.classifier);
         this.cachedRows = parent.cachedRows;
     }
 
-    public AbstractTable(AbstractTable parent, int firstRow, int lastRow) {
+    public AbstractTable(final AbstractTable parent, final int firstRow, final int lastRow) {
         this(parent.sheet, parent.firstColumn, firstRow, parent.lastColumn, lastRow, parent.classifier);
-        assert(firstRow >= parent.firstRow);
-        assert(lastRow <= parent.lastRow);
         this.parentOffsetRow = this.firstRow - parent.firstRow;
         this.cachedRows = parent.cachedRows;
     }
@@ -78,7 +77,7 @@ public class AbstractTable implements Table, Visitable {
     }
 
     @Override
-    public void setVisited(boolean flag) {
+    public void setVisited(final boolean flag) {
         this.visited = flag;
     }
 
@@ -110,9 +109,9 @@ public class AbstractTable implements Table, Visitable {
         return this.firstRowOffset;
     }
 
-    public void setFirstRowOffset(int offset) {
-        assert(offset >= 0);
-        assert((this.lastRowOffset - offset) <= 0);
+    public void setFirstRowOffset(final int offset) {
+        assert (offset >= 0);
+        assert ((this.lastRowOffset - offset) <= 0);
         this.firstRowOffset = offset;
     }
 
@@ -120,9 +119,9 @@ public class AbstractTable implements Table, Visitable {
         return this.lastRowOffset;
     }
 
-    public void setLastRowOffset(int offset) {
-        assert(offset <= 0);
-        assert((offset - this.firstRowOffset) <= 0);
+    public void setLastRowOffset(final int offset) {
+        assert (offset <= 0);
+        assert ((offset - this.firstRowOffset) <= 0);
         this.lastRowOffset = offset;
     }
 
@@ -130,23 +129,23 @@ public class AbstractTable implements Table, Visitable {
         return this.headerRowOffset;
     }
 
-    public void setHeaderRowOffset(int offset) {
-        assert(offset >= 0);
-        assert((this.lastRowOffset - offset) <= 0);
+    public void setHeaderRowOffset(final int offset) {
+        assert (offset >= 0);
+        assert ((this.lastRowOffset - offset) <= 0);
         this.headerRowOffset = offset;
     }
 
-    public AbstractRow getRowAt(int rowIndex) {
+    public AbstractRow getRowAt(final int rowIndex) {
         if (rowIndex < 0 || rowIndex >= getNumberOfRows()) {
             throw new ArrayIndexOutOfBoundsException(rowIndex);
         }
 
-        if(this.cachedRows == null) {
+        if (this.cachedRows == null) {
             this.cachedRows = new RowStore();
         }
 
         AbstractRow result = cachedRows.get(this.parentOffsetRow + this.firstRowOffset + rowIndex);
-        if(result == null) {
+        if (result == null) {
             result = new AbstractRow(this, rowIndex);
             cachedRows.put(rowIndex, result);
         }
@@ -154,17 +153,17 @@ public class AbstractTable implements Table, Visitable {
         return result;
     }
 
-    public void addHeader(AbstractHeader header) {
+    public void addHeader(final AbstractHeader header) {
         this.headers.addLast(header);
     }
 
-    public boolean checkIfHeaderExists(AbstractHeader header) {
+    public boolean checkIfHeaderExists(final AbstractHeader header) {
         return this.headers.contains(header);
     }
 
-    public AbstractHeader findHeader(AbstractHeader headerToFind) {
-        for(Header header : this.headers) {
-            if(header.equals(headerToFind)) {
+    public AbstractHeader findHeader(final AbstractHeader headerToFind) {
+        for (final Header header : this.headers) {
+            if (header.equals(headerToFind)) {
                 return (AbstractHeader) header;
             }
         }
@@ -172,16 +171,16 @@ public class AbstractTable implements Table, Visitable {
     }
 
     private boolean visited;
-    private AbstractSheet sheet;
-    private int firstColumn;
-    private int firstRow;
-    private int lastColumn;
-    private int lastRow;
+    private final AbstractSheet sheet;
+    private final int firstColumn;
+    private final int firstRow;
+    private final int lastColumn;
+    private final int lastRow;
     private int parentOffsetRow;
     private int firstRowOffset;
     private int lastRowOffset;
     private int headerRowOffset;
-    private ITagClassifier classifier;
+    private final ITagClassifier classifier;
     private RowStore cachedRows;
-    private LinkedList<Header> headers = new LinkedList<Header>();
+    private final LinkedList<Header> headers = new LinkedList<Header>();
 }

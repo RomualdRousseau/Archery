@@ -8,7 +8,7 @@ import com.github.romualdrousseau.any2json.v2.util.TableGraph;
 
 public class TableGraphBuiltEvent extends SheetEvent {
 
-    public TableGraphBuiltEvent(Sheet source, TableGraph tableGraph) {
+    public TableGraphBuiltEvent(final Sheet source, final TableGraph tableGraph) {
         super(source);
         this.tableGraph = tableGraph;
     }
@@ -21,15 +21,15 @@ public class TableGraphBuiltEvent extends SheetEvent {
         this.walkThroughTableGraph(this.tableGraph, 0, 0);
     }
 
-    private int walkThroughTableGraph(TableGraph graph, int indent, int counter) {
+    private int walkThroughTableGraph(final TableGraph graph, final int indent, int counter) {
         if (!graph.isRoot()) {
-            StringBuffer out = new StringBuffer();
+            final StringBuffer out = new StringBuffer();
 
             for (int i = 0; i < indent; i++) {
                 out.append("|- ");
             }
 
-            for (Header header : graph.getTable().headers()) {
+            for (final Header header : graph.getTable().headers()) {
                 out.append(header.getName()).append(" ");
             }
 
@@ -54,12 +54,12 @@ public class TableGraphBuiltEvent extends SheetEvent {
             System.out.println(out.toString());
         }
 
-        for (TableGraph child : graph.children()) {
+        for (final TableGraph child : graph.children()) {
             counter = walkThroughTableGraph(child, indent + 1, counter);
         }
 
         return counter;
     }
 
-    private TableGraph tableGraph;
+    private final TableGraph tableGraph;
 }
