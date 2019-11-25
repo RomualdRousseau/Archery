@@ -3,6 +3,7 @@ package com.github.romualdrousseau.any2json.v2.base;
 import com.github.romualdrousseau.any2json.v2.Header;
 import com.github.romualdrousseau.any2json.v2.Row;
 import com.github.romualdrousseau.any2json.v2.Table;
+import com.github.romualdrousseau.any2json.v2.base.header.AbstractIntelliHeader;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -30,6 +31,7 @@ public class AbstractTable implements Table, Visitable {
         this.headerRowOffset = 0;
         this.parentOffsetRow = 0;
         this.cachedRows = null;
+        this.loadCompleted =  false;
     }
 
     public AbstractTable(final ITagClassifier classifier) {
@@ -73,6 +75,30 @@ public class AbstractTable implements Table, Visitable {
     }
 
     @Override
+    public void updateHeaderTags() {
+        for (Header header : this.headers()) {
+            ((AbstractIntelliHeader) header).resetTag();
+        }
+
+        for (Header header : this.headers()) {
+            ((AbstractIntelliHeader) header).updateTag(false);
+        }
+
+        for (Header header : this.headers()) {
+            ((AbstractIntelliHeader) header).updateTag(true);
+        }
+
+        for (Header header : this.headers()) {
+            if (header.hasTag() && !header.getTag().isUndefined()) {
+                Header head = this.headersByTag.putIfAbsent(header.getTag().getValue(), header);
+                if (head != null) {
+                    ((AbstractIntelliHeader) head).mergeTo((AbstractIntelliHeader) header);
+                }
+            }
+        }
+    }
+
+    @Override
     public int getNumberOfHeaderTags() {
         return this.headersByTag.size();
     }
@@ -96,6 +122,10 @@ public class AbstractTable implements Table, Visitable {
         return this.sheet;
     }
 
+    public ITagClassifier getClassifier() {
+        return this.classifier;
+    }
+
     public int getFirstColumn() {
         return this.firstColumn;
     }
@@ -110,10 +140,6 @@ public class AbstractTable implements Table, Visitable {
 
     public int getLastRow() {
         return this.lastRow;
-    }
-
-    public ITagClassifier getClassifier() {
-        return this.classifier;
     }
 
     public int getFirstRowOffset() {
@@ -144,6 +170,14 @@ public class AbstractTable implements Table, Visitable {
         assert (offset >= 0);
         assert ((this.lastRowOffset - offset) <= 0);
         this.headerRowOffset = offset;
+    }
+
+    public boolean isLoadCompleted() {
+        return this.loadCompleted;
+    }
+
+    public void setLoadCompleted(final boolean flag) {
+        this.loadCompleted = flag;
     }
 
     public AbstractRow getRowAt(final int rowIndex) {
@@ -181,29 +215,6 @@ public class AbstractTable implements Table, Visitable {
         return null;
     }
 
-    public void updateHeaderTags() {
-        if(this.classifier == null) {
-            return;
-        }
-
-        for (Header header : this.headers) {
-            ((AbstractHeader) header).updateTag(false);
-        }
-
-        for (Header header : this.headers) {
-            ((AbstractHeader) header).updateTag(true);
-        }
-
-        for (Header header : this.headers) {
-            if (header.hasTag() && !header.getTag().isUndefined()) {
-                Header head = this.headersByTag.putIfAbsent(header.getTag().getValue(), header);
-                if (head != null) {
-                    ((AbstractHeader) head).mergeTo((AbstractHeader) header);
-                }
-            }
-        }
-    }
-
     private boolean visited;
     private final AbstractSheet sheet;
     private final int firstColumn;
@@ -218,4 +229,5 @@ public class AbstractTable implements Table, Visitable {
     private RowStore cachedRows;
     private final LinkedList<Header> headers = new LinkedList<Header>();
     private final HashMap<String, Header> headersByTag = new HashMap<String, Header>();
+    private boolean loadCompleted;
 }

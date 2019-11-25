@@ -13,6 +13,7 @@ public class MetaTable extends AbstractTable {
     public MetaTable(final AbstractTable table) {
         super(table);
         this.buildSimpleMeta(table);
+        this.setLoadCompleted(true);
     }
 
     public MetaTable(final AbstractTable table, final LayexMatcher layex) {

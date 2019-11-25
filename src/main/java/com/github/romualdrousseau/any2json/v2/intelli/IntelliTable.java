@@ -9,16 +9,18 @@ import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
 import com.github.romualdrousseau.any2json.v2.base.AbstractHeader;
 import com.github.romualdrousseau.any2json.v2.base.AbstractRow;
 import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
-import com.github.romualdrousseau.any2json.v2.intelli.header.PivotTableHeader;
+import com.github.romualdrousseau.any2json.v2.intelli.header.PivotKeyHeader;
 import com.github.romualdrousseau.any2json.v2.util.TableGraph;
 
 public class IntelliTable extends AbstractTable {
 
     public IntelliTable(final TableGraph root, final ITagClassifier classifier) {
         super(classifier);
+        assert(this.getClassifier() != null) : "Classifier must be defined";
         this.buildHeaders(root);
         this.buildTable(root, findPivotHeader());
         this.updateHeaderTags();
+        this.setLoadCompleted(true);
     }
 
     @Override
@@ -53,8 +55,8 @@ public class IntelliTable extends AbstractTable {
                 newHeader.setColumnIndex(this.getNumberOfHeaders());
                 this.addHeader(newHeader);
 
-                if (header instanceof PivotTableHeader) {
-                    newHeader = ((PivotTableHeader) abstractHeader).getPivotValue();
+                if (header instanceof PivotKeyHeader) {
+                    newHeader = ((PivotKeyHeader) abstractHeader).getPivotValue();
                     newHeader.setTable(this);
                     newHeader.setColumnIndex(this.getNumberOfHeaders());
                     this.addHeader(newHeader);
@@ -67,18 +69,18 @@ public class IntelliTable extends AbstractTable {
         }
     }
 
-    private PivotTableHeader findPivotHeader() {
-        PivotTableHeader result = null;
+    private PivotKeyHeader findPivotHeader() {
+        PivotKeyHeader result = null;
         for (final Header header : this.headers()) {
-            if (header instanceof PivotTableHeader) {
-                result = (PivotTableHeader) header;
+            if (header instanceof PivotKeyHeader) {
+                result = (PivotKeyHeader) header;
                 break;
             }
         }
         return result;
     }
 
-    private void buildTable(final TableGraph graph, final PivotTableHeader pivot) {
+    private void buildTable(final TableGraph graph, final PivotKeyHeader pivot) {
         for (final TableGraph child : graph.children()) {
             if (child.getTable() instanceof DataTable) {
                 this.buildRowsForOneTable((DataTable) child.getTable(), pivot);
@@ -90,7 +92,7 @@ public class IntelliTable extends AbstractTable {
         }
     }
 
-    private void buildRowsForOneTable(final DataTable orgTable, final PivotTableHeader pivot) {
+    private void buildRowsForOneTable(final DataTable orgTable, final PivotKeyHeader pivot) {
         for (final Row orgRow : orgTable.rows()) {
             final ArrayList<IntelliRow> newRows = buildRowsForOneRow(orgTable, (AbstractRow) orgRow, pivot);
             this.rows.addAll(newRows);
@@ -98,7 +100,7 @@ public class IntelliTable extends AbstractTable {
     }
 
     private ArrayList<IntelliRow> buildRowsForOneRow(final DataTable orgTable, final AbstractRow orgRow,
-            final PivotTableHeader pivot) {
+            final PivotKeyHeader pivot) {
         final ArrayList<IntelliRow> newRows = new ArrayList<IntelliRow>();
 
         if (pivot == null) {
@@ -119,7 +121,7 @@ public class IntelliTable extends AbstractTable {
             final AbstractHeader abstractHeader = (AbstractHeader) header;
             final AbstractHeader orgHeader = orgTable.findHeader((AbstractHeader) header);
 
-            if (header instanceof PivotTableHeader && pivotCell != null) {
+            if (header instanceof PivotKeyHeader && pivotCell != null) {
                 if (orgHeader != null) {
                     newRow.setCellValue(abstractHeader.getColumnIndex(), pivotCell.getValue());
                     newRow.setCell(abstractHeader.getColumnIndex() + 1, orgRow.getCellAt(pivotCell.getColumnIndex()));

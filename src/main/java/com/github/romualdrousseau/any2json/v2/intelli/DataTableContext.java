@@ -3,7 +3,7 @@ package com.github.romualdrousseau.any2json.v2.intelli;
 import com.github.romualdrousseau.any2json.v2.Header;
 import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
 import com.github.romualdrousseau.any2json.v2.intelli.header.MetaTableHeader;
-import com.github.romualdrousseau.any2json.v2.intelli.header.PivotTableHeader;
+import com.github.romualdrousseau.any2json.v2.intelli.header.PivotKeyHeader;
 import com.github.romualdrousseau.any2json.v2.intelli.header.TaggedHeader;
 import com.github.romualdrousseau.any2json.v2.layex.Context;
 
@@ -26,14 +26,14 @@ public class DataTableContext extends Context<AbstractCell> {
         case TABLE_HEADER:
             if (symbol.equals("m")) {
                 if (this.canStartPivot) {
-                    PivotTableHeader foundPivot = null;
+                    PivotKeyHeader foundPivot = null;
                     for (final Header header : this.dataTable.headers()) {
-                        if (header instanceof PivotTableHeader) {
-                            foundPivot = (PivotTableHeader) header;
+                        if (header instanceof PivotKeyHeader) {
+                            foundPivot = (PivotKeyHeader) header;
                         }
                     }
                     if (foundPivot == null) {
-                        this.dataTable.addHeader(new PivotTableHeader(this.dataTable, cell));
+                        this.dataTable.addHeader(new PivotKeyHeader(this.dataTable, cell));
                     } else {
                         foundPivot.addEntry(cell);
                     }

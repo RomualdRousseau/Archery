@@ -3,12 +3,13 @@ package com.github.romualdrousseau.any2json.v2.intelli.header;
 import com.github.romualdrousseau.any2json.v2.base.AbstractHeader;
 import com.github.romualdrousseau.any2json.v2.base.AbstractRow;
 import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
+import com.github.romualdrousseau.any2json.v2.base.header.AbstractIntelliHeader;
 import com.github.romualdrousseau.shuju.math.Vector;
 
 import com.github.romualdrousseau.any2json.v2.DocumentFactory;
 import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
 
-public class TaggedHeader extends AbstractHeader {
+public class TaggedHeader extends AbstractIntelliHeader {
 
     public TaggedHeader(final AbstractTable table, final AbstractCell cell) {
         super(table, cell);

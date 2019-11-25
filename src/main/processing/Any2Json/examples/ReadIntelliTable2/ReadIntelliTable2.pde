@@ -255,6 +255,6 @@ void dumpTable(com.github.romualdrousseau.any2json.v2.Table table) {
       print(cell.getValue(), "| ");
     }
     println();
-    if(n++ >= 10) break;
+    if(n++ >= 50) break;
   }
 }

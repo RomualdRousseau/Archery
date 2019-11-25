@@ -4,8 +4,9 @@ import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
 import com.github.romualdrousseau.any2json.v2.base.AbstractHeader;
 import com.github.romualdrousseau.any2json.v2.base.AbstractRow;
 import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
+import com.github.romualdrousseau.any2json.v2.base.header.AbstractIntelliHeader;
 
-public class MetaHeader extends AbstractHeader {
+public class MetaHeader extends AbstractIntelliHeader {
 
     public MetaHeader(final AbstractTable table, final AbstractCell cell) {
         super(table, cell);

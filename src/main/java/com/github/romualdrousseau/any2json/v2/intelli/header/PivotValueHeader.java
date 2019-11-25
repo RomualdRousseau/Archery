@@ -5,25 +5,27 @@ import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
 import com.github.romualdrousseau.any2json.v2.base.AbstractRow;
 import com.github.romualdrousseau.shuju.math.Vector;
 
-public class PivotValueHeader extends PivotTableHeader {
+public class PivotValueHeader extends PivotKeyHeader {
 
-    public PivotValueHeader(final PivotTableHeader parent) {
+    public PivotValueHeader(final PivotKeyHeader parent) {
         super(parent.getTable(), parent.getCell());
     }
 
     @Override
     public String getName() {
+        if(!this.getTable().isLoadCompleted()) {
+            return "#VALUE? " + DocumentFactory.PIVOT_SUFFIX;
+        }
+
         if (this.name == null) {
-            this.name = "";
             final Vector v = this.buildEntityVector();
             if(v.sparsity() < 1.0f) {
-                final int i = v.argmax();
-                this.name = this.getTable().getClassifier().getEntityList().get(i) + " ";
+                this.name = this.getTable().getClassifier().getEntityList().get(v.argmax());
+            } else {
+                this.name = "#VALUE?";
             }
-            this.name += DocumentFactory.PIVOT_SUFFIX;
-
         }
-        return this.name;
+        return this.name + " " + DocumentFactory.PIVOT_SUFFIX;
     }
 
     @Override
