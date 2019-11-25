@@ -238,14 +238,7 @@ void dumpTable(com.github.romualdrousseau.any2json.v2.Table table) {
   println();
   for (Header header : table.headers()) {
     AbstractHeader abstractHeader = (AbstractHeader) header;
-    
-    println(abstractHeader.getName());
-    println(abstractHeader.getColumnIndex());
-    println(abstractHeader.getTag().getValue());
-    println(abstractHeader.getEntityVector());
-    //println(abstractHeader.getWordVector());
-    //println(abstractHeader.getConflictVector(true));
-    println("--");
+    print(abstractHeader.getName(), "| ");
   }
   println();
   
