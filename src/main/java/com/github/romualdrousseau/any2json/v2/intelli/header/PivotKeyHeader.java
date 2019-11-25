@@ -4,21 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.romualdrousseau.any2json.v2.DocumentFactory;
-import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
+import com.github.romualdrousseau.any2json.v2.base.BaseCell;
 import com.github.romualdrousseau.any2json.v2.base.AbstractHeader;
-import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
-import com.github.romualdrousseau.shuju.math.Vector;
+import com.github.romualdrousseau.any2json.v2.intelli.IntelliTable;
 
 public class PivotKeyHeader extends MetaHeader {
 
-    public PivotKeyHeader(final AbstractTable table, final AbstractCell cell) {
+    public PivotKeyHeader(final IntelliTable table, final BaseCell cell) {
         super(table, cell);
-        this.entries = new ArrayList<AbstractCell>();
+        this.entries = new ArrayList<BaseCell>();
         this.entries.add(cell);
     }
 
     private PivotKeyHeader(final PivotKeyHeader parent) {
-        super(parent.getTable(), parent.getCell());
+        super((IntelliTable) parent.getTable(), parent.getCell());
         this.entries = parent.entries;
     }
 
@@ -37,16 +36,11 @@ public class PivotKeyHeader extends MetaHeader {
         return new PivotKeyHeader(this);
     }
 
-    @Override
-    protected Vector buildEntityVector() {
-        return this.getCell().getEntityVector();
-    }
-
-    public List<AbstractCell> getEntries() {
+    public List<BaseCell> getEntries() {
         return this.entries;
     }
 
-    public void addEntry(final AbstractCell entry) {
+    public void addEntry(final BaseCell entry) {
         this.entries.add(entry);
     }
 
@@ -55,5 +49,5 @@ public class PivotKeyHeader extends MetaHeader {
     }
 
     private String name;
-    private final ArrayList<AbstractCell> entries;
+    private final ArrayList<BaseCell> entries;
 }

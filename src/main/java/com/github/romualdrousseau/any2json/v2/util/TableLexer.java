@@ -3,12 +3,12 @@ package com.github.romualdrousseau.any2json.v2.util;
 import java.util.ArrayList;
 
 import com.github.romualdrousseau.any2json.v2.Table;
-import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
-import com.github.romualdrousseau.any2json.v2.base.AbstractRow;
-import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
+import com.github.romualdrousseau.any2json.v2.base.BaseCell;
+import com.github.romualdrousseau.any2json.v2.base.BaseRow;
+import com.github.romualdrousseau.any2json.v2.intelli.IntelliTable;
 import com.github.romualdrousseau.any2json.v2.layex.Lexer;
 
-public class TableLexer implements Lexer<AbstractCell, TableLexer.Cursor> {
+public class TableLexer implements Lexer<BaseCell, TableLexer.Cursor> {
 
     class Cursor {
 
@@ -31,49 +31,49 @@ public class TableLexer implements Lexer<AbstractCell, TableLexer.Cursor> {
 
     public TableLexer(final Table table) {
         this.stack = new ArrayList<Cursor>();
-        this.table = (AbstractTable) table;
+        this.table = (IntelliTable) table;
         this.colIndex = 0;
         this.rowIndex = 0;
     }
 
     @Override
-    public AbstractCell read() {
+    public BaseCell read() {
         if (this.rowIndex >= this.table.getNumberOfRows()) {
-            return AbstractCell.EndOfStream;
+            return BaseCell.EndOfStream;
         }
 
         if (this.colIndex >= this.table.getNumberOfColumns()) {
             this.colIndex = 0;
             this.rowIndex++;
-            return AbstractCell.EndOfRow;
+            return BaseCell.EndOfRow;
         }
 
-        final AbstractRow row = this.table.getRowAt(this.rowIndex);
+        final BaseRow row = this.table.getRowAt(this.rowIndex);
         if (row.isEmpty()) {
             this.colIndex = 0;
             this.rowIndex++;
-            return AbstractCell.EndOfRow;
+            return BaseCell.EndOfRow;
         }
 
-        final AbstractCell cell = row.getCellAt(colIndex);
+        final BaseCell cell = row.getCellAt(colIndex);
         colIndex += cell.getMergedCount();
 
         return cell;
     }
 
     @Override
-    public AbstractCell peek() {
+    public BaseCell peek() {
         if (this.rowIndex >= this.table.getNumberOfRows()) {
-            return AbstractCell.EndOfStream;
+            return BaseCell.EndOfStream;
         }
 
         if (this.colIndex >= this.table.getNumberOfColumns()) {
-            return AbstractCell.EndOfRow;
+            return BaseCell.EndOfRow;
         }
 
-        final AbstractRow row = this.table.getRowAt(this.rowIndex);
+        final BaseRow row = this.table.getRowAt(this.rowIndex);
         if (row.isEmpty()) {
-            return AbstractCell.EndOfRow;
+            return BaseCell.EndOfRow;
         }
 
         return row.getCellAt(colIndex);
@@ -96,7 +96,7 @@ public class TableLexer implements Lexer<AbstractCell, TableLexer.Cursor> {
     }
 
     private final ArrayList<Cursor> stack;
-    private final AbstractTable table;
+    private final IntelliTable table;
     private int colIndex;
     private int rowIndex;
 }

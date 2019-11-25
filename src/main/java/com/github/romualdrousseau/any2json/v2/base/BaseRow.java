@@ -5,16 +5,16 @@ import com.github.romualdrousseau.any2json.v2.Header;
 import com.github.romualdrousseau.any2json.v2.Row;
 import com.github.romualdrousseau.any2json.v2.util.CellIterable;
 
-public class AbstractRow implements Row {
+public class BaseRow implements Row {
 
-    public AbstractRow(final AbstractTable table, final int rowIndex) {
+    public BaseRow(final AbstractTable table, final int rowIndex) {
         this.table = table;
         this.rowIndex = rowIndex;
         this.cellCount = 0;
         this.emptyCellCount = 0;
         this.islandCellCount = 0;
         this.cellCountUpdated = false;
-        this.cachedCells = new AbstractCell[table.getNumberOfColumns()];
+        this.cachedCells = new BaseCell[table.getNumberOfColumns()];
     }
 
     @Override
@@ -37,29 +37,29 @@ public class AbstractRow implements Row {
     }
 
     @Override
-    public AbstractCell getCell(final Header header) {
+    public BaseCell getCell(final Header header) {
         return ((AbstractHeader) header).getCellForRow(this);
     }
 
     @Override
-    public AbstractCell getCell(Header header, boolean merged) {
+    public BaseCell getCell(Header header, boolean merged) {
         if (merged) {
             AbstractHeader abstractHeader = (AbstractHeader) header;
             String value = abstractHeader.getCellMergedValue(this);
-            return new AbstractCell(value, abstractHeader.getColumnIndex(), 1, this.getTable().getClassifier());
+            return new BaseCell(value, abstractHeader.getColumnIndex(), 1, this.getTable().getClassifier());
         } else {
             return this.getCell(header);
         }
     }
 
     @Override
-    public AbstractCell getCellAt(final int colIndex) {
+    public BaseCell getCellAt(final int colIndex) {
         if (colIndex < 0 || colIndex >= this.table.getNumberOfColumns()) {
             throw new IndexOutOfBoundsException();
         }
-        AbstractCell result = cachedCells[colIndex];
+        BaseCell result = cachedCells[colIndex];
         if (result == null) {
-            result = new AbstractCell(this.getCellValueAt(colIndex), colIndex, this.getNumberOfMergedCellsAt(colIndex),
+            result = new BaseCell(this.getCellValueAt(colIndex), colIndex, this.getNumberOfMergedCellsAt(colIndex),
                     this.table.getClassifier());
             cachedCells[colIndex] = result;
         }
@@ -99,7 +99,7 @@ public class AbstractRow implements Row {
     private void updateCellCount() {
         int n = 0;
         for (int i = 0; i < this.table.getNumberOfColumns();) {
-            final AbstractCell cell = this.getCellAt(i);
+            final BaseCell cell = this.getCellAt(i);
             if (!cell.hasValue()) {
                 this.emptyCellCount++;
                 n = 0;
@@ -119,5 +119,5 @@ public class AbstractRow implements Row {
     private int emptyCellCount;
     private int islandCellCount;
     private boolean cellCountUpdated;
-    private final AbstractCell[] cachedCells;
+    private final BaseCell[] cachedCells;
 }

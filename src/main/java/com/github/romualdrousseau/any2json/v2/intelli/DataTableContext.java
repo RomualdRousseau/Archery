@@ -1,13 +1,13 @@
 package com.github.romualdrousseau.any2json.v2.intelli;
 
 import com.github.romualdrousseau.any2json.v2.Header;
-import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
+import com.github.romualdrousseau.any2json.v2.base.BaseCell;
 import com.github.romualdrousseau.any2json.v2.intelli.header.MetaTableHeader;
 import com.github.romualdrousseau.any2json.v2.intelli.header.PivotKeyHeader;
-import com.github.romualdrousseau.any2json.v2.intelli.header.TaggedHeader;
+import com.github.romualdrousseau.any2json.v2.intelli.header.DataTableHeader;
 import com.github.romualdrousseau.any2json.v2.layex.Context;
 
-public class DataTableContext extends Context<AbstractCell> {
+public class DataTableContext extends Context<BaseCell> {
 
     public static final int TABLE_HEADER = 0;
     public static final int TABLE_BODY = 1;
@@ -19,7 +19,7 @@ public class DataTableContext extends Context<AbstractCell> {
         this.footerProcessed = false;
     }
 
-    public void processSymbolFunc(final AbstractCell cell) {
+    public void processSymbolFunc(final BaseCell cell) {
         final String symbol = cell.getSymbol();
 
         switch (this.getGroup()) {
@@ -45,7 +45,7 @@ public class DataTableContext extends Context<AbstractCell> {
                 this.canStartPivot = false;
             } else {
                 this.dataTable.setHeaderRowOffset(this.getRow());
-                this.dataTable.addHeader(new TaggedHeader(this.dataTable, cell));
+                this.dataTable.addHeader(new DataTableHeader(this.dataTable, cell));
                 this.canStartPivot = true;
             }
             break;

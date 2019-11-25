@@ -238,7 +238,7 @@ void dumpTable(com.github.romualdrousseau.any2json.v2.Table table) {
   println();
   for (Header header : table.headers()) {
     AbstractHeader abstractHeader = (AbstractHeader) header;
-    print(abstractHeader.getName(), "| ");
+    print(abstractHeader.getName(), abstractHeader.getTag().getValue(), "| ");
   }
   println();
   
@@ -248,6 +248,6 @@ void dumpTable(com.github.romualdrousseau.any2json.v2.Table table) {
       print(cell.getValue(), "| ");
     }
     println();
-    if(n++ >= 50) break;
+    if(n++ >= 10) break;
   }
 }

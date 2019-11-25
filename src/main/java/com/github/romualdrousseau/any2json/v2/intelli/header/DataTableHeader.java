@@ -4,25 +4,27 @@ import com.github.romualdrousseau.any2json.v2.Header;
 import com.github.romualdrousseau.any2json.v2.HeaderTag;
 import com.github.romualdrousseau.any2json.v2.base.AbstractHeader;
 import com.github.romualdrousseau.any2json.v2.base.BaseRow;
+import com.github.romualdrousseau.any2json.v2.intelli.IntelliTable;
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.math.Vector;
-import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
 import com.github.romualdrousseau.any2json.v2.base.BaseCell;
 
-public class SimpleHeader extends AbstractHeader {
+public class DataTableHeader extends AbstractHeader {
 
-    public SimpleHeader(final AbstractTable table, final BaseCell cell) {
+    public DataTableHeader(final IntelliTable table, final BaseCell cell) {
         super(table, cell);
+        assert(table.getClassifier() != null) : "Classifier must be defined";
     }
 
-    private SimpleHeader(final SimpleHeader parent) {
+    private DataTableHeader(final DataTableHeader parent) {
         super(parent.getTable(), parent.getCell());
     }
 
     @Override
     public String getName() {
         if (this.name == null) {
-            this.name = this.getCell().getValue();
+            final String v1 = this.getCell().getValue();
+            this.name = this.getTable().getClassifier().getStopWordList().removeStopWords(v1);
         }
         return this.name;
     }
@@ -39,7 +41,7 @@ public class SimpleHeader extends AbstractHeader {
 
     @Override
     public AbstractHeader clone() {
-        return new SimpleHeader(this);
+        return new DataTableHeader(this);
     }
 
     @Override

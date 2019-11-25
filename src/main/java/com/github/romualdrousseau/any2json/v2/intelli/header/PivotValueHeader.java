@@ -1,14 +1,15 @@
 package com.github.romualdrousseau.any2json.v2.intelli.header;
 
 import com.github.romualdrousseau.any2json.v2.DocumentFactory;
-import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
-import com.github.romualdrousseau.any2json.v2.base.AbstractRow;
+import com.github.romualdrousseau.any2json.v2.base.BaseCell;
+import com.github.romualdrousseau.any2json.v2.base.BaseRow;
+import com.github.romualdrousseau.any2json.v2.intelli.IntelliTable;
 import com.github.romualdrousseau.shuju.math.Vector;
 
 public class PivotValueHeader extends PivotKeyHeader {
 
     public PivotValueHeader(final PivotKeyHeader parent) {
-        super(parent.getTable(), parent.getCell());
+        super((IntelliTable) parent.getTable(), parent.getCell());
     }
 
     @Override
@@ -33,19 +34,18 @@ public class PivotValueHeader extends PivotKeyHeader {
         return new PivotValueHeader(this);
     }
 
-    @Override
-    protected Vector buildEntityVector() {
+    private Vector buildEntityVector() {
         final Vector result = new Vector(this.getTable().getClassifier().getEntityList().getVectorSize());
 
         int n = 0;
         for (int i = 0; i < Math.min(this.getTable().getNumberOfRows(),
                 this.getTable().getClassifier().getSampleCount()); i++) {
-            final AbstractRow row = this.getTable().getRowAt(i);
+            final BaseRow row = (BaseRow) this.getTable().getRowAt(i);
             if (row == null) {
                 continue;
             }
 
-            final AbstractCell cell = row.getCellAt(this.getColumnIndex());
+            final BaseCell cell = row.getCellAt(this.getColumnIndex());
             if (cell.hasValue() && !cell.getEntityVector().isNull()) {
                 result.add(cell.getEntityVector());
                 n++;

@@ -1,15 +1,14 @@
 package com.github.romualdrousseau.any2json.v2.base;
 
 import com.github.romualdrousseau.any2json.v2.Header;
-import com.github.romualdrousseau.any2json.v2.intelli.IntelliTable;
 
 public abstract class AbstractHeader implements Header {
 
-    public abstract AbstractCell getCellForRow(AbstractRow row);
+    public abstract BaseCell getCellForRow(BaseRow row);
 
     public abstract AbstractHeader clone();
 
-    public AbstractHeader(final AbstractTable table, final AbstractCell cell) {
+    public AbstractHeader(final AbstractTable table, final BaseCell cell) {
         this.table = table;
         this.cell = cell;
         this.colIndex = cell.getColumnIndex();
@@ -27,15 +26,15 @@ public abstract class AbstractHeader implements Header {
         return this.table;
     }
 
-    public void setTable(final IntelliTable table) {
+    public void setTable(final AbstractTable table) {
         this.table = table;
     }
 
-    public AbstractCell getCell() {
+    public BaseCell getCell() {
         return this.cell;
     }
 
-    public String getCellMergedValue(AbstractRow row) {
+    public String getCellMergedValue(final BaseRow row) {
 		return this.getCellForRow(row).getValue();
 	}
 
@@ -49,6 +48,6 @@ public abstract class AbstractHeader implements Header {
     }
 
     private AbstractTable table;
-    private final AbstractCell cell;
+    private final BaseCell cell;
     private int colIndex;
 }

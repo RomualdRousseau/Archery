@@ -6,15 +6,15 @@ import com.github.romualdrousseau.any2json.v2.layex.Symbol;
 import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.shuju.math.Vector;
 
-public class AbstractCell implements Cell, Symbol {
+public class BaseCell implements Cell, Symbol {
 
-    public final static AbstractCell Empty = new AbstractCell("", 0, 1, null);
+    public final static BaseCell Empty = new BaseCell("", 0, 1, null);
 
-    public final static AbstractCell EndOfRow = new AbstractCell("", 0, 0, null);
+    public final static BaseCell EndOfRow = new BaseCell("", 0, 0, null);
 
-    public final static AbstractCell EndOfStream = new AbstractCell("", 0, 0, null);
+    public final static BaseCell EndOfStream = new BaseCell("", 0, 0, null);
 
-    public AbstractCell(final String value, final int colIndex, final int mergedCount,
+    public BaseCell(final String value, final int colIndex, final int mergedCount,
             final ITagClassifier classifier) {
         this.value = (value == null) ? "" : value;
         this.colIndex = colIndex;
@@ -43,9 +43,9 @@ public class AbstractCell implements Cell, Symbol {
     @Override
     public String getSymbol() {
         if (this.symbol == null) {
-            if (this == AbstractCell.EndOfStream) {
+            if (this == BaseCell.EndOfStream) {
                 this.symbol = "";
-            } else if (this == AbstractCell.EndOfRow) {
+            } else if (this == BaseCell.EndOfRow) {
                 this.symbol = "$";
             } else if (!this.hasValue()) {
                 this.symbol = "s";

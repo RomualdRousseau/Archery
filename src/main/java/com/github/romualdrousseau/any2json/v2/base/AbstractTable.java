@@ -1,22 +1,19 @@
 package com.github.romualdrousseau.any2json.v2.base;
 
-import com.github.romualdrousseau.any2json.v2.Header;
-import com.github.romualdrousseau.any2json.v2.Row;
-import com.github.romualdrousseau.any2json.v2.Table;
-import com.github.romualdrousseau.any2json.v2.base.header.AbstractIntelliHeader;
-
-import java.util.HashMap;
 import java.util.LinkedList;
 
 import com.github.romualdrousseau.any2json.ITagClassifier;
+import com.github.romualdrousseau.any2json.v2.Header;
+import com.github.romualdrousseau.any2json.v2.Row;
+import com.github.romualdrousseau.any2json.v2.Table;
 import com.github.romualdrousseau.any2json.v2.util.RowIterable;
 import com.github.romualdrousseau.any2json.v2.util.RowStore;
 import com.github.romualdrousseau.any2json.v2.util.Visitable;
 
-public class AbstractTable implements Table, Visitable {
+public abstract class AbstractTable implements Table, Visitable {
 
-    public AbstractTable(final AbstractSheet sheet, final int firstColumn, final int firstRow, final int lastColumn,
-            final int lastRow, final ITagClassifier classifier) {
+    public AbstractTable(AbstractSheet sheet, int firstColumn, int firstRow, int lastColumn,
+            int lastRow) {
         assert (firstColumn <= lastColumn) : "fisrt column must be before last column";
         assert (firstRow <= lastRow) : "first row must be before last row";
         this.visited = false;
@@ -25,7 +22,6 @@ public class AbstractTable implements Table, Visitable {
         this.firstRow = firstRow;
         this.lastColumn = lastColumn;
         this.lastRow = lastRow;
-        this.classifier = classifier;
         this.firstRowOffset = 0;
         this.lastRowOffset = 0;
         this.headerRowOffset = 0;
@@ -34,17 +30,13 @@ public class AbstractTable implements Table, Visitable {
         this.loadCompleted =  false;
     }
 
-    public AbstractTable(final ITagClassifier classifier) {
-        this(null, 0, 0, 0, 0, classifier);
-    }
-
     public AbstractTable(final AbstractTable parent) {
-        this(parent.sheet, parent.firstColumn, parent.firstRow, parent.lastColumn, parent.lastRow, parent.classifier);
+        this(parent.sheet, parent.firstColumn, parent.firstRow, parent.lastColumn, parent.lastRow);
         this.cachedRows = parent.cachedRows;
     }
 
     public AbstractTable(final AbstractTable parent, final int firstRow, final int lastRow) {
-        this(parent.sheet, parent.firstColumn, firstRow, parent.lastColumn, lastRow, parent.classifier);
+        this(parent.sheet, parent.firstColumn, firstRow, parent.lastColumn, lastRow);
         this.parentOffsetRow = this.firstRow - parent.firstRow;
         this.cachedRows = parent.cachedRows;
     }
@@ -75,40 +67,6 @@ public class AbstractTable implements Table, Visitable {
     }
 
     @Override
-    public void updateHeaderTags() {
-        for (Header header : this.headers()) {
-            ((AbstractIntelliHeader) header).resetTag();
-        }
-
-        for (Header header : this.headers()) {
-            ((AbstractIntelliHeader) header).updateTag(false);
-        }
-
-        for (Header header : this.headers()) {
-            ((AbstractIntelliHeader) header).updateTag(true);
-        }
-
-        for (Header header : this.headers()) {
-            if (header.hasTag() && !header.getTag().isUndefined()) {
-                Header head = this.headersByTag.putIfAbsent(header.getTag().getValue(), header);
-                if (head != null) {
-                    ((AbstractIntelliHeader) head).mergeTo((AbstractIntelliHeader) header);
-                }
-            }
-        }
-    }
-
-    @Override
-    public int getNumberOfHeaderTags() {
-        return this.headersByTag.size();
-    }
-
-    @Override
-    public Iterable<Header> headerTags() {
-        return this.headersByTag.values();
-    }
-
-    @Override
     public boolean isVisited() {
         return this.visited;
     }
@@ -123,8 +81,8 @@ public class AbstractTable implements Table, Visitable {
     }
 
     public ITagClassifier getClassifier() {
-        return this.classifier;
-    }
+		return null;
+	}
 
     public int getFirstColumn() {
         return this.firstColumn;
@@ -180,7 +138,7 @@ public class AbstractTable implements Table, Visitable {
         this.loadCompleted = flag;
     }
 
-    public AbstractRow getRowAt(final int rowIndex) {
+	public BaseRow getRowAt(final int rowIndex) {
         if (rowIndex < 0 || rowIndex >= getNumberOfRows()) {
             throw new ArrayIndexOutOfBoundsException(rowIndex);
         }
@@ -189,9 +147,9 @@ public class AbstractTable implements Table, Visitable {
             this.cachedRows = new RowStore();
         }
 
-        AbstractRow result = cachedRows.get(this.parentOffsetRow + this.firstRowOffset + rowIndex);
+        BaseRow result = cachedRows.get(this.parentOffsetRow + this.firstRowOffset + rowIndex);
         if (result == null) {
-            result = new AbstractRow(this, rowIndex);
+            result = new BaseRow(this, rowIndex);
             cachedRows.put(rowIndex, result);
         }
 
@@ -202,12 +160,12 @@ public class AbstractTable implements Table, Visitable {
         this.headers.addLast(header);
     }
 
-    public boolean checkIfHeaderExists(final AbstractHeader header) {
-        return this.headers.contains(header);
+    public void setHeader(final int i, final AbstractHeader header) {
+        this.headers.set(i, header);
     }
 
     public AbstractHeader findHeader(final AbstractHeader headerToFind) {
-        for (final Header header : this.headers) {
+        for (final Header header : this.headers()) {
             if (header.equals(headerToFind)) {
                 return (AbstractHeader) header;
             }
@@ -225,9 +183,7 @@ public class AbstractTable implements Table, Visitable {
     private int firstRowOffset;
     private int lastRowOffset;
     private int headerRowOffset;
-    private final ITagClassifier classifier;
     private RowStore cachedRows;
     private final LinkedList<Header> headers = new LinkedList<Header>();
-    private final HashMap<String, Header> headersByTag = new HashMap<String, Header>();
     private boolean loadCompleted;
 }

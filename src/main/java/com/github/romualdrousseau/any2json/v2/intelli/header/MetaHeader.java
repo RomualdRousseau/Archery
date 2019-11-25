@@ -1,15 +1,19 @@
 package com.github.romualdrousseau.any2json.v2.intelli.header;
 
-import com.github.romualdrousseau.any2json.v2.base.AbstractCell;
+import com.github.romualdrousseau.any2json.v2.base.BaseCell;
+import com.github.romualdrousseau.any2json.v2.Header;
+import com.github.romualdrousseau.any2json.v2.HeaderTag;
 import com.github.romualdrousseau.any2json.v2.base.AbstractHeader;
-import com.github.romualdrousseau.any2json.v2.base.AbstractRow;
-import com.github.romualdrousseau.any2json.v2.base.AbstractTable;
-import com.github.romualdrousseau.any2json.v2.base.header.AbstractIntelliHeader;
+import com.github.romualdrousseau.any2json.v2.base.BaseRow;
+import com.github.romualdrousseau.any2json.v2.intelli.IntelliTable;
+import com.github.romualdrousseau.shuju.DataRow;
+import com.github.romualdrousseau.shuju.math.Vector;
 
-public class MetaHeader extends AbstractIntelliHeader {
+public class MetaHeader extends AbstractHeader {
 
-    public MetaHeader(final AbstractTable table, final AbstractCell cell) {
+    public MetaHeader(final IntelliTable table, final BaseCell cell) {
         super(table, cell);
+        assert(table.getClassifier() != null) : "Classifier must be defined";
     }
 
     private MetaHeader(final MetaHeader parent) {
@@ -37,13 +41,33 @@ public class MetaHeader extends AbstractIntelliHeader {
     }
 
     @Override
-    public AbstractCell getCellForRow(final AbstractRow row) {
-        return new AbstractCell(this.getValue(), 0, 1, this.getTable().getClassifier());
+    public BaseCell getCellForRow(final BaseRow row) {
+        return new BaseCell(this.getValue(), 0, 1, this.getTable().getClassifier());
     }
 
     @Override
     public AbstractHeader clone() {
         return new MetaHeader(this);
+    }
+
+    @Override
+    public boolean hasTag() {
+        return false;
+    }
+
+    @Override
+    public HeaderTag getTag() {
+        return null;
+    }
+
+    @Override
+    public Vector getEntityVector() {
+        return null;
+    }
+
+    @Override
+    public DataRow buildTrainingRow(final String tagValue, final Header[] conflicts, final boolean ensureWordsExists) {
+        return null;
     }
 
     private String name;

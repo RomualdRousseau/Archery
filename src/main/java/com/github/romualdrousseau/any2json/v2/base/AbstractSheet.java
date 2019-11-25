@@ -5,6 +5,8 @@ import com.github.romualdrousseau.any2json.v2.SheetEvent;
 import com.github.romualdrousseau.any2json.v2.Table;
 import com.github.romualdrousseau.any2json.v2.SheetListener;
 import com.github.romualdrousseau.any2json.v2.intelli.DataTable;
+import com.github.romualdrousseau.any2json.v2.intelli.IntelliTable;
+import com.github.romualdrousseau.any2json.v2.intelli.SimpleTable;
 
 import java.util.ArrayList;
 
@@ -27,11 +29,15 @@ public abstract class AbstractSheet implements Sheet {
 
     @Override
     public Table getTable(final ITagClassifier classifier) {
-        AbstractTable result = null;
+        Table result = null;
         final int lastColumnNum = this.getLastColumnNum(0);
         final int lastRowNum = this.getLastRowNum();
         if (lastColumnNum > 0 && lastRowNum > 0) {
-            result = new DataTable(new AbstractTable(this, 0, 0, lastColumnNum, lastRowNum, classifier));
+            if(classifier == null) {
+                result = new SimpleTable(this, 0, 0, lastColumnNum, lastRowNum);
+            } else {
+                result = new DataTable(new IntelliTable(this, 0, 0, lastColumnNum, lastRowNum, classifier));
+            }
         }
         return result;
     }
