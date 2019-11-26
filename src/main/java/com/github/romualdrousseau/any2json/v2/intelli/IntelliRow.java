@@ -5,7 +5,7 @@ import com.github.romualdrousseau.any2json.v2.base.BaseRow;
 
 public class IntelliRow extends BaseRow {
 
-    public IntelliRow(final ComplexTable table, int capacity) {
+    public IntelliRow(final IntelliTable table, int capacity) {
         super(table, -1);
         this.cellsData = new BaseCell[capacity];
     }

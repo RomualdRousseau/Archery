@@ -4,7 +4,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.github.romualdrousseau.any2json.v2.intelli.IntelliTable;
+import com.github.romualdrousseau.any2json.v2.intelli.CompositeTable;
 
 public class TableGraph {
 
@@ -13,7 +13,7 @@ public class TableGraph {
         this.parent = null;
     }
 
-    public TableGraph(IntelliTable table) {
+    public TableGraph(CompositeTable table) {
         this.table = table;
         this.parent = null;
     }
@@ -22,7 +22,7 @@ public class TableGraph {
         return this.parent == null;
     }
 
-    public IntelliTable getTable() {
+    public CompositeTable getTable() {
         return this.table;
     }
 
@@ -46,7 +46,7 @@ public class TableGraph {
         });
     }
 
-    private IntelliTable table;
+    private CompositeTable table;
     private TableGraph parent;
     private LinkedList<TableGraph> children = new LinkedList<TableGraph>();
 }

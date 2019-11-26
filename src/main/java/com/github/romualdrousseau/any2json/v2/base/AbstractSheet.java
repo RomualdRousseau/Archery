@@ -5,8 +5,7 @@ import com.github.romualdrousseau.any2json.v2.SheetEvent;
 import com.github.romualdrousseau.any2json.v2.Table;
 import com.github.romualdrousseau.any2json.v2.SheetListener;
 import com.github.romualdrousseau.any2json.v2.intelli.DataTable;
-import com.github.romualdrousseau.any2json.v2.intelli.IntelliTable;
-import com.github.romualdrousseau.any2json.v2.intelli.SimpleTable;
+import com.github.romualdrousseau.any2json.v2.intelli.CompositeTable;
 
 import java.util.ArrayList;
 
@@ -36,7 +35,7 @@ public abstract class AbstractSheet implements Sheet {
             if(classifier == null) {
                 result = new SimpleTable(this, 0, 0, lastColumnNum, lastRowNum);
             } else {
-                result = new DataTable(new IntelliTable(this, 0, 0, lastColumnNum, lastRowNum, classifier));
+                result = new DataTable(new CompositeTable(this, 0, 0, lastColumnNum, lastRowNum, classifier));
             }
         }
         return result;

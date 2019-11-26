@@ -2,7 +2,7 @@ package com.github.romualdrousseau.any2json.v2.intelli.header;
 
 import com.github.romualdrousseau.any2json.v2.base.AbstractHeader;
 import com.github.romualdrousseau.any2json.v2.base.BaseRow;
-import com.github.romualdrousseau.any2json.v2.intelli.IntelliTable;
+import com.github.romualdrousseau.any2json.v2.intelli.CompositeTable;
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.math.Vector;
 import com.github.romualdrousseau.shuju.util.StringUtility;
@@ -14,21 +14,19 @@ import com.github.romualdrousseau.any2json.v2.Header;
 import com.github.romualdrousseau.any2json.v2.HeaderTag;
 import com.github.romualdrousseau.any2json.v2.base.BaseCell;
 
-public class IntelliHeader extends AbstractHeader {
+public class IntelliHeader extends CompositeHeader {
 
-    public IntelliHeader(final IntelliTable table, final BaseCell cell) {
+    public IntelliHeader(final CompositeTable table, final BaseCell cell) {
         super(table, cell);
-        assert(getTable().getClassifier() != null) : "Classifier must be defined";
     }
 
-    public IntelliHeader(final AbstractHeader header) {
+    public IntelliHeader(final CompositeHeader header) {
         super(header.getTable(), new BaseCell(header.getName(), 0, 1, header.getTable().getClassifier()));
-        assert(getTable().getClassifier() != null) : "Classifier must be defined";
         this.setColumnIndex(header.getColumnIndex());
     }
 
     private IntelliHeader(final IntelliHeader parent) {
-        super(parent.getTable(), parent.getCell());
+        this(parent.getTable(), parent.getCell());
     }
 
     @Override
@@ -36,6 +34,14 @@ public class IntelliHeader extends AbstractHeader {
         if (this.name == null) {
             final String v1 = this.getCell().getValue();
             this.name = this.getTable().getClassifier().getStopWordList().removeStopWords(v1);
+            if(this.name.isEmpty()) {
+                final Vector v = this.buildEntityVector();
+                if(v.sparsity() < 1.0f) {
+                    this.name = this.getTable().getClassifier().getEntityList().get(v.argmax());
+                } else {
+                    this.name = "#VALUE?";
+                }
+            }
         }
         return this.name;
     }
@@ -46,19 +52,8 @@ public class IntelliHeader extends AbstractHeader {
     }
 
     @Override
-    public Vector getEntityVector() {
-        if (this.entityVector == null) {
-            this.entityVector = this.buildEntityVector();
-            if(this.entityVector == null) {
-                this.entityVector = new Vector(this.getTable().getClassifier().getWordList().getVectorSize());
-            }
-        }
-        return this.entityVector;
-    }
-
-    @Override
     public BaseCell getCellForRow(final BaseRow row) {
-        return this.getCell();
+        return row.getCellAt(this.getColumnIndex());
     }
 
     @Override
@@ -76,8 +71,34 @@ public class IntelliHeader extends AbstractHeader {
     }
 
     @Override
-    public AbstractHeader clone() {
+    public CompositeHeader clone() {
         return new IntelliHeader(this);
+    }
+
+    @Override
+    public Vector buildEntityVector() {
+        final Vector result = new Vector(this.getTable().getClassifier().getEntityList().getVectorSize());
+
+        int n = 0;
+        for (int i = 0; i < Math.min(this.getTable().getNumberOfRows(),
+                this.getTable().getClassifier().getSampleCount()); i++) {
+            final BaseRow row = this.getTable().getRowAt(i);
+            if (row == null) {
+                continue;
+            }
+
+            final BaseCell cell = row.getCellAt(this.getColumnIndex());
+            if (cell.hasValue() && !cell.getEntityVector().isNull()) {
+                result.add(cell.getEntityVector());
+                n++;
+            }
+        }
+
+        if (n > 0) {
+            result.cond(DocumentFactory.DEFAULT_ENTITY_PROBABILITY * ((float) n), 0.0f, 1.0f);
+        }
+
+        return result;
     }
 
     @Override
@@ -108,13 +129,13 @@ public class IntelliHeader extends AbstractHeader {
     }
 
     @Override
-    public IntelliTable getTable() {
-        return (IntelliTable) super.getTable();
+    public CompositeTable getTable() {
+        return (CompositeTable) super.getTable();
     }
 
     public void resetTag() {
+        super.resetTag();
         this.wordVector = null;
-        this.entityVector = null;
         this.tag = null;
         this.nextSibbling = null;
     }
@@ -162,31 +183,6 @@ public class IntelliHeader extends AbstractHeader {
         return result.constrain(0, 1);
     }
 
-    private Vector buildEntityVector() {
-        final Vector result = new Vector(this.getTable().getClassifier().getEntityList().getVectorSize());
-
-        int n = 0;
-        for (int i = 0; i < Math.min(this.getTable().getNumberOfRows(),
-                this.getTable().getClassifier().getSampleCount()); i++) {
-            final BaseRow row = this.getTable().getRowAt(i);
-            if (row == null) {
-                continue;
-            }
-
-            final BaseCell cell = row.getCellAt(this.getColumnIndex());
-            if (cell.hasValue() && !cell.getEntityVector().isNull()) {
-                result.add(cell.getEntityVector());
-                n++;
-            }
-        }
-
-        if (n > 0) {
-            result.cond(DocumentFactory.DEFAULT_ENTITY_PROBABILITY * ((float) n), 0.0f, 1.0f);
-        }
-
-        return result;
-    }
-
     protected Vector buildWordVector() {
         return this.getTable().getClassifier().getWordList().word2vec(this.getName());
     }
@@ -219,7 +215,6 @@ public class IntelliHeader extends AbstractHeader {
     }
 
     private String name;
-    private Vector entityVector;
     private Vector wordVector;
     private HeaderTag tag;
     private IntelliHeader nextSibbling;

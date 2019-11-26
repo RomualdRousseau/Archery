@@ -2,7 +2,7 @@ package com.github.romualdrousseau.any2json.v2;
 
 public interface Row {
 
-	boolean isEmpty();
+    boolean isEmpty();
 
     int getNumberOfCells();
 

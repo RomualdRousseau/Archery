@@ -7,20 +7,20 @@ import com.github.romualdrousseau.any2json.v2.intelli.header.MetaHeader;
 import com.github.romualdrousseau.any2json.v2.layex.LayexMatcher;
 import com.github.romualdrousseau.any2json.v2.util.TableLexer;
 
-public class MetaTable extends IntelliTable {
+public class MetaTable extends CompositeTable {
 
-    public MetaTable(final IntelliTable table) {
+    public MetaTable(final CompositeTable table) {
         super(table);
         this.buildSimpleMeta(table);
         this.setLoadCompleted(true);
     }
 
-    public MetaTable(final IntelliTable table, final LayexMatcher layex) {
+    public MetaTable(final CompositeTable table, final LayexMatcher layex) {
         super(table);
         layex.match(new TableLexer(table), new MetaTableContext(this));
     }
 
-    private void buildSimpleMeta(final IntelliTable table) {
+    private void buildSimpleMeta(final CompositeTable table) {
         for (final Row row : table.rows()) {
             for (final Cell cell : row.cells()) {
                 if(cell.hasValue()) {

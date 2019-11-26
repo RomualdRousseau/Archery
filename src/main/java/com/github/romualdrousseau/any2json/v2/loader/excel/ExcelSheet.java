@@ -3,6 +3,7 @@ package com.github.romualdrousseau.any2json.v2.loader.excel;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.formula.eval.NotImplementedException;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -68,7 +69,7 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
         String value = "";
 
         if (type == Cell.CELL_TYPE_ERROR) {
-            value = "#ERROR?";
+            // value = "#ERROR?";
         } else if (type == Cell.CELL_TYPE_BOOLEAN) {
             value = cell.getBooleanCellValue() ? "TRUE" : "FALSE";
         } else if (type == Cell.CELL_TYPE_STRING) {
@@ -76,14 +77,14 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
         } else if (type == Cell.CELL_TYPE_NUMERIC) {
             try {
                 value = this.formatter.formatCellValue(cell, evaluator);
-            } catch(NotImplementedException x) {
-                value = "#ERROR?";
-            }
-            if (value.matches("-?\\d+")) {
-                double d = cell.getNumericCellValue();
-                if (d != Math.rint(d)) {
-                    value = String.valueOf(d);
+                if (value.matches("-?\\d+")) {
+                    double d = cell.getNumericCellValue();
+                    if (d != Math.rint(d)) {
+                        value = String.valueOf(d);
+                    }
                 }
+            } catch (NotImplementedException x) {
+                // value = "#ERROR?";
             }
         }
 
@@ -152,21 +153,40 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
     }
 
     private boolean isCellBlank(Cell cell) {
-        return (cell == null || (cell.getCellType() == Cell.CELL_TYPE_BLANK
-                && cell.getCellStyle().getFillBackgroundColorColor() == null));
+        if (cell == null) {
+            return true;
+        }
+
+        if (cell.getCellType() == Cell.CELL_TYPE_BLANK) {
+            CellStyle style = cell.getCellStyle();
+
+            if (style.getBorderLeft() != CellStyle.BORDER_NONE && style.getBorderRight() != CellStyle.BORDER_NONE
+                    && style.getBorderTop() != CellStyle.BORDER_NONE
+                    && style.getBorderBottom() != CellStyle.BORDER_NONE) {
+                return false;
+            }
+
+            if (style.getFillBackgroundColorColor() != null || style.getFillForegroundColorColor() != null) {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     private boolean checkIfRowMergedVertically(Row row) {
-        boolean result= false;
+        boolean result = false;
 
-        if (this.cachedRegion.size()== 0) {
+        if (this.cachedRegion.size() == 0) {
             return false;
         }
 
         Iterator<Cell> it = row.cellIterator();
         while (!result && it.hasNext()) {
             Cell cell = it.next();
-            if(!isCellBlank(cell)) {
+            if (!isCellBlank(cell)) {
                 continue;
             }
 

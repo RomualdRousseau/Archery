@@ -6,8 +6,6 @@ public abstract class AbstractHeader implements Header {
 
     public abstract BaseCell getCellForRow(BaseRow row);
 
-    public abstract AbstractHeader clone();
-
     public AbstractHeader(final AbstractTable table, final BaseCell cell) {
         this.table = table;
         this.cell = cell;
@@ -36,7 +34,11 @@ public abstract class AbstractHeader implements Header {
 
     public String getCellMergedValue(final BaseRow row) {
 		return this.getCellForRow(row).getValue();
-	}
+    }
+
+    public boolean isRowGroupName() {
+        return false;
+    }
 
     public boolean equals(final AbstractHeader o) {
         return this.getName().equalsIgnoreCase(o.getName());

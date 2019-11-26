@@ -1,7 +1,6 @@
 package com.github.romualdrousseau.any2json.v2.base;
 
 import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
-import com.github.romualdrousseau.shuju.util.StringUtility;
 
 public class SheetBitmap implements ISearchBitmap
 {
@@ -51,7 +50,7 @@ public class SheetBitmap implements ISearchBitmap
         for (int y = 0; y < this.height; y++) {
             for (int x = 0; x < this.width;) {
                 final int n = sheet.getNumberOfMergedCellsAt(x, y);
-                if (!StringUtility.isFastEmpty(sheet.getInternalCellValueAt(x, y))) {
+                if (sheet.getInternalCellValueAt(x, y) != null) {
                     for (int k = 0; k < n; k++) {
                         this.data[y][x + k] = 1;
                     }

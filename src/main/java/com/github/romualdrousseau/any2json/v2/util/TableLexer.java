@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import com.github.romualdrousseau.any2json.v2.Table;
 import com.github.romualdrousseau.any2json.v2.base.BaseCell;
 import com.github.romualdrousseau.any2json.v2.base.BaseRow;
-import com.github.romualdrousseau.any2json.v2.intelli.IntelliTable;
+import com.github.romualdrousseau.any2json.v2.intelli.CompositeTable;
 import com.github.romualdrousseau.any2json.v2.layex.Lexer;
 
 public class TableLexer implements Lexer<BaseCell, TableLexer.Cursor> {
@@ -31,7 +31,7 @@ public class TableLexer implements Lexer<BaseCell, TableLexer.Cursor> {
 
     public TableLexer(final Table table) {
         this.stack = new ArrayList<Cursor>();
-        this.table = (IntelliTable) table;
+        this.table = (CompositeTable) table;
         this.colIndex = 0;
         this.rowIndex = 0;
     }
@@ -96,7 +96,7 @@ public class TableLexer implements Lexer<BaseCell, TableLexer.Cursor> {
     }
 
     private final ArrayList<Cursor> stack;
-    private final IntelliTable table;
+    private final CompositeTable table;
     private int colIndex;
     private int rowIndex;
 }

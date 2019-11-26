@@ -21,7 +21,7 @@ public class Closure implements LayexMatcher {
         int count = 0;
         while (true) {
             stream.push();
-            if (!this.a.match(stream, context) || (count > maxCount)) {
+            if ((count >= maxCount) || !this.a.match(stream, context)) {
                 stream.seek(stream.pop());
                 return (minCount <= count);
             } else {

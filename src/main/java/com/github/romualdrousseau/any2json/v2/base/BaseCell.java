@@ -50,7 +50,7 @@ public class BaseCell implements Cell, Symbol {
             } else if (!this.hasValue()) {
                 this.symbol = "s";
             } else if (this.getEntityVector().sparsity() < 1.0f) {
-                this.symbol = "m";
+                this.symbol = "e";
             } else {
                 this.symbol = "v";
             }
