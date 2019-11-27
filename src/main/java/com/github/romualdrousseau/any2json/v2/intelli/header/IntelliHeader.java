@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import com.github.romualdrousseau.any2json.v2.DocumentFactory;
 import com.github.romualdrousseau.any2json.v2.Header;
 import com.github.romualdrousseau.any2json.v2.HeaderTag;
+import com.github.romualdrousseau.any2json.v2.Row;
 import com.github.romualdrousseau.any2json.v2.base.BaseCell;
 
 public class IntelliHeader extends CompositeHeader {
@@ -21,7 +22,7 @@ public class IntelliHeader extends CompositeHeader {
     }
 
     public IntelliHeader(final CompositeHeader header) {
-        super(header.getTable(), new BaseCell(header.getName(), 0, 1, header.getTable().getClassifier()));
+        super(header.getTable(), new BaseCell(header.getName(), header.getColumnIndex(), 1, header.getTable().getClassifier()));
         this.setColumnIndex(header.getColumnIndex());
     }
 
@@ -52,53 +53,43 @@ public class IntelliHeader extends CompositeHeader {
     }
 
     @Override
-    public BaseCell getCellForRow(final BaseRow row) {
-        return row.getCellAt(this.getColumnIndex());
-    }
+    public BaseCell getCellAtRow(final Row row, boolean merged) {
+        if(!merged) {
+            return this.getCellAtRow(row);
+        }
 
-    @Override
-    public String getCellMergedValue(final BaseRow row) {
         final StringBuffer buffer = new StringBuffer();
-        buffer.append(this.getCellForRow(row).getValue());
+        buffer.append(this.getCellAtRow(row).getValue());
 
         IntelliHeader curr = this;
         while (curr.nextSibbling != null) {
-            buffer.append(this.getCellForRow(row).getValue());
+            buffer.append(this.getCellAtRow(row).getValue());
             curr = curr.nextSibbling;
         }
 
-        return buffer.toString();
+        return new BaseCell(buffer.toString(), this.getColumnIndex(), 1, this.getTable().getClassifier());
+    }
+
+    @Override
+    public String getEntityString() {
+        String result = "";
+        boolean firstValue = true;
+        for (int i = 0; i < this.getTable().getClassifier().getEntityList().size(); i++) {
+            if (this.getEntityVector().get(i) == 1) {
+                if (firstValue) {
+                    result = this.getTable().getClassifier().getEntityList().get(i);
+                    firstValue = false;
+                } else {
+                    result += "|" + this.getTable().getClassifier().getEntityList().get(i);
+                }
+            }
+        }
+        return result;
     }
 
     @Override
     public CompositeHeader clone() {
         return new IntelliHeader(this);
-    }
-
-    @Override
-    public Vector buildEntityVector() {
-        final Vector result = new Vector(this.getTable().getClassifier().getEntityList().getVectorSize());
-
-        int n = 0;
-        for (int i = 0; i < Math.min(this.getTable().getNumberOfRows(),
-                this.getTable().getClassifier().getSampleCount()); i++) {
-            final BaseRow row = this.getTable().getRowAt(i);
-            if (row == null) {
-                continue;
-            }
-
-            final BaseCell cell = row.getCellAt(this.getColumnIndex());
-            if (cell.hasValue() && !cell.getEntityVector().isNull()) {
-                result.add(cell.getEntityVector());
-                n++;
-            }
-        }
-
-        if (n > 0) {
-            result.cond(DocumentFactory.DEFAULT_ENTITY_PROBABILITY * ((float) n), 0.0f, 1.0f);
-        }
-
-        return result;
     }
 
     @Override
@@ -134,14 +125,14 @@ public class IntelliHeader extends CompositeHeader {
     }
 
     public void resetTag() {
-        super.resetTag();
+        this.entityVector = null;
         this.wordVector = null;
         this.tag = null;
         this.nextSibbling = null;
     }
 
     public void updateTag(final boolean checkForConflicts) {
-        if (StringUtility.isEmpty(this.getName())) {
+        if (StringUtility.isFastEmpty(this.getName())) {
             this.tag = HeaderTag.None;
         } else {
             final DataRow data = new DataRow().addFeature(this.buildFeature(checkForConflicts));
@@ -154,12 +145,16 @@ public class IntelliHeader extends CompositeHeader {
         this.nextSibbling = other;
     }
 
+    private Vector getEntityVector() {
+        if (this.entityVector == null) {
+            this.entityVector = this.buildEntityVector();
+        }
+        return this.entityVector;
+    }
+
     private Vector getWordVector() {
         if (this.wordVector == null) {
             this.wordVector = this.buildWordVector();
-            if(this.wordVector == null) {
-                this.wordVector = new Vector(this.getTable().getClassifier().getWordList().getVectorSize());
-            }
         }
         return this.wordVector;
     }
@@ -183,11 +178,36 @@ public class IntelliHeader extends CompositeHeader {
         return result.constrain(0, 1);
     }
 
-    protected Vector buildWordVector() {
+    private Vector buildEntityVector() {
+        final Vector result = new Vector(this.getTable().getClassifier().getEntityList().getVectorSize());
+
+        int n = 0;
+        for (int i = 0; i < Math.min(this.getTable().getNumberOfRows(),
+                this.getTable().getClassifier().getSampleCount()); i++) {
+            final BaseRow row = this.getTable().getRowAt(i);
+            if (row == null) {
+                continue;
+            }
+
+            final BaseCell cell = row.getCellAt(this.getColumnIndex());
+            if (cell.hasValue() && !cell.getEntityVector().isNull()) {
+                result.add(cell.getEntityVector());
+                n++;
+            }
+        }
+
+        if (n > 0) {
+            result.cond(DocumentFactory.DEFAULT_ENTITY_PROBABILITY * ((float) n), 0.0f, 1.0f);
+        }
+
+        return result;
+    }
+
+    private Vector buildWordVector() {
         return this.getTable().getClassifier().getWordList().word2vec(this.getName());
     }
 
-    protected void ensureWordExist() {
+    private void ensureWordExist() {
         this.getTable().getClassifier().getWordList().add(this.getName());
     }
 
@@ -215,6 +235,7 @@ public class IntelliHeader extends CompositeHeader {
     }
 
     private String name;
+    private Vector entityVector;
     private Vector wordVector;
     private HeaderTag tag;
     private IntelliHeader nextSibbling;

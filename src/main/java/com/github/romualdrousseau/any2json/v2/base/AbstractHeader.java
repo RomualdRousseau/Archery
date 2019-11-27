@@ -1,15 +1,24 @@
 package com.github.romualdrousseau.any2json.v2.base;
 
 import com.github.romualdrousseau.any2json.v2.Header;
+import com.github.romualdrousseau.any2json.v2.Row;
 
 public abstract class AbstractHeader implements Header {
-
-    public abstract BaseCell getCellForRow(BaseRow row);
 
     public AbstractHeader(final AbstractTable table, final BaseCell cell) {
         this.table = table;
         this.cell = cell;
         this.colIndex = cell.getColumnIndex();
+    }
+
+    @Override
+    public BaseCell getCellAtRow(final Row row) {
+        return ((BaseRow)row).getCellAt(this.getColumnIndex());
+    }
+
+    @Override
+    public BaseCell getCellAtRow(final Row row, final boolean merged) {
+		return this.getCellAtRow(row);
     }
 
     public int getColumnIndex() {
@@ -30,10 +39,6 @@ public abstract class AbstractHeader implements Header {
 
     public BaseCell getCell() {
         return this.cell;
-    }
-
-    public String getCellMergedValue(final BaseRow row) {
-		return this.getCellForRow(row).getValue();
     }
 
     public boolean isRowGroupName() {

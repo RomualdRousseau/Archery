@@ -1,7 +1,6 @@
 package com.github.romualdrousseau.any2json.v2.base;
 
 import com.github.romualdrousseau.any2json.v2.Cell;
-import com.github.romualdrousseau.any2json.v2.Header;
 import com.github.romualdrousseau.any2json.v2.Row;
 import com.github.romualdrousseau.any2json.v2.util.CellIterable;
 
@@ -34,22 +33,6 @@ public class BaseRow implements Row {
     @Override
     public Iterable<Cell> cells() {
         return new CellIterable(this);
-    }
-
-    @Override
-    public BaseCell getCell(final Header header) {
-        return ((AbstractHeader) header).getCellForRow(this);
-    }
-
-    @Override
-    public BaseCell getCell(Header header, boolean merged) {
-        if (merged) {
-            AbstractHeader abstractHeader = (AbstractHeader) header;
-            String value = abstractHeader.getCellMergedValue(this);
-            return new BaseCell(value, abstractHeader.getColumnIndex(), 1, this.getTable().getClassifier());
-        } else {
-            return this.getCell(header);
-        }
     }
 
     @Override

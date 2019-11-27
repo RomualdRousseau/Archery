@@ -19,6 +19,9 @@ import java.util.List;
 import java.awt.event.KeyEvent;
 
 final String[] dataLayexes = {
+  //"(()([v|s]{3}$))([ee[v|s]$][(ve[v|s]$)(ee[v|s]$)+]+)+"
+  //"(()(ve{3}v$v{6}$))([vs{4}$][(ev[e|s]{4}$)(v[e|s]{4}$)+]+)+(vs{4}$)?",
+  "(([v|e]$)+([v|s][v|e][v|e|s]+$[v|e|s]+$))(()([v|e|s]{2}[v|e|s]+$))+([v|e|s]{2}$)?",
   "((e[v|e|s]*$)(v[v|e][v|e|s]+$))(()([v|e|s]{2}[v|e|s]+$))+([v|e|s]{2}$)?",
   "((v[v|e|s]*$)(v[v|e][v|e|s]+$))(([v|e|s]{2}$)([v|e|s]{2}[v|e|s]+$)+)+([v|e|s]{2}$)?",
   "(()([v|s][v|e][v|e|s]+$))((s[v|e][v|e|s]+$)([v|e][v|e|s][v|e|s]+$)+)+([v|e|s]{2}$)?",

@@ -57,7 +57,7 @@ public class NGramNNClassifier implements ITagClassifier {
         this.buildModel();
     }
 
-    public NGramNNClassifier(JSONObject json) {
+    public NGramNNClassifier(JSONObject json, String[] metaLayexes, String[] dataLayexes) {
         this(new NgramList(json.getJSONObject("ngrams")), new RegexList(json.getJSONObject("entities")),
                 new StopWordList(json.getJSONArray("stopwords")), new StringList(json.getJSONObject("tags")), null);
 
@@ -71,33 +71,28 @@ public class NGramNNClassifier implements ITagClassifier {
 
         this.model.fromJSON(json.getJSONArray("model"));
 
-        this.metaLayexes = new ArrayList<LayexMatcher>();
-        // Key/Value table
-        metaLayexes.add(new Layex("(v[v|e|s]$)+").compile());
-
-        this.dataLayexes = new ArrayList<LayexMatcher>();
-        // Table with pivot
-        this.dataLayexes.add(new Layex("(v[v|e][v|e]+$)(()([v|e|s]{2}[v|e|s]+$))+([v|e|s]{2}$)?").compile());
-        // Table with meta and pivot
-        this.dataLayexes.add(new Layex("(es*$v[v|e][v|e]+$)(()([v|e|s]{2}[v|e|s]+$))+([v|e|s]{2}$)?").compile());
-    }
-
-    public NGramNNClassifier(JSONObject json, String[] metaLayexes, String[] dataLayexes) {
-        this(json);
-
-        if(metaLayexes != null) {
+        if (metaLayexes != null) {
             this.metaLayexes = new ArrayList<LayexMatcher>();
             for (String layex : metaLayexes) {
                 this.metaLayexes.add(new Layex(layex).compile());
             }
         }
 
-        if(dataLayexes != null) {
+        if (dataLayexes != null) {
             this.dataLayexes = new ArrayList<LayexMatcher>();
             for (String layex : dataLayexes) {
                 this.dataLayexes.add(new Layex(layex).compile());
             }
         }
+    }
+
+    public NGramNNClassifier(JSONObject json) {
+        this(json, new String[] { "(v[v|e|s]$)+" },
+                new String[] { "(([v|e]$)+([v|s][v|e][v|e|s]+$[v|e|s]+$))(()([v|e|s]{2}[v|e|s]+$))+([v|e|s]{2}$)?",
+                        "((e[v|e|s]*$)(v[v|e][v|e|s]+$))(()([v|e|s]{2}[v|e|s]+$))+([v|e|s]{2}$)?",
+                        "((v[v|e|s]*$)(v[v|e][v|e|s]+$))(([v|e|s]{2}$)([v|e|s]{2}[v|e|s]+$)+)+([v|e|s]{2}$)?",
+                        "(()([v|s][v|e][v|e|s]+$))((s[v|e][v|e|s]+$)([v|e][v|e|s][v|e|s]+$)+)+([v|e|s]{2}$)?",
+                        "(()([v|s][v|e][v|e|s]+$))(()([v|e|s]{2}[v|e|s]+$))+([v|e|s]{2}$)?" });
     }
 
     public int getSampleCount() {

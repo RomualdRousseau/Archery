@@ -103,6 +103,9 @@ public class IntelliTable extends CompositeTable {
         } else {
             for(final RowGroup rowGroup :  orgTable.rowGroups()) {
                 for(int i = 0; i < rowGroup.getNumberOfRows(); i++) {
+                    if(rowGroup.getRow() + i + 1 >= orgTable.getNumberOfRows()) {
+                        break;
+                    }
                     Row orgRow = orgTable.getRowAt(rowGroup.getRow() + i + 1);
                     final ArrayList<IntelliRow> newRows = buildRowsForOneRow(orgTable, (BaseRow) orgRow, pivot, rowGroup);
                     this.rows.addAll(newRows);
@@ -140,7 +143,7 @@ public class IntelliTable extends CompositeTable {
             } else {
                 if (orgHeader != null) {
                     if(rowGroup == null || !orgHeader.isRowGroupName()) {
-                        newRow.setCell(abstractHeader.getColumnIndex(), orgHeader.getCellForRow(orgRow));
+                        newRow.setCell(abstractHeader.getColumnIndex(), orgHeader.getCellAtRow(orgRow));
                     } else {
                         newRow.setCell(abstractHeader.getColumnIndex(), rowGroup.getCell());
                     }

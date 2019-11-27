@@ -17,6 +17,8 @@ public abstract class AbstractSheet implements Sheet {
 
     public abstract int getLastRowNum();
 
+    public abstract boolean hasCellDataAt(int colIndex, int rowIndex);
+
     public abstract String getInternalCellValueAt(int colIndex, int rowIndex);
 
     public abstract int getNumberOfMergedCellsAt(int colIndex, int rowIndex);

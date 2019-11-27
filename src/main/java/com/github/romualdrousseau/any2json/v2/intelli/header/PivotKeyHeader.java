@@ -22,12 +22,7 @@ public class PivotKeyHeader extends MetaHeader {
 
     @Override
     public String getName() {
-        if (this.name == null) {
-            final String v1 = this.getCell().getValue();
-            final String v2 = this.getTable().getClassifier().getEntityList().anonymize(v1);
-            this.name = this.getTable().getClassifier().getStopWordList().removeStopWords(v2);
-        }
-        return this.name + " " + DocumentFactory.PIVOT_SUFFIX;
+        return super.getName() + " " + DocumentFactory.PIVOT_SUFFIX;
     }
 
     @Override
@@ -47,6 +42,5 @@ public class PivotKeyHeader extends MetaHeader {
         return new PivotValueHeader(this);
     }
 
-    private String name;
     private final ArrayList<BaseCell> entries;
 }

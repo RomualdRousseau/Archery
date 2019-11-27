@@ -3,7 +3,6 @@ package com.github.romualdrousseau.any2json.v2.base;
 import com.github.romualdrousseau.any2json.v2.Header;
 import com.github.romualdrousseau.any2json.v2.HeaderTag;
 import com.github.romualdrousseau.shuju.DataRow;
-import com.github.romualdrousseau.shuju.math.Vector;
 
 public class SimpleHeader extends AbstractHeader {
 
@@ -29,11 +28,6 @@ public class SimpleHeader extends AbstractHeader {
     }
 
     @Override
-    public BaseCell getCellForRow(final BaseRow row) {
-        return row.getCellAt(this.getColumnIndex());
-    }
-
-    @Override
     public boolean hasTag() {
         return false;
     }
@@ -44,7 +38,7 @@ public class SimpleHeader extends AbstractHeader {
     }
 
     @Override
-    public Vector getEntityVector() {
+    public String getEntityString() {
         return null;
     }
 

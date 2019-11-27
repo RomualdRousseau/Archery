@@ -1,12 +1,16 @@
 package com.github.romualdrousseau.any2json.v2.loader.excel;
 
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.formula.eval.NotImplementedException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Color;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFColor;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -55,9 +59,15 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
     }
 
     @Override
+    public boolean hasCellDataAt(int colIndex, int rowIndex) {
+        Cell cell = this.getCellAt(colIndex, rowIndex);
+        return cell != null;
+    }
+
+    @Override
     public String getInternalCellValueAt(int colIndex, int rowIndex) {
         Cell cell = this.getCellAt(colIndex, rowIndex);
-        if (this.isCellBlank(cell)) {
+        if (cell == null) {
             return null;
         }
 
@@ -68,9 +78,7 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
 
         String value = "";
 
-        if (type == Cell.CELL_TYPE_ERROR) {
-            // value = "#ERROR?";
-        } else if (type == Cell.CELL_TYPE_BOOLEAN) {
+        if (type == Cell.CELL_TYPE_BOOLEAN) {
             value = cell.getBooleanCellValue() ? "TRUE" : "FALSE";
         } else if (type == Cell.CELL_TYPE_STRING) {
             value = cell.getStringCellValue();
@@ -84,7 +92,6 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
                     }
                 }
             } catch (NotImplementedException x) {
-                // value = "#ERROR?";
             }
         }
 
@@ -126,13 +133,18 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
 
         double height = row.getHeight() * 0.07; // Rougly convert in pixels
 
-        float sparcity = Float.valueOf(row.getPhysicalNumberOfCells())
+        int merged = countOfRowMergedVertically(row);
+
+        float sparcity = Float.valueOf(merged)
                 / Float.valueOf(row.getLastCellNum() - row.getFirstCellNum());
 
         boolean candidate = false;
         candidate |= (height < DocumentFactory.SEPARATOR_ROW_THRESHOLD);
-        candidate |= this.checkIfRowMergedVertically(row);
+        candidate |= (merged > 0);
         candidate &= (sparcity >= DocumentFactory.DEFAULT_RATIO_SCARSITY);
+        if(merged > 0) {
+            System.out.println(sparcity);
+        }
         return candidate;
     }
 
@@ -149,55 +161,94 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
         if (row == null) {
             return null;
         }
-        return row.getCell(colIndex);
-    }
 
-    private boolean isCellBlank(Cell cell) {
-        if (cell == null) {
-            return true;
+        Cell cell = row.getCell(colIndex);
+        if (!hasData(cell)) {
+            return null;
         }
 
-        if (cell.getCellType() == Cell.CELL_TYPE_BLANK) {
-            CellStyle style = cell.getCellStyle();
-
-            if (style.getBorderLeft() != CellStyle.BORDER_NONE && style.getBorderRight() != CellStyle.BORDER_NONE
-                    && style.getBorderTop() != CellStyle.BORDER_NONE
-                    && style.getBorderBottom() != CellStyle.BORDER_NONE) {
-                return false;
-            }
-
-            if (style.getFillBackgroundColorColor() != null || style.getFillForegroundColorColor() != null) {
-                return false;
-            }
-
-            return true;
-        }
-
-        return false;
+        return cell;
     }
 
-    private boolean checkIfRowMergedVertically(Row row) {
-        boolean result = false;
+    private int countOfRowMergedVertically(Row row) {
+        int result = 0;
 
         if (this.cachedRegion.size() == 0) {
-            return false;
+            return 0;
         }
 
         Iterator<Cell> it = row.cellIterator();
-        while (!result && it.hasNext()) {
+        while (it.hasNext()) {
             Cell cell = it.next();
-            if (!isCellBlank(cell)) {
-                continue;
-            }
-
             for (CellRangeAddress region : this.cachedRegion) {
                 if (region.isInRange(cell.getRowIndex(), cell.getColumnIndex())) {
-                    result |= (region.getLastRow() > region.getFirstRow());
+                    if((cell.getRowIndex() > region.getFirstRow())
+                            && (region.getLastRow() > region.getFirstRow())) {
+                        result++;
+                    }
                 }
             }
         }
 
         return result;
+    }
+
+    private boolean hasData(Cell cell) {
+        if (cell == null) {
+            return false;
+        }
+
+        final int type = cell.getCellType();
+
+        if (type == Cell.CELL_TYPE_BLANK || type == Cell.CELL_TYPE_STRING && cell.getStringCellValue().isEmpty()) {
+            final CellStyle style = cell.getCellStyle();
+
+            // Keep cell with colored borders
+            if (style.getBorderLeft() != CellStyle.BORDER_NONE && style.getBorderRight() != CellStyle.BORDER_NONE
+                    && style.getBorderTop() != CellStyle.BORDER_NONE
+                    && style.getBorderBottom() != CellStyle.BORDER_NONE) {
+                // if (style.getLeftBorderColor() != 0 && style.getRightBorderColor() != 0
+                //         && style.getTopBorderColor() != 0 && style.getBottomBorderColor() != 0) {
+                //     return true;
+                // }
+                return true;
+            }
+
+            // Keep cell with a colored (not automatic and not white) pattern
+            final Color bkcolor = style.getFillBackgroundColorColor();
+            if (bkcolor != null) {
+                if(bkcolor instanceof XSSFColor) {
+                    if(((XSSFColor) bkcolor).getIndexed() != IndexedColors.AUTOMATIC.index && (((XSSFColor) bkcolor).getARGBHex() == null || !((XSSFColor) bkcolor).getARGBHex().equals("FFFFFFFF"))) {
+                        return true;
+                    }
+                }
+                if(bkcolor instanceof HSSFColor) {
+                    if(((HSSFColor) bkcolor).getIndex() != HSSFColor.AUTOMATIC.index && (((HSSFColor) bkcolor).getHexString() == null || !((HSSFColor) bkcolor).getHexString().equals("FFFF:FFFF:FFFF"))) {
+                        return true;
+                    }
+                }
+            }
+
+            // Keep cell with a colored (not automatic and not white) background
+            final Color fgcolor = style.getFillForegroundColorColor();
+            if (fgcolor != null) {
+                if(fgcolor instanceof XSSFColor) {
+                    if(((XSSFColor) fgcolor).getIndexed() != IndexedColors.AUTOMATIC.index && (((XSSFColor) fgcolor).getARGBHex() == null || !((XSSFColor) fgcolor).getARGBHex().equals("FFFFFFFF"))) {
+                        return true;
+                    }
+                }
+                if(fgcolor instanceof HSSFColor) {
+                    if(((HSSFColor) fgcolor).getIndex() != HSSFColor.AUTOMATIC.index && (((HSSFColor) fgcolor).getHexString() != null || !((HSSFColor) fgcolor).getHexString().equals("FFFF:FFFF:FFFF"))) {
+                        System.out.println(((HSSFColor) fgcolor).getIndex());
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        } else {
+            return true;
+        }
     }
 
     private org.apache.poi.ss.usermodel.Sheet sheet;

@@ -23,7 +23,7 @@ public class MetaTable extends CompositeTable {
     private void buildSimpleMeta(final CompositeTable table) {
         for (final Row row : table.rows()) {
             for (final Cell cell : row.cells()) {
-                if(cell.hasValue()) {
+                if(cell.hasValue() && !cell.getValue().isEmpty()) {
                     this.addHeader(new MetaHeader(this, (BaseCell) cell));
                 }
             }

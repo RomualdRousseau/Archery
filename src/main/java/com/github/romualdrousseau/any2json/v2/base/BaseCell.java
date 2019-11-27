@@ -1,10 +1,10 @@
 package com.github.romualdrousseau.any2json.v2.base;
 
-import com.github.romualdrousseau.shuju.util.StringUtility;
 import com.github.romualdrousseau.any2json.v2.Cell;
 import com.github.romualdrousseau.any2json.v2.layex.Symbol;
 import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.shuju.math.Vector;
+import com.github.romualdrousseau.shuju.util.StringUtility;
 
 public class BaseCell implements Cell, Symbol {
 
@@ -16,7 +16,7 @@ public class BaseCell implements Cell, Symbol {
 
     public BaseCell(final String value, final int colIndex, final int mergedCount,
             final ITagClassifier classifier) {
-        this.value = (value == null) ? "" : value;
+        this.value = value;
         this.colIndex = colIndex;
         this.mergedCount = mergedCount;
         this.classifier = classifier;
@@ -24,20 +24,21 @@ public class BaseCell implements Cell, Symbol {
 
     @Override
     public boolean hasValue() {
-        return !StringUtility.isFastEmpty(this.value);
+        return this.value != null;
     }
 
     @Override
     public String getValue() {
-        return this.value;
+        return (this.value == null) ? "" : this.value;
     }
 
     @Override
-    public Vector getEntityVector() {
-        if (this.entityVector == null) {
-            this.entityVector = this.classifier.getEntityList().word2vec(this.value);
+    public String getEntityString() {
+        if (this.classifier == null) {
+            return null;
+        } else {
+            return this.classifier.getEntityList().find(this.value);
         }
-        return this.entityVector;
     }
 
     @Override
@@ -47,7 +48,7 @@ public class BaseCell implements Cell, Symbol {
                 this.symbol = "";
             } else if (this == BaseCell.EndOfRow) {
                 this.symbol = "$";
-            } else if (!this.hasValue()) {
+            } else if (StringUtility.isFastEmpty(this.value)) {
                 this.symbol = "s";
             } else if (this.getEntityVector().sparsity() < 1.0f) {
                 this.symbol = "e";
@@ -64,6 +65,17 @@ public class BaseCell implements Cell, Symbol {
 
     public int getColumnIndex() {
         return this.colIndex;
+    }
+
+    public Vector getEntityVector() {
+        if (this.entityVector == null) {
+            if(this.classifier == null) {
+                this.entityVector = Vector.Null;
+            } else {
+                this.entityVector = this.classifier.getEntityList().word2vec(this.value);
+            }
+        }
+        return this.entityVector;
     }
 
     private final String value;

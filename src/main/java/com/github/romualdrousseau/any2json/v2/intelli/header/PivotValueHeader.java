@@ -18,7 +18,7 @@ public class PivotValueHeader extends PivotKeyHeader {
         }
 
         if (this.name == null) {
-            final Vector v = this.getEntityVector();
+            final Vector v = this.buildEntityVector();
             if(v.sparsity() < 1.0f) {
                 this.name = this.getTable().getClassifier().getEntityList().get(v.argmax());
             } else {
@@ -33,14 +33,13 @@ public class PivotValueHeader extends PivotKeyHeader {
         return new PivotValueHeader(this);
     }
 
-    @Override
     public Vector buildEntityVector() {
         final Vector result = new Vector(this.getTable().getClassifier().getEntityList().getVectorSize());
 
         int n = 0;
         for (int i = 0; i < Math.min(this.getTable().getNumberOfRows(),
                 this.getTable().getClassifier().getSampleCount()); i++) {
-            final BaseRow row = (BaseRow) this.getTable().getRowAt(i);
+            final BaseRow row = this.getTable().getRowAt(i);
             if (row == null) {
                 continue;
             }

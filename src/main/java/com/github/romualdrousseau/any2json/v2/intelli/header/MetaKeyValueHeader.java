@@ -1,8 +1,8 @@
 package com.github.romualdrousseau.any2json.v2.intelli.header;
 
+import com.github.romualdrousseau.any2json.v2.Row;
 import com.github.romualdrousseau.any2json.v2.base.BaseCell;
 import com.github.romualdrousseau.any2json.v2.intelli.CompositeTable;
-import com.github.romualdrousseau.shuju.math.Vector;
 
 public class MetaKeyValueHeader extends MetaHeader {
 
@@ -35,13 +35,18 @@ public class MetaKeyValueHeader extends MetaHeader {
     }
 
     @Override
-    public CompositeHeader clone() {
-        return new MetaKeyValueHeader(this);
+    public BaseCell getCellAtRow(final Row row) {
+        return this.value;
     }
 
     @Override
-    public Vector buildEntityVector() {
-        return this.value.getEntityVector();
+    public String getEntityString() {
+        return this.value.getEntityString();
+    }
+
+    @Override
+    public CompositeHeader clone() {
+        return new MetaKeyValueHeader(this);
     }
 
     private String name;

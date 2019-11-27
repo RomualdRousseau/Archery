@@ -34,7 +34,7 @@ public class DataTableContext extends Context<BaseCell> {
         case TABLE_META:
             if (symbol.equals("$")) {
                 this.dataTable.setFirstRowOffset(this.getRow() + 1);
-            } else if (cell.hasValue()) {
+            } else if (cell.hasValue() && !cell.getValue().isEmpty()) {
                 this.dataTable.addHeader(new MetaTableHeader(this.dataTable, cell));
             }
             break;

@@ -1,8 +1,6 @@
 package com.github.romualdrousseau.any2json.v2.intelli.header;
 
-import com.github.romualdrousseau.any2json.v2.base.BaseRow;
 import com.github.romualdrousseau.any2json.v2.intelli.CompositeTable;
-import com.github.romualdrousseau.shuju.math.Vector;
 import com.github.romualdrousseau.any2json.v2.base.BaseCell;
 
 public class DataTableHeader extends CompositeHeader {
@@ -30,18 +28,8 @@ public class DataTableHeader extends CompositeHeader {
     }
 
     @Override
-    public BaseCell getCellForRow(final BaseRow row) {
-        return row.getCellAt(this.getColumnIndex());
-    }
-
-    @Override
     public CompositeHeader clone() {
         return new DataTableHeader(this);
-    }
-
-    @Override
-    public Vector buildEntityVector() {
-        return this.getCell().getEntityVector();
     }
 
     private String name;

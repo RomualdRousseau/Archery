@@ -39,6 +39,12 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
     }
 
     @Override
+    public  boolean hasCellDataAt(int colIndex, int rowIndex) {
+        Cell cell = this.getCellAt(colIndex, rowIndex);
+        return cell != null;
+    }
+
+    @Override
     public String getInternalCellValueAt(int colIndex, int rowIndex) {
         Cell cell = this.getCellAt(colIndex, rowIndex);
 		if(cell == null) {
