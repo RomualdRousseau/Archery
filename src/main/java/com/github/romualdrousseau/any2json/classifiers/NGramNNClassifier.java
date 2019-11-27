@@ -40,6 +40,16 @@ public class NGramNNClassifier implements ITagClassifier {
     private Loss criterion;
     private float accuracy;
     private float mean;
+    private List<LayexMatcher> metaLayexes;
+    private List<LayexMatcher> dataLayexes;
+
+    private final static String[] metaLayexesDefault = { "(v[v|e|s]$)+" };
+
+    private final static String[] dataLayexesDefault = {
+            "((e[v|e|s]*$)(v[v|e][v|e|s]+$))(()([v|e|s]{2}[v|e|s]+$))+([v|e|s]{2}$)?",
+            "((v[v|e|s]*$)(v[v|e][v|e|s]+$))(([v|e|s]{2}$)([v|e|s]{2}[v|e|s]+$)+)+([v|e|s]{2}$)?",
+            "(()([v|s][v|e][v|e|s]+$))((s[v|e][v|e|s]+$)([v|e][v|e|s][v|e|s]+$)+)+([v|e|s]{2}$)?",
+            "(()([v|s][v|e][v|e|s]+$))(()([v|e|s]{2}[v|e|s]+$))+([v|e|s]{2}$)?" };
 
     public NGramNNClassifier(NgramList ngrams, RegexList entities, StopWordList stopwords, StringList tags) {
         this(ngrams, entities, stopwords, tags, null);
@@ -55,6 +65,20 @@ public class NGramNNClassifier implements ITagClassifier {
         this.tags = tags;
         this.requiredTags = requiredTags;
         this.buildModel();
+
+        this.metaLayexes = new ArrayList<LayexMatcher>();
+        for (String layex : metaLayexesDefault) {
+            this.metaLayexes.add(new Layex(layex).compile());
+        }
+
+        this.dataLayexes = new ArrayList<LayexMatcher>();
+        for (String layex : dataLayexesDefault) {
+            this.dataLayexes.add(new Layex(layex).compile());
+        }
+    }
+
+    public NGramNNClassifier(JSONObject json) {
+        this(json, null, null);
     }
 
     public NGramNNClassifier(JSONObject json, String[] metaLayexes, String[] dataLayexes) {
@@ -71,28 +95,19 @@ public class NGramNNClassifier implements ITagClassifier {
 
         this.model.fromJSON(json.getJSONArray("model"));
 
-        if (metaLayexes != null) {
+        if(metaLayexes != null) {
             this.metaLayexes = new ArrayList<LayexMatcher>();
             for (String layex : metaLayexes) {
                 this.metaLayexes.add(new Layex(layex).compile());
             }
         }
 
-        if (dataLayexes != null) {
+        if(dataLayexes != null) {
             this.dataLayexes = new ArrayList<LayexMatcher>();
             for (String layex : dataLayexes) {
                 this.dataLayexes.add(new Layex(layex).compile());
             }
         }
-    }
-
-    public NGramNNClassifier(JSONObject json) {
-        this(json, new String[] { "(v[v|e|s]$)+" },
-                new String[] { "(([v|e]$)+([v|s][v|e][v|e|s]+$[v|e|s]+$))(()([v|e|s]{2}[v|e|s]+$))+([v|e|s]{2}$)?",
-                        "((e[v|e|s]*$)(v[v|e][v|e|s]+$))(()([v|e|s]{2}[v|e|s]+$))+([v|e|s]{2}$)?",
-                        "((v[v|e|s]*$)(v[v|e][v|e|s]+$))(([v|e|s]{2}$)([v|e|s]{2}[v|e|s]+$)+)+([v|e|s]{2}$)?",
-                        "(()([v|s][v|e][v|e|s]+$))((s[v|e][v|e|s]+$)([v|e][v|e|s][v|e|s]+$)+)+([v|e|s]{2}$)?",
-                        "(()([v|s][v|e][v|e|s]+$))(()([v|e|s]{2}[v|e|s]+$))+([v|e|s]{2}$)?" });
     }
 
     public int getSampleCount() {
@@ -345,7 +360,4 @@ public class NGramNNClassifier implements ITagClassifier {
 
         this.criterion = new Loss(new SoftmaxCrossEntropy());
     }
-
-    private List<LayexMatcher> metaLayexes;
-    private List<LayexMatcher> dataLayexes;
 }

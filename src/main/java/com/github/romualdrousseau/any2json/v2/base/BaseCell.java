@@ -37,7 +37,12 @@ public class BaseCell implements Cell, Symbol {
         if (this.classifier == null) {
             return null;
         } else {
-            return this.classifier.getEntityList().find(this.value);
+            Vector v = this.getEntityVector();
+            if(v.sparsity() < 1.0f) {
+                return this.classifier.getEntityList().get(v.argmax());
+            } else {
+                return null;
+            }
         }
     }
 

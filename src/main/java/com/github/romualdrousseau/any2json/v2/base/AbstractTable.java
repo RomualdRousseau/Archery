@@ -32,6 +32,7 @@ public abstract class AbstractTable implements Table, Visitable {
 
     public AbstractTable(final AbstractTable parent) {
         this(parent.sheet, parent.firstColumn, parent.firstRow, parent.lastColumn, parent.lastRow);
+        this.parentOffsetRow = this.firstRow - parent.firstRow;
         this.cachedRows = parent.cachedRows;
     }
 
@@ -147,10 +148,12 @@ public abstract class AbstractTable implements Table, Visitable {
             this.cachedRows = new RowStore();
         }
 
-        BaseRow result = cachedRows.get(this.parentOffsetRow + this.firstRowOffset + rowIndex);
+        final int relRowIndex = this.firstRowOffset + rowIndex;
+
+        BaseRow result = cachedRows.get(this.parentOffsetRow + relRowIndex);
         if (result == null) {
-            result = new BaseRow(this, rowIndex);
-            cachedRows.put(rowIndex, result);
+            result = new BaseRow(this, relRowIndex);
+            cachedRows.put(this.parentOffsetRow + relRowIndex, result);
         }
 
         return result;

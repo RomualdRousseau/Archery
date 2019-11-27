@@ -82,9 +82,9 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
         for(Cell cell : row.getCells()) {
             if(!cell.hasData()) {
                 countEmptyCells++;
-                if(rowIndex > 0 && !checkIfRowMergedVertically && this.sheet.getCellAt(rowIndex, cell.getIndex() + 1).getMergeDown() == 1) {
-                    checkIfRowMergedVertically = true;
-                }
+            }
+            if(rowIndex > 0 && !checkIfRowMergedVertically && this.sheet.getCellAt(rowIndex, cell.getIndex() + 1).getMergeDown() == 1) {
+                checkIfRowMergedVertically = true;
             }
             countCells++;
         }
@@ -116,7 +116,7 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
             return null;
         }
         Cell cell = this.sheet.getCellAt(translatedRow + 1, colIndex + 1);
-        if(!cell.hasData()) {
+        if(!cell.hasData() || cell.getData$().isEmpty()) {
 			return null;
         }
         return cell;

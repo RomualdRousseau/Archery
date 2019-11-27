@@ -36,7 +36,7 @@ public class IntelliHeader extends CompositeHeader {
             final String v1 = this.getCell().getValue();
             this.name = this.getTable().getClassifier().getStopWordList().removeStopWords(v1);
             if(this.name.isEmpty()) {
-                final Vector v = this.buildEntityVector();
+                final Vector v = this.getEntityVector();
                 if(v.sparsity() < 1.0f) {
                     this.name = this.getTable().getClassifier().getEntityList().get(v.argmax());
                 } else {

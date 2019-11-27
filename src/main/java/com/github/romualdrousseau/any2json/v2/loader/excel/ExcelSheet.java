@@ -142,9 +142,6 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
         candidate |= (height < DocumentFactory.SEPARATOR_ROW_THRESHOLD);
         candidate |= (merged > 0);
         candidate &= (sparcity >= DocumentFactory.DEFAULT_RATIO_SCARSITY);
-        if(merged > 0) {
-            System.out.println(sparcity);
-        }
         return candidate;
     }
 
@@ -239,7 +236,6 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
                 }
                 if(fgcolor instanceof HSSFColor) {
                     if(((HSSFColor) fgcolor).getIndex() != HSSFColor.AUTOMATIC.index && (((HSSFColor) fgcolor).getHexString() != null || !((HSSFColor) fgcolor).getHexString().equals("FFFF:FFFF:FFFF"))) {
-                        System.out.println(((HSSFColor) fgcolor).getIndex());
                         return true;
                     }
                 }

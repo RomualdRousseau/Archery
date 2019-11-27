@@ -18,10 +18,12 @@ import java.io.IOException;
 import java.util.List;
 import java.awt.event.KeyEvent;
 
+final String[] metaLayexes = { "(v[v|e|s]$)+" };
+
 final String[] dataLayexes = {
   //"(()([v|s]{3}$))([ee[v|s]$][(ve[v|s]$)(ee[v|s]$)+]+)+"
   //"(()(ve{3}v$v{6}$))([vs{4}$][(ev[e|s]{4}$)(v[e|s]{4}$)+]+)+(vs{4}$)?",
-  "(([v|e]$)+([v|s][v|e][v|e|s]+$[v|e|s]+$))(()([v|e|s]{2}[v|e|s]+$))+([v|e|s]{2}$)?",
+  //"(([v|e]$)+([v|s][v|e][v|e|s]+$[v|e|s]+$))(()([v|e|s]{2}[v|e|s]+$))+([v|e|s]{2}$)?",
   "((e[v|e|s]*$)(v[v|e][v|e|s]+$))(()([v|e|s]{2}[v|e|s]+$))+([v|e|s]{2}$)?",
   "((v[v|e|s]*$)(v[v|e][v|e|s]+$))(([v|e|s]{2}$)([v|e|s]{2}[v|e|s]+$)+)+([v|e|s]{2}$)?",
   "(()([v|s][v|e][v|e|s]+$))((s[v|e][v|e|s]+$)([v|e][v|e|s][v|e|s]+$)+)+([v|e|s]{2}$)?",
@@ -37,7 +39,8 @@ PGraphics documentImage;
 int documentTopY;
 
 void configure() {
-  classifier = new NGramNNClassifier(JSON.loadJSONObject(dataPath("brainColumnClassifier.json")), null, dataLayexes);
+  classifier = new NGramNNClassifier(JSON.loadJSONObject(dataPath("brainColumnClassifier.json")), metaLayexes, dataLayexes);
+  //classifier = new NGramNNClassifier(JSON.loadJSONObject(dataPath("brainColumnClassifier.json")));
   
   scrollSpeed = 100; // 100px per scroll  
 
@@ -195,16 +198,21 @@ void buildImage(SheetEvent e) {
     documentImage.noStroke();
 
     for (DataTable table : ((DataTableListBuiltEvent) e).getDataTables()) {
+      // meta
       documentImage.fill(color(255, 128, 0), 128);
       documentImage.rect(table.getFirstColumn() * dx, table.getFirstRow() * gridSize, table.getNumberOfColumns() * dx, table.getFirstRowOffset() * gridSize);
+      // header
       documentImage.fill(color(0, 255, 0), 128);
       documentImage.rect(table.getFirstColumn() * dx, (table.getFirstRow() + table.getHeaderRowOffset()) * gridSize, table.getNumberOfColumns() * dx, gridSize);
+      // data
       documentImage.fill(color(0, 255, 0), 64);
       documentImage.rect(table.getFirstColumn() * dx, (table.getFirstRow() + table.getFirstRowOffset()) * gridSize, table.getNumberOfColumns() * dx, table.getNumberOfRows() * gridSize);
+      // rowgroups
       documentImage.fill(color(0, 255, 255), 128);
       for(RowGroup rowGroup : table.rowGroups()) {
         documentImage.rect(table.getFirstColumn() * dx, (table.getFirstRow() + table.getFirstRowOffset() + rowGroup.getRow()) * gridSize, table.getNumberOfColumns() * dx, gridSize);
       }
+      // footer
       documentImage.fill(color(0, 0, 0), 64);
       documentImage.rect(table.getFirstColumn() * dx, (table.getLastRow() + table.getLastRowOffset() + 1) * gridSize, table.getNumberOfColumns() * dx, -table.getLastRowOffset() * gridSize);
     }
@@ -262,6 +270,6 @@ void dumpTable(com.github.romualdrousseau.any2json.v2.Table table) {
       print(cell.getValue(), "| ");
     }
     println();
-    if(n++ >= 20) break;
+    if(n++ >= 50) break;
   }
 }
