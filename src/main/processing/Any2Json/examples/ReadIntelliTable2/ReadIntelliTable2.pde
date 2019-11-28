@@ -263,7 +263,7 @@ void dumpTable(com.github.romualdrousseau.any2json.v2.Table table) {
     print(abstractHeader.getName(), abstractHeader.getTag().getValue(), "| ");
   }
   println();
-  
+  /*
   int n = 0;
   for (Row row : table.rows()) {
     for (Cell cell : row.cells()) {
@@ -272,4 +272,5 @@ void dumpTable(com.github.romualdrousseau.any2json.v2.Table table) {
     println();
     if(n++ >= 50) break;
   }
+  */
 }

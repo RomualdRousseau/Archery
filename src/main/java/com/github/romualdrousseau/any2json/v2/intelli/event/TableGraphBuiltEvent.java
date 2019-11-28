@@ -18,7 +18,10 @@ public class TableGraphBuiltEvent extends SheetEvent {
     }
 
     public void dumpTableGraph() {
+        System.out.println("============================ DUMP TABLEGRAPH ============================");
+        System.out.println(this.getSource().getName());
         this.walkThroughTableGraph(this.tableGraph, 0, 0);
+        System.out.println("================================== END ==================================");
     }
 
     private int walkThroughTableGraph(final TableGraph graph, final int indent, int counter) {

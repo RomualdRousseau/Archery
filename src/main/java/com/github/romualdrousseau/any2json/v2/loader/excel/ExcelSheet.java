@@ -4,8 +4,10 @@ import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.formula.eval.NotImplementedException;
+import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Color;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
@@ -71,18 +73,18 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
             return null;
         }
 
-        int type = cell.getCellType();
-        if (type == Cell.CELL_TYPE_FORMULA) {
+        CellType type = cell.getCellType();
+        if (type.equals(CellType.FORMULA)) {
             type = cell.getCachedFormulaResultType();
         }
 
         String value = "";
 
-        if (type == Cell.CELL_TYPE_BOOLEAN) {
+        if (type.equals(CellType.BOOLEAN)) {
             value = cell.getBooleanCellValue() ? "TRUE" : "FALSE";
-        } else if (type == Cell.CELL_TYPE_STRING) {
+        } else if (type.equals(CellType.STRING)) {
             value = cell.getStringCellValue();
-        } else if (type == Cell.CELL_TYPE_NUMERIC) {
+        } else if (type.equals(CellType.NUMERIC)) {
             try {
                 value = this.formatter.formatCellValue(cell, evaluator);
                 if (value.matches("-?\\d+")) {
@@ -135,8 +137,7 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
 
         int merged = countOfRowMergedVertically(row);
 
-        float sparcity = Float.valueOf(merged)
-                / Float.valueOf(row.getLastCellNum() - row.getFirstCellNum());
+        float sparcity = Float.valueOf(merged) / Float.valueOf(row.getLastCellNum() - row.getFirstCellNum());
 
         boolean candidate = false;
         candidate |= (height < DocumentFactory.SEPARATOR_ROW_THRESHOLD);
@@ -179,8 +180,7 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
             Cell cell = it.next();
             for (CellRangeAddress region : this.cachedRegion) {
                 if (region.isInRange(cell.getRowIndex(), cell.getColumnIndex())) {
-                    if((cell.getRowIndex() > region.getFirstRow())
-                            && (region.getLastRow() > region.getFirstRow())) {
+                    if ((cell.getRowIndex() > region.getFirstRow()) && (region.getLastRow() > region.getFirstRow())) {
                         result++;
                     }
                 }
@@ -195,18 +195,18 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
             return false;
         }
 
-        final int type = cell.getCellType();
+        final CellType type = cell.getCellType();
 
-        if (type == Cell.CELL_TYPE_BLANK || type == Cell.CELL_TYPE_STRING && cell.getStringCellValue().isEmpty()) {
+        if (type.equals(CellType.BLANK) || type.equals(CellType.STRING) && cell.getStringCellValue().isEmpty()) {
             final CellStyle style = cell.getCellStyle();
 
             // Keep cell with colored borders
-            if (style.getBorderLeft() != CellStyle.BORDER_NONE && style.getBorderRight() != CellStyle.BORDER_NONE
-                    && style.getBorderTop() != CellStyle.BORDER_NONE
-                    && style.getBorderBottom() != CellStyle.BORDER_NONE) {
+            if (!style.getBorderLeft().equals(BorderStyle.NONE) && !style.getBorderRight().equals(BorderStyle.NONE)
+                    && !style.getBorderTop().equals(BorderStyle.NONE)
+                    && !style.getBorderBottom().equals(BorderStyle.NONE)) {
                 // if (style.getLeftBorderColor() != 0 && style.getRightBorderColor() != 0
-                //         && style.getTopBorderColor() != 0 && style.getBottomBorderColor() != 0) {
-                //     return true;
+                // && style.getTopBorderColor() != 0 && style.getBottomBorderColor() != 0) {
+                // return true;
                 // }
                 return true;
             }
@@ -214,13 +214,17 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
             // Keep cell with a colored (not automatic and not white) pattern
             final Color bkcolor = style.getFillBackgroundColorColor();
             if (bkcolor != null) {
-                if(bkcolor instanceof XSSFColor) {
-                    if(((XSSFColor) bkcolor).getIndexed() != IndexedColors.AUTOMATIC.index && (((XSSFColor) bkcolor).getARGBHex() == null || !((XSSFColor) bkcolor).getARGBHex().equals("FFFFFFFF"))) {
+                if (bkcolor instanceof XSSFColor) {
+                    if (((XSSFColor) bkcolor).getIndexed() != IndexedColors.AUTOMATIC.index
+                            && (((XSSFColor) bkcolor).getARGBHex() == null
+                                    || !((XSSFColor) bkcolor).getARGBHex().equals("FFFFFFFF"))) {
                         return true;
                     }
                 }
-                if(bkcolor instanceof HSSFColor) {
-                    if(((HSSFColor) bkcolor).getIndex() != HSSFColor.AUTOMATIC.index && (((HSSFColor) bkcolor).getHexString() == null || !((HSSFColor) bkcolor).getHexString().equals("FFFF:FFFF:FFFF"))) {
+                if (bkcolor instanceof HSSFColor) {
+                    if (((HSSFColor) bkcolor).getIndex() != HSSFColor.HSSFColorPredefined.AUTOMATIC.getIndex()
+                            && (((HSSFColor) bkcolor).getHexString() == null
+                                    || !((HSSFColor) bkcolor).getHexString().equals("FFFF:FFFF:FFFF"))) {
                         return true;
                     }
                 }
@@ -229,13 +233,17 @@ class ExcelSheet extends IntelliSheet implements RowTranslatable {
             // Keep cell with a colored (not automatic and not white) background
             final Color fgcolor = style.getFillForegroundColorColor();
             if (fgcolor != null) {
-                if(fgcolor instanceof XSSFColor) {
-                    if(((XSSFColor) fgcolor).getIndexed() != IndexedColors.AUTOMATIC.index && (((XSSFColor) fgcolor).getARGBHex() == null || !((XSSFColor) fgcolor).getARGBHex().equals("FFFFFFFF"))) {
+                if (fgcolor instanceof XSSFColor) {
+                    if (((XSSFColor) fgcolor).getIndexed() != IndexedColors.AUTOMATIC.index
+                            && (((XSSFColor) fgcolor).getARGBHex() == null
+                                    || !((XSSFColor) fgcolor).getARGBHex().equals("FFFFFFFF"))) {
                         return true;
                     }
                 }
-                if(fgcolor instanceof HSSFColor) {
-                    if(((HSSFColor) fgcolor).getIndex() != HSSFColor.AUTOMATIC.index && (((HSSFColor) fgcolor).getHexString() != null || !((HSSFColor) fgcolor).getHexString().equals("FFFF:FFFF:FFFF"))) {
+                if (fgcolor instanceof HSSFColor) {
+                    if (((HSSFColor) fgcolor).getIndex() != HSSFColor.HSSFColorPredefined.AUTOMATIC.getIndex()
+                            && (((HSSFColor) fgcolor).getHexString() != null
+                                    || !((HSSFColor) fgcolor).getHexString().equals("FFFF:FFFF:FFFF"))) {
                         return true;
                     }
                 }

@@ -5,9 +5,17 @@ import com.github.romualdrousseau.any2json.v2.SheetEvent;
 import com.github.romualdrousseau.any2json.v2.Table;
 import com.github.romualdrousseau.any2json.v2.SheetListener;
 import com.github.romualdrousseau.any2json.v2.intelli.DataTable;
+import com.github.romualdrousseau.any2json.v2.intelli.IntelliTable;
+import com.github.romualdrousseau.any2json.v2.intelli.event.AllTablesExtractedEvent;
+import com.github.romualdrousseau.any2json.v2.intelli.event.BitmapGeneratedEvent;
+import com.github.romualdrousseau.any2json.v2.intelli.event.DataTableListBuiltEvent;
+import com.github.romualdrousseau.any2json.v2.intelli.event.IntelliTableReadyEvent;
+import com.github.romualdrousseau.any2json.v2.intelli.event.TableGraphBuiltEvent;
+import com.github.romualdrousseau.any2json.v2.util.TableGraph;
 import com.github.romualdrousseau.any2json.v2.intelli.CompositeTable;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import com.github.romualdrousseau.any2json.ITagClassifier;
 
@@ -35,11 +43,30 @@ public abstract class AbstractSheet implements Sheet {
         final int lastRowNum = this.getLastRowNum();
         if (lastColumnNum > 0 && lastRowNum > 0) {
             if(classifier == null) {
+                this.notifyStepCompleted(new BitmapGeneratedEvent(this, null));
                 result = new SimpleTable(this, 0, 0, lastColumnNum, lastRowNum);
+                this.notifyStepCompleted(new IntelliTableReadyEvent(this, result));
             } else {
-                result = new DataTable(new CompositeTable(this, 0, 0, lastColumnNum, lastRowNum, classifier));
+                this.notifyStepCompleted(new BitmapGeneratedEvent(this, null));
+
+                LinkedList<CompositeTable> tables = new  LinkedList<CompositeTable>();
+                tables.add(new CompositeTable(this, 0, 0, lastColumnNum, lastRowNum, classifier));
+                this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables));
+
+                LinkedList<DataTable> dataTables = new  LinkedList<DataTable>();
+                dataTables.add(new DataTable(tables.getFirst()));
+                this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables));
+
+                TableGraph root = new TableGraph();
+                root.addChild(new TableGraph(dataTables.getFirst()));
+                this.notifyStepCompleted(new TableGraphBuiltEvent(this, root));
+
+                result = new IntelliTable(root, classifier);
+                this.notifyStepCompleted(new IntelliTableReadyEvent(this, result));
             }
         }
+
+
         return result;
     }
 

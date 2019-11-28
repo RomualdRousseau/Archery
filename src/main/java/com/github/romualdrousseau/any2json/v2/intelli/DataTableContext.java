@@ -27,6 +27,9 @@ public class DataTableContext extends Context<BaseCell> {
         final String symbol = cell.getSymbol();
 
         if (this.getColumn() == 0) {
+            this.firstRowCell = null;
+        }
+        if (cell.hasValue() && !cell.getValue().isEmpty() && this.firstRowCell == null) {
             this.firstRowCell = cell;
         }
 
@@ -42,7 +45,8 @@ public class DataTableContext extends Context<BaseCell> {
         case TABLE_HEADER:
             if (symbol.equals("$")) {
                 this.dataTable.setFirstRowOffset(this.getRow() + 1);
-            } else if (symbol.equals("e")) {
+            } else if (symbol.equals("e") && !cell.getEntityString().equals("NUMBER")) {
+                // TODO: Avoid this NUMBER hard coded value
                 PivotKeyHeader foundPivot = this.dataTable.findFirstPivotHeader();
                 if (foundPivot == null) {
                     this.dataTable.addHeader(new PivotKeyHeader(this.dataTable, cell));
@@ -58,18 +62,21 @@ public class DataTableContext extends Context<BaseCell> {
         case TABLE_GROUP:
             if (symbol.equals("$")) {
                 if (this.getRow() < (this.dataTable.getLastRow() - this.dataTable.getFirstRow())) {
-                    this.lastRowGroup = new RowGroup(this.firstRowCell,
-                            this.getRow() - this.dataTable.getFirstRowOffset());
-                    this.dataTable.addRowGroup(this.lastRowGroup);
+                    if (this.firstRowCell != null) {
+                        this.lastRowGroup = new RowGroup(this.firstRowCell,
+                                this.getRow() - this.dataTable.getFirstRowOffset());
+                        this.dataTable.addRowGroup(this.lastRowGroup);
+                    }
                 } else if (!this.footerProcessed) {
                     final int n = this.dataTable.getLastRow() - this.dataTable.getFirstRow();
                     this.dataTable.setLastRowOffset(this.getRow() - n - 1);
                     this.footerProcessed = true;
                 }
-                if(!this.firstRowGroupProcessed && !this.footerProcessed) {
+                if (!this.firstRowGroupProcessed && !this.footerProcessed) {
                     MetaTableHeader meta = this.dataTable.findFirstMetaTableHeader();
-                    if(meta == null) {
-                        meta = new MetaTableHeader(this.dataTable, new BaseCell("#GROUP?", 0, 1, this.dataTable.getClassifier()));
+                    if (meta == null) {
+                        meta = new MetaTableHeader(this.dataTable,
+                                new BaseCell("#GROUP?", 0, 1, this.dataTable.getClassifier()));
                         this.dataTable.addHeader(meta);
                     }
                     meta.assignRowGroup(this.lastRowGroup);

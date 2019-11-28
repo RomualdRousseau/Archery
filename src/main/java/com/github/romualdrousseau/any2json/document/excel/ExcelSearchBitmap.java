@@ -3,6 +3,7 @@ package com.github.romualdrousseau.any2json.document.excel;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
@@ -79,7 +80,7 @@ public class ExcelSearchBitmap implements ISearchBitmap
     }
 
     private boolean checkIfCellHasData(Cell cell) {
-        return cell != null && (cell.getCellType() != Cell.CELL_TYPE_BLANK || cell.getCellStyle().getFillBackgroundColorColor() != null);
+        return cell != null && (!cell.getCellType().equals(CellType.BLANK) || cell.getCellStyle().getFillBackgroundColorColor() != null);
     }
 
 	private int checkIfMergedCell(Sheet sheet, Cell cell) {

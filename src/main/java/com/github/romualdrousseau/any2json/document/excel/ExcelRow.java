@@ -5,6 +5,7 @@ import com.github.romualdrousseau.any2json.TableRow;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 public class ExcelRow extends TableRow {
@@ -74,22 +75,22 @@ public class ExcelRow extends TableRow {
             return null;
         }
 
-        int type = Cell.CELL_TYPE_ERROR;
+        CellType type = CellType.ERROR;
         String value = "#ERROR!";
         try {
             type = this.table.evaluator.evaluateInCell(cell).getCellType();
             value = this.table.formatter.formatCellValue(cell);
         } catch (Exception x) {
-            type = Cell.CELL_TYPE_ERROR;
+            type = CellType.ERROR;
             value = "#ERROR!";
         }
 
         // TRICKY: Get hidden decimals in case of a rounded numeric value
-        if (type == Cell.CELL_TYPE_NUMERIC && value.matches("-?\\d+")) {
+        if (type.equals(CellType.NUMERIC) && value.matches("-?\\d+")) {
             double d = cell.getNumericCellValue();
             value = (Math.floor(d) == d) ? value : String.valueOf(d);
         }
-        else if(type == Cell.CELL_TYPE_ERROR) {
+        else if(type.equals(CellType.ERROR)) {
             value = "#ERROR!";
             // throw new UnsupportedOperationException("Unexceptected Cell Error at [" + row.getRowNum() + ";" + (this.table.getFirstColumn() + i) + "]");
         }

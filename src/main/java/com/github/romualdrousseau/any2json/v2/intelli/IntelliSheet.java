@@ -38,6 +38,9 @@ public abstract class IntelliSheet extends AbstractSheet {
 
         final List<DataTable> dataTables = this.getDataTables(tables, classifier.getDataLayexes());
         this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables));
+        if(dataTables.size() == 0) {
+            return null;
+        }
 
         final List<MetaTable> metaTables = this.getMetaTables(tables, classifier.getMetaLayexes());
         this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables));
@@ -192,7 +195,7 @@ public abstract class IntelliSheet extends AbstractSheet {
             rectangles.add(new SearchPoint[] { point, neighboor });
         }
 
-        rectangles = SearchPoint.TrimInX(SearchPoint.MergeInX(SearchPoint.RemoveOverlaps(rectangles)), original);
+        rectangles = SearchPoint.ExpandInX(SearchPoint.TrimInX(SearchPoint.MergeInX(SearchPoint.RemoveOverlaps(rectangles)), original), original);
 
         return rectangles;
     }

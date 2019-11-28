@@ -6,7 +6,7 @@ import com.github.romualdrousseau.any2json.v2.Cell;
 import com.github.romualdrousseau.any2json.v2.Header;
 import com.github.romualdrousseau.any2json.v2.base.BaseCell;
 import com.github.romualdrousseau.any2json.v2.base.RowGroup;
-import com.github.romualdrousseau.any2json.v2.intelli.header.IntelliHeader;
+import com.github.romualdrousseau.any2json.v2.intelli.header.DataTableHeader;
 import com.github.romualdrousseau.any2json.v2.intelli.header.MetaTableHeader;
 import com.github.romualdrousseau.any2json.v2.intelli.header.PivotKeyHeader;
 import com.github.romualdrousseau.any2json.v2.layex.LayexMatcher;
@@ -17,8 +17,6 @@ public class DataTable extends CompositeTable {
     public DataTable(CompositeTable table) {
         super(table);
         this.buildIntelliTable(table);
-        this.updateHeaderTags();
-        this.setLoadCompleted(true);
     }
 
     public DataTable(CompositeTable table, LayexMatcher layex) {
@@ -63,7 +61,11 @@ public class DataTable extends CompositeTable {
 
     private void buildIntelliTable(CompositeTable table) {
         for (Cell cell : table.getRowAt(0).cells()) {
-            this.addHeader(new IntelliHeader(this, (BaseCell) cell));
+            if(cell.getEntityString() != null) {
+                this.addHeader(new PivotKeyHeader(this, (BaseCell) cell));
+            } else {
+                this.addHeader(new DataTableHeader(this, (BaseCell) cell));
+            }
         }
         this.setFirstRowOffset(1);
     }

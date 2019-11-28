@@ -8,7 +8,6 @@ import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.poifs.filesystem.NotOLE2FileException;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import com.github.romualdrousseau.any2json.IDocument;
 import com.github.romualdrousseau.any2json.ISheet;
@@ -32,9 +31,6 @@ public class ExcelDocument implements IDocument
 			}
 		}
 		catch(NotOLE2FileException x) {
-			close();
-		}
-		catch(InvalidFormatException x) {
 			close();
 		}
 		catch(IOException x) {
