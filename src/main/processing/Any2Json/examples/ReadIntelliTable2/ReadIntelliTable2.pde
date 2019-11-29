@@ -164,7 +164,7 @@ void buildImage(SheetEvent e) {
     SheetBitmap bitmap = ((BitmapGeneratedEvent) e).getBitmap();
 
     // Max rows set to 5000 to prevent heap overflow
-    documentImage = createGraphics(width, Math.min(sheet.getLastRowNum(), 3000) * gridSize);
+    documentImage = createGraphics(width, Math.min(sheet.getLastRowNum(), 100) * gridSize);
 
     documentImage.beginDraw();
     documentImage.stroke(128);
@@ -257,12 +257,14 @@ void displayHUD() {
 }
 
 void dumpTable(com.github.romualdrousseau.any2json.v2.Table table) {
+  /*
   println();
   for (Header header : table.headers()) {
     AbstractHeader abstractHeader = (AbstractHeader) header;
     print(abstractHeader.getName(), abstractHeader.getTag().getValue(), "| ");
   }
   println();
+  */
   /*
   int n = 0;
   for (Row row : table.rows()) {

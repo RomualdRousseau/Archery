@@ -4,68 +4,60 @@ import java.io.File;
 import java.util.ArrayList;
 import java.io.IOException;
 
-import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.poifs.filesystem.NotOLE2FileException;
-import org.apache.poi.openxml4j.exceptions.OpenXML4JRuntimeException;
 
 import com.github.romualdrousseau.any2json.v2.Document;
 import com.github.romualdrousseau.any2json.v2.Sheet;
 
 public class ExcelDocument implements Document {
-	public boolean open(File excelFile, String encoding) {
-		if(excelFile == null) {
+
+    public boolean open(File excelFile, String encoding) {
+        if (excelFile == null) {
             throw new IllegalArgumentException();
         }
 
-        close();
+        Workbook workbook = null;
+        try {
+            this.sheets.clear();
 
-		try {
-			this.workbook = WorkbookFactory.create(excelFile);
+            workbook = WorkbookFactory.create(excelFile);
 
-			FormulaEvaluator evaluator = this.workbook.getCreationHelper().createFormulaEvaluator();
-
-			for(int i = 0; i < this.workbook.getNumberOfSheets(); i++) {
-				this.sheets.add(new ExcelSheet(this.workbook.getSheetAt(i), evaluator));
-			}
-		}
-		catch(NotOLE2FileException x) {
-			close();
-		}
-		catch(IOException x) {
-			close();
-		}
-
-		return this.sheets.size() > 0;
-	}
-
-	public void close() {
-		this.sheets.clear();
-		if(this.workbook != null) {
-            try {
-                this.workbook.close();
+            // FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+            for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+                this.sheets.add(new ExcelSheet(workbook.getSheetAt(i)));
             }
-            catch(IOException x) {
-                // ignore exception
+
+            return this.sheets.size() > 0;
+
+        } catch (EncryptedDocumentException | IOException e) {
+            e.printStackTrace();
+            this.sheets.clear();
+            return false;
+
+        } finally {
+            if(workbook != null) {
+                try {
+                    workbook.close();
+                } catch (IOException ignore) {
+                }
             }
-            catch(OpenXML4JRuntimeException x) {
-                // ignore exception
-            }
-            finally {
-                this.workbook = null;
-            }
+            workbook = null;
         }
-	}
+    }
 
-	public int getNumberOfSheets() {
-		return this.sheets.size();
-	}
+    public void close() {
+        this.sheets.clear();
+    }
 
-	public Sheet getSheetAt(int i) {
-		return this.sheets.get(i);
-	}
+    public int getNumberOfSheets() {
+        return this.sheets.size();
+    }
 
-	private Workbook workbook = null;
-	private ArrayList<ExcelSheet> sheets = new ArrayList<ExcelSheet>();
+    public Sheet getSheetAt(int i) {
+        return this.sheets.get(i);
+    }
+
+    private ArrayList<ExcelSheet> sheets = new ArrayList<ExcelSheet>();
 }

@@ -41,7 +41,7 @@ public abstract class AbstractSheet implements Sheet {
         Table result = null;
         final int lastColumnNum = this.getLastColumnNum(0);
         final int lastRowNum = this.getLastRowNum();
-        if (lastColumnNum > 0 && lastRowNum > 0) {
+        if (lastColumnNum >= 0 && lastRowNum >= 0) {
             if(classifier == null) {
                 this.notifyStepCompleted(new BitmapGeneratedEvent(this, null));
                 result = new SimpleTable(this, 0, 0, lastColumnNum, lastRowNum);
@@ -65,7 +65,6 @@ public abstract class AbstractSheet implements Sheet {
                 this.notifyStepCompleted(new IntelliTableReadyEvent(this, result));
             }
         }
-
 
         return result;
     }

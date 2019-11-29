@@ -30,6 +30,10 @@ public abstract class IntelliSheet extends AbstractSheet {
 
     @Override
     public Table getTable(final ITagClassifier classifier) {
+        if (this.getLastRowNum() < 0) {
+            return null;
+        }
+
         final SheetBitmap image = new SheetBitmap(this, classifier.getSampleCount(), this.getLastRowNum());
         this.notifyStepCompleted(new BitmapGeneratedEvent(this, image));
 
@@ -38,6 +42,7 @@ public abstract class IntelliSheet extends AbstractSheet {
 
         final List<DataTable> dataTables = this.getDataTables(tables, classifier.getDataLayexes());
         this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables));
+
         if(dataTables.size() == 0) {
             return null;
         }
@@ -195,7 +200,7 @@ public abstract class IntelliSheet extends AbstractSheet {
             rectangles.add(new SearchPoint[] { point, neighboor });
         }
 
-        rectangles = SearchPoint.ExpandInX(SearchPoint.TrimInX(SearchPoint.MergeInX(SearchPoint.RemoveOverlaps(rectangles)), original), original);
+        rectangles = SearchPoint.TrimInX(SearchPoint.ExpandInX(SearchPoint.MergeInX(SearchPoint.RemoveOverlaps(rectangles)), original), original);
 
         return rectangles;
     }
