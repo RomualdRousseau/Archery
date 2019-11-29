@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.any2json.v2.loader.excel;
+package com.github.romualdrousseau.any2json.v2.loader.xls;
 
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -48,8 +48,6 @@ public class ExcelMappedSheet implements RowTranslatable {
             this.cachedRegion.add(region);
         }
 
-        System.out.println("map ...");
-
         try (ObjectOutputStream buffer = new ObjectOutputStream(
                 new BufferedOutputStream(new FileOutputStream(result)))) {
             for (int i = 0; i <= this.sheet.getLastRowNum(); i++) {
@@ -94,8 +92,6 @@ public class ExcelMappedSheet implements RowTranslatable {
             buffer.writeObject(null);
         }
 
-        System.out.println("done.");
-
         this.sheet = null;
         this.cachedRegion = null;
         Runtime.getRuntime().gc();
@@ -104,14 +100,12 @@ public class ExcelMappedSheet implements RowTranslatable {
     }
 
     public List<MappedRow> unmap(File file) {
-        System.out.println("unmap ...");
         try (ObjectInputStream buffer = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
             ArrayList<MappedRow> rows = new ArrayList<MappedRow>();
             Object row;
             while ((row = buffer.readObject()) != null) {
                 rows.add((MappedRow) row);
             }
-            System.out.println("done.");
             return rows;
         } catch (IOException | ClassNotFoundException ignore) {
             return null;

@@ -11,7 +11,7 @@ import com.github.romualdrousseau.any2json.v2.layex.operations.Value;
 
 public class Layex {
     public Layex(String pattern) {
-        this.pattern = new StringLexer(pattern);
+        this.pattern = new StringLexer(pattern.replaceAll(" ", ""));
     }
 
     public LayexMatcher compile() {
@@ -56,7 +56,7 @@ public class Layex {
     private LayexMatcher r2() {
         String c = this.getSymbol();
 
-        if (c.charAt(0) >= 'a' && c.charAt(0) <= 'z' || c.charAt(0) == '$') {
+        if (c.charAt(0) >= 'a' && c.charAt(0) <= 'z' || c.charAt(0) == '$' || c.charAt(0) == '.') {
             this.acceptPreviousSymbol();
             LayexMatcher e = new Value(c);
             return r3(e);

@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.any2json.v2.loader.excel;
+package com.github.romualdrousseau.any2json.v2.loader.xls;
 
 import java.io.Serializable;
 

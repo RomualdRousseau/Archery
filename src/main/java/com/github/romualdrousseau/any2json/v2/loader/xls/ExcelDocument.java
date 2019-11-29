@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.any2json.v2.loader.excel;
+package com.github.romualdrousseau.any2json.v2.loader.xls;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -24,16 +24,14 @@ public class ExcelDocument implements Document {
 
             workbook = WorkbookFactory.create(excelFile);
 
-            // FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
             for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
                 this.sheets.add(new ExcelSheet(workbook.getSheetAt(i)));
             }
-
             return this.sheets.size() > 0;
 
         } catch (EncryptedDocumentException | IOException e) {
-            e.printStackTrace();
             this.sheets.clear();
+            e.printStackTrace();
             return false;
 
         } finally {

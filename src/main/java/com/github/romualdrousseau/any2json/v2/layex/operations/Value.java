@@ -9,13 +9,14 @@ public class Value implements LayexMatcher {
 
     public Value(String v) {
         this.v = v;
+        this.catchAny = v.equals(".");
     }
 
     @Override
     public <S extends Symbol, C> boolean match(Lexer<S, C> stream, Context<S> context) {
         S symbol = stream.read();
         String c = symbol.getSymbol();
-        if (!c.equals("") && c.equals(this.v)) {
+        if (!c.equals("") && (this.catchAny && !c.equals("$") || !this.catchAny && c.equals(this.v))) {
             if (context != null) {
                 context.notify(symbol);
             }
@@ -31,4 +32,5 @@ public class Value implements LayexMatcher {
     }
 
     private String v;
+    private boolean catchAny;
 }
