@@ -3,13 +3,10 @@ package com.github.romualdrousseau.any2json;
 import java.nio.file.Paths;
 
 import com.github.romualdrousseau.any2json.classifiers.NGramNNClassifier;
-import com.github.romualdrousseau.any2json.v2.Document;
-import com.github.romualdrousseau.any2json.v2.loader.xlsx.XlsxDocument;
 import com.github.romualdrousseau.shuju.json.JSON;
 
 import java.nio.file.Path;
 import java.net.URL;
-import java.io.File;
 import java.net.URISyntaxException;
 
 import org.junit.Test;
@@ -19,16 +16,6 @@ import static org.junit.Assert.*;
  * Unit test for simple App.
  */
 public class AppTest {
-    /**
-     * Rigorous Test :-)
-     */
-    @Test
-    public void testReadHugeXlsx() {
-        Document doc = new XlsxDocument();
-        doc.open(new File(getResourcePath("/data/Книга2.xlsx").toString()), "UTF-8");
-        doc.close();
-        assertEquals(true, true);
-    }
 
     /**
      * Rigorous Test :-)

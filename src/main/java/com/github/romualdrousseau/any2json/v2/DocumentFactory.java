@@ -3,10 +3,10 @@ package com.github.romualdrousseau.any2json.v2;
 import java.io.File;
 import java.util.UnknownFormatConversionException;
 
-import com.github.romualdrousseau.any2json.v2.loader.xml.XmlDocument;
+import com.github.romualdrousseau.any2json.v2.loader.excel.xlsx.XlsxDocument;
+import com.github.romualdrousseau.any2json.v2.loader.excel.xls.XlsDocument;
+import com.github.romualdrousseau.any2json.v2.loader.excel.xml.XmlDocument;
 import com.github.romualdrousseau.any2json.v2.loader.text.TextDocument;
-// import com.github.romualdrousseau.any2json.v2.loader.html.HtmlDocument;
-import com.github.romualdrousseau.any2json.v2.loader.xls.ExcelDocument;
 
 public class DocumentFactory {
 
@@ -31,10 +31,15 @@ public class DocumentFactory {
             throw new IllegalArgumentException();
         }
 
-		Document document = new ExcelDocument();
+		Document document = new XlsxDocument();
 		if(document.open(file, encoding)) {
 			return document;
         }
+
+        document = new XlsDocument();
+		if(document.open(file, encoding)) {
+			return document;
+		}
 
         document = new XmlDocument();
 		if(document.open(file, encoding)) {

@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.any2json.v2.loader.xml;
+package com.github.romualdrousseau.any2json.v2.loader.excel.xml;
 
 import java.io.FilterReader;
 import java.io.IOException;

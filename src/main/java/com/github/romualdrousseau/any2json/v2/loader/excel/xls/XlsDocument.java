@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.any2json.v2.loader.xls;
+package com.github.romualdrousseau.any2json.v2.loader.excel.xls;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -11,7 +11,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import com.github.romualdrousseau.any2json.v2.Document;
 import com.github.romualdrousseau.any2json.v2.Sheet;
 
-public class ExcelDocument implements Document {
+public class XlsDocument implements Document {
 
     public boolean open(File excelFile, String encoding) {
         if (excelFile == null) {
@@ -25,7 +25,7 @@ public class ExcelDocument implements Document {
             workbook = WorkbookFactory.create(excelFile);
 
             for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
-                this.sheets.add(new ExcelSheet(workbook.getSheetAt(i)));
+                this.sheets.add(new XlsSheet(workbook.getSheetAt(i)));
             }
             return this.sheets.size() > 0;
 
@@ -57,5 +57,5 @@ public class ExcelDocument implements Document {
         return this.sheets.get(i);
     }
 
-    private ArrayList<ExcelSheet> sheets = new ArrayList<ExcelSheet>();
+    private ArrayList<XlsSheet> sheets = new ArrayList<XlsSheet>();
 }

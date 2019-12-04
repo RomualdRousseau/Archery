@@ -136,6 +136,7 @@
                 <version>3.0.0-M3</version>
                 <configuration>
                     <argLine>-Dfile.encoding="UTF-8"</argLine>
+                    <trimStackTrace>false</trimStackTrace>
                 </configuration>
             </plugin>
             <plugin>

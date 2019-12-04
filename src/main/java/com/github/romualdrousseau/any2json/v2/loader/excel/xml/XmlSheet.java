@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.any2json.v2.loader.xml;
+package com.github.romualdrousseau.any2json.v2.loader.excel.xml;
 
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
@@ -50,7 +50,6 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
 		if(cell == null) {
 			return null;
         }
-
         return StringUtility.cleanToken(cell.getData$());
     }
 
@@ -83,7 +82,7 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
             if(!cell.hasData()) {
                 countEmptyCells++;
             }
-            if(rowIndex > 0 && !checkIfRowMergedVertically && this.sheet.getCellAt(rowIndex, cell.getIndex() + 1).getMergeDown() == 1) {
+            if(rowIndex > 0 && !checkIfRowMergedVertically && this.sheet.getCellAt(rowIndex, cell.getIndex() + 1).getMergeDown() > 0) {
                 checkIfRowMergedVertically = true;
             }
             countCells++;

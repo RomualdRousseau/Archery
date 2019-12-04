@@ -9,7 +9,6 @@ import com.github.romualdrousseau.any2json.v2.intelli.*;
 import com.github.romualdrousseau.any2json.v2.intelli.event.*;
 import com.github.romualdrousseau.any2json.v2.intelli.header.*;
 import com.github.romualdrousseau.any2json.v2.layex.*;
-import com.github.romualdrousseau.any2json.v2.loader.xlsx.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -72,10 +71,7 @@ void fileSelected(File selection) {
   if (selection != null) {
     noLoop();
     documentLoaded = false;
-    XlsxDocument doc = new XlsxDocument();
-    doc.open(selection, "UTF-8");
-    doc.close();
-    //loadDocument(selection.getAbsolutePath());
+    loadDocument(selection.getAbsolutePath());
     documentTopY = 0;
     documentLoaded = true;
     loop();
@@ -168,7 +164,7 @@ void buildImage(SheetEvent e) {
     SheetBitmap bitmap = ((BitmapGeneratedEvent) e).getBitmap();
 
     // Max rows set to 5000 to prevent heap overflow
-    documentImage = createGraphics(width, Math.min(sheet.getLastRowNum(), 100) * gridSize);
+    documentImage = createGraphics(width, Math.min(sheet.getLastRowNum() + 1, 5000) * gridSize);
 
     documentImage.beginDraw();
     documentImage.stroke(128);
