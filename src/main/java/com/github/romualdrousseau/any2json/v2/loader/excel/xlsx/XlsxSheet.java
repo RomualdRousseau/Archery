@@ -152,7 +152,11 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
         }
 
         private boolean hasData(final Cell cell) {
-            if (!cell.type.equals(CellType.BLANK) && !cell.value.isEmpty()) {
+            if (!cell.type.equals(CellType.BLANK) && cell.value != null && !cell.value.isEmpty()) {
+                return true;
+            }
+
+            if (cell.style == null) {
                 return true;
             }
 
