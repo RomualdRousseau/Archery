@@ -334,7 +334,7 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
 
         int numberOfCells = 0;
         for (final CellRangeAddress region : mergedRegions) {
-            if (region.isInRange(rowIndex, colIndex) && region.getLastRow() > region.getFirstRow()) {
+            if (region.isInRange(rowIndex, colIndex) && rowIndex > region.getFirstRow() && region.getLastRow() > region.getFirstRow()) {
                 numberOfCells = region.getLastRow() - region.getFirstRow();
                 break;
             }
