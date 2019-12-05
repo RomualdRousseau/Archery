@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.UnknownFormatConversionException;
 
 import com.github.romualdrousseau.any2json.v2.loader.excel.xlsx.XlsxDocument;
+// import com.github.romualdrousseau.any2json.v2.loader.excel.xlsb.XlsbDocument;
 import com.github.romualdrousseau.any2json.v2.loader.excel.xls.XlsDocument;
 import com.github.romualdrousseau.any2json.v2.loader.excel.xml.XmlDocument;
 import com.github.romualdrousseau.any2json.v2.loader.text.TextDocument;
@@ -36,10 +37,15 @@ public class DocumentFactory {
 			return document;
         }
 
+        //document = new XlsbDocument();
+		//if(document.open(file, encoding)) {
+		//	return document;
+		//}
+
         document = new XlsDocument();
 		if(document.open(file, encoding)) {
 			return document;
-		}
+        }
 
         document = new XmlDocument();
 		if(document.open(file, encoding)) {

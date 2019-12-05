@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.any2json.v2.loader.excel.xlsx;
+package com.github.romualdrousseau.any2json.v2.loader.excel.xlsb;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +30,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-public class XlsxSheet extends IntelliSheet implements RowTranslatable {
+public class XlsbSheet extends IntelliSheet implements RowTranslatable {
 
     public class ContentHandler extends DefaultHandler {
 
@@ -47,7 +47,7 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
             if ("row".equals(name)) {
                 assert (attributes.getValue("r") != null) : "Row malformed without ref";
                 this.fillMissingRows(Integer.valueOf(attributes.getValue("r")) - 1);
-                this.row = new XlsxRow();
+                this.row = new XlsbRow();
                 this.row.height = this.getRowHeightFromString(attributes.getValue("ht"));
                 this.prevCell = null;
                 this.currCell = null;
@@ -72,9 +72,9 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
                 rows.add(this.row);
             } else if ("c".equals(name)) {
                 this.fillMissingCells();
-                XlsxCell cell = XlsxCell.Empty;
+                XlsbCell cell = XlsbCell.Empty;
                 if (this.processCellData(this.currCell)) {
-                    cell = new XlsxCell();
+                    cell = new XlsbCell();
                     cell.value = this.currCell.value;
                 }
                 this.row.addCell(cell);
@@ -93,7 +93,7 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
 
         private void fillMissingRows(int n) {
             while (rows.size() < n) {
-                rows.add(new XlsxRow());
+                rows.add(new XlsbRow());
             }
         }
 
@@ -101,7 +101,7 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
             if (heightStr != null) {
                 return Float.valueOf(heightStr) * 4.0f / 3.0f; // Conversion in pixel
             } else {
-                return XlsxRow.DEFAULT_HEIGHT;
+                return XlsbRow.DEFAULT_HEIGHT;
             }
         }
 
@@ -132,7 +132,7 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
         private void fillMissingCells() {
             final int prevColumn = (this.prevCell == null) ? 0 : (this.prevCell.address.getColumn() + 1);
             for (int i = prevColumn; i < this.currCell.address.getColumn(); i++) {
-                this.row.addCell(XlsxCell.Empty);
+                this.row.addCell(XlsbCell.Empty);
             }
         }
 
@@ -198,13 +198,13 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
             return false;
         }
 
-        private XlsxRow row;
+        private XlsbRow row;
         private boolean startValue;
         private Cell currCell;
         private Cell prevCell;
     }
 
-    public XlsxSheet(final String name, final InputStream sheetData, final SharedStringsTable sharedStrings,
+    public XlsbSheet(final String name, final InputStream sheetData, final SharedStringsTable sharedStrings,
             final StylesTable styles) {
         this.rowTranslator = new RowTranslator(this);
         this.name = name;
@@ -251,13 +251,13 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
 
     @Override
     public boolean hasCellDataAt(final int colIndex, final int rowIndex) {
-        final XlsxCell cell = this.getCellAt(colIndex, rowIndex);
+        final XlsbCell cell = this.getCellAt(colIndex, rowIndex);
         return cell != null && cell.value != null;
     }
 
     @Override
     public String getInternalCellValueAt(final int colIndex, final int rowIndex) {
-        final XlsxCell cell = this.getCellAt(colIndex, rowIndex);
+        final XlsbCell cell = this.getCellAt(colIndex, rowIndex);
         return (cell != null && cell.value != null) ? cell.value : null;
     }
 
@@ -276,7 +276,7 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
             return false;
         }
 
-        final XlsxRow row = this.rows.get(rowIndex);
+        final XlsbRow row = this.rows.get(rowIndex);
         if (row.isNotIgnorable) {
             return false;
         }
@@ -285,7 +285,7 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
         int countCells = 0;
         boolean checkIfRowMergedVertically = false;
         if (row.cells != null) {
-            for (final XlsxCell cell : row.cells) {
+            for (final XlsbCell cell : row.cells) {
                 if (cell.value == null) {
                     countEmptyCells++;
                 }
@@ -309,13 +309,13 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
         return isIgnorable;
     }
 
-    private XlsxCell getCellAt(final int colIndex, final int rowIndex) {
+    private XlsbCell getCellAt(final int colIndex, final int rowIndex) {
         final int translatedRow = this.rowTranslator.rebase(rowIndex);
         if (translatedRow == -1 || translatedRow >= this.rows.size()) {
             return null;
         }
 
-        final XlsxRow row = this.rows.get(translatedRow);
+        final XlsbRow row = this.rows.get(translatedRow);
         if (row.cells == null || colIndex >= row.cells.size()) {
             return null;
         }
@@ -362,6 +362,6 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
     private final StylesTable styles;
     private final SharedStringsTable sharedStrings;
     private final ArrayList<CellRangeAddress> mergedRegions = new ArrayList<CellRangeAddress>();
-    private final ArrayList<XlsxRow> rows = new ArrayList<XlsxRow>();
-    private boolean dataLoaded;
+    private final ArrayList<XlsbRow> rows = new ArrayList<XlsbRow>();
+    private boolean dataLoaded = false;
 }
