@@ -4,11 +4,17 @@ public class XlsxCell {
 
     public static final XlsxCell Empty = new XlsxCell();
 
-    public String value;
-    public int length;
-
     public XlsxCell() {
         this.value = null;
-        this.length = 1;
     }
+
+    public String getValue() {
+        return this.value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    private String value;
 }

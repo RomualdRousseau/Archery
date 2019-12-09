@@ -35,7 +35,7 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
 
     @Override
     public int getLastRowNum() {
-        return this.sheet.getRows().size() - 1 - this.rowTranslator.getIgnoredRowCount();
+        return this.sheet.getRows().size() - this.rowTranslator.getIgnoredRowCount() - 1;
     }
 
     @Override

@@ -48,7 +48,7 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
                 assert (attributes.getValue("r") != null) : "Row malformed without ref";
                 this.fillMissingRows(Integer.valueOf(attributes.getValue("r")) - 1);
                 this.row = new XlsxRow();
-                this.row.height = this.getRowHeightFromString(attributes.getValue("ht"));
+                this.row.setHeight(this.getRowHeightFromString(attributes.getValue("ht")));
                 this.prevCell = null;
                 this.currCell = null;
             } else if ("c".equals(name)) {
@@ -75,10 +75,10 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
                 XlsxCell cell = XlsxCell.Empty;
                 if (this.processCellData(this.currCell)) {
                     cell = new XlsxCell();
-                    cell.value = this.currCell.value;
+                    cell.setValue(this.currCell.value);
                 }
                 this.row.addCell(cell);
-                this.row.lastColumnNum = Math.max(this.row.lastColumnNum, this.currCell.address.getColumn());
+                this.row.setLastColumnNum(Math.max(this.row.getLastColumnNum(), this.currCell.address.getColumn()));
             } else if ("v".equals(name)) {
                 this.startValue = false;
             }
@@ -214,7 +214,7 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
     }
 
     public Sheet ensureDataLoaded() {
-        if(this.dataLoaded) {
+        if (this.dataLoaded) {
             return this;
         }
 
@@ -230,7 +230,8 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
             try {
                 this.dataLoaded = true;
                 this.sheetData.close();
-            } catch (IOException ignore) {}
+            } catch (IOException ignore) {
+            }
         }
     }
 
@@ -241,24 +242,24 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
 
     @Override
     public int getLastColumnNum(final int rowIndex) {
-        return this.rows.get(rowIndex).lastColumnNum;
+        return this.rows.get(rowIndex).getLastColumnNum();
     }
 
     @Override
     public int getLastRowNum() {
-        return this.rows.size() - 1;
+        return this.rows.size() - this.rowTranslator.getIgnoredRowCount() - 1;
     }
 
     @Override
     public boolean hasCellDataAt(final int colIndex, final int rowIndex) {
         final XlsxCell cell = this.getCellAt(colIndex, rowIndex);
-        return cell != null && cell.value != null;
+        return cell != null && cell.getValue() != null;
     }
 
     @Override
     public String getInternalCellValueAt(final int colIndex, final int rowIndex) {
         final XlsxCell cell = this.getCellAt(colIndex, rowIndex);
-        return (cell != null && cell.value != null) ? cell.value : null;
+        return (cell != null && cell.getValue() != null) ? cell.getValue() : null;
     }
 
     @Override
@@ -277,16 +278,16 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
         }
 
         final XlsxRow row = this.rows.get(rowIndex);
-        if (row.isNotIgnorable) {
+        if (row.isNotIgnorable()) {
             return false;
         }
 
         int countEmptyCells = 0;
         int countCells = 0;
         boolean checkIfRowMergedVertically = false;
-        if (row.cells != null) {
-            for (final XlsxCell cell : row.cells) {
-                if (cell.value == null) {
+        if (row.cells() != null) {
+            for (final XlsxCell cell : row.cells()) {
+                if (cell.getValue() == null) {
                     countEmptyCells++;
                 }
                 if (!checkIfRowMergedVertically && this.getMergeDown(countCells, rowIndex) > 0) {
@@ -296,7 +297,7 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
             }
         }
 
-        final float height = row.height;
+        final float height = row.getHeight();
         final float sparcity = (countCells == 0) ? 1.0f : (Float.valueOf(countEmptyCells) / Float.valueOf(countCells));
 
         boolean isIgnorable = false;
@@ -304,7 +305,7 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
         isIgnorable |= checkIfRowMergedVertically;
         isIgnorable &= (sparcity >= DocumentFactory.DEFAULT_RATIO_SCARSITY);
 
-        row.isNotIgnorable = !isIgnorable;
+        row.setNotIgnorable(!isIgnorable);
 
         return isIgnorable;
     }
@@ -316,11 +317,11 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
         }
 
         final XlsxRow row = this.rows.get(translatedRow);
-        if (row.cells == null || colIndex >= row.cells.size()) {
+        if (row.cells() == null || colIndex >= row.cells().size()) {
             return null;
         }
 
-        return row.cells.get(colIndex);
+        return row.cells().get(colIndex);
     }
 
     private int getMergeAcross(final int colIndex, final int rowIndex) {
