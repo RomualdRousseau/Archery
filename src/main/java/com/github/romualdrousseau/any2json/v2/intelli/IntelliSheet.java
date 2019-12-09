@@ -23,7 +23,6 @@ import com.github.romualdrousseau.shuju.cv.Filter;
 import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
 import com.github.romualdrousseau.shuju.cv.SearchPoint;
 import com.github.romualdrousseau.shuju.cv.Template;
-import com.github.romualdrousseau.shuju.cv.templatematching.TemplateMatcher;
 import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.RectangleExtractor;
 
 public abstract class IntelliSheet extends AbstractSheet {
@@ -68,7 +67,7 @@ public abstract class IntelliSheet extends AbstractSheet {
 
         // First attach all not snapped metaTables to the root nodes
         for (final MetaTable metaTable : metaTables) {
-            if (!isSnapped(metaTable, dataTables)) {
+            if (!isJoint(metaTable, dataTables)) {
                 root.addChild(new TableGraph(metaTable));
                 metaTable.setVisited(true);
             }
@@ -193,7 +192,9 @@ public abstract class IntelliSheet extends AbstractSheet {
             rectangle[0].setX(Math.max(0, rectangle[0].getX() - 1));
         }
 
-        final List<SearchPoint> points = extractAllPoints(filtered);
+        rectangles = SearchPoint.TrimInX(SearchPoint.ExpandInX(SearchPoint.MergeInX(SearchPoint.RemoveOverlaps(rectangles)), original), original);
+
+        final List<SearchPoint> points = extractAllPoints(original, rectangles);
 
         for (final SearchPoint point : points) {
             final SearchPoint neighboor = new SearchPoint(point.getX() + 1, point.getY(), point.getSAD());
@@ -205,13 +206,30 @@ public abstract class IntelliSheet extends AbstractSheet {
         return rectangles;
     }
 
-    private List<SearchPoint> extractAllPoints(final ISearchBitmap filtered) {
-        final TemplateMatcher pointTemplate = new TemplateMatcher(
-                new Template(new float[][] { { 0, 0, 0 }, { 0, 1, 1 }, { 0, 0, 0 } }));
-        return pointTemplate.matchAll(filtered, 0, 0, filtered.getWidth(), filtered.getHeight(), 0.9);
+    private List<SearchPoint> extractAllPoints(final ISearchBitmap filtered, List<SearchPoint[]> rectangles) {
+        ArrayList<SearchPoint> result = new ArrayList<SearchPoint>();
+
+        for (int i = 0; i < filtered.getHeight(); i++) {
+            for (int j = 0; j < filtered.getWidth(); j++) {
+                if(filtered.get(j, i) > 0) {
+                    boolean isOutside = true;
+                    for(SearchPoint[] rectangle : rectangles) {
+                        if(SearchPoint.IsInside(rectangle, j, i)) {
+                            isOutside = false;
+                            break;
+                        }
+                    }
+                    if (isOutside) {
+                        result.add(new SearchPoint(j, i, 0));
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 
-    private boolean isSnapped(final MetaTable metaTable, final List<DataTable> dataTables) {
+    private boolean isJoint(final MetaTable metaTable, final List<DataTable> dataTables) {
         for (final DataTable dataTable : dataTables) {
             if (distanceBetweenTables(metaTable, dataTable) == 0) {
                 return true;

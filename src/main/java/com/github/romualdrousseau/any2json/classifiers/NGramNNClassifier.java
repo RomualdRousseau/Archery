@@ -43,13 +43,13 @@ public class NGramNNClassifier implements ITagClassifier {
     private List<LayexMatcher> metaLayexes;
     private List<LayexMatcher> dataLayexes;
 
-    private final static String[] metaLayexesDefault = { "(v[v|e|s]$)+" };
+    private final static String[] metaLayexesDefault = { "(v.$)+" };
 
     private final static String[] dataLayexesDefault = {
-            "((e[v|e|s]*$)(v[v|e][v|e|s]+$))(()([v|e|s]{2}[v|e|s]+$))+([v|e|s]{2}$)?",
-            "((v[v|e|s]*$)(v[v|e][v|e|s]+$))(([v|e|s]{2}$)([v|e|s]{2}[v|e|s]+$)+)+([v|e|s]{2}$)?",
-            "(()([v|s][v|e][v|e|s]+$))((s[v|e][v|e|s]+$)([v|e][v|e|s][v|e|s]+$)+)+([v|e|s]{2}$)?",
-            "(()([v|s][v|e][v|e|s]+$))(()([v|e|s]{2}[v|e|s]+$))+([v|e|s]{2}$)?" };
+        "((e.*$)(vS.+$))(()(.{2}.+$))+(.{2}$)?",
+        "((v.*$)(vS.+$))((.{2}$)(.{2}.+$)+)+(.{2}$)?",
+        "(()(ES.+$))((sS.+$)(S..+$)+)+(.{2}$)?",
+        "(()(ES.+$))(()(.{2}.+$))+(.{2}$)?" };
 
     public NGramNNClassifier(NgramList ngrams, RegexList entities, StopWordList stopwords, StringList tags) {
         this(ngrams, entities, stopwords, tags, null);

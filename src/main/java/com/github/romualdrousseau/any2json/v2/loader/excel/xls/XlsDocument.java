@@ -27,11 +27,11 @@ public class XlsDocument implements Document {
             for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
                 this.sheets.add(new XlsSheet(workbook.getSheetAt(i)));
             }
+
             return this.sheets.size() > 0;
 
         } catch (EncryptedDocumentException | IOException e) {
-            this.sheets.clear();
-            e.printStackTrace();
+            close();
             return false;
 
         } finally {

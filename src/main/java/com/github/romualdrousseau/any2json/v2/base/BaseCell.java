@@ -24,7 +24,7 @@ public class BaseCell implements Cell, Symbol {
 
     @Override
     public boolean hasValue() {
-        return this.value != null;
+        return this.value != null && !this.value.isEmpty();
     }
 
     @Override

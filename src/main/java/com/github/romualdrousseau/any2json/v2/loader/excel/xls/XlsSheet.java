@@ -249,6 +249,9 @@ public class XlsSheet extends IntelliSheet implements RowTranslatable {
         if (this.cachedRegion.size() == 0) {
             return 0;
         }
+        if (cell == null) {
+            return 0;
+        }
 
         int numberOfCells = 0;
         for (final CellRangeAddress region : cachedRegion) {

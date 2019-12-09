@@ -2,10 +2,13 @@ package com.github.romualdrousseau.any2json.v2.layex;
 
 import java.util.LinkedList;
 
+import com.github.romualdrousseau.any2json.v2.layex.operations.Any;
 import com.github.romualdrousseau.any2json.v2.layex.operations.Closure;
 import com.github.romualdrousseau.any2json.v2.layex.operations.Concat;
+import com.github.romualdrousseau.any2json.v2.layex.operations.EndOfRow;
 import com.github.romualdrousseau.any2json.v2.layex.operations.Group;
 import com.github.romualdrousseau.any2json.v2.layex.operations.Nop;
+import com.github.romualdrousseau.any2json.v2.layex.operations.Not;
 import com.github.romualdrousseau.any2json.v2.layex.operations.Or;
 import com.github.romualdrousseau.any2json.v2.layex.operations.Value;
 
@@ -56,10 +59,19 @@ public class Layex {
     private LayexMatcher r2() {
         String c = this.getSymbol();
 
-        if (c.charAt(0) >= 'a' && c.charAt(0) <= 'z' || c.charAt(0) == '$' || c.charAt(0) == '.') {
+        if (c.charAt(0) >= 'a' && c.charAt(0) <= 'z') {
             this.acceptPreviousSymbol();
-            LayexMatcher e = new Value(c);
-            return r3(e);
+            return r3(new Value(c));
+        } else if (c.charAt(0) >= 'A' && c.charAt(0) <= 'Z') {
+            this.acceptPreviousSymbol();
+            this.stack.push(new Value(c.toLowerCase()));
+            return r3(new Not(this.stack));
+        } else if (c.charAt(0) == '.') {
+            this.acceptPreviousSymbol();
+            return r3(new Any());
+        } else if (c.charAt(0) == '$') {
+            this.acceptPreviousSymbol();
+            return r3(new EndOfRow());
         } else if (c.equals("(")) {
             this.acceptPreviousSymbol();
             LayexMatcher e = r();

@@ -30,9 +30,6 @@ public class XmlDocument implements Document {
 
     public void close() {
         this.sheets.clear();
-        if (this.workbook == null) {
-            return;
-        }
     }
 
     public int getNumberOfSheets() {
@@ -52,9 +49,9 @@ public class XmlDocument implements Document {
             encoding = "UTF-8";
         }
 
-        close();
-
         try {
+            this.sheets.clear();
+
             ExcelReader reader = new ExcelReader();
             this.workbook = reader.getWorkbook(new InputSource(new FixBadEntityReader(
                     new BufferedReader(new InputStreamReader(new FileInputStream(excelFile), encoding)))));
@@ -62,15 +59,13 @@ public class XmlDocument implements Document {
             for (Worksheet sheet : this.workbook.getWorksheets()) {
                 this.sheets.add(new XmlSheet(sheet));
             }
-        } catch (ParserConfigurationException x) {
-            close();
-        } catch (SAXException x) {
-            close();
-        } catch (IOException x) {
-            close();
-        }
 
-        return this.sheets.size() > 0;
+            return this.sheets.size() > 0;
+
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            close();
+            return false;
+        }
     }
 
     private Workbook workbook = null;

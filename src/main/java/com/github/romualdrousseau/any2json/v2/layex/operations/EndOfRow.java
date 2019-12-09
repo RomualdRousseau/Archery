@@ -5,17 +5,13 @@ import com.github.romualdrousseau.any2json.v2.layex.LayexMatcher;
 import com.github.romualdrousseau.any2json.v2.layex.Lexer;
 import com.github.romualdrousseau.any2json.v2.layex.Symbol;
 
-public class Value implements LayexMatcher {
-
-    public Value(String v) {
-        this.v = v;
-    }
+public class EndOfRow implements LayexMatcher {
 
     @Override
     public <S extends Symbol, C> boolean match(Lexer<S, C> stream, Context<S> context) {
         S symbol = stream.read();
         String c = symbol.getSymbol();
-        if (!c.equals("") && c.charAt(0) >= 'a' && c.charAt(0) <= 'z' && c.equals(this.v)) {
+        if (!c.equals("") && c.equals("$")) {
             if (context != null) {
                 context.notify(symbol);
             }
@@ -27,8 +23,6 @@ public class Value implements LayexMatcher {
 
     @Override
     public String toString() {
-        return "value('" + this.v + "')";
+        return "EOR";
     }
-
-    private String v;
 }

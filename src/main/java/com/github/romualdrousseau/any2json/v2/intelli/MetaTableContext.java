@@ -17,7 +17,7 @@ public class MetaTableContext extends Context<BaseCell> {
         } else if (this.getColumn() == 1) {
             this.value = cell;
         } else if (cell.getSymbol().equals("$")) {
-            if (!this.value.hasValue() && !this.value.getValue().isEmpty()) {
+            if (!this.value.hasValue()) {
                 this.metaTable.addHeader(new MetaHeader(this.metaTable, this.key));
             } else {
                 this.metaTable.addHeader(new MetaKeyValueHeader(this.metaTable, this.key, this.value));

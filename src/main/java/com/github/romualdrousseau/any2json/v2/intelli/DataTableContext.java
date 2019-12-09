@@ -29,7 +29,7 @@ public class DataTableContext extends Context<BaseCell> {
         if (this.getColumn() == 0) {
             this.firstRowCell = null;
         }
-        if (cell.hasValue() && !cell.getValue().isEmpty() && this.firstRowCell == null) {
+        if (cell.hasValue() && this.firstRowCell == null) {
             this.firstRowCell = cell;
         }
 
@@ -37,7 +37,7 @@ public class DataTableContext extends Context<BaseCell> {
         case TABLE_META:
             if (symbol.equals("$")) {
                 this.dataTable.setFirstRowOffset(this.getRow() + 1);
-            } else if (cell.hasValue() && !cell.getValue().isEmpty()) {
+            } else if (cell.hasValue()) {
                 this.dataTable.addHeader(new MetaTableHeader(this.dataTable, cell));
             }
             break;

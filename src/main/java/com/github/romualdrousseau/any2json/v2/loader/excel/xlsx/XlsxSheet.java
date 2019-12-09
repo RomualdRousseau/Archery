@@ -60,6 +60,11 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
                 this.currCell.style = this.getCellStyleFromString(attributes.getValue("s"));
             } else if ("v".equals(name)) {
                 this.startValue = true;
+                this.inlineStr = false;
+                this.currCell.value = "";
+            } else if ("t".equals(name)) {
+                this.startValue = true;
+                this.inlineStr = true;
                 this.currCell.value = "";
             } else if ("mergeCell".equals(name) && attributes.getValue("ref") != null) {
                 mergedRegions.add(CellRangeAddress.valueOf(attributes.getValue("ref")));
@@ -80,6 +85,8 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
                 this.row.addCell(cell);
                 this.row.setLastColumnNum(Math.max(this.row.getLastColumnNum(), this.currCell.address.getColumn()));
             } else if ("v".equals(name)) {
+                this.startValue = false;
+            } else if ("t".equals(name)) {
                 this.startValue = false;
             }
         }
@@ -108,7 +115,7 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
         private CellType getCellTypeFromString(final String typeStr) {
             if (typeStr == null) {
                 return CellType.BLANK;
-            } else if (typeStr.equals("s")) {
+            } else if (typeStr.equals("s") || typeStr.equals("inlineStr")) {
                 return CellType.STRING;
             } else if (typeStr.equals("b")) {
                 return CellType.BOOLEAN;
@@ -137,19 +144,28 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
         }
 
         private boolean processCellData(final Cell cell) {
+            cell.type = (cell.value == null && cell.type.equals(CellType.NUMERIC)) ? CellType.BLANK : cell.type;
             cell.type = (cell.value != null && cell.type.equals(CellType.BLANK)) ? CellType.NUMERIC : cell.type;
 
             if (cell.type.equals(CellType.STRING)) {
-                cell.value = StringUtility.cleanToken(sharedStrings.getItemAt(Integer.valueOf(cell.value)).toString());
-
+                if (this.inlineStr) {
+                    cell.value = StringUtility.cleanToken(cell.value);
+                } else {
+                    cell.value = StringUtility.cleanToken(sharedStrings.getItemAt(Integer.valueOf(cell.value)).toString());
+                }
             } else if (cell.type.equals(CellType.BOOLEAN)) {
                 cell.value = cell.value.equals("1") ? "TRUE" : "FALSE";
 
             } else if (cell.type.equals(CellType.NUMERIC)) {
-                final double d = Double.valueOf(cell.value);
-                if (DateUtil.isADateFormat(cell.style.getDataFormat(), cell.style.getDataFormatString())
-                        && DateUtil.isValidExcelDate(d)) {
-                    cell.value = new SimpleDateFormat("yyyy-MM-dd").format(DateUtil.getJavaDate(d));
+                try {
+                    final double d = Double.valueOf(cell.value);
+                    if (DateUtil.isADateFormat(cell.style.getDataFormat(), cell.style.getDataFormatString())
+                            && DateUtil.isValidExcelDate(d)) {
+                        cell.value = new SimpleDateFormat("yyyy-MM-dd").format(DateUtil.getJavaDate(d));
+                    }
+                } catch(NumberFormatException x) {
+                    cell.type = CellType.STRING;
+                    cell.value = StringUtility.cleanToken(cell.value);
                 }
 
             } else if (cell.type.equals(CellType.BLANK)) {
@@ -162,11 +178,6 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
         private boolean hasData(final Cell cell) {
             if (!cell.type.equals(CellType.BLANK) && cell.value != null && !cell.value.isEmpty()) {
                 return true;
-            }
-
-            // Skip first row
-            if (cell.address.getRow() == 0) {
-                return false;
             }
 
             if (cell.style == null) {
@@ -200,6 +211,7 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
 
         private XlsxRow row;
         private boolean startValue;
+        private boolean inlineStr;
         private Cell currCell;
         private Cell prevCell;
     }

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import com.github.romualdrousseau.any2json.v2.Document;
 import com.github.romualdrousseau.any2json.v2.Sheet;
 
+import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.openxml4j.opc.PackageAccess;
@@ -20,7 +21,13 @@ public class XlsxDocument implements Document {
 
     @Override
     public boolean open(final File excelFile, final String encoding) {
+        if (excelFile == null) {
+            throw new IllegalArgumentException();
+        }
+
         try {
+            this.sheets.clear();
+
             this.opcPackage = OPCPackage.open(excelFile.getAbsolutePath(), PackageAccess.READ);
             final XSSFReader reader = new XSSFReader(this.opcPackage);
             final SharedStringsTable sharedStrings = reader.getSharedStringsTable();
@@ -32,15 +39,17 @@ public class XlsxDocument implements Document {
                 this.sheets.add(new XlsxSheet(it.getSheetName(), sheetData, sharedStrings, styles));
             }
 
-            return true;
-        } catch (IOException | OpenXML4JException e) {
-            e.printStackTrace();
+            return this.sheets.size() > 0;
+
+        } catch (IOException | OpenXML4JException | NotOfficeXmlFileException e) {
+            close();
             return false;
         }
     }
 
     @Override
     public void close() {
+        this.sheets.clear();
         if (this.opcPackage != null) {
             try {
                 this.opcPackage.close();
