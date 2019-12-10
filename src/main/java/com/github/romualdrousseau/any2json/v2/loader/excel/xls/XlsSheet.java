@@ -92,9 +92,9 @@ public class XlsSheet extends IntelliSheet implements RowTranslatable {
         int countEmptyCells = 0;
         int countCells = 0;
         boolean checkIfRowMergedVertically = false;
-        for(int i = 0; i < row.getLastCellNum(); i++) {
+        for (int i = 0; i < row.getLastCellNum(); i++) {
             Cell cell = row.getCell(i);
-            if(!this.hasData(cell)) {
+            if (!this.hasData(cell) || this.getData(cell).isEmpty()) {
                 countEmptyCells++;
             }
             if (!checkIfRowMergedVertically && this.getMergeDown(cell) > 0) {
@@ -255,8 +255,9 @@ public class XlsSheet extends IntelliSheet implements RowTranslatable {
 
         int numberOfCells = 0;
         for (final CellRangeAddress region : cachedRegion) {
-            if (region.isInRange(cell.getRowIndex(), cell.getColumnIndex()) && cell.getRowIndex() > region.getFirstRow()
-                    && region.getLastRow() > region.getFirstRow()) {
+            if (region.getLastRow() > region.getFirstRow()
+                    && region.isInRange(cell.getRowIndex(), cell.getColumnIndex())
+                    && cell.getRowIndex() > region.getFirstRow()) {
                 numberOfCells = region.getLastRow() - region.getFirstRow();
                 break;
             }

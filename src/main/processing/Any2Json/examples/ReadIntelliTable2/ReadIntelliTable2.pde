@@ -24,9 +24,9 @@ final String[] dataLayexes = {
   //"(()([v|s]{3}$))([ee[v|s]$][(ve[v|s]$)(ee[v|s]$)+]+)+"
   //"(()(ve{3}v$v{6}$))([vs{4}$][(ev[e|s]{4}$)(v[e|s]{4}$)+]+)+(vs{4}$)?",
   //"(([v|e]$)+([v|s][v|e][v|e|s]+$[v|e|s]+$))(()([v|e|s]{2}[v|e|s]+$))+([v|e|s]{2}$)?",
-  "((v.*$)(vS.+$))((.{2}$)(.{2}.+$)+)+(.{2}$)?",
-  "((e.*$)(vS.+$))(()(.{2}.+$))+(.{2}$)?",
-  "(()(ES.+$))((sS.+$)(.{2}.+$)+)+(.{2}$)?",
+  "((v.*$)(vS.+$))((.{2}$)(.{2}.+$)+)+(.{2}$)?", 
+  "((e.*$)(vS.+$))(()(.{2}.+$))+(.{2}$)?", 
+  "(()(ES.+$))((sS.+$)(.{2}.+$)+)+(.{2}$)?", 
   "(()(ES.+$))(()(.{2}.+$))+(.{2}$)?"
 };
 
@@ -41,7 +41,7 @@ int documentTopY;
 void configure() {
   classifier = new NGramNNClassifier(JSON.loadJSONObject(dataPath("brainColumnClassifier.json")), metaLayexes, dataLayexes);
   //classifier = new NGramNNClassifier(JSON.loadJSONObject(dataPath("brainColumnClassifier.json")));
-  
+
   scrollSpeed = 100; // 100px per scroll  
 
   gridSize = 10; // 10px
@@ -132,7 +132,7 @@ void loadDocument(String filePath) {
   com.github.romualdrousseau.any2json.v2.Table table = sheet.getTable(classifier);
   println("Tables loaded.");
   println("done.");
-  
+
   dumpTable(table);
 
   document.close();
@@ -157,26 +157,34 @@ void buildEmptyImage() {
 }
 
 void buildImage(SheetEvent e) {
-  IntelliSheet sheet = (IntelliSheet) e.getSource();
+  AbstractSheet sheet = (AbstractSheet) e.getSource();
   int dx = width / classifier.getSampleCount();
 
   if (e instanceof BitmapGeneratedEvent) {
-    SheetBitmap bitmap = ((BitmapGeneratedEvent) e).getBitmap();
-
     // Max rows set to 5000 to prevent heap overflow
     documentImage = createGraphics(width, Math.min(sheet.getLastRowNum() + 1, 5000) * gridSize);
-
     documentImage.beginDraw();
     documentImage.stroke(128);
     documentImage.strokeWeight(1);
-    for (int y = 0; y < bitmap.getHeight(); y++) {
-      for (int x = 0; x < bitmap.getWidth(); x++) {
-        documentImage.fill(color(255 * bitmap.get(x, y)));
-        documentImage.rect(x * dx, y * gridSize, dx, gridSize);
+
+    SheetBitmap bitmap = ((BitmapGeneratedEvent) e).getBitmap();
+    if (bitmap == null) {
+      for (int y = 0; y <= sheet.getLastRowNum(); y++) {
+        for (int x = 0; x < classifier.getSampleCount(); x++) {
+          documentImage.fill(color(255 * ((x <= sheet.getLastColumnNum(y)) ? 1 : 0)));
+          documentImage.rect(x * dx, y * gridSize, dx, gridSize);
+        }
+      }
+    } else {
+      for (int y = 0; y < bitmap.getHeight(); y++) {
+        for (int x = 0; x < bitmap.getWidth(); x++) {
+          documentImage.fill(color(255 * bitmap.get(x, y)));
+          documentImage.rect(x * dx, y * gridSize, dx, gridSize);
+        }
       }
     }
-    documentImage.endDraw();
 
+    documentImage.endDraw();  
     println("Image generated.");
   }
 
@@ -209,7 +217,7 @@ void buildImage(SheetEvent e) {
       documentImage.rect(table.getFirstColumn() * dx, (table.getFirstRow() + table.getFirstRowOffset()) * gridSize, table.getNumberOfColumns() * dx, table.getNumberOfRows() * gridSize);
       // rowgroups
       documentImage.fill(color(0, 255, 255), 128);
-      for(RowGroup rowGroup : table.rowGroups()) {
+      for (RowGroup rowGroup : table.rowGroups()) {
         documentImage.rect(table.getFirstColumn() * dx, (table.getFirstRow() + table.getFirstRowOffset() + rowGroup.getRow()) * gridSize, table.getNumberOfColumns() * dx, gridSize);
       }
       // footer
@@ -259,20 +267,20 @@ void displayHUD() {
 void dumpTable(com.github.romualdrousseau.any2json.v2.Table table) {
   /*
   println();
-  for (Header header : table.headers()) {
-    AbstractHeader abstractHeader = (AbstractHeader) header;
-    print(abstractHeader.getName(), abstractHeader.getTag().getValue(), "| ");
-  }
-  println();
-  */
+   for (Header header : table.headers()) {
+   AbstractHeader abstractHeader = (AbstractHeader) header;
+   print(abstractHeader.getName(), abstractHeader.getTag().getValue(), "| ");
+   }
+   println();
+   */
   /*
   int n = 0;
-  for (Row row : table.rows()) {
-    for (Cell cell : row.cells()) {
-      print(cell.getValue(), "| ");
-    }
-    println();
-    if(n++ >= 50) break;
-  }
-  */
+   for (Row row : table.rows()) {
+   for (Cell cell : row.cells()) {
+   print(cell.getValue(), "| ");
+   }
+   println();
+   if(n++ >= 50) break;
+   }
+   */
 }

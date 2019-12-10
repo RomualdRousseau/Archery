@@ -16,10 +16,12 @@ public class TextDocument implements Document {
 
     @Override
     public boolean open(File txtFile, String encoding) {
-        if (openWithEncoding(txtFile, encoding)) {
+        if (openWithEncoding(txtFile, "UTF-8")) {
             return true;
+        } else if(encoding != null) {
+            return openWithEncoding(txtFile, encoding);
         } else {
-            return openWithEncoding(txtFile, null);
+            return false;
         }
     }
 
@@ -52,22 +54,15 @@ public class TextDocument implements Document {
             throw new IllegalArgumentException();
         }
 
-        if (encoding == null) {
-            encoding = "UTF-8";
-        }
-
-        close();
-
         try {
+            this.sheet = null;
+            this.rows = null;
+
             this.reader = new BufferedReader(
                 new InputStreamReader(new FileInputStream(txtFile), encoding));
 
             if (encoding.equals("UTF-8")) {
-                // skip BOM if present
-                this.reader.mark(1);
-                if (this.reader.read() != StringUtility.BOM_CHAR) {
-                    this.reader.reset();
-                }
+                this.processBOM(reader);
             }
 
             this.processRows(reader);
@@ -76,11 +71,13 @@ public class TextDocument implements Document {
                 String sheetName = StringUtility.removeExtension(txtFile.getName());
                 this.sheet = new TextSheet(sheetName, this.rows);
             }
+
+            return this.sheet != null;
+
         } catch (IOException x) {
             close();
+            return false;
         }
-
-        return this.sheet != null;
     }
 
     private boolean checkIfGoodEncoding(String[] row) {
@@ -89,6 +86,14 @@ public class TextDocument implements Document {
             result &= StringUtility.checkIfGoodEncoding(row[i]);
         }
         return result;
+    }
+
+    private void processBOM(BufferedReader reader) throws IOException {
+        // skip BOM if present
+        this.reader.mark(1);
+        if (this.reader.read() != StringUtility.BOM_CHAR) {
+            this.reader.reset();
+        }
     }
 
     private void processRows(BufferedReader reader) throws IOException {

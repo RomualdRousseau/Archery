@@ -16,6 +16,6 @@ public class Nop implements LayexMatcher {
 
     @Override
     public String toString() {
-        return "nop";
+        return "NOP";
     }
   }

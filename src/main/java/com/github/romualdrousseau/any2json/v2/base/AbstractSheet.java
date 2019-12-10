@@ -42,13 +42,12 @@ public abstract class AbstractSheet implements Sheet {
         final int lastColumnNum = this.getLastColumnNum(0);
         final int lastRowNum = this.getLastRowNum();
         if (lastColumnNum >= 0 && lastRowNum >= 0) {
+            this.notifyStepCompleted(new BitmapGeneratedEvent(this, null));
+
             if(classifier == null) {
-                this.notifyStepCompleted(new BitmapGeneratedEvent(this, null));
                 result = new SimpleTable(this, 0, 0, lastColumnNum, lastRowNum);
                 this.notifyStepCompleted(new IntelliTableReadyEvent(this, result));
             } else {
-                this.notifyStepCompleted(new BitmapGeneratedEvent(this, null));
-
                 LinkedList<CompositeTable> tables = new  LinkedList<CompositeTable>();
                 tables.add(new CompositeTable(this, 0, 0, lastColumnNum, lastRowNum, classifier));
                 this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables));

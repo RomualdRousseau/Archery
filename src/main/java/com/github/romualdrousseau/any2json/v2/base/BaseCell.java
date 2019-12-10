@@ -24,7 +24,7 @@ public class BaseCell implements Cell, Symbol {
 
     @Override
     public boolean hasValue() {
-        return this.value != null && !this.value.isEmpty();
+        return !StringUtility.isFastEmpty(this.value);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class BaseCell implements Cell, Symbol {
                 this.symbol = "";
             } else if (this == BaseCell.EndOfRow) {
                 this.symbol = "$";
-            } else if (StringUtility.isFastEmpty(this.value)) {
+            } else if (!this.hasValue()) {
                 this.symbol = "s";
             } else if (this.getEntityVector().sparsity() < 1.0f) {
                 this.symbol = "e";

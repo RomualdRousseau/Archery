@@ -33,7 +33,7 @@ public abstract class IntelliSheet extends AbstractSheet {
             return null;
         }
 
-        final SheetBitmap image = new SheetBitmap(this, classifier.getSampleCount(), this.getLastRowNum());
+        final SheetBitmap image = new SheetBitmap(this, classifier.getSampleCount(), this.getLastRowNum() + 1);
         this.notifyStepCompleted(new BitmapGeneratedEvent(this, image));
 
         final List<CompositeTable> tables = this.findAllTables(classifier, image);
@@ -159,8 +159,9 @@ public abstract class IntelliSheet extends AbstractSheet {
             boolean isSplitted = false;
             for (int i = 0; i < table.getNumberOfRows(); i++) {
                 final BaseRow row = table.getRowAt(i);
-                if (row.sparsity() >= DocumentFactory.DEFAULT_RATIO_SCARSITY
-                        && row.density() > DocumentFactory.DEFAULT_RATIO_DENSITY) {
+                if (row.sparsity() * row.density() > DocumentFactory.DEFAULT_RATIO_SCARSITY * DocumentFactory.DEFAULT_RATIO_DENSITY) {
+                // if (row.sparsity() >= DocumentFactory.DEFAULT_RATIO_SCARSITY
+                //         && row.density() > DocumentFactory.DEFAULT_RATIO_DENSITY) {
                     final int currRowNum = table.getFirstRow() + i;
                     if (firstRowNum <= (currRowNum - 1)) {
                         result.add(new CompositeTable(table, firstRowNum, currRowNum - 1));

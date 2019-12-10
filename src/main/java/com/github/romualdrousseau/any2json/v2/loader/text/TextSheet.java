@@ -29,13 +29,13 @@ class TextSheet extends AbstractSheet {
 
     @Override
     public boolean hasCellDataAt(int colIndex, int rowIndex) {
-        String cell = this.rows.get(rowIndex)[colIndex];
+        String cell = this.getCellAt(colIndex, rowIndex);
         return cell != null && !cell.isEmpty();
     }
 
     @Override
     public String getInternalCellValueAt(int colIndex, int rowIndex) {
-        String cell = this.rows.get(rowIndex)[colIndex];
+        String cell = this.getCellAt(colIndex, rowIndex);
         if(cell == null || cell.isEmpty()) {
             return null;
         }
@@ -45,6 +45,20 @@ class TextSheet extends AbstractSheet {
     @Override
     public int getNumberOfMergedCellsAt(int colIndex, int rowIndex) {
         return 1;
+    }
+
+    private String getCellAt(int colIndex, int rowIndex) {
+        if(rowIndex >= this.rows.size()) {
+            return null;
+        }
+
+        String[] row = this.rows.get(rowIndex);
+
+        if(colIndex >= row.length) {
+            return null;
+        }
+
+        return row[colIndex];
     }
 
     private String name;

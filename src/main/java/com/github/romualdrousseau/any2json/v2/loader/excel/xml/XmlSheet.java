@@ -79,10 +79,10 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
         int countCells = 0;
         boolean checkIfRowMergedVertically = false;
         for(Cell cell : row.getCells()) {
-            if(!cell.hasData()) {
+            if(!cell.hasData() || cell.getData$().isEmpty()) {
                 countEmptyCells++;
             }
-            if(rowIndex > 0 && !checkIfRowMergedVertically && this.sheet.getCellAt(rowIndex, cell.getIndex() + 1).getMergeDown() > 0) {
+            if(!checkIfRowMergedVertically && this.getMergeDown(cell, rowIndex) > 0) {
                 checkIfRowMergedVertically = true;
             }
             countCells++;
@@ -115,10 +115,30 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
             return null;
         }
         Cell cell = this.sheet.getCellAt(translatedRow + 1, colIndex + 1);
-        if(!cell.hasData() || cell.getData$().isEmpty()) {
+        if(!cell.hasData()) {
 			return null;
         }
         return cell;
+    }
+
+    private int getMergeDown(Cell cell, int rowIndex) {
+        if(rowIndex <= 0) {
+            return 0;
+        }
+        if (cell == null) {
+            return 0;
+        }
+
+        int numberOfCells = 0;
+        for(int i = 1; i < 5; i++) {
+            int firstRow = rowIndex - i;
+            int lastRow = firstRow + this.sheet.getCellAt(firstRow + 1, cell.getIndex() + 1).getMergeDown();
+            if(lastRow > firstRow && firstRow <= rowIndex && rowIndex <= lastRow) {
+                numberOfCells = firstRow - lastRow;
+            }
+        }
+
+        return numberOfCells;
     }
 
     private Worksheet sheet;

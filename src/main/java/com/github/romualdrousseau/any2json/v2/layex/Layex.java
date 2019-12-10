@@ -8,9 +8,9 @@ import com.github.romualdrousseau.any2json.v2.layex.operations.Concat;
 import com.github.romualdrousseau.any2json.v2.layex.operations.EndOfRow;
 import com.github.romualdrousseau.any2json.v2.layex.operations.Group;
 import com.github.romualdrousseau.any2json.v2.layex.operations.Nop;
-import com.github.romualdrousseau.any2json.v2.layex.operations.Not;
 import com.github.romualdrousseau.any2json.v2.layex.operations.Or;
 import com.github.romualdrousseau.any2json.v2.layex.operations.Value;
+import com.github.romualdrousseau.any2json.v2.layex.operations.ValueNeg;
 
 public class Layex {
     public Layex(String pattern) {
@@ -64,8 +64,7 @@ public class Layex {
             return r3(new Value(c));
         } else if (c.charAt(0) >= 'A' && c.charAt(0) <= 'Z') {
             this.acceptPreviousSymbol();
-            this.stack.push(new Value(c.toLowerCase()));
-            return r3(new Not(this.stack));
+            return r3(new ValueNeg(c));
         } else if (c.charAt(0) == '.') {
             this.acceptPreviousSymbol();
             return r3(new Any());
@@ -124,9 +123,23 @@ public class Layex {
 
         if (c.charAt(0) >= '0' && c.charAt(0) <= '9') {
             this.acceptPreviousSymbol();
-            int n = Integer.valueOf(c);
+            int n1 = Integer.valueOf(c);
+            int n2 = n1;
+
+            c = this.getSymbol();
+            if(c.equals(",")) {
+                this.acceptPreviousSymbol();
+                n2 = Integer.MAX_VALUE;
+
+                c = this.getSymbol();
+                if (c.charAt(0) >= '0' && c.charAt(0) <= '9') {
+                    this.acceptPreviousSymbol();
+                    n2 = Integer.valueOf(c);
+                }
+            }
+
             this.stack.push(e);
-            return new Closure(this.stack, n, n);
+            return new Closure(this.stack, n1, n2);
         } else {
             throw new RuntimeException("Syntax Error: " + c);
         }

@@ -1,6 +1,7 @@
 package com.github.romualdrousseau.any2json.v2.base;
 
 import java.util.LinkedList;
+import java.util.List;
 
 import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.v2.Header;
@@ -167,13 +168,14 @@ public abstract class AbstractTable implements Table, Visitable {
         this.headers.set(i, header);
     }
 
-    public AbstractHeader findHeader(final AbstractHeader headerToFind) {
+    public List<AbstractHeader> findHeader(final AbstractHeader headerToFind) {
+        LinkedList<AbstractHeader> result = new LinkedList<AbstractHeader>();
         for (final Header header : this.headers()) {
             if (header.equals(headerToFind)) {
-                return (AbstractHeader) header;
+                result.add((AbstractHeader) header);
             }
         }
-        return null;
+        return result;
     }
 
     private boolean visited;

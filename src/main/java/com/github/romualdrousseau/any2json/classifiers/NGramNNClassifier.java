@@ -46,10 +46,10 @@ public class NGramNNClassifier implements ITagClassifier {
     private final static String[] metaLayexesDefault = { "(v.$)+" };
 
     private final static String[] dataLayexesDefault = {
-        "((e.*$)(vS.+$))(()(.{2}.+$))+(.{2}$)?",
-        "((v.*$)(vS.+$))((.{2}$)(.{2}.+$)+)+(.{2}$)?",
-        "(()(ES.+$))((sS.+$)(S..+$)+)+(.{2}$)?",
-        "(()(ES.+$))(()(.{2}.+$))+(.{2}$)?" };
+        "((e.*$)(vS.+$))(()(.{3,}$))+(.{2}$)?",
+        "((v.*$)(vS.+$))((.{2}$)(.{3,}$)+)+(.{2}$)?",
+        "(()(ES.+$))((sS.+$)(S.{2,}$)+)+(.{2}$)?",
+        "(()(ES.+$))(()(.{3,}$))+(.{2}$)?" };
 
     public NGramNNClassifier(NgramList ngrams, RegexList entities, StopWordList stopwords, StringList tags) {
         this(ngrams, entities, stopwords, tags, null);

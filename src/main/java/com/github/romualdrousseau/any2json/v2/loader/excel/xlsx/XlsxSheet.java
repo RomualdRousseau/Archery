@@ -151,7 +151,8 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
                 if (this.inlineStr) {
                     cell.value = StringUtility.cleanToken(cell.value);
                 } else {
-                    cell.value = StringUtility.cleanToken(sharedStrings.getItemAt(Integer.valueOf(cell.value)).toString());
+                    cell.value = StringUtility
+                            .cleanToken(sharedStrings.getItemAt(Integer.valueOf(cell.value)).toString());
                 }
             } else if (cell.type.equals(CellType.BOOLEAN)) {
                 cell.value = cell.value.equals("1") ? "TRUE" : "FALSE";
@@ -163,7 +164,7 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
                             && DateUtil.isValidExcelDate(d)) {
                         cell.value = new SimpleDateFormat("yyyy-MM-dd").format(DateUtil.getJavaDate(d));
                     }
-                } catch(NumberFormatException x) {
+                } catch (NumberFormatException x) {
                     cell.type = CellType.STRING;
                     cell.value = StringUtility.cleanToken(cell.value);
                 }
@@ -299,7 +300,7 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
         boolean checkIfRowMergedVertically = false;
         if (row.cells() != null) {
             for (final XlsxCell cell : row.cells()) {
-                if (cell.getValue() == null) {
+                if (cell.getValue() == null || cell.getValue().isEmpty()) {
                     countEmptyCells++;
                 }
                 if (!checkIfRowMergedVertically && this.getMergeDown(countCells, rowIndex) > 0) {
@@ -359,8 +360,9 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
 
         int numberOfCells = 0;
         for (final CellRangeAddress region : mergedRegions) {
-            if (region.isInRange(rowIndex, colIndex) && rowIndex > region.getFirstRow()
-                    && region.getLastRow() > region.getFirstRow()) {
+            if (region.getLastRow() > region.getFirstRow()
+                    && region.isInRange(rowIndex, colIndex)
+                    && rowIndex > region.getFirstRow()) {
                 numberOfCells = region.getLastRow() - region.getFirstRow();
                 break;
             }

@@ -21,10 +21,12 @@ import org.xml.sax.SAXException;
 
 public class XmlDocument implements Document {
     public boolean open(File excelFile, String encoding) {
-        if (openWithEncoding(excelFile, null)) {
+        if (openWithEncoding(excelFile, "UTF-8")) {
             return true;
-        } else {
+        } else if (encoding != null) {
             return openWithEncoding(excelFile, encoding);
+        } else {
+            return false;
         }
     }
 
@@ -43,10 +45,6 @@ public class XmlDocument implements Document {
     private boolean openWithEncoding(File excelFile, String encoding) {
         if (excelFile == null) {
             throw new IllegalArgumentException();
-        }
-
-        if (encoding == null) {
-            encoding = "UTF-8";
         }
 
         try {

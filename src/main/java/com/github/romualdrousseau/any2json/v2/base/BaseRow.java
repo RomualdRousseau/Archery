@@ -62,7 +62,11 @@ public class BaseRow implements Row {
     }
 
     public float density() {
-        return 1.0f / Float.valueOf(this.islandCellCount);
+        if (this.getNumberOfCells() == 0) {
+            return 0.0f;
+        } else {
+            return 1.0f / Float.valueOf(this.islandCellCount);
+        }
     }
 
     private int getNumberOfMergedCellsAt(final int colIndex) {

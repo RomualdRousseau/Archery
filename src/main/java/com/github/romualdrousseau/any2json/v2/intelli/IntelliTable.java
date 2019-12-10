@@ -1,6 +1,7 @@
 package com.github.romualdrousseau.any2json.v2.intelli;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.v2.Header;
@@ -95,19 +96,20 @@ public class IntelliTable extends CompositeTable {
     }
 
     private void buildRowsForOneTable(final DataTable orgTable, final PivotKeyHeader pivot) {
-        if(orgTable.getNumberOfRowGroups() == 0) {
+        if (orgTable.getNumberOfRowGroups() == 0) {
             for (final Row orgRow : orgTable.rows()) {
                 final ArrayList<IntelliRow> newRows = buildRowsForOneRow(orgTable, (BaseRow) orgRow, pivot, null);
                 this.rows.addAll(newRows);
             }
         } else {
-            for(final RowGroup rowGroup :  orgTable.rowGroups()) {
-                for(int i = 0; i < rowGroup.getNumberOfRows(); i++) {
-                    if(rowGroup.getRow() + i + 1 >= orgTable.getNumberOfRows()) {
+            for (final RowGroup rowGroup : orgTable.rowGroups()) {
+                for (int i = 0; i < rowGroup.getNumberOfRows(); i++) {
+                    if (rowGroup.getRow() + i + 1 >= orgTable.getNumberOfRows()) {
                         break;
                     }
                     Row orgRow = orgTable.getRowAt(rowGroup.getRow() + i + 1);
-                    final ArrayList<IntelliRow> newRows = buildRowsForOneRow(orgTable, (BaseRow) orgRow, pivot, rowGroup);
+                    final ArrayList<IntelliRow> newRows = buildRowsForOneRow(orgTable, (BaseRow) orgRow, pivot,
+                            rowGroup);
                     this.rows.addAll(newRows);
                 }
             }
@@ -129,23 +131,27 @@ public class IntelliTable extends CompositeTable {
         return newRows;
     }
 
-    private IntelliRow buildOneRow(final DataTable orgTable, final BaseRow orgRow, final BaseCell pivotCell, final RowGroup rowGroup) {
+    private IntelliRow buildOneRow(final DataTable orgTable, final BaseRow orgRow, final BaseCell pivotCell,
+            final RowGroup rowGroup) {
         final IntelliRow newRow = new IntelliRow(this, this.tmpHeaders.size());
 
         for (final AbstractHeader abstractHeader : this.tmpHeaders) {
-            final AbstractHeader orgHeader = orgTable.findHeader(abstractHeader);
+            List<AbstractHeader> orgHeaders = orgTable.findHeader(abstractHeader);
 
             if (abstractHeader instanceof PivotKeyHeader && pivotCell != null) {
-                if (orgHeader != null) {
+                if (orgHeaders.size() > 0) {
                     newRow.setCellValue(abstractHeader.getColumnIndex(), pivotCell.getValue());
-                    newRow.setCell(abstractHeader.getColumnIndex() + 1, orgRow.getCellAt(pivotCell.getColumnIndex()));
+                    newRow.setCell(abstractHeader.getColumnIndex() + 1,
+                            orgRow.getCellAt(pivotCell.getColumnIndex()));
                 }
             } else {
-                if (orgHeader != null) {
-                    if(rowGroup == null || !orgHeader.isRowGroupName()) {
-                        newRow.setCell(abstractHeader.getColumnIndex(), orgHeader.getCellAtRow(orgRow));
-                    } else {
-                        newRow.setCell(abstractHeader.getColumnIndex(), rowGroup.getCell());
+                if (orgHeaders.size() > 0) {
+                    for(AbstractHeader orgHeader : orgHeaders) {
+                        if (rowGroup == null || !orgHeader.isRowGroupName()) {
+                            newRow.setCell(abstractHeader.getColumnIndex(), orgHeader.getCellAtRow(orgRow));
+                        } else {
+                            newRow.setCell(abstractHeader.getColumnIndex(), rowGroup.getCell());
+                        }
                     }
                 } else {
                     newRow.setCellValue(abstractHeader.getColumnIndex(), abstractHeader.getValue());

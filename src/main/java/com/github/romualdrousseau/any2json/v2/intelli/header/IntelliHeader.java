@@ -63,7 +63,10 @@ public class IntelliHeader extends CompositeHeader {
 
         IntelliHeader curr = this;
         while (curr.nextSibbling != null) {
-            buffer.append(this.getCellAtRow(row).getValue());
+            String value = this.getCellAtRow(row).getValue();
+            if(!value.contains(buffer)) {
+                buffer.append(value);
+            }
             curr = curr.nextSibbling;
         }
 
