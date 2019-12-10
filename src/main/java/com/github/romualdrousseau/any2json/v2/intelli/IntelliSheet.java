@@ -159,8 +159,8 @@ public abstract class IntelliSheet extends AbstractSheet {
             boolean isSplitted = false;
             for (int i = 0; i < table.getNumberOfRows(); i++) {
                 final BaseRow row = table.getRowAt(i);
-                if (row.sparsity() * row.density() > DocumentFactory.DEFAULT_RATIO_SCARSITY * DocumentFactory.DEFAULT_RATIO_DENSITY) {
-                // if (row.sparsity() >= DocumentFactory.DEFAULT_RATIO_SCARSITY
+                if (row.density() > DocumentFactory.DEFAULT_RATIO_DENSITY) {
+                // if (row.sparsity() > DocumentFactory.DEFAULT_RATIO_SCARSITY
                 //         && row.density() > DocumentFactory.DEFAULT_RATIO_DENSITY) {
                     final int currRowNum = table.getFirstRow() + i;
                     if (firstRowNum <= (currRowNum - 1)) {

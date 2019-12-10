@@ -13,8 +13,8 @@ import com.github.romualdrousseau.any2json.v2.util.Visitable;
 
 public abstract class AbstractTable implements Table, Visitable {
 
-    public AbstractTable(AbstractSheet sheet, int firstColumn, int firstRow, int lastColumn,
-            int lastRow) {
+    public AbstractTable(final AbstractSheet sheet, final int firstColumn, final int firstRow, final int lastColumn,
+            final int lastRow) {
         assert (firstColumn <= lastColumn) : "fisrt column must be before last column";
         assert (firstRow <= lastRow) : "first row must be before last row";
         this.visited = false;
@@ -26,20 +26,17 @@ public abstract class AbstractTable implements Table, Visitable {
         this.firstRowOffset = 0;
         this.lastRowOffset = 0;
         this.headerRowOffset = 0;
-        this.parentOffsetRow = 0;
         this.cachedRows = null;
-        this.loadCompleted =  false;
+        this.loadCompleted = false;
     }
 
     public AbstractTable(final AbstractTable parent) {
         this(parent.sheet, parent.firstColumn, parent.firstRow, parent.lastColumn, parent.lastRow);
-        this.parentOffsetRow = this.firstRow - parent.firstRow;
         this.cachedRows = parent.cachedRows;
     }
 
     public AbstractTable(final AbstractTable parent, final int firstRow, final int lastRow) {
         this(parent.sheet, parent.firstColumn, firstRow, parent.lastColumn, lastRow);
-        this.parentOffsetRow = this.firstRow - parent.firstRow;
         this.cachedRows = parent.cachedRows;
     }
 
@@ -83,8 +80,8 @@ public abstract class AbstractTable implements Table, Visitable {
     }
 
     public ITagClassifier getClassifier() {
-		return null;
-	}
+        return null;
+    }
 
     public int getFirstColumn() {
         return this.firstColumn;
@@ -140,7 +137,7 @@ public abstract class AbstractTable implements Table, Visitable {
         this.loadCompleted = flag;
     }
 
-	public BaseRow getRowAt(final int rowIndex) {
+    public BaseRow getRowAt(final int rowIndex) {
         if (rowIndex < 0 || rowIndex >= getNumberOfRows()) {
             throw new ArrayIndexOutOfBoundsException(rowIndex);
         }
@@ -151,10 +148,10 @@ public abstract class AbstractTable implements Table, Visitable {
 
         final int relRowIndex = this.firstRowOffset + rowIndex;
 
-        BaseRow result = cachedRows.get(this.parentOffsetRow + relRowIndex);
+        BaseRow result = cachedRows.get(this.firstRow + relRowIndex);
         if (result == null) {
             result = new BaseRow(this, relRowIndex);
-            cachedRows.put(this.parentOffsetRow + relRowIndex, result);
+            cachedRows.put(this.firstRow + relRowIndex, result);
         }
 
         return result;
@@ -169,7 +166,7 @@ public abstract class AbstractTable implements Table, Visitable {
     }
 
     public List<AbstractHeader> findHeader(final AbstractHeader headerToFind) {
-        LinkedList<AbstractHeader> result = new LinkedList<AbstractHeader>();
+        final LinkedList<AbstractHeader> result = new LinkedList<AbstractHeader>();
         for (final Header header : this.headers()) {
             if (header.equals(headerToFind)) {
                 result.add((AbstractHeader) header);
@@ -184,7 +181,6 @@ public abstract class AbstractTable implements Table, Visitable {
     private final int firstRow;
     private final int lastColumn;
     private final int lastRow;
-    private int parentOffsetRow;
     private int firstRowOffset;
     private int lastRowOffset;
     private int headerRowOffset;

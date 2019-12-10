@@ -19,11 +19,13 @@ public class IntelliHeader extends CompositeHeader {
 
     public IntelliHeader(final CompositeTable table, final BaseCell cell) {
         super(table, cell);
+        this.isMeta = false;
     }
 
     public IntelliHeader(final CompositeHeader header) {
         super(header.getTable(), new BaseCell(header.getName(), header.getColumnIndex(), 1, header.getTable().getClassifier()));
         this.setColumnIndex(header.getColumnIndex());
+        this.isMeta = header instanceof MetaHeader;
     }
 
     private IntelliHeader(final IntelliHeader parent) {
@@ -54,23 +56,26 @@ public class IntelliHeader extends CompositeHeader {
 
     @Override
     public BaseCell getCellAtRow(final Row row, boolean merged) {
-        if(!merged) {
+        if(!merged || this.nextSibbling == null) {
             return this.getCellAtRow(row);
         }
 
-        final StringBuffer buffer = new StringBuffer();
-        buffer.append(this.getCellAtRow(row).getValue());
+        String buffer = "";
 
         IntelliHeader curr = this;
-        while (curr.nextSibbling != null) {
-            String value = this.getCellAtRow(row).getValue();
-            if(!value.contains(buffer)) {
-                buffer.append(value);
+        while (curr != null) {
+            String value = curr.getCellAtRow(row).getValue();
+            if (!curr.isMeta && !buffer.contains(value)) {
+                buffer += value;
             }
             curr = curr.nextSibbling;
         }
 
-        return new BaseCell(buffer.toString(), this.getColumnIndex(), 1, this.getTable().getClassifier());
+        if(buffer.isEmpty()) {
+            return this.getCellAtRow(row);
+        } else {
+            return new BaseCell(buffer, this.getColumnIndex(), 1, this.getTable().getClassifier());
+        }
     }
 
     @Override
@@ -242,4 +247,5 @@ public class IntelliHeader extends CompositeHeader {
     private Vector wordVector;
     private HeaderTag tag;
     private IntelliHeader nextSibbling;
+    private boolean isMeta;
 }

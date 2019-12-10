@@ -39,7 +39,7 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
     }
 
     @Override
-    public  boolean hasCellDataAt(int colIndex, int rowIndex) {
+    public boolean hasCellDataAt(int colIndex, int rowIndex) {
         Cell cell = this.getCellAt(colIndex, rowIndex);
         return cell != null;
     }
@@ -47,8 +47,8 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
     @Override
     public String getInternalCellValueAt(int colIndex, int rowIndex) {
         Cell cell = this.getCellAt(colIndex, rowIndex);
-		if(cell == null) {
-			return null;
+        if (cell == null) {
+            return null;
         }
         return StringUtility.cleanToken(cell.getData$());
     }
@@ -56,15 +56,15 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
     @Override
     public int getNumberOfMergedCellsAt(int colIndex, int rowIndex) {
         Cell cell = this.getCellAt(colIndex, rowIndex);
-		if(cell == null) {
-			return 1;
+        if (cell == null) {
+            return 1;
         }
-		return cell.getMergeAcross() + 1;
+        return cell.getMergeAcross() + 1;
     }
 
     @Override
     public boolean isIgnorableRow(int rowIndex) {
-        if(rowIndex >= this.sheet.getRows().size()) {
+        if (rowIndex >= this.sheet.getRows().size()) {
             return false;
         }
 
@@ -78,11 +78,11 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
         int countEmptyCells = 0;
         int countCells = 0;
         boolean checkIfRowMergedVertically = false;
-        for(Cell cell : row.getCells()) {
-            if(!cell.hasData() || cell.getData$().isEmpty()) {
+        for (Cell cell : row.getCells()) {
+            if (!cell.hasData() || cell.getData$().isEmpty()) {
                 countEmptyCells++;
             }
-            if(!checkIfRowMergedVertically && this.getMergeDown(cell, rowIndex) > 0) {
+            if (!checkIfRowMergedVertically && this.getMergeDown(cell, rowIndex) > 0) {
                 checkIfRowMergedVertically = true;
             }
             countCells++;
@@ -99,7 +99,7 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
 
     private Row getRowAt(int rowIndex) {
         final int translatedRow = this.rowTranslator.rebase(rowIndex);
-        if(translatedRow == -1) {
+        if (translatedRow == -1) {
             return null;
         }
         Row row = this.sheet.getRowAt(translatedRow + 1);
@@ -111,18 +111,18 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
 
     private Cell getCellAt(int colIndex, int rowIndex) {
         final int translatedRow = this.rowTranslator.rebase(rowIndex);
-        if(translatedRow == -1) {
+        if (translatedRow == -1) {
             return null;
         }
         Cell cell = this.sheet.getCellAt(translatedRow + 1, colIndex + 1);
-        if(!cell.hasData()) {
-			return null;
+        if (!cell.hasData()) {
+            return null;
         }
         return cell;
     }
 
     private int getMergeDown(Cell cell, int rowIndex) {
-        if(rowIndex <= 0) {
+        if (rowIndex <= 0) {
             return 0;
         }
         if (cell == null) {
@@ -130,10 +130,15 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
         }
 
         int numberOfCells = 0;
-        for(int i = 1; i < 5; i++) {
+        for (int i = 1; i < 5; i++) {
             int firstRow = rowIndex - i;
+            if (firstRow < 0) {
+                break;
+            }
+
             int lastRow = firstRow + this.sheet.getCellAt(firstRow + 1, cell.getIndex() + 1).getMergeDown();
-            if(lastRow > firstRow && firstRow <= rowIndex && rowIndex <= lastRow) {
+
+            if (lastRow > firstRow && firstRow <= rowIndex && rowIndex <= lastRow) {
                 numberOfCells = firstRow - lastRow;
             }
         }

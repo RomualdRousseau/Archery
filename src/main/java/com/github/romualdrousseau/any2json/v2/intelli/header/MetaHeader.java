@@ -36,7 +36,17 @@ public class MetaHeader extends CompositeHeader {
 
     @Override
     public BaseCell getCellAtRow(final Row row) {
-        return this.getCell();
+        if (this.transformedCell == null) {
+            final String v1 = this.getCell().getValue();
+            final String v2 = this.getTable().getClassifier().getEntityList().find(v1);
+            if (v2 == null) {
+                this.transformedCell = this.getCell();
+            } else {
+                this.transformedCell = new BaseCell(v2, this.getCell().getColumnIndex(),
+                        this.getCell().getMergedCount(), this.getTable().getClassifier());
+            }
+        }
+        return this.transformedCell;
     }
 
     @Override
@@ -46,4 +56,5 @@ public class MetaHeader extends CompositeHeader {
 
     private String name;
     private String value;
+    private BaseCell transformedCell;
 }
