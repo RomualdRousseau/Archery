@@ -190,10 +190,37 @@ void buildImage(SheetEvent e) {
 
   if (e instanceof AllTablesExtractedEvent) {
     documentImage.beginDraw();
-    documentImage.stroke(0, 0, 255);
-    documentImage.strokeWeight(2);
-    documentImage.noFill();
     for (AbstractTable table : ((AllTablesExtractedEvent) e).getTables()) {
+
+      
+      documentImage.strokeWeight(1);
+      int y = 0;
+      for (Row row : table.rows()) {
+        int x = 0;
+        for (Cell c : row.cells()) {
+          BaseCell cell = (BaseCell) c;
+          if (cell.hasValue()) {
+            documentImage.stroke(0, 128, 255);
+            documentImage.fill(color(255, 255, 255));
+            documentImage.rect((table.getFirstColumn() + x) * dx, (table.getFirstRow() + y) * gridSize, cell.getMergedCount() * dx, gridSize);
+            if (cell.getEntityString() != null) {
+              documentImage.noStroke();
+              documentImage.fill(color(0, 128, 255));
+              documentImage.circle((table.getFirstColumn() + x) * dx + cell.getMergedCount() * dx / 2, (table.getFirstRow() + y) * gridSize + gridSize / 2, 5);
+            }
+          } else {
+            documentImage.stroke(128);
+            documentImage.fill(color(64, 64, 64));
+            documentImage.rect((table.getFirstColumn() + x) * dx, (table.getFirstRow() + y) * gridSize, cell.getMergedCount() * dx, gridSize);
+          }
+          x += cell.getMergedCount();
+        }
+        y++;
+      }
+
+      documentImage.stroke(0, 0, 255);
+      documentImage.strokeWeight(2);
+      documentImage.noFill();
       documentImage.rect(table.getFirstColumn() * dx, table.getFirstRow() * gridSize, table.getNumberOfColumns() * dx, table.getNumberOfRows() * gridSize);
     }
     documentImage.endDraw();
@@ -208,21 +235,21 @@ void buildImage(SheetEvent e) {
     for (DataTable table : ((DataTableListBuiltEvent) e).getDataTables()) {
       // meta
       documentImage.fill(color(255, 128, 0), 128);
-      documentImage.rect(table.getFirstColumn() * dx, table.getFirstRow() * gridSize, table.getNumberOfColumns() * dx, table.getFirstRowOffset() * gridSize);
+      documentImage.rect(table.getFirstColumn() * dx + 1, table.getFirstRow() * gridSize + 1, table.getNumberOfColumns() * dx - 2, table.getFirstRowOffset() * gridSize - 1);
       // header
       documentImage.fill(color(0, 255, 0), 128);
-      documentImage.rect(table.getFirstColumn() * dx, (table.getFirstRow() + table.getHeaderRowOffset()) * gridSize, table.getNumberOfColumns() * dx, gridSize);
+      documentImage.rect(table.getFirstColumn() * dx + 1, (table.getFirstRow() + table.getHeaderRowOffset()) * gridSize + 1, table.getNumberOfColumns() * dx - 2, gridSize - 1);
       // data
       documentImage.fill(color(0, 255, 0), 64);
-      documentImage.rect(table.getFirstColumn() * dx, (table.getFirstRow() + table.getFirstRowOffset()) * gridSize, table.getNumberOfColumns() * dx, table.getNumberOfRows() * gridSize);
+      documentImage.rect(table.getFirstColumn() * dx + 1, (table.getFirstRow() + table.getFirstRowOffset()) * gridSize + 1, table.getNumberOfColumns() * dx - 2, table.getNumberOfRows() * gridSize - 1);
       // rowgroups
       documentImage.fill(color(0, 255, 255), 128);
       for (RowGroup rowGroup : table.rowGroups()) {
-        documentImage.rect(table.getFirstColumn() * dx, (table.getFirstRow() + table.getFirstRowOffset() + rowGroup.getRow()) * gridSize, table.getNumberOfColumns() * dx, gridSize);
+        documentImage.rect(table.getFirstColumn() * dx + 1, (table.getFirstRow() + table.getFirstRowOffset() + rowGroup.getRow()) * gridSize + 1, table.getNumberOfColumns() * dx - 2, gridSize - 1);
       }
       // footer
       documentImage.fill(color(0, 0, 0), 64);
-      documentImage.rect(table.getFirstColumn() * dx, (table.getLastRow() + table.getLastRowOffset() + 1) * gridSize, table.getNumberOfColumns() * dx, -table.getLastRowOffset() * gridSize);
+      documentImage.rect(table.getFirstColumn() * dx + 1, (table.getLastRow() + table.getLastRowOffset() + 1) * gridSize + 1, table.getNumberOfColumns() * dx - 2, -table.getLastRowOffset() * gridSize - 1);
     }
     documentImage.endDraw();
 
@@ -234,7 +261,7 @@ void buildImage(SheetEvent e) {
     documentImage.noStroke();
     documentImage.fill(color(255, 128, 0), 128);
     for (MetaTable table : ((MetaTableListBuiltEvent) e).getMetaTables()) {
-      documentImage.rect(table.getFirstColumn() * dx, table.getFirstRow() * gridSize, table.getNumberOfColumns() * dx, table.getNumberOfRows() * gridSize);
+      documentImage.rect(table.getFirstColumn() * dx + 1, table.getFirstRow() * gridSize + 1, table.getNumberOfColumns() * dx - 2, table.getNumberOfRows() * gridSize - 1);
     }
     documentImage.endDraw();
 
@@ -243,9 +270,7 @@ void buildImage(SheetEvent e) {
 
   if (e instanceof TableGraphBuiltEvent) {
     println("TableGraph generated.");
-    println("============================ DUMP TABLEGRAPH ============================");
     ((TableGraphBuiltEvent) e).dumpTableGraph();
-    println("================================== END ==================================");
   }
 }
 

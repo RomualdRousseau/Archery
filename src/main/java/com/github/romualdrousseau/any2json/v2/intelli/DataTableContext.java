@@ -45,7 +45,7 @@ public class DataTableContext extends Context<BaseCell> {
         case TABLE_HEADER:
             if (symbol.equals("$")) {
                 this.dataTable.setFirstRowOffset(this.getRow() + 1);
-            } else if (symbol.equals("e") && !cell.getEntityString().equals("NUMBER")) {
+            } else if (symbol.equals("e") && !"NUMBER".equals(cell.getEntityString())) {
                 // TODO: Avoid this NUMBER hard coded value
                 PivotKeyHeader foundPivot = this.dataTable.findFirstPivotHeader();
                 if (foundPivot == null) {
