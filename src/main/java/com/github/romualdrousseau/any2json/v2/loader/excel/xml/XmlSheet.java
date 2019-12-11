@@ -1,8 +1,6 @@
 package com.github.romualdrousseau.any2json.v2.loader.excel.xml;
 
-import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.v2.intelli.IntelliSheet;
-import com.github.romualdrousseau.shuju.math.Vector;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 import nl.fountain.xelem.excel.Cell;
@@ -21,118 +19,36 @@ class XmlSheet extends IntelliSheet {
     }
 
     @Override
-    public int getLastColumnNum(int rowIndex) {
-        Row row = this.getRowAt(rowIndex);
-        if (row == null) {
-            return 0;
-        }
-
+    protected int getInternalLastColumnNum(int rowIndex) {
+        Row row = this.sheet.getRowAt(rowIndex);
         return row.maxCellIndex();
     }
 
     @Override
-    public int getLastRowNum() {
-        return this.sheet.getRows().size() - this.getRowTranslator().getIgnoredRowCount() - 1;
+    protected int getInternalLastRowNum() {
+        return this.sheet.getRows().size() - 1;
     }
 
     @Override
-    public boolean hasCellDataAt(int colIndex, int rowIndex) {
-        Cell cell = this.getCellAt(colIndex, rowIndex);
-        return cell != null;
+    protected boolean hasInternalCellDataAt(int colIndex, int rowIndex) {
+        Cell cell = this.sheet.getCellAt(rowIndex + 1, colIndex + 1);
+        return cell.hasData();
     }
 
     @Override
-    public String getInternalCellValueAt(int colIndex, int rowIndex) {
-        Cell cell = this.getCellAt(colIndex, rowIndex);
-        if (cell == null) {
-            return null;
-        }
-        return StringUtility.cleanToken(cell.getData$());
+    protected String getInternalCellDataAt(int colIndex, int rowIndex) {
+        Cell cell = this.sheet.getCellAt(rowIndex + 1, colIndex + 1);
+        return cell.hasData() ? StringUtility.cleanToken(cell.getData$()) : null;
     }
 
     @Override
-    public int getNumberOfMergedCellsAt(int colIndex, int rowIndex) {
-        Cell cell = this.getCellAt(colIndex, rowIndex);
-        if (cell == null) {
-            return 1;
-        }
+    protected int getInternalMergeAcross(int colIndex, int rowIndex) {
+        Cell cell = this.sheet.getCellAt(rowIndex + 1, colIndex + 1);
         return cell.getMergeAcross() + 1;
     }
 
     @Override
-    protected String getRowHash(int rowIndex, ITagClassifier classifier) {
-        if (rowIndex < 0 || rowIndex >= this.sheet.getRows().size()) {
-            return "";
-        }
-
-        Row row = this.sheet.getRowAt(rowIndex + 1);
-        if (row == null || row.getCells().size() == 0) {
-            return "";
-        }
-
-        String hash = "";
-        int countEmptyCells = 0;
-        boolean checkIfRowMergedVertically = false;
-        int colIndex = 0;
-        for (Cell cell : row.getCells()) {
-            if (cell.hasData()) {
-                String value = cell.getData$();
-                if (value.isEmpty()) {
-                    hash += "s";
-                    countEmptyCells++;
-                } else if (classifier != null) {
-                    Vector v = classifier.getEntityList().word2vec(value);
-                    if (v.sparsity() < 1.0f) {
-                        hash += "e";
-                    } else {
-                        hash += "v";
-                    }
-                } else {
-                    hash += "v";
-                }
-            }
-
-            if (!checkIfRowMergedVertically && this.getMergeDown(colIndex, rowIndex) > 0) {
-                checkIfRowMergedVertically = true;
-            }
-
-            colIndex++;
-        }
-
-        if (checkIfRowMergedVertically) {
-            hash = "X";
-        } else if (countEmptyCells == hash.length()) {
-            hash = "";
-        }
-
-        return hash;
-    }
-
-    private Row getRowAt(int rowIndex) {
-        final int translatedRow = this.getRowTranslator().rebase(rowIndex);
-        if (translatedRow == -1) {
-            return null;
-        }
-        Row row = this.sheet.getRowAt(translatedRow + 1);
-        if (row == null) {
-            return null;
-        }
-        return row;
-    }
-
-    private Cell getCellAt(int colIndex, int rowIndex) {
-        final int translatedRow = this.getRowTranslator().rebase(rowIndex);
-        if (translatedRow == -1) {
-            return null;
-        }
-        Cell cell = this.sheet.getCellAt(translatedRow + 1, colIndex + 1);
-        if (!cell.hasData()) {
-            return null;
-        }
-        return cell;
-    }
-
-    private int getMergeDown(int colIndex, int rowIndex) {
+    protected int getInternalMergeDown(int colIndex, int rowIndex) {
         if (rowIndex <= 0) {
             return 0;
         }

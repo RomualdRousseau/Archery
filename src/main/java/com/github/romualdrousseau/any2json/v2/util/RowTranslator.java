@@ -10,14 +10,14 @@ public class RowTranslator {
         this.rowTranslators = new TreeMap<Integer, Integer>();
         this.lastLogicalRowIndex = -1;
         this.lastPhysicalRowIndex = -1;
-        this.ignoredRowCount = 0;
+        this.translatedRowCount = 0;
     }
 
-    public int getIgnoredRowCount() {
-        return this.ignoredRowCount;
+    public int getTranslatedRowCount() {
+        return this.translatedRowCount;
     }
 
-    public int rebase(int logicalRowIndex) {
+    public int translate(int logicalRowIndex) {
         if (this.lastLogicalRowIndex == logicalRowIndex) {
             return this.lastPhysicalRowIndex;
         }
@@ -31,10 +31,10 @@ public class RowTranslator {
         }
 
         if(this.rowTranslators.size() == 0 || logicalRowIndex > this.rowTranslators.lastKey()) {
-            while (translatable.isIgnorableRow(physicalRowIndex)) {
+            while (translatable.isInvalidRow(physicalRowIndex)) {
                 this.rowTranslators.put(logicalRowIndex, this.rowTranslators.getOrDefault(logicalRowIndex, 0) + 1);
                 physicalRowIndex++;
-                this.ignoredRowCount++;
+                this.translatedRowCount++;
             }
         }
 
@@ -48,5 +48,5 @@ public class RowTranslator {
     private TreeMap<Integer, Integer> rowTranslators;
     private int lastLogicalRowIndex;
     private int lastPhysicalRowIndex;
-    private int ignoredRowCount;
+    private int translatedRowCount;
 }

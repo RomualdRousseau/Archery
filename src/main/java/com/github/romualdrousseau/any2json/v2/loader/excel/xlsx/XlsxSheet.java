@@ -5,10 +5,8 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
-import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.v2.Sheet;
 import com.github.romualdrousseau.any2json.v2.intelli.IntelliSheet;
-import com.github.romualdrousseau.shuju.math.Vector;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
@@ -31,14 +29,100 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 public class XlsxSheet extends IntelliSheet {
 
-    public class ContentHandler extends DefaultHandler {
+    public XlsxSheet(final String name, final InputStream sheetData, final SharedStringsTable sharedStrings,
+            final StylesTable styles) {
+        this.name = name;
+        this.sheetData = sheetData;
+        this.sharedStrings = sharedStrings;
+        this.styles = styles;
+    }
 
-        class Cell {
-            CellAddress address;
-            CellType type;
-            CellStyle style;
-            String value;
+    public Sheet ensureDataLoaded() {
+        if (this.dataLoaded) {
+            return this;
         }
+        try {
+            final XMLReader parser = XMLReaderFactory.createXMLReader();
+            parser.setContentHandler(new ContentHandler());
+            parser.parse(new InputSource(this.sheetData));
+            return this;
+
+        } catch (SAXException | IOException e) {
+            e.printStackTrace();
+            return this;
+
+        } finally {
+            try {
+                this.dataLoaded = true;
+                this.sheetData.close();
+            } catch (IOException ignore) {
+            }
+        }
+    }
+
+    @Override
+    public String getName() {
+        return this.name;
+    }
+
+    @Override
+    protected int getInternalLastColumnNum(int rowIndex) {
+        return this.rows.get(rowIndex).getLastColumnNum();
+    }
+
+    @Override
+    protected int getInternalLastRowNum() {
+        return this.rows.size() - 1;
+    }
+
+    @Override
+    protected boolean hasInternalCellDataAt(int colIndex, int rowIndex) {
+        final XlsxRow row = this.rows.get(rowIndex);
+        return row.cells().get(colIndex).getValue() != null;
+    }
+
+    @Override
+    protected String getInternalCellDataAt(int colIndex, int rowIndex) {
+        final XlsxRow row = this.rows.get(rowIndex);
+        return row.cells().get(colIndex).getValue();
+    }
+
+    @Override
+    protected int getInternalMergeAcross(final int colIndex, final int rowIndex) {
+        if (mergedRegions.size() == 0) {
+            return 1;
+        }
+
+        int numberOfCells = 0;
+        for (final CellRangeAddress region : mergedRegions) {
+            if (region.isInRange(rowIndex, colIndex)) {
+                numberOfCells = (region.getLastColumn() - region.getFirstColumn());
+                break;
+            }
+        }
+
+        return numberOfCells + 1;
+    }
+
+    @Override
+    protected int getInternalMergeDown(final int colIndex, final int rowIndex) {
+        if (this.mergedRegions.size() == 0) {
+            return 0;
+        }
+
+        int numberOfCells = 0;
+        for (final CellRangeAddress region : mergedRegions) {
+            if (region.getLastRow() > region.getFirstRow() && region.isInRange(rowIndex, colIndex)
+                    && rowIndex > region.getFirstRow()) {
+                numberOfCells = region.getLastRow() - region.getFirstRow();
+                break;
+            }
+        }
+
+        return numberOfCells;
+    }
+
+    private class ContentHandler extends DefaultHandler {
 
         @Override
         public void startElement(final String uri, final String localName, final String name,
@@ -209,173 +293,18 @@ public class XlsxSheet extends IntelliSheet {
             return false;
         }
 
+        private class Cell {
+            CellAddress address;
+            CellType type;
+            CellStyle style;
+            String value;
+        }
+
         private XlsxRow row;
         private boolean startValue;
         private boolean inlineStr;
         private Cell currCell;
         private Cell prevCell;
-    }
-
-    public XlsxSheet(final String name, final InputStream sheetData, final SharedStringsTable sharedStrings,
-            final StylesTable styles) {
-        this.name = name;
-        this.sheetData = sheetData;
-        this.sharedStrings = sharedStrings;
-        this.styles = styles;
-    }
-
-    public Sheet ensureDataLoaded() {
-        if (this.dataLoaded) {
-            return this;
-        }
-
-        try {
-            final XMLReader parser = XMLReaderFactory.createXMLReader();
-            parser.setContentHandler(new ContentHandler());
-            parser.parse(new InputSource(this.sheetData));
-            return this;
-        } catch (SAXException | IOException e) {
-            e.printStackTrace();
-            return this;
-        } finally {
-            try {
-                this.dataLoaded = true;
-                this.sheetData.close();
-            } catch (IOException ignore) {
-            }
-        }
-    }
-
-    @Override
-    public String getName() {
-        return this.name;
-    }
-
-    @Override
-    public int getLastColumnNum(final int rowIndex) {
-        return this.rows.get(rowIndex).getLastColumnNum();
-    }
-
-    @Override
-    public int getLastRowNum() {
-        return this.rows.size() - this.getRowTranslator().getIgnoredRowCount() - 1;
-    }
-
-    @Override
-    public boolean hasCellDataAt(final int colIndex, final int rowIndex) {
-        final XlsxCell cell = this.getCellAt(colIndex, rowIndex);
-        return cell != null && cell.getValue() != null;
-    }
-
-    @Override
-    public String getInternalCellValueAt(final int colIndex, final int rowIndex) {
-        final XlsxCell cell = this.getCellAt(colIndex, rowIndex);
-        return (cell != null && cell.getValue() != null) ? cell.getValue() : null;
-    }
-
-    @Override
-    public int getNumberOfMergedCellsAt(final int colIndex, final int rowIndex) {
-        final int translatedRow = this.getRowTranslator().rebase(rowIndex);
-        if (translatedRow == -1) {
-            return 1;
-        }
-        return this.getMergeAcross(colIndex, translatedRow);
-    }
-
-    @Override
-    protected String getRowHash(int rowIndex, ITagClassifier classifier) {
-        if (rowIndex < 0 || rowIndex >= this.rows.size()) {
-            return "";
-        }
-        final XlsxRow row = this.rows.get(rowIndex);
-        if (row == null || row.cells() == null) {
-            return "";
-        }
-
-        String hash = "";
-        int countEmptyCells = 0;
-        boolean checkIfRowMergedVertically = false;
-        int colIndex = 0;
-        for (final XlsxCell cell : row.cells()) {
-            if (cell.getValue() != null) {
-                String value = cell.getValue();
-                if(value.isEmpty()) {
-                    hash += "s";
-                    countEmptyCells++;
-                } else if (classifier != null) {
-                    Vector v = classifier.getEntityList().word2vec(value);
-                    if(v.sparsity() < 1.0f) {
-                        hash += "e";
-                    } else {
-                        hash += "v";
-                    }
-                } else {
-                    hash += "v";
-                }
-            }
-
-            if (!checkIfRowMergedVertically && this.getMergeDown(colIndex, rowIndex) > 0) {
-                checkIfRowMergedVertically = true;
-            }
-
-            colIndex++;
-        }
-
-        if (checkIfRowMergedVertically) {
-            hash = "X";
-        } else if (countEmptyCells == hash.length()) {
-            hash = "";
-        }
-
-        return hash;
-    }
-
-    private XlsxCell getCellAt(final int colIndex, final int rowIndex) {
-        final int translatedRow = this.getRowTranslator().rebase(rowIndex);
-        if (translatedRow == -1 || translatedRow >= this.rows.size()) {
-            return null;
-        }
-
-        final XlsxRow row = this.rows.get(translatedRow);
-        if (row.cells() == null || colIndex >= row.cells().size()) {
-            return null;
-        }
-
-        return row.cells().get(colIndex);
-    }
-
-    private int getMergeAcross(final int colIndex, final int rowIndex) {
-        if (mergedRegions.size() == 0) {
-            return 1;
-        }
-
-        int numberOfCells = 1;
-        for (final CellRangeAddress region : mergedRegions) {
-            if (region.isInRange(rowIndex, colIndex)) {
-                numberOfCells = (region.getLastColumn() - region.getFirstColumn()) + 1;
-                break;
-            }
-        }
-
-        return numberOfCells;
-    }
-
-    private int getMergeDown(final int colIndex, final int rowIndex) {
-        if (this.mergedRegions.size() == 0) {
-            return 0;
-        }
-
-        int numberOfCells = 0;
-        for (final CellRangeAddress region : mergedRegions) {
-            if (region.getLastRow() > region.getFirstRow()
-                    && region.isInRange(rowIndex, colIndex)
-                    && rowIndex > region.getFirstRow()) {
-                numberOfCells = region.getLastRow() - region.getFirstRow();
-                break;
-            }
-        }
-
-        return numberOfCells;
     }
 
     private final String name;

@@ -34,7 +34,7 @@ class TextSheet extends AbstractSheet {
     }
 
     @Override
-    public String getInternalCellValueAt(int colIndex, int rowIndex) {
+    public String getCellDataAt(int colIndex, int rowIndex) {
         String cell = this.getCellAt(colIndex, rowIndex);
         if(cell == null || cell.isEmpty()) {
             return null;

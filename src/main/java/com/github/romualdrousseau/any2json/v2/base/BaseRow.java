@@ -80,7 +80,7 @@ public class BaseRow implements Row {
         assert (colIndex >= 0 && colIndex < this.table.getNumberOfColumns()) : "column index out of bound";
         final int col = this.table.getFirstColumn() + colIndex;
         final int row = this.table.getFirstRow() + this.rowIndex;
-        return this.table.getSheet().getInternalCellValueAt(col, row);
+        return this.table.getSheet().getCellDataAt(col, row);
     }
 
     private void updateCellCount() {

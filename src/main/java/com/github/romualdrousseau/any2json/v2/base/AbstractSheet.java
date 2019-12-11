@@ -27,7 +27,7 @@ public abstract class AbstractSheet implements Sheet {
 
     public abstract boolean hasCellDataAt(int colIndex, int rowIndex);
 
-    public abstract String getInternalCellValueAt(int colIndex, int rowIndex);
+    public abstract String getCellDataAt(int colIndex, int rowIndex);
 
     public abstract int getNumberOfMergedCellsAt(int colIndex, int rowIndex);
 
@@ -73,10 +73,11 @@ public abstract class AbstractSheet implements Sheet {
         this.listeners.add(listener);
     }
 
-    public void notifyStepCompleted(final SheetEvent e) {
+    public boolean notifyStepCompleted(final SheetEvent e) {
         for (final SheetListener listener : listeners) {
             listener.stepCompleted(e);
         }
+        return e.isCanceled();
     }
 
     private final ArrayList<SheetListener> listeners = new ArrayList<SheetListener>();
