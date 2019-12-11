@@ -1,21 +1,18 @@
 package com.github.romualdrousseau.any2json.v2.loader.excel.xml;
 
+import com.github.romualdrousseau.any2json.ITagClassifier;
+import com.github.romualdrousseau.any2json.v2.intelli.IntelliSheet;
+import com.github.romualdrousseau.shuju.math.Vector;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 import nl.fountain.xelem.excel.Cell;
 import nl.fountain.xelem.excel.Row;
 import nl.fountain.xelem.excel.Worksheet;
 
-import com.github.romualdrousseau.any2json.v2.DocumentFactory;
-import com.github.romualdrousseau.any2json.v2.intelli.IntelliSheet;
-import com.github.romualdrousseau.any2json.v2.util.RowTranslatable;
-import com.github.romualdrousseau.any2json.v2.util.RowTranslator;
-
-class XmlSheet extends IntelliSheet implements RowTranslatable {
+class XmlSheet extends IntelliSheet {
 
     public XmlSheet(Worksheet sheet) {
         this.sheet = sheet;
-        this.rowTranslator = new RowTranslator(this);
     }
 
     @Override
@@ -35,7 +32,7 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
 
     @Override
     public int getLastRowNum() {
-        return this.sheet.getRows().size() - this.rowTranslator.getIgnoredRowCount() - 1;
+        return this.sheet.getRows().size() - this.getRowTranslator().getIgnoredRowCount() - 1;
     }
 
     @Override
@@ -63,42 +60,56 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
     }
 
     @Override
-    public boolean isIgnorableRow(int rowIndex) {
-        if (rowIndex >= this.sheet.getRows().size()) {
-            return false;
+    protected String getRowHash(int rowIndex, ITagClassifier classifier) {
+        if (rowIndex < 0 || rowIndex >= this.sheet.getRows().size()) {
+            return "";
         }
 
         Row row = this.sheet.getRowAt(rowIndex + 1);
-        if (row == null) {
-            return false;
+        if (row == null || row.getCells().size() == 0) {
+            return "";
         }
 
-        double height = this.sheet.getRowAt(rowIndex + 1).getHeight();
-
+        String hash = "";
         int countEmptyCells = 0;
-        int countCells = 0;
         boolean checkIfRowMergedVertically = false;
+        int colIndex = 0;
         for (Cell cell : row.getCells()) {
-            if (!cell.hasData() || cell.getData$().isEmpty()) {
-                countEmptyCells++;
+            if (cell.hasData()) {
+                String value = cell.getData$();
+                if (value.isEmpty()) {
+                    hash += "s";
+                    countEmptyCells++;
+                } else if (classifier != null) {
+                    Vector v = classifier.getEntityList().word2vec(value);
+                    if (v.sparsity() < 1.0f) {
+                        hash += "e";
+                    } else {
+                        hash += "v";
+                    }
+                } else {
+                    hash += "v";
+                }
             }
-            if (!checkIfRowMergedVertically && this.getMergeDown(cell, rowIndex) > 0) {
+
+            if (!checkIfRowMergedVertically && this.getMergeDown(colIndex, rowIndex) > 0) {
                 checkIfRowMergedVertically = true;
             }
-            countCells++;
+
+            colIndex++;
         }
 
-        float sparcity = (countCells == 0) ? 1.0f : (Float.valueOf(countEmptyCells) / Float.valueOf(countCells));
+        if (checkIfRowMergedVertically) {
+            hash = "X";
+        } else if (countEmptyCells == hash.length()) {
+            hash = "";
+        }
 
-        boolean candidate = false;
-        candidate |= (height < DocumentFactory.SEPARATOR_ROW_THRESHOLD);
-        candidate |= checkIfRowMergedVertically;
-        candidate &= (sparcity >= DocumentFactory.DEFAULT_RATIO_SCARSITY);
-        return candidate;
+        return hash;
     }
 
     private Row getRowAt(int rowIndex) {
-        final int translatedRow = this.rowTranslator.rebase(rowIndex);
+        final int translatedRow = this.getRowTranslator().rebase(rowIndex);
         if (translatedRow == -1) {
             return null;
         }
@@ -110,7 +121,7 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
     }
 
     private Cell getCellAt(int colIndex, int rowIndex) {
-        final int translatedRow = this.rowTranslator.rebase(rowIndex);
+        final int translatedRow = this.getRowTranslator().rebase(rowIndex);
         if (translatedRow == -1) {
             return null;
         }
@@ -121,11 +132,8 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
         return cell;
     }
 
-    private int getMergeDown(Cell cell, int rowIndex) {
+    private int getMergeDown(int colIndex, int rowIndex) {
         if (rowIndex <= 0) {
-            return 0;
-        }
-        if (cell == null) {
             return 0;
         }
 
@@ -136,10 +144,10 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
                 break;
             }
 
-            int lastRow = firstRow + this.sheet.getCellAt(firstRow + 1, cell.getIndex() + 1).getMergeDown();
-
+            int lastRow = firstRow + this.sheet.getCellAt(firstRow + 1, colIndex + 1).getMergeDown();
             if (lastRow > firstRow && firstRow <= rowIndex && rowIndex <= lastRow) {
-                numberOfCells = firstRow - lastRow;
+                numberOfCells = lastRow - firstRow;
+                break;
             }
         }
 
@@ -147,5 +155,4 @@ class XmlSheet extends IntelliSheet implements RowTranslatable {
     }
 
     private Worksheet sheet;
-    private RowTranslator rowTranslator;
 }

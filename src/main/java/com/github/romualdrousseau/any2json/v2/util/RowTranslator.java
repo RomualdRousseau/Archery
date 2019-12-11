@@ -8,7 +8,8 @@ public class RowTranslator {
     public RowTranslator(RowTranslatable translatable) {
         this.translatable = translatable;
         this.rowTranslators = new TreeMap<Integer, Integer>();
-        this.lastAccessedRowIndex = -1;
+        this.lastLogicalRowIndex = -1;
+        this.lastPhysicalRowIndex = -1;
         this.ignoredRowCount = 0;
     }
 
@@ -16,34 +17,36 @@ public class RowTranslator {
         return this.ignoredRowCount;
     }
 
-    public int rebase(int rowIndex) {
-        if (rowIndex == this.lastAccessedRowIndex) {
-            return lastTranslatedRow;
+    public int rebase(int logicalRowIndex) {
+        if (this.lastLogicalRowIndex == logicalRowIndex) {
+            return this.lastPhysicalRowIndex;
         }
 
-        int physicalRowIndex = rowIndex;
+        int physicalRowIndex = logicalRowIndex;
         for(Entry<Integer, Integer> x : this.rowTranslators.entrySet()) {
-            if(x.getKey() > rowIndex) {
+            if(x.getKey() > logicalRowIndex) {
                 break;
             }
             physicalRowIndex += x.getValue();
         }
 
-        while (translatable.isIgnorableRow(physicalRowIndex)) {
-            this.rowTranslators.put(rowIndex, this.rowTranslators.getOrDefault(rowIndex, 0) + 1);
-            physicalRowIndex++;
-            this.ignoredRowCount++;
+        if(this.rowTranslators.size() == 0 || logicalRowIndex > this.rowTranslators.lastKey()) {
+            while (translatable.isIgnorableRow(physicalRowIndex)) {
+                this.rowTranslators.put(logicalRowIndex, this.rowTranslators.getOrDefault(logicalRowIndex, 0) + 1);
+                physicalRowIndex++;
+                this.ignoredRowCount++;
+            }
         }
 
-        this.lastAccessedRowIndex = rowIndex;
-        this.lastTranslatedRow = physicalRowIndex;
+        this.lastLogicalRowIndex = logicalRowIndex;
+        this.lastPhysicalRowIndex = physicalRowIndex;
 
         return physicalRowIndex;
     }
 
     private RowTranslatable translatable;
     private TreeMap<Integer, Integer> rowTranslators;
-    private int lastAccessedRowIndex;
-    private int lastTranslatedRow;
+    private int lastLogicalRowIndex;
+    private int lastPhysicalRowIndex;
     private int ignoredRowCount;
 }

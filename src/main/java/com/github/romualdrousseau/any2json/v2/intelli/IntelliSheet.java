@@ -3,11 +3,11 @@ package com.github.romualdrousseau.any2json.v2.intelli;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.romualdrousseau.any2json.v2.Table;
-import com.github.romualdrousseau.any2json.v2.DocumentFactory;
 import com.github.romualdrousseau.any2json.ITagClassifier;
-import com.github.romualdrousseau.any2json.v2.base.BaseRow;
+import com.github.romualdrousseau.any2json.v2.DocumentFactory;
+import com.github.romualdrousseau.any2json.v2.Table;
 import com.github.romualdrousseau.any2json.v2.base.AbstractSheet;
+import com.github.romualdrousseau.any2json.v2.base.BaseRow;
 import com.github.romualdrousseau.any2json.v2.base.SheetBitmap;
 import com.github.romualdrousseau.any2json.v2.intelli.event.AllTablesExtractedEvent;
 import com.github.romualdrousseau.any2json.v2.intelli.event.BitmapGeneratedEvent;
@@ -16,6 +16,8 @@ import com.github.romualdrousseau.any2json.v2.intelli.event.IntelliTableReadyEve
 import com.github.romualdrousseau.any2json.v2.intelli.event.MetaTableListBuiltEvent;
 import com.github.romualdrousseau.any2json.v2.intelli.event.TableGraphBuiltEvent;
 import com.github.romualdrousseau.any2json.v2.layex.LayexMatcher;
+import com.github.romualdrousseau.any2json.v2.util.RowTranslatable;
+import com.github.romualdrousseau.any2json.v2.util.RowTranslator;
 import com.github.romualdrousseau.any2json.v2.util.TableGraph;
 import com.github.romualdrousseau.any2json.v2.util.TableLexer;
 import com.github.romualdrousseau.any2json.v2.util.Visitable;
@@ -24,14 +26,21 @@ import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
 import com.github.romualdrousseau.shuju.cv.SearchPoint;
 import com.github.romualdrousseau.shuju.cv.Template;
 import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.RectangleExtractor;
+import com.github.romualdrousseau.shuju.util.FuzzyString;
 
-public abstract class IntelliSheet extends AbstractSheet {
+public abstract class IntelliSheet extends AbstractSheet implements RowTranslatable {
+
+    public IntelliSheet() {
+        this.rowTranslator = new RowTranslator(this);
+    }
 
     @Override
     public Table getTable(final ITagClassifier classifier) {
         if (this.getLastRowNum() < 0) {
             return null;
         }
+
+        this.classifier = classifier;
 
         final SheetBitmap image = new SheetBitmap(this, classifier.getSampleCount(), this.getLastRowNum() + 1);
         this.notifyStepCompleted(new BitmapGeneratedEvent(this, image));
@@ -56,6 +65,32 @@ public abstract class IntelliSheet extends AbstractSheet {
         this.notifyStepCompleted(new IntelliTableReadyEvent(this, table));
 
         return table;
+    }
+
+    @Override
+    public boolean isIgnorableRow(int rowIndex) {
+        String hash = this.getRowHash(rowIndex, this.classifier);
+
+        // Remove unwanted row
+        if(hash.equals("X")) {
+            return true;
+        }
+
+        // Keep non empty rows
+        if (!hash.isEmpty()) {
+            return false;
+        }
+
+        // Test if the previous and next rows can be "stiched"
+        String hashPrev = this.getRowHash(rowIndex - 1, this.classifier);
+        String hashNext = this.getRowHash(rowIndex + 1, this.classifier);
+        return FuzzyString.Hamming(hashPrev, hashNext) >= DocumentFactory.DEFAULT_RATIO_SIMILARITY;
+    }
+
+    protected abstract String getRowHash(int rowIndex, ITagClassifier classifier);
+
+    protected RowTranslator getRowTranslator() {
+        return this.rowTranslator;
     }
 
     private TableGraph buildTableGraph(final List<MetaTable> metaTables, final List<DataTable> dataTables) {
@@ -282,4 +317,7 @@ public abstract class IntelliSheet extends AbstractSheet {
             return Double.MAX_VALUE;
         }
     }
+
+    private RowTranslator rowTranslator;
+    private ITagClassifier classifier;
 }

@@ -5,11 +5,10 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
-import com.github.romualdrousseau.any2json.v2.DocumentFactory;
+import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.v2.Sheet;
 import com.github.romualdrousseau.any2json.v2.intelli.IntelliSheet;
-import com.github.romualdrousseau.any2json.v2.util.RowTranslatable;
-import com.github.romualdrousseau.any2json.v2.util.RowTranslator;
+import com.github.romualdrousseau.shuju.math.Vector;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
@@ -30,7 +29,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-public class XlsxSheet extends IntelliSheet implements RowTranslatable {
+public class XlsxSheet extends IntelliSheet {
 
     public class ContentHandler extends DefaultHandler {
 
@@ -219,7 +218,6 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
 
     public XlsxSheet(final String name, final InputStream sheetData, final SharedStringsTable sharedStrings,
             final StylesTable styles) {
-        this.rowTranslator = new RowTranslator(this);
         this.name = name;
         this.sheetData = sheetData;
         this.sharedStrings = sharedStrings;
@@ -260,7 +258,7 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
 
     @Override
     public int getLastRowNum() {
-        return this.rows.size() - this.rowTranslator.getIgnoredRowCount() - 1;
+        return this.rows.size() - this.getRowTranslator().getIgnoredRowCount() - 1;
     }
 
     @Override
@@ -277,7 +275,7 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
 
     @Override
     public int getNumberOfMergedCellsAt(final int colIndex, final int rowIndex) {
-        final int translatedRow = this.rowTranslator.rebase(rowIndex);
+        final int translatedRow = this.getRowTranslator().rebase(rowIndex);
         if (translatedRow == -1) {
             return 1;
         }
@@ -285,46 +283,55 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
     }
 
     @Override
-    public boolean isIgnorableRow(final int rowIndex) {
-        if (rowIndex >= this.rows.size()) {
-            return false;
+    protected String getRowHash(int rowIndex, ITagClassifier classifier) {
+        if (rowIndex < 0 || rowIndex >= this.rows.size()) {
+            return "";
         }
-
         final XlsxRow row = this.rows.get(rowIndex);
-        if (row.isNotIgnorable()) {
-            return false;
+        if (row == null || row.cells() == null) {
+            return "";
         }
 
+        String hash = "";
         int countEmptyCells = 0;
-        int countCells = 0;
         boolean checkIfRowMergedVertically = false;
-        if (row.cells() != null) {
-            for (final XlsxCell cell : row.cells()) {
-                if (cell.getValue() == null || cell.getValue().isEmpty()) {
+        int colIndex = 0;
+        for (final XlsxCell cell : row.cells()) {
+            if (cell.getValue() != null) {
+                String value = cell.getValue();
+                if(value.isEmpty()) {
+                    hash += "s";
                     countEmptyCells++;
+                } else if (classifier != null) {
+                    Vector v = classifier.getEntityList().word2vec(value);
+                    if(v.sparsity() < 1.0f) {
+                        hash += "e";
+                    } else {
+                        hash += "v";
+                    }
+                } else {
+                    hash += "v";
                 }
-                if (!checkIfRowMergedVertically && this.getMergeDown(countCells, rowIndex) > 0) {
-                    checkIfRowMergedVertically = true;
-                }
-                countCells++;
             }
+
+            if (!checkIfRowMergedVertically && this.getMergeDown(colIndex, rowIndex) > 0) {
+                checkIfRowMergedVertically = true;
+            }
+
+            colIndex++;
         }
 
-        final float height = row.getHeight();
-        final float sparcity = (countCells == 0) ? 1.0f : (Float.valueOf(countEmptyCells) / Float.valueOf(countCells));
+        if (checkIfRowMergedVertically) {
+            hash = "X";
+        } else if (countEmptyCells == hash.length()) {
+            hash = "";
+        }
 
-        boolean isIgnorable = false;
-        isIgnorable |= (height < DocumentFactory.SEPARATOR_ROW_THRESHOLD);
-        isIgnorable |= checkIfRowMergedVertically;
-        isIgnorable &= (sparcity >= DocumentFactory.DEFAULT_RATIO_SCARSITY);
-
-        row.setNotIgnorable(!isIgnorable);
-
-        return isIgnorable;
+        return hash;
     }
 
     private XlsxCell getCellAt(final int colIndex, final int rowIndex) {
-        final int translatedRow = this.rowTranslator.rebase(rowIndex);
+        final int translatedRow = this.getRowTranslator().rebase(rowIndex);
         if (translatedRow == -1 || translatedRow >= this.rows.size()) {
             return null;
         }
@@ -371,7 +378,6 @@ public class XlsxSheet extends IntelliSheet implements RowTranslatable {
         return numberOfCells;
     }
 
-    private final RowTranslator rowTranslator;
     private final String name;
     private final InputStream sheetData;
     private final StylesTable styles;

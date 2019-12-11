@@ -133,8 +133,6 @@ void loadDocument(String filePath) {
   println("Tables loaded.");
   println("done.");
 
-  dumpTable(table);
-
   document.close();
 }
 
@@ -190,9 +188,10 @@ void buildImage(SheetEvent e) {
 
   if (e instanceof AllTablesExtractedEvent) {
     documentImage.beginDraw();
-    for (AbstractTable table : ((AllTablesExtractedEvent) e).getTables()) {
+    documentImage.textAlign(CENTER, CENTER);
+    documentImage.textSize(gridSize - 2);
 
-      
+    for (AbstractTable table : ((AllTablesExtractedEvent) e).getTables()) {
       documentImage.strokeWeight(1);
       int y = 0;
       for (Row row : table.rows()) {
@@ -206,7 +205,7 @@ void buildImage(SheetEvent e) {
             if (cell.getEntityString() != null) {
               documentImage.noStroke();
               documentImage.fill(color(0, 128, 255));
-              documentImage.circle((table.getFirstColumn() + x) * dx + cell.getMergedCount() * dx / 2, (table.getFirstRow() + y) * gridSize + gridSize / 2, 5);
+              documentImage.text(cell.getEntityString().substring(0, 2), (table.getFirstColumn() + x) * dx + cell.getMergedCount() * dx / 2, (table.getFirstRow() + y) * gridSize + gridSize / 2);
             }
           } else {
             documentImage.stroke(128);
@@ -287,25 +286,4 @@ void displayHUD() {
   int y = floor((mouseY + documentTopY) / gridSize);
   String s = String.format("(%d, %d)", x, y);
   text(s, width - textWidth(s) - 4, height - 4);
-}
-
-void dumpTable(com.github.romualdrousseau.any2json.v2.Table table) {
-  /*
-  println();
-   for (Header header : table.headers()) {
-   AbstractHeader abstractHeader = (AbstractHeader) header;
-   print(abstractHeader.getName(), abstractHeader.getTag().getValue(), "| ");
-   }
-   println();
-   */
-  /*
-  int n = 0;
-   for (Row row : table.rows()) {
-   for (Cell cell : row.cells()) {
-   print(cell.getValue(), "| ");
-   }
-   println();
-   if(n++ >= 50) break;
-   }
-   */
 }

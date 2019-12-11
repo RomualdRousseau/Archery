@@ -13,10 +13,10 @@ public class DocumentFactory {
     public final static int DEFAULT_SAMPLE_COUNT = 50;
     public final static float DEFAULT_RATIO_SCARSITY = 0.5f;
     public final static float DEFAULT_RATIO_DENSITY = 0.5f;
-    public final static int SEPARATOR_ROW_THRESHOLD = 10;
+    public final static float DEFAULT_RATIO_SIMILARITY = 0.75f;
     public static final String PIVOT_SUFFIX = "#PIVOT?";
     public static final float DEFAULT_ENTITY_PROBABILITY = 0.6f;
-    public static final int MAX_STORE_ROWS = 1000;
+    public static final int MAX_STORE_ROWS = 5000;
 
 	public static Document createInstance(String filePath, String encoding) {
 		if(filePath == null) {

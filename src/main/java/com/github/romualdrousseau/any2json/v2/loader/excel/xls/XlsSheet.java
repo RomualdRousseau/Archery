@@ -17,17 +17,15 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
-import com.github.romualdrousseau.any2json.v2.DocumentFactory;
+import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.v2.intelli.IntelliSheet;
-import com.github.romualdrousseau.any2json.v2.util.RowTranslatable;
-import com.github.romualdrousseau.any2json.v2.util.RowTranslator;
+import com.github.romualdrousseau.shuju.math.Vector;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
-public class XlsSheet extends IntelliSheet implements RowTranslatable {
+public class XlsSheet extends IntelliSheet {
 
     public XlsSheet(Sheet sheet) throws IOException {
         this.sheet = sheet;
-        this.rowTranslator = new RowTranslator(this);
         this.cachedRegion = new ArrayList<CellRangeAddress>();
         for (int j = 0; j < this.sheet.getNumMergedRegions(); j++) {
             CellRangeAddress region = this.sheet.getMergedRegion(j);
@@ -51,7 +49,7 @@ public class XlsSheet extends IntelliSheet implements RowTranslatable {
 
     @Override
     public int getLastRowNum() {
-        return this.sheet.getLastRowNum() - this.rowTranslator.getIgnoredRowCount();
+        return this.sheet.getLastRowNum() - this.getRowTranslator().getIgnoredRowCount();
     }
 
     @Override
@@ -79,43 +77,53 @@ public class XlsSheet extends IntelliSheet implements RowTranslatable {
     }
 
     @Override
-    public boolean isIgnorableRow(int rowIndex) {
-        if (rowIndex > this.sheet.getLastRowNum()) {
-            return false;
+    protected String getRowHash(int rowIndex, ITagClassifier classifier) {
+        if (rowIndex < 0 || rowIndex > this.sheet.getLastRowNum()) {
+            return "";
         }
-
         Row row = this.sheet.getRow(rowIndex);
-        if (row == null || rowIndex > this.sheet.getLastRowNum()) {
-            return false;
+        if (row == null || row.getLastCellNum() == 0) {
+            return "";
         }
 
+        String hash = "";
         int countEmptyCells = 0;
-        int countCells = 0;
         boolean checkIfRowMergedVertically = false;
         for (int i = 0; i < row.getLastCellNum(); i++) {
             Cell cell = row.getCell(i);
-            if (!this.hasData(cell) || this.getData(cell).isEmpty()) {
-                countEmptyCells++;
+            if (this.hasData(cell)) {
+                String value = this.getData(cell);
+                if(value.isEmpty()) {
+                    hash += "s";
+                    countEmptyCells++;
+                } else if (classifier != null) {
+                    Vector v = classifier.getEntityList().word2vec(value);
+                    if(v.sparsity() < 1.0f) {
+                        hash += "e";
+                    } else {
+                        hash += "v";
+                    }
+                } else {
+                    hash += "v";
+                }
             }
+
             if (!checkIfRowMergedVertically && this.getMergeDown(cell) > 0) {
                 checkIfRowMergedVertically = true;
             }
-            countCells++;
         }
 
-        double height = row.getHeight() * 0.07; // Rougly convert in pixels
-        final float sparcity = (countCells == 0) ? 1.0f : (Float.valueOf(countEmptyCells) / Float.valueOf(countCells));
+        if (checkIfRowMergedVertically) {
+            hash = "X";
+        } else if (countEmptyCells == hash.length()) {
+            hash = "";
+        }
 
-        boolean isIgnorable = false;
-        isIgnorable |= (height < DocumentFactory.SEPARATOR_ROW_THRESHOLD);
-        isIgnorable |= checkIfRowMergedVertically;
-        isIgnorable &= (sparcity >= DocumentFactory.DEFAULT_RATIO_SCARSITY);
-
-        return isIgnorable;
+        return hash;
     }
 
     private Row getRowAt(int rowIndex) {
-        final int translatedRow = this.rowTranslator.rebase(rowIndex);
+        final int translatedRow = this.getRowTranslator().rebase(rowIndex);
         if (translatedRow == -1) {
             return null;
         }
@@ -267,6 +275,5 @@ public class XlsSheet extends IntelliSheet implements RowTranslatable {
     }
 
     private Sheet sheet;
-    private RowTranslator rowTranslator;
     private ArrayList<CellRangeAddress> cachedRegion;
 }
