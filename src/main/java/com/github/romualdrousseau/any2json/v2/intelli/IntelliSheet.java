@@ -81,7 +81,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
     @Override
     public int getLastColumnNum(final int rowIndex) {
         final int translatedRow = this.rowTranslator.translate(rowIndex);
-        if (translatedRow < 0 || translatedRow >= this.getInternalLastRowNum()) {
+        if (translatedRow < 0 || translatedRow > this.getInternalLastRowNum()) {
             return -1;
         }
         return this.getInternalLastColumnNum(translatedRow);
@@ -95,10 +95,10 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
     @Override
     public boolean hasCellDataAt(final int colIndex, final int rowIndex) {
         final int translatedRow = this.rowTranslator.translate(rowIndex);
-        if (translatedRow < 0 || translatedRow >= this.getInternalLastRowNum()) {
+        if (translatedRow < 0 || translatedRow > this.getInternalLastRowNum()) {
             return false;
         }
-        if (colIndex < 0 || colIndex >= this.getInternalLastColumnNum(translatedRow)) {
+        if (colIndex < 0 || colIndex > this.getInternalLastColumnNum(translatedRow)) {
             return false;
         }
         return this.hasInternalCellDataAt(colIndex, translatedRow);
@@ -107,10 +107,10 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
     @Override
     public String getCellDataAt(final int colIndex, final int rowIndex) {
         final int translatedRow = this.rowTranslator.translate(rowIndex);
-        if (translatedRow < 0 || translatedRow >= this.getInternalLastRowNum()) {
+        if (translatedRow < 0 || translatedRow > this.getInternalLastRowNum()) {
             return null;
         }
-        if (colIndex < 0 || colIndex >= this.getInternalLastColumnNum(translatedRow)) {
+        if (colIndex < 0 || colIndex > this.getInternalLastColumnNum(translatedRow)) {
             return null;
         }
         return this.getInternalCellDataAt(colIndex, translatedRow);
@@ -119,10 +119,10 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
     @Override
     public int getNumberOfMergedCellsAt(final int colIndex, final int rowIndex) {
         final int translatedRow = this.rowTranslator.translate(rowIndex);
-        if (translatedRow < 0 || translatedRow >= this.getInternalLastRowNum()) {
+        if (translatedRow < 0 || translatedRow > this.getInternalLastRowNum()) {
             return 1;
         }
-        if (colIndex < 0 || colIndex >= this.getInternalLastColumnNum(translatedRow)) {
+        if (colIndex < 0 || colIndex > this.getInternalLastColumnNum(translatedRow)) {
             return 1;
         }
         return this.getInternalMergeAcross(colIndex, translatedRow);
@@ -130,11 +130,11 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
 
     @Override
     public boolean isInvalidRow(int rowIndex) {
-        if (rowIndex < 0 || rowIndex >= this.getInternalLastRowNum()) {
+        if (rowIndex <= 0 || rowIndex >= this.getInternalLastRowNum()) {
             return false;
         }
 
-        String hash = this.getRowHash(rowIndex);
+        String hash = this.getRowPattern(rowIndex);
 
         // Remove unwanted row
         if (hash.equals("X")) {
@@ -147,8 +147,8 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         }
 
         // Test if the previous and next rows can be "stiched"
-        String hashPrev = this.getRowHash(rowIndex - 1);
-        String hashNext = this.getRowHash(rowIndex + 1);
+        String hashPrev = this.getRowPattern(rowIndex - 1);
+        String hashNext = this.getRowPattern(rowIndex + 1);
         return FuzzyString.Hamming(hashPrev, hashNext) >= DocumentFactory.DEFAULT_RATIO_SIMILARITY;
     }
 
@@ -164,7 +164,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
 
     protected abstract int getInternalMergeDown(int colIndex, int rowIndex);
 
-    private String getRowHash(int rowIndex) {
+    private String getRowPattern(int rowIndex) {
         String hash = "";
         int countEmptyCells = 0;
         boolean checkIfRowMergedVertically = false;
@@ -305,7 +305,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
             boolean isSplitted = false;
             for (int i = 0; i < table.getNumberOfRows(); i++) {
                 final BaseRow row = table.getRowAt(i);
-                if (row.density() > DocumentFactory.DEFAULT_RATIO_DENSITY) {
+                if (row.density() >= DocumentFactory.DEFAULT_RATIO_DENSITY) {
                     // if (row.sparsity() > DocumentFactory.DEFAULT_RATIO_SCARSITY
                     // && row.density() > DocumentFactory.DEFAULT_RATIO_DENSITY) {
                     final int currRowNum = table.getFirstRow() + i;

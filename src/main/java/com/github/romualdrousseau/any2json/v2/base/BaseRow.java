@@ -65,7 +65,7 @@ public class BaseRow implements Row {
         if (this.getNumberOfCells() == 0) {
             return 0.0f;
         } else {
-            return Float.valueOf(this.emptyCellCount) / Float.valueOf(this.cellCount) / Float.valueOf(this.islandCellCount);
+            return (float) Math.exp(this.emptyCellCount - this.cellCount - this.islandCellCount);
         }
     }
 

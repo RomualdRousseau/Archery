@@ -77,7 +77,7 @@ public abstract class AbstractSheet implements Sheet {
         for (final SheetListener listener : listeners) {
             listener.stepCompleted(e);
         }
-        return e.isCanceled();
+        return !e.isCanceled();
     }
 
     private final ArrayList<SheetListener> listeners = new ArrayList<SheetListener>();

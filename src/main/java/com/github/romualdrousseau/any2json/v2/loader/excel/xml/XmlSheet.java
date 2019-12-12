@@ -20,7 +20,7 @@ class XmlSheet extends IntelliSheet {
 
     @Override
     protected int getInternalLastColumnNum(int rowIndex) {
-        Row row = this.sheet.getRowAt(rowIndex);
+        Row row = this.sheet.getRowAt(rowIndex + 1);
         return row.maxCellIndex();
     }
 
