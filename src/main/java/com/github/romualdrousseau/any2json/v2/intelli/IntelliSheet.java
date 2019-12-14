@@ -44,17 +44,17 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         this.classifier = classifier;
 
         final SheetBitmap image = new SheetBitmap(this, classifier.getSampleCount(), this.getLastRowNum() + 1);
-        if(!this.notifyStepCompleted(new BitmapGeneratedEvent(this, image))) {
+        if (!this.notifyStepCompleted(new BitmapGeneratedEvent(this, image))) {
             return null;
         }
 
         final List<CompositeTable> tables = this.findAllTables(classifier, image);
-        if(!this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables))) {
+        if (!this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables))) {
             return null;
         }
 
         final List<DataTable> dataTables = this.getDataTables(tables, classifier.getDataLayexes());
-        if(!this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables))) {
+        if (!this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables))) {
             return null;
         }
 
@@ -63,12 +63,12 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         }
 
         final List<MetaTable> metaTables = this.getMetaTables(tables, classifier.getMetaLayexes());
-        if(!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
+        if (!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
             return null;
         }
 
         final TableGraph root = this.buildTableGraph(metaTables, dataTables);
-        if(!this.notifyStepCompleted(new TableGraphBuiltEvent(this, root))) {
+        if (!this.notifyStepCompleted(new TableGraphBuiltEvent(this, root))) {
             return null;
         }
 
@@ -172,7 +172,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         for (int i = 0; i < this.getInternalLastColumnNum(rowIndex);) {
             final String value = this.getInternalCellDataAt(i, rowIndex);
 
-            if(value != null) {
+            if (value != null) {
                 if (value.isEmpty()) {
                     hash += "s";
                     countEmptyCells++;
@@ -239,27 +239,6 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         return root;
     }
 
-    private List<DataTable> getDataTables(final List<CompositeTable> tables, final List<LayexMatcher> dataLayexes) {
-        final ArrayList<DataTable> result = new ArrayList<DataTable>();
-
-        for (final Visitable e : tables) {
-            e.setVisited(false);
-        }
-
-        for (final CompositeTable table : tables) {
-            boolean foundMatch = false;
-            for (final LayexMatcher dataLayex : dataLayexes) {
-                if (!foundMatch && dataLayex.match(new TableLexer(table), null)) {
-                    result.add(new DataTable(table, dataLayex));
-                    table.setVisited(true);
-                    foundMatch = true;
-                }
-            }
-        }
-
-        return result;
-    }
-
     private List<MetaTable> getMetaTables(final List<CompositeTable> tables, final List<LayexMatcher> metaLayexes) {
         final ArrayList<MetaTable> result = new ArrayList<MetaTable>();
 
@@ -285,6 +264,44 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         return result;
     }
 
+    private List<DataTable> getDataTables(final List<CompositeTable> tables, final List<LayexMatcher> dataLayexes) {
+        final ArrayList<DataTable> result = new ArrayList<DataTable>();
+
+        for (final Visitable e : tables) {
+            e.setVisited(false);
+        }
+
+        for (final CompositeTable table : tables) {
+            boolean foundMatch = false;
+            for (final LayexMatcher dataLayex : dataLayexes) {
+                if (!foundMatch && dataLayex.match(new TableLexer(table), null)) {
+                    this.splitAllSubTables(table, dataLayex, result);
+                    table.setVisited(true);
+                    foundMatch = true;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private void splitAllSubTables(CompositeTable table, LayexMatcher layex, List<DataTable> result) {
+        TableSplitContext tableSplitContext = new TableSplitContext();
+        layex.match(new TableLexer(table), tableSplitContext);
+
+        if (tableSplitContext.getSplitRows().size() == 0) {
+            result.add(new DataTable(table, layex));
+            return;
+        }
+
+        int firstRow = table.getFirstRow();
+        for (int splitRow : tableSplitContext.getSplitRows()) {
+            CompositeTable subTable = new CompositeTable(table, firstRow, table.getFirstRow() + splitRow);
+            result.add(new DataTable(subTable, layex));
+            firstRow = table.getFirstRow() + splitRow + 1;
+        }
+    }
+
     private List<CompositeTable> findAllTables(final ITagClassifier classifier, final SheetBitmap image) {
         final ArrayList<CompositeTable> result = new ArrayList<CompositeTable>();
 
@@ -305,7 +322,8 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
             boolean isSplitted = false;
             for (int i = 0; i < table.getNumberOfRows(); i++) {
                 final BaseRow row = table.getRowAt(i);
-                if (row.density() >= DocumentFactory.DEFAULT_RATIO_DENSITY) {
+                if(row.isEmpty()) {
+                    // if (row.density() >= DocumentFactory.DEFAULT_RATIO_DENSITY) {
                     // if (row.sparsity() > DocumentFactory.DEFAULT_RATIO_SCARSITY
                     // && row.density() > DocumentFactory.DEFAULT_RATIO_DENSITY) {
                     final int currRowNum = table.getFirstRow() + i;
