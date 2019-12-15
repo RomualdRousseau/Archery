@@ -19,8 +19,11 @@ public class TableSplitContext extends Context<BaseCell> {
     }
 
     public void processSymbolFunc(final BaseCell cell) {
-        if (this.getGroup() == TABLE_FOOTER && cell.getSymbol().equals("$")) {
+        if (this.getGroup() == TABLE_FOOTER && cell.getSymbol().equals("$") && !oneSplitProcessed) {
             this.splitRows.add(this.getRow());
+            this.oneSplitProcessed = true;
+        } else {
+            this.oneSplitProcessed = false;
         }
     }
 
@@ -29,4 +32,5 @@ public class TableSplitContext extends Context<BaseCell> {
     }
 
     private ArrayList<Integer> splitRows;
+    private boolean oneSplitProcessed;
 }

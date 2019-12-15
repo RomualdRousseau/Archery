@@ -156,10 +156,11 @@ void buildEmptyImage() {
 void buildImage(SheetEvent e) {
   AbstractSheet sheet = (AbstractSheet) e.getSource();
   int dx = width / classifier.getSampleCount();
+  int maxRows = Math.min(sheet.getLastRowNum() + 1, 5000);
 
   if (e instanceof BitmapGeneratedEvent) {
     // Max rows set to 5000 to prevent heap overflow
-    documentImage = createGraphics(width, Math.min(sheet.getLastRowNum() + 1, 5000) * gridSize);
+    documentImage = createGraphics(width, maxRows * gridSize);
     documentImage.beginDraw();
     documentImage.stroke(128);
     documentImage.strokeWeight(1);
@@ -214,12 +215,15 @@ void buildImage(SheetEvent e) {
           x += cell.getMergedCount();
         }
         y++;
+        if(y >= maxRows) {
+          break;
+        }
       }
 
       documentImage.stroke(0, 0, 255);
       documentImage.strokeWeight(2);
       documentImage.noFill();
-      documentImage.rect(table.getFirstColumn() * dx, table.getFirstRow() * gridSize, table.getNumberOfColumns() * dx, table.getNumberOfRows() * gridSize);
+      documentImage.rect(table.getFirstColumn() * dx, table.getFirstRow() * gridSize, table.getNumberOfColumns() * dx, y * gridSize);
     }
     documentImage.endDraw();
 
