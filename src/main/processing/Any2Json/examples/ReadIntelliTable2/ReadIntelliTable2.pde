@@ -21,7 +21,8 @@ import java.awt.event.KeyEvent;
 final String[] metaLayexes = { "(v.$)+" };
 
 final String[] dataLayexes = {
-  "(()(vvE$))([(SeE$)[[veE$](eeE$)+]+]+)+()",
+  //"(()(eeE$))((veE$)(eeE$)*)+(veE$)?",
+  //"(()(vvE$))([(SeE$)[[veE$](eeE$)+]+]+)+()",
   "((v.*$)(vS.+$))((ve$)(.{3,}$)+)+(.{2}$)?",
   "(()(ES.+$))((e.{2,}$)(s.{2,}$)+)+(.{2}$)?",
   "(()(ES.+$))((s.{3,}$)(S.{2,}$)*)+(.{2}$)?",

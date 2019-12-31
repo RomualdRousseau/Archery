@@ -31,6 +31,6 @@ public class TableSplitContext extends Context<BaseCell> {
         return this.splitRows;
     }
 
-    private ArrayList<Integer> splitRows;
+    private final ArrayList<Integer> splitRows;
     private boolean oneSplitProcessed;
 }
