@@ -105,7 +105,7 @@ public abstract class AbstractTable implements Table, Visitable {
 
     public void setFirstRowOffset(final int offset) {
         assert (offset >= 0);
-        assert ((this.lastRowOffset - offset) <= 0);
+        assert (this.lastRowOffset <= offset);
         this.firstRowOffset = offset;
     }
 
@@ -115,7 +115,7 @@ public abstract class AbstractTable implements Table, Visitable {
 
     public void setLastRowOffset(final int offset) {
         assert (offset <= 0);
-        assert ((offset - this.firstRowOffset) <= 0);
+        assert (offset <= this.firstRowOffset);
         this.lastRowOffset = offset;
     }
 
@@ -125,7 +125,7 @@ public abstract class AbstractTable implements Table, Visitable {
 
     public void setHeaderRowOffset(final int offset) {
         assert (offset >= 0);
-        assert ((this.lastRowOffset - offset) <= 0);
+        assert (this.lastRowOffset <= offset);
         this.headerRowOffset = offset;
     }
 
@@ -175,12 +175,17 @@ public abstract class AbstractTable implements Table, Visitable {
         return result;
     }
 
+    protected void adjustLastRow(int lastRow, boolean withFooter) {
+        this.lastRowOffset = withFooter ? -1 : 0;
+        this.lastRow = lastRow;
+    }
+
     private boolean visited;
     private final AbstractSheet sheet;
     private final int firstColumn;
     private final int firstRow;
     private final int lastColumn;
-    private final int lastRow;
+    private int lastRow;
     private int firstRowOffset;
     private int lastRowOffset;
     private int headerRowOffset;

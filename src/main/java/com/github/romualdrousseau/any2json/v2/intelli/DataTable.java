@@ -21,7 +21,11 @@ public class DataTable extends CompositeTable {
 
     public DataTable(CompositeTable table, LayexMatcher layex) {
         super(table);
-        layex.match(new TableLexer(table), new DataTableContext(this));
+        this.dataTableContext = new DataTableContext(this);
+        layex.match(new TableLexer(table), this.dataTableContext);
+        if (this.dataTableContext.getSplitRows().size() > 0) {
+            this.adjustLastRow(table.getFirstRow() + this.dataTableContext.getSplitRows().get(0) - 1, true);
+        }
         this.setLoadCompleted(true);
     }
 
@@ -59,6 +63,10 @@ public class DataTable extends CompositeTable {
 		return result;
 	}
 
+    public DataTableContext getContext() {
+		return this.dataTableContext;
+    }
+
     private void buildIntelliTable(CompositeTable table) {
         for (Cell cell : table.getRowAt(0).cells()) {
             if(cell.getEntityString() != null) {
@@ -71,4 +79,5 @@ public class DataTable extends CompositeTable {
     }
 
     private final LinkedList<RowGroup> rowGroups = new LinkedList<RowGroup>();
+    private DataTableContext dataTableContext;
 }

@@ -1,5 +1,8 @@
 package com.github.romualdrousseau.any2json.v2.intelli;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.github.romualdrousseau.any2json.v2.base.BaseCell;
 import com.github.romualdrousseau.any2json.v2.base.RowGroup;
 import com.github.romualdrousseau.any2json.v2.intelli.header.MetaTableHeader;
@@ -21,6 +24,7 @@ public class DataTableContext extends Context<BaseCell> {
         this.firstRowCell = null;
         this.firstRowGroupProcessed = false;
         this.footerProcessed = false;
+        this.splitRows = new ArrayList<Integer>();
     }
 
     public void processSymbolFunc(final BaseCell cell) {
@@ -29,79 +33,108 @@ public class DataTableContext extends Context<BaseCell> {
         if (this.getColumn() == 0) {
             this.firstRowCell = null;
         }
-        if (cell.hasValue() && this.firstRowCell == null) {
+        if (this.firstRowCell == null && cell.hasValue()) {
             this.firstRowCell = cell;
         }
 
-        switch (this.getGroup()) {
-        case TABLE_META:
-            if (symbol.equals("$")) {
-                this.dataTable.setFirstRowOffset(this.getRow() + 1);
-            } else if (cell.hasValue()) {
-                this.dataTable.addHeader(new MetaTableHeader(this.dataTable, cell));
-            }
-            break;
+        if (!this.footerProcessed) {
+            switch (this.getGroup()) {
+            case TABLE_META:
+                this.processMeta(cell, symbol);
+                break;
 
-        case TABLE_HEADER:
-            if (symbol.equals("$")) {
-                this.dataTable.setFirstRowOffset(this.getRow() + 1);
-            } else if (symbol.equals("e") && !"NUMBER".equals(cell.getEntityString())) {
-                // TODO: Avoid this NUMBER hard coded value
-                PivotKeyHeader foundPivot = this.dataTable.findFirstPivotHeader();
-                if (foundPivot == null) {
-                    this.dataTable.addHeader(new PivotKeyHeader(this.dataTable, cell));
-                } else {
-                    foundPivot.addEntry(cell);
-                }
+            case TABLE_HEADER:
+                this.processHeader(cell, symbol);
+                break;
+
+            case TABLE_GROUP:
+                this.processGroup(cell, symbol);
+                break;
+
+            case TABLE_DATA:
+                this.processData(cell, symbol);
+                break;
+
+            case TABLE_FOOTER:
+                this.processFooter(cell, symbol);
+                break;
+            }
+        } else if (this.getGroup() == TABLE_FOOTER) {
+            this.processFooter(cell, symbol);
+        }
+    }
+
+    public List<Integer> getSplitRows() {
+        return this.splitRows;
+    }
+
+    private void processMeta(final BaseCell cell, final String symbol) {
+        if (symbol.equals("$")) {
+            this.dataTable.setFirstRowOffset(this.getRow() + 1);
+        } else if (cell.hasValue()) {
+            this.dataTable.addHeader(new MetaTableHeader(this.dataTable, cell));
+        }
+    }
+
+    private void processHeader(final BaseCell cell, final String symbol) {
+        if (symbol.equals("$")) {
+            this.dataTable.setFirstRowOffset(this.getRow() + 1);
+        } else if (symbol.equals("e") && !"NUMBER".equals(cell.getEntityString())) {
+            // TODO: Avoid this "NUMBER" hard coded value
+            PivotKeyHeader foundPivot = this.dataTable.findFirstPivotHeader();
+            if (foundPivot == null) {
+                this.dataTable.addHeader(new PivotKeyHeader(this.dataTable, cell));
             } else {
-                this.dataTable.addHeader(new DataTableHeader(this.dataTable, cell));
-                this.dataTable.setHeaderRowOffset(this.getRow());
+                foundPivot.addEntry(cell);
             }
-            break;
+        } else {
+            this.dataTable.addHeader(new DataTableHeader(this.dataTable, cell));
+            this.dataTable.setHeaderRowOffset(this.getRow());
+        }
+    }
 
-        case TABLE_GROUP:
-            if (symbol.equals("$")) {
-                if (this.getRow() < (this.dataTable.getLastRow() - this.dataTable.getFirstRow())) {
-                    if (this.firstRowCell != null) {
-                        this.lastRowGroup = new RowGroup(this.firstRowCell,
-                                this.getRow() - this.dataTable.getFirstRowOffset());
-                        this.dataTable.addRowGroup(this.lastRowGroup);
-                    }
-                } else if (!this.footerProcessed) {
-                    final int n = this.dataTable.getLastRow() - this.dataTable.getFirstRow();
-                    this.dataTable.setLastRowOffset(this.getRow() - n - 1);
-                    this.footerProcessed = true;
+    private void processGroup(final BaseCell cell, final String symbol) {
+        if (symbol.equals("$")) {
+            if (this.getRow() < (this.dataTable.getLastRow() - this.dataTable.getFirstRow())) {
+                if (this.firstRowCell != null) {
+                    this.lastRowGroup = new RowGroup(this.firstRowCell,
+                            this.getRow() - this.dataTable.getFirstRowOffset());
+                    this.dataTable.addRowGroup(this.lastRowGroup);
                 }
-                if (!this.firstRowGroupProcessed && !this.footerProcessed) {
-                    MetaTableHeader meta = this.dataTable.findFirstMetaTableHeader();
-                    if (meta == null) {
-                        meta = new MetaTableHeader(this.dataTable,
-                                new BaseCell("#GROUP?", 0, 1, this.dataTable.getClassifier()));
-                        this.dataTable.addHeader(meta);
-                    }
-                    meta.assignRowGroup(this.lastRowGroup);
-                    this.firstRowGroupProcessed = true;
-                }
+            } else if (!this.footerProcessed) {
+                final int n = this.dataTable.getLastRow() - this.dataTable.getFirstRow();
+                this.dataTable.setLastRowOffset(this.getRow() - n - 1);
+                this.footerProcessed = true;
             }
-            break;
+            if (!this.firstRowGroupProcessed && !this.footerProcessed) {
+                MetaTableHeader meta = this.dataTable.findFirstMetaTableHeader();
+                if (meta == null) {
+                    meta = new MetaTableHeader(this.dataTable,
+                            new BaseCell("#GROUP?", 0, 1, this.dataTable.getClassifier()));
+                    this.dataTable.addHeader(meta);
+                }
+                meta.assignRowGroup(this.lastRowGroup);
+                this.firstRowGroupProcessed = true;
+            }
+        }
+    }
 
-        case TABLE_DATA:
-            if (symbol.equals("$")) {
-                if (this.lastRowGroup != null) {
-                    this.lastRowGroup.incNumberOfRows();
-                }
+    private void processData(final BaseCell cell, final String symbol) {
+        if (symbol.equals("$")) {
+            if (this.lastRowGroup != null) {
+                this.lastRowGroup.incNumberOfRows();
             }
-            break;
+        }
+    }
 
-        case TABLE_FOOTER:
-            if (symbol.equals("$")) {
-                if (!this.footerProcessed) {
-                    final int n = this.dataTable.getLastRow() - this.dataTable.getFirstRow();
-                    this.dataTable.setLastRowOffset(this.getRow() - n - 1);
-                    this.footerProcessed = true;
-                }
+    private void processFooter(final BaseCell cell, final String symbol) {
+        if (symbol.equals("$")) {
+            if (!this.footerProcessed) {
+                final int n = this.dataTable.getLastRow() - this.dataTable.getFirstRow();
+                this.dataTable.setLastRowOffset(this.getRow() - n - 1);
+                this.footerProcessed = true;
             }
-            break;
+            this.splitRows.add(this.getRow() + 1);
         }
     }
 
@@ -110,4 +143,5 @@ public class DataTableContext extends Context<BaseCell> {
     private boolean firstRowGroupProcessed;
     private BaseCell firstRowCell;
     private boolean footerProcessed;
+    private final ArrayList<Integer> splitRows;
 }

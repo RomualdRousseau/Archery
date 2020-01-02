@@ -275,7 +275,13 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
             boolean foundMatch = false;
             for (final LayexMatcher dataLayex : dataLayexes) {
                 if (!foundMatch && dataLayex.match(new TableLexer(table), null)) {
-                    this.splitAllSubTables(table, dataLayex, result);
+                    DataTable dataTable = new DataTable(table, dataLayex);
+                    result.add(dataTable);
+
+                    if (dataTable.getContext().getSplitRows().size() > 0) {
+                        this.splitAllSubTables(table, dataLayex, dataTable.getContext(), result);
+                    }
+
                     table.setVisited(true);
                     foundMatch = true;
                 }
@@ -285,20 +291,15 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         return result;
     }
 
-    private void splitAllSubTables(CompositeTable table, LayexMatcher layex, List<DataTable> result) {
-        TableSplitContext tableSplitContext = new TableSplitContext();
-        layex.match(new TableLexer(table), tableSplitContext);
-
-        if (tableSplitContext.getSplitRows().size() == 0) {
-            result.add(new DataTable(table, layex));
-            return;
-        }
-
-        int firstRow = table.getFirstRow();
-        for (int splitRow : tableSplitContext.getSplitRows()) {
-            CompositeTable subTable = new CompositeTable(table, firstRow, table.getFirstRow() + splitRow);
-            result.add(new DataTable(subTable, layex));
-            firstRow = table.getFirstRow() + splitRow + 1;
+    private void splitAllSubTables(CompositeTable table, LayexMatcher layex, DataTableContext context,
+            List<DataTable> result) {
+        int firstRow = -1;
+        for (int splitRow : context.getSplitRows()) {
+            if (firstRow >= 0) {
+                CompositeTable subTable = new CompositeTable(table, firstRow, table.getFirstRow() + splitRow - 1);
+                result.add(new DataTable(subTable, layex));
+            }
+            firstRow = table.getFirstRow() + splitRow;
         }
     }
 
@@ -322,7 +323,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
             boolean isSplitted = false;
             for (int i = 0; i < table.getNumberOfRows(); i++) {
                 final BaseRow row = table.getRowAt(i);
-                if(row.isEmpty()) {
+                if (row.isEmpty()) {
                     // if (row.density() >= DocumentFactory.DEFAULT_RATIO_DENSITY) {
                     // if (row.sparsity() > DocumentFactory.DEFAULT_RATIO_SCARSITY
                     // && row.density() > DocumentFactory.DEFAULT_RATIO_DENSITY) {
