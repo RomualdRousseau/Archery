@@ -60,7 +60,7 @@ public class DataTableContext extends Context<BaseCell> {
                 break;
             }
         } else if (this.getGroup() == TABLE_FOOTER) {
-            this.processFooter(cell, symbol);
+            this.processSplit(cell, symbol);
         }
     }
 
@@ -94,19 +94,18 @@ public class DataTableContext extends Context<BaseCell> {
     }
 
     private void processGroup(final BaseCell cell, final String symbol) {
-        if (symbol.equals("$")) {
-            if (this.getRow() < (this.dataTable.getLastRow() - this.dataTable.getFirstRow())) {
-                if (this.firstRowCell != null) {
-                    this.lastRowGroup = new RowGroup(this.firstRowCell,
-                            this.getRow() - this.dataTable.getFirstRowOffset());
-                    this.dataTable.addRowGroup(this.lastRowGroup);
-                }
-            } else if (!this.footerProcessed) {
-                final int n = this.dataTable.getLastRow() - this.dataTable.getFirstRow();
-                this.dataTable.setLastRowOffset(this.getRow() - n - 1);
-                this.footerProcessed = true;
+        if (!symbol.equals("$")) {
+            return;
+        }
+
+        if (this.getRow() < (this.dataTable.getLastRow() - this.dataTable.getFirstRow())) {
+            if (this.firstRowCell != null) {
+                this.lastRowGroup = new RowGroup(this.firstRowCell,
+                        this.getRow() - this.dataTable.getFirstRowOffset());
+                this.dataTable.addRowGroup(this.lastRowGroup);
             }
-            if (!this.firstRowGroupProcessed && !this.footerProcessed) {
+
+            if (!this.firstRowGroupProcessed) {
                 MetaTableHeader meta = this.dataTable.findFirstMetaTableHeader();
                 if (meta == null) {
                     meta = new MetaTableHeader(this.dataTable,
@@ -116,26 +115,38 @@ public class DataTableContext extends Context<BaseCell> {
                 meta.assignRowGroup(this.lastRowGroup);
                 this.firstRowGroupProcessed = true;
             }
+        } else {
+            this.processFooter(cell, symbol);
         }
     }
 
     private void processData(final BaseCell cell, final String symbol) {
-        if (symbol.equals("$")) {
-            if (this.lastRowGroup != null) {
-                this.lastRowGroup.incNumberOfRows();
-            }
+        if (!symbol.equals("$")) {
+            return;
+        }
+
+        if (this.lastRowGroup != null) {
+            this.lastRowGroup.incNumberOfRows();
         }
     }
 
     private void processFooter(final BaseCell cell, final String symbol) {
-        if (symbol.equals("$")) {
-            if (!this.footerProcessed) {
-                final int n = this.dataTable.getLastRow() - this.dataTable.getFirstRow();
-                this.dataTable.setLastRowOffset(this.getRow() - n - 1);
-                this.footerProcessed = true;
-            }
-            this.splitRows.add(this.getRow() + 1);
+        if (!symbol.equals("$")) {
+            return;
         }
+
+        final int n = this.dataTable.getLastRow() - this.dataTable.getFirstRow();
+        this.dataTable.setLastRowOffset(this.getRow() - n - 1);
+        this.splitRows.add(this.getRow() + 1);
+        this.footerProcessed = true;
+    }
+
+    private void processSplit(final BaseCell cell, final String symbol) {
+        if (!symbol.equals("$")) {
+            return;
+        }
+
+        this.splitRows.add(this.getRow() + 1);
     }
 
     private final DataTable dataTable;
