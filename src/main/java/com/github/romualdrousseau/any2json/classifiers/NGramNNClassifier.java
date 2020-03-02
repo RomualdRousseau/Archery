@@ -173,13 +173,13 @@ public class NGramNNClassifier implements ITagClassifier {
             Layer output = this.model.model(input);
             Loss loss = this.criterion.loss(output, target);
 
-            if (output.detach().argmax(0) != target.argmax()) {
+            if (output.detach().argmax(0, 0) != target.argmax()) {
                 loss.backward();
             } else {
                 this.accuracy++;
             }
 
-            this.mean += loss.getValue().flatten(0);
+            this.mean += loss.getValue().flatten(0, 0);
             if (Float.isNaN(this.mean)) {
                 this.mean = total;
             }
