@@ -20,7 +20,7 @@ import com.github.romualdrousseau.shuju.ml.nn.Model;
 import com.github.romualdrousseau.shuju.ml.nn.Optimizer;
 import com.github.romualdrousseau.shuju.ml.nn.activation.LeakyRelu;
 import com.github.romualdrousseau.shuju.ml.nn.activation.Softmax;
-import com.github.romualdrousseau.shuju.ml.nn.layer.DenseBuilder;
+import com.github.romualdrousseau.shuju.ml.nn.layer.builder.DenseBuilder;
 import com.github.romualdrousseau.shuju.ml.nn.loss.SoftmaxCrossEntropy;
 import com.github.romualdrousseau.shuju.ml.nn.normalizer.BatchNormalizer;
 import com.github.romualdrousseau.shuju.ml.nn.optimizer.builder.OptimizerAdamBuilder;
