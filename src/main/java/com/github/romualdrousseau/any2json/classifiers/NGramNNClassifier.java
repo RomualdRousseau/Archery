@@ -15,12 +15,12 @@ import com.github.romualdrousseau.shuju.json.JSONObject;
 import com.github.romualdrousseau.shuju.math.Scalar;
 import com.github.romualdrousseau.shuju.math.Vector;
 import com.github.romualdrousseau.shuju.ml.nn.Layer;
-import com.github.romualdrousseau.shuju.ml.nn.LayerBuilder;
 import com.github.romualdrousseau.shuju.ml.nn.Loss;
 import com.github.romualdrousseau.shuju.ml.nn.Model;
 import com.github.romualdrousseau.shuju.ml.nn.Optimizer;
 import com.github.romualdrousseau.shuju.ml.nn.activation.LeakyRelu;
 import com.github.romualdrousseau.shuju.ml.nn.activation.Softmax;
+import com.github.romualdrousseau.shuju.ml.nn.layer.DenseBuilder;
 import com.github.romualdrousseau.shuju.ml.nn.loss.SoftmaxCrossEntropy;
 import com.github.romualdrousseau.shuju.ml.nn.normalizer.BatchNormalizer;
 import com.github.romualdrousseau.shuju.ml.nn.optimizer.builder.OptimizerAdamBuilder;
@@ -348,10 +348,10 @@ public class NGramNNClassifier implements ITagClassifier {
         final int hiddenCount = inputCount / 2;
         final int outputCount = this.tags.getVectorSize();
 
-        final Layer layer1 = new LayerBuilder().setInputUnits(inputCount).setUnits(hiddenCount)
+        final Layer layer1 = new DenseBuilder().setInputUnits(inputCount).setUnits(hiddenCount)
                 .setActivation(new LeakyRelu()).setNormalizer(new BatchNormalizer()).build();
 
-        final Layer layer2 = new LayerBuilder().setInputUnits(hiddenCount).setUnits(outputCount)
+        final Layer layer2 = new DenseBuilder().setInputUnits(hiddenCount).setUnits(outputCount)
                 .setActivation(new Softmax()).build();
 
         this.model = new Model().add(layer1).add(layer2);
