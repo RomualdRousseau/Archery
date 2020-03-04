@@ -199,7 +199,7 @@ public class TableHeader implements IHeader {
         }
 
         if (n > 0) {
-            result.cond(p * ((float) n), 0.0f, 1.0f);
+            result.if_lt_then(p * ((float) n), 0.0f, 1.0f);
         }
 
         return result;

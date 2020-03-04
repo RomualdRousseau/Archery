@@ -52,7 +52,7 @@ public class PivotValueHeader extends PivotKeyHeader {
         }
 
         if (n > 0) {
-            result.cond(DocumentFactory.DEFAULT_ENTITY_PROBABILITY * ((float) n), 0.0f, 1.0f);
+            result.if_lt_then(DocumentFactory.DEFAULT_ENTITY_PROBABILITY * ((float) n), 0.0f, 1.0f);
         }
 
         return result;
