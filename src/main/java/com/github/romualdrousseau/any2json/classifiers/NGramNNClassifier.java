@@ -20,9 +20,10 @@ import com.github.romualdrousseau.shuju.ml.nn.Model;
 import com.github.romualdrousseau.shuju.ml.nn.Optimizer;
 import com.github.romualdrousseau.shuju.ml.nn.activation.LeakyRelu;
 import com.github.romualdrousseau.shuju.ml.nn.activation.Softmax;
+import com.github.romualdrousseau.shuju.ml.nn.layer.builder.ActivationBuilder;
 import com.github.romualdrousseau.shuju.ml.nn.layer.builder.DenseBuilder;
+import com.github.romualdrousseau.shuju.ml.nn.layer.builder.BatchNormalizerBuilder;
 import com.github.romualdrousseau.shuju.ml.nn.loss.SoftmaxCrossEntropy;
-import com.github.romualdrousseau.shuju.ml.nn.normalizer.BatchNormalizer;
 import com.github.romualdrousseau.shuju.ml.nn.optimizer.builder.OptimizerAdamBuilder;
 import com.github.romualdrousseau.shuju.nlp.NgramList;
 import com.github.romualdrousseau.shuju.nlp.RegexList;
@@ -45,11 +46,9 @@ public class NGramNNClassifier implements ITagClassifier {
 
     private final static String[] metaLayexesDefault = { "(v.$)+" };
 
-    private final static String[] dataLayexesDefault = {
-        "((e.*$)(vS.+$))(()(.{3,}$))+(.{2}$)?",
-        "((v.*$)(vS.+$))((.{2}$)(.{3,}$)+)+(.{2}$)?",
-        "(()(ES.+$))((sS.+$)(S.{2,}$)+)+(.{2}$)?",
-        "(()(ES.+$))(()(.{3,}$))+(.{2}$)?" };
+    private final static String[] dataLayexesDefault = { "((e.*$)(vS.+$))(()(.{3,}$))+(.{2}$)?",
+            "((v.*$)(vS.+$))((.{2}$)(.{3,}$)+)+(.{2}$)?", "(()(ES.+$))((sS.+$)(S.{2,}$)+)+(.{2}$)?",
+            "(()(ES.+$))(()(.{3,}$))+(.{2}$)?" };
 
     public NGramNNClassifier(NgramList ngrams, RegexList entities, StopWordList stopwords, StringList tags) {
         this(ngrams, entities, stopwords, tags, null);
@@ -95,14 +94,14 @@ public class NGramNNClassifier implements ITagClassifier {
 
         this.model.fromJSON(json.getJSONArray("model"));
 
-        if(metaLayexes != null) {
+        if (metaLayexes != null) {
             this.metaLayexes = new ArrayList<LayexMatcher>();
             for (String layex : metaLayexes) {
                 this.metaLayexes.add(new Layex(layex).compile());
             }
         }
 
-        if(dataLayexes != null) {
+        if (dataLayexes != null) {
             this.dataLayexes = new ArrayList<LayexMatcher>();
             for (String layex : dataLayexes) {
                 this.dataLayexes.add(new Layex(layex).compile());
@@ -174,7 +173,7 @@ public class NGramNNClassifier implements ITagClassifier {
             Loss loss = this.criterion.loss(output, target);
 
             if (output.detach().argmax(0, 0) != target.argmax()) {
-                loss.backward();
+                this.optimizer.minimize(loss);
             } else {
                 this.accuracy++;
             }
@@ -348,13 +347,11 @@ public class NGramNNClassifier implements ITagClassifier {
         final int hiddenCount = inputCount / 2;
         final int outputCount = this.tags.getVectorSize();
 
-        final Layer layer1 = new DenseBuilder().setInputUnits(inputCount).setUnits(hiddenCount)
-                .setActivation(new LeakyRelu()).setNormalizer(new BatchNormalizer()).build();
-
-        final Layer layer2 = new DenseBuilder().setInputUnits(hiddenCount).setUnits(outputCount)
-                .setActivation(new Softmax()).build();
-
-        this.model = new Model().add(layer1).add(layer2);
+        this.model = new Model().add(new DenseBuilder().setInputUnits(inputCount).setUnits(hiddenCount).build())
+                .add(new BatchNormalizerBuilder().build())
+                .add(new ActivationBuilder().setActivation(new LeakyRelu()).build())
+                .add(new DenseBuilder().setInputUnits(hiddenCount).setUnits(outputCount).build())
+                .add(new ActivationBuilder().setActivation(new Softmax()).build());
 
         this.optimizer = new OptimizerAdamBuilder().build(this.model);
 
