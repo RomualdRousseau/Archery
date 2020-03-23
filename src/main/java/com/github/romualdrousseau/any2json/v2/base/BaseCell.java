@@ -3,7 +3,7 @@ package com.github.romualdrousseau.any2json.v2.base;
 import com.github.romualdrousseau.any2json.v2.Cell;
 import com.github.romualdrousseau.any2json.v2.layex.Symbol;
 import com.github.romualdrousseau.any2json.ITagClassifier;
-import com.github.romualdrousseau.shuju.math.Vector;
+import com.github.romualdrousseau.shuju.math.Tensor1D;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 public class BaseCell implements Cell, Symbol {
@@ -37,7 +37,7 @@ public class BaseCell implements Cell, Symbol {
         if (this.classifier == null) {
             return null;
         } else {
-            Vector v = this.getEntityVector();
+            Tensor1D v = this.getEntityVector();
             if(v.sparsity() < 1.0f) {
                 return this.classifier.getEntityList().get(v.argmax());
             } else {
@@ -72,10 +72,10 @@ public class BaseCell implements Cell, Symbol {
         return this.colIndex;
     }
 
-    public Vector getEntityVector() {
+    public Tensor1D getEntityVector() {
         if (this.entityVector == null) {
             if(this.classifier == null) {
-                this.entityVector = Vector.Null;
+                this.entityVector = Tensor1D.Null;
             } else {
                 this.entityVector = this.classifier.getEntityList().word2vec(this.value);
             }
@@ -86,7 +86,7 @@ public class BaseCell implements Cell, Symbol {
     private final String value;
     private final int colIndex;
     private final int mergedCount;
-    private Vector entityVector;
+    private Tensor1D entityVector;
     private final ITagClassifier classifier;
     private String symbol;
 }

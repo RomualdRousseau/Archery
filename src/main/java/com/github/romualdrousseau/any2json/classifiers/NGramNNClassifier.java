@@ -13,7 +13,7 @@ import com.github.romualdrousseau.shuju.json.JSON;
 import com.github.romualdrousseau.shuju.json.JSONArray;
 import com.github.romualdrousseau.shuju.json.JSONObject;
 import com.github.romualdrousseau.shuju.math.Scalar;
-import com.github.romualdrousseau.shuju.math.Vector;
+import com.github.romualdrousseau.shuju.math.Tensor1D;
 import com.github.romualdrousseau.shuju.ml.nn.Layer;
 import com.github.romualdrousseau.shuju.ml.nn.Loss;
 import com.github.romualdrousseau.shuju.ml.nn.Model;
@@ -166,8 +166,8 @@ public class NGramNNClassifier implements ITagClassifier {
         this.optimizer.zeroGradients();
 
         for (DataRow data : dataset.rows()) {
-            Vector input = data.featuresAsOneVector();
-            Vector target = data.label();
+            Tensor1D input = data.featuresAsOneVector();
+            Tensor1D target = data.label();
 
             Layer output = this.model.model(input);
             Loss loss = this.criterion.loss(output, target);
@@ -248,8 +248,8 @@ public class NGramNNClassifier implements ITagClassifier {
     // }
 
     public String predict(DataRow row) {
-        Vector input = row.featuresAsOneVector();
-        Vector output = this.model.model(input).detachAsVector();
+        Tensor1D input = row.featuresAsOneVector();
+        Tensor1D output = this.model.model(input).detachAsVector();
 
         int tagIndex = output.argmax();
         if (tagIndex >= this.tags.size()) {
@@ -282,7 +282,7 @@ public class NGramNNClassifier implements ITagClassifier {
         StringBuilder result = new StringBuilder();
 
         for (DataRow row : dataset.rows()) {
-            Vector v = row.featuresAsOneVector();
+            Tensor1D v = row.featuresAsOneVector();
 
             boolean firstPass = true;
             for (int i = 0; i < 24; i++) {
@@ -322,7 +322,7 @@ public class NGramNNClassifier implements ITagClassifier {
                 }
             }
 
-            Vector l = row.label();
+            Tensor1D l = row.label();
             result.append(",");
             firstPass = true;
             for (int i = 0; i < 16; i++) {

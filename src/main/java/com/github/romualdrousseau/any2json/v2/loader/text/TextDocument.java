@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 import com.github.romualdrousseau.any2json.v2.Document;
 import com.github.romualdrousseau.any2json.v2.Sheet;
-import com.github.romualdrousseau.shuju.math.Vector;
+import com.github.romualdrousseau.shuju.math.Tensor1D;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 public class TextDocument implements Document {
@@ -175,7 +175,7 @@ public class TextDocument implements Document {
         for (int i = 0; i < separators.length; i++) {
             v[i] = sample.split(separators[i]).length;
         }
-        return separators[new Vector(v).argmax()];
+        return separators[new Tensor1D(v).argmax()];
     }
 
     private TextSheet sheet;

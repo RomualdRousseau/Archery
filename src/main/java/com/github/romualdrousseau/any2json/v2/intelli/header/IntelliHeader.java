@@ -4,7 +4,7 @@ import com.github.romualdrousseau.any2json.v2.base.AbstractHeader;
 import com.github.romualdrousseau.any2json.v2.base.BaseRow;
 import com.github.romualdrousseau.any2json.v2.intelli.CompositeTable;
 import com.github.romualdrousseau.shuju.DataRow;
-import com.github.romualdrousseau.shuju.math.Vector;
+import com.github.romualdrousseau.shuju.math.Tensor1D;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ public class IntelliHeader extends CompositeHeader {
             final String v1 = this.getCell().getValue();
             this.name = this.getTable().getClassifier().getStopWordList().removeStopWords(v1);
             if(this.name.isEmpty()) {
-                final Vector v = this.getEntityVector();
+                final Tensor1D v = this.getEntityVector();
                 if(v.sparsity() < 1.0f) {
                     this.name = this.getTable().getClassifier().getEntityList().get(v.argmax());
                 } else {
@@ -123,7 +123,7 @@ public class IntelliHeader extends CompositeHeader {
             }
         }
 
-        Vector label = this.getTable().getClassifier().getTagList().word2vec(tagValue);
+        Tensor1D label = this.getTable().getClassifier().getTagList().word2vec(tagValue);
         return new DataRow().addFeature(this.buildFeature(true)).setLabel(label);
     }
 
@@ -153,22 +153,22 @@ public class IntelliHeader extends CompositeHeader {
         this.nextSibbling = other;
     }
 
-    private Vector getEntityVector() {
+    private Tensor1D getEntityVector() {
         if (this.entityVector == null) {
             this.entityVector = this.buildEntityVector();
         }
         return this.entityVector;
     }
 
-    private Vector getWordVector() {
+    private Tensor1D getWordVector() {
         if (this.wordVector == null) {
             this.wordVector = this.buildWordVector();
         }
         return this.wordVector;
     }
 
-    private Vector getConflictVector(boolean checkForConflicts) {
-        final Vector result = new Vector(this.getTable().getClassifier().getWordList().getVectorSize());
+    private Tensor1D getConflictVector(boolean checkForConflicts) {
+        final Tensor1D result = new Tensor1D(this.getTable().getClassifier().getWordList().getVectorSize());
 
         if(!checkForConflicts) {
             return result;
@@ -186,8 +186,8 @@ public class IntelliHeader extends CompositeHeader {
         return result.constrain(0, 1);
     }
 
-    private Vector buildEntityVector() {
-        final Vector result = new Vector(this.getTable().getClassifier().getEntityList().getVectorSize());
+    private Tensor1D buildEntityVector() {
+        final Tensor1D result = new Tensor1D(this.getTable().getClassifier().getEntityList().getVectorSize());
 
         int n = 0;
         for (int i = 0; i < Math.min(this.getTable().getNumberOfRows(),
@@ -211,7 +211,7 @@ public class IntelliHeader extends CompositeHeader {
         return result;
     }
 
-    private Vector buildWordVector() {
+    private Tensor1D buildWordVector() {
         return this.getTable().getClassifier().getWordList().word2vec(this.getName());
     }
 
@@ -219,10 +219,10 @@ public class IntelliHeader extends CompositeHeader {
         this.getTable().getClassifier().getWordList().add(this.getName());
     }
 
-    private Vector buildFeature(boolean checkForConflicts) {
-        final Vector entity2vec = this.getEntityVector();
-        final Vector word2vec = this.getWordVector();
-        final Vector conflict2vec = this.getConflictVector(checkForConflicts);
+    private Tensor1D buildFeature(boolean checkForConflicts) {
+        final Tensor1D entity2vec = this.getEntityVector();
+        final Tensor1D word2vec = this.getWordVector();
+        final Tensor1D conflict2vec = this.getConflictVector(checkForConflicts);
         return entity2vec.concat(word2vec).concat(conflict2vec);
     }
 
@@ -243,8 +243,8 @@ public class IntelliHeader extends CompositeHeader {
     }
 
     private String name;
-    private Vector entityVector;
-    private Vector wordVector;
+    private Tensor1D entityVector;
+    private Tensor1D wordVector;
     private HeaderTag tag;
     private IntelliHeader nextSibbling;
     private boolean isMeta;

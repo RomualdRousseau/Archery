@@ -1,25 +1,25 @@
 package com.github.romualdrousseau.any2json;
 
 import com.github.romualdrousseau.shuju.DataRow;
-import com.github.romualdrousseau.shuju.math.Vector;
+import com.github.romualdrousseau.shuju.math.Tensor1D;
 
 public class TableMeta implements IHeader {
-    public Vector getWordVector() {
+    public Tensor1D getWordVector() {
         if (this.classifier != null && this.wordVector == null) {
             this.wordVector = this.classifier.getWordList().word2vec(this.getCleanName());
         }
         return this.wordVector;
     }
 
-    public Vector getEntityVector() {
+    public Tensor1D getEntityVector() {
         if (this.classifier != null && this.entityVector == null) {
             this.entityVector = this.entity2vec();
         }
         return this.entityVector;
     }
 
-    public Vector getConflictVector(boolean checkForConflicts) {
-        return new Vector(this.classifier.getWordList().getVectorSize());
+    public Tensor1D getConflictVector(boolean checkForConflicts) {
+        return new Tensor1D(this.classifier.getWordList().getVectorSize());
     }
 
     public String getName() {
@@ -120,21 +120,21 @@ public class TableMeta implements IHeader {
         return this.next;
     }
 
-    private Vector buildFeature() {
-        final Vector entity2vec = this.getEntityVector();
-        final Vector word2vec = this.getWordVector();
-        final Vector conflict2vec = this.getConflictVector(false);
+    private Tensor1D buildFeature() {
+        final Tensor1D entity2vec = this.getEntityVector();
+        final Tensor1D word2vec = this.getWordVector();
+        final Tensor1D conflict2vec = this.getConflictVector(false);
         return entity2vec.concat(word2vec).concat(conflict2vec);
     }
 
-    private Vector entity2vec() {
+    private Tensor1D entity2vec() {
         return this.classifier.getEntityList().word2vec(getName());
     }
 
     private String name;
     private String cleanName;
-    private Vector wordVector;
-    private Vector entityVector;
+    private Tensor1D wordVector;
+    private Tensor1D entityVector;
     private int columnIndex;
     private int numberOfCells;
     private ITagClassifier classifier;

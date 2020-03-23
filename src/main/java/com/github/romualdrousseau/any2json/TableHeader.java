@@ -7,24 +7,24 @@ import com.github.romualdrousseau.shuju.util.StringUtility;
 import org.apache.poi.ss.formula.eval.NotImplementedException;
 
 import com.github.romualdrousseau.shuju.DataRow;
-import com.github.romualdrousseau.shuju.math.Vector;
+import com.github.romualdrousseau.shuju.math.Tensor1D;
 
 public class TableHeader implements IHeader {
-    public Vector getWordVector() {
+    public Tensor1D getWordVector() {
         if (this.classifier != null && this.wordVector == null) {
             this.wordVector = this.classifier.getWordList().word2vec(this.getCleanName());
         }
         return this.wordVector;
     }
 
-    public Vector getEntityVector() {
+    public Tensor1D getEntityVector() {
         if (this.classifier != null && this.entityVector == null) {
             this.entityVector = this.entity2vec(DocumentFactory.DEFAULT_ENTITY_PROBABILITY);
         }
         return this.entityVector;
     }
 
-    public Vector getConflictVector(boolean checkForConflicts) {
+    public Tensor1D getConflictVector(boolean checkForConflicts) {
         TableHeader[] conflictingHeaders = checkForConflicts ? this.findConflictingHeaders() : null;
         return this.words2vec(conflictingHeaders);
     }
@@ -150,17 +150,17 @@ public class TableHeader implements IHeader {
         return this.next;
     }
 
-    private Vector buildFeature(boolean checkForConflicts) {
-        final Vector entity2vec = this.getEntityVector();
-        final Vector word2vec = this.getWordVector();
-        final Vector conflict2vec = this.getConflictVector(checkForConflicts);
+    private Tensor1D buildFeature(boolean checkForConflicts) {
+        final Tensor1D entity2vec = this.getEntityVector();
+        final Tensor1D word2vec = this.getWordVector();
+        final Tensor1D conflict2vec = this.getConflictVector(checkForConflicts);
         return entity2vec.concat(word2vec).concat(conflict2vec);
     }
 
-    private Vector buildFeature(IHeader[] conflicts) {
-        final Vector entity2vec = this.getEntityVector();
-        final Vector word2vec = this.getWordVector();
-        final Vector conflict2vec = this.words2vec(conflicts);
+    private Tensor1D buildFeature(IHeader[] conflicts) {
+        final Tensor1D entity2vec = this.getEntityVector();
+        final Tensor1D word2vec = this.getWordVector();
+        final Tensor1D conflict2vec = this.words2vec(conflicts);
         return entity2vec.concat(word2vec).concat(conflict2vec);
     }
 
@@ -181,8 +181,8 @@ public class TableHeader implements IHeader {
         }
     }
 
-    private Vector entity2vec(float p) {
-        Vector result = new Vector(this.classifier.getEntityList().getVectorSize());
+    private Tensor1D entity2vec(float p) {
+        Tensor1D result = new Tensor1D(this.classifier.getEntityList().getVectorSize());
 
         int n = 0;
         for (int i = 0; i < Math.min(this.table.getNumberOfRows(), this.classifier.getSampleCount()); i++) {
@@ -205,8 +205,8 @@ public class TableHeader implements IHeader {
         return result;
     }
 
-    private Vector words2vec(IHeader[] headers) {
-        Vector result = new Vector(classifier.getWordList().getVectorSize());
+    private Tensor1D words2vec(IHeader[] headers) {
+        Tensor1D result = new Tensor1D(classifier.getWordList().getVectorSize());
 
         if (headers == null) {
             return result;
@@ -221,8 +221,8 @@ public class TableHeader implements IHeader {
 
     private String name;
     private String cleanName;
-    private Vector wordVector;
-    private Vector entityVector;
+    private Tensor1D wordVector;
+    private Tensor1D entityVector;
     private int columnIndex;
     private int numberOfCells;
     private ITagClassifier classifier;

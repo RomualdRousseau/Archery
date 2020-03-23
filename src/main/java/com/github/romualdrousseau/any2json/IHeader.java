@@ -1,14 +1,14 @@
 package com.github.romualdrousseau.any2json;
 
 import com.github.romualdrousseau.shuju.DataRow;
-import com.github.romualdrousseau.shuju.math.Vector;
+import com.github.romualdrousseau.shuju.math.Tensor1D;
 
 public interface IHeader {
-    Vector getWordVector();
+    Tensor1D getWordVector();
 
-    Vector getEntityVector();
+    Tensor1D getEntityVector();
 
-    Vector getConflictVector(boolean checkForConflicts);
+    Tensor1D getConflictVector(boolean checkForConflicts);
 
     String getName();
 

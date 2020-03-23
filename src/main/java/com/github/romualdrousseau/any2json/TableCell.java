@@ -1,7 +1,7 @@
 package com.github.romualdrousseau.any2json;
 
 import com.github.romualdrousseau.shuju.util.StringUtility;
-import com.github.romualdrousseau.shuju.math.Vector;
+import com.github.romualdrousseau.shuju.math.Tensor1D;
 
 public class TableCell {
     public TableCell(IHeader header) {
@@ -28,7 +28,7 @@ public class TableCell {
         return this.cleanValue;
     }
 
-    public Vector getEntityVector() {
+    public Tensor1D getEntityVector() {
         if (this.classifier != null && this.entityVector == null) {
             this.entityVector = this.classifier.getEntityList().word2vec(this.getCleanValue());
         }
@@ -44,7 +44,7 @@ public class TableCell {
 
     private String value;
     private String cleanValue;
-    private Vector entityVector;
+    private Tensor1D entityVector;
     private IHeader header;
     private ITagClassifier classifier;
 }

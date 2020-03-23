@@ -26,7 +26,7 @@ import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
 import com.github.romualdrousseau.shuju.cv.SearchPoint;
 import com.github.romualdrousseau.shuju.cv.Template;
 import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.RectangleExtractor;
-import com.github.romualdrousseau.shuju.math.Vector;
+import com.github.romualdrousseau.shuju.math.Tensor1D;
 import com.github.romualdrousseau.shuju.util.FuzzyString;
 
 public abstract class IntelliSheet extends AbstractSheet implements RowTranslatable {
@@ -177,7 +177,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
                     hash += "s";
                     countEmptyCells++;
                 } else if (this.classifier != null) {
-                    Vector v = this.classifier.getEntityList().word2vec(value);
+                    Tensor1D v = this.classifier.getEntityList().word2vec(value);
                     if (v.sparsity() < 1.0f) {
                         hash += "e";
                     } else {

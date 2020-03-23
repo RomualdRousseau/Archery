@@ -3,7 +3,7 @@ package com.github.romualdrousseau.any2json.v2.intelli.header;
 import com.github.romualdrousseau.any2json.v2.DocumentFactory;
 import com.github.romualdrousseau.any2json.v2.base.BaseCell;
 import com.github.romualdrousseau.any2json.v2.base.BaseRow;
-import com.github.romualdrousseau.shuju.math.Vector;
+import com.github.romualdrousseau.shuju.math.Tensor1D;
 
 public class PivotValueHeader extends PivotKeyHeader {
 
@@ -18,7 +18,7 @@ public class PivotValueHeader extends PivotKeyHeader {
         }
 
         if (this.name == null) {
-            final Vector v = this.buildEntityVector();
+            final Tensor1D v = this.buildEntityVector();
             if(v.sparsity() < 1.0f) {
                 this.name = this.getTable().getClassifier().getEntityList().get(v.argmax());
             } else {
@@ -33,8 +33,8 @@ public class PivotValueHeader extends PivotKeyHeader {
         return new PivotValueHeader(this);
     }
 
-    public Vector buildEntityVector() {
-        final Vector result = new Vector(this.getTable().getClassifier().getEntityList().getVectorSize());
+    public Tensor1D buildEntityVector() {
+        final Tensor1D result = new Tensor1D(this.getTable().getClassifier().getEntityList().getVectorSize());
 
         int n = 0;
         for (int i = 0; i < Math.min(this.getTable().getNumberOfRows(),

@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import com.github.romualdrousseau.any2json.Table;
-import com.github.romualdrousseau.shuju.math.Vector;
+import com.github.romualdrousseau.shuju.math.Tensor1D;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 class TextTable extends Table {
@@ -120,7 +120,7 @@ class TextTable extends Table {
         for (int i = 0; i < separators.length; i++) {
             v[i] = sample.split(separators[i]).length;
         }
-        return separators[new Vector(v).argmax()];
+        return separators[new Tensor1D(v).argmax()];
     }
 
     // private void ensureRowsInMemory(int i) {
