@@ -14,6 +14,7 @@ import com.github.romualdrousseau.shuju.json.JSONArray;
 import com.github.romualdrousseau.shuju.json.JSONObject;
 import com.github.romualdrousseau.shuju.math.Scalar;
 import com.github.romualdrousseau.shuju.math.Tensor1D;
+import com.github.romualdrousseau.shuju.math.Tensor2D;
 import com.github.romualdrousseau.shuju.ml.nn.Layer;
 import com.github.romualdrousseau.shuju.ml.nn.Loss;
 import com.github.romualdrousseau.shuju.ml.nn.Model;
@@ -166,13 +167,13 @@ public class NGramNNClassifier implements ITagClassifier {
         this.optimizer.zeroGradients();
 
         for (DataRow data : dataset.rows()) {
-            Tensor1D input = data.featuresAsOneVector();
-            Tensor1D target = data.label();
+            Tensor2D input = new Tensor2D(data.featuresAsOneVector(), false);
+            Tensor2D target = new Tensor2D(data.label(), false);
 
             Layer output = this.model.model(input);
             Loss loss = this.criterion.loss(output, target);
 
-            if (output.detach().argmax(0, 0) != target.argmax()) {
+            if (output.detach().argmax(0, 0) != target.argmax(0, 0)) {
                 this.optimizer.minimize(loss);
             } else {
                 this.accuracy++;
@@ -248,10 +249,10 @@ public class NGramNNClassifier implements ITagClassifier {
     // }
 
     public String predict(DataRow row) {
-        Tensor1D input = row.featuresAsOneVector();
-        Tensor1D output = this.model.model(input).detachAsVector();
+        Tensor2D input = new Tensor2D(row.featuresAsOneVector(), false);
+        Tensor2D output = this.model.model(input).detach();
 
-        int tagIndex = output.argmax();
+        int tagIndex = output.argmax(0, 0);
         if (tagIndex >= this.tags.size()) {
             tagIndex = 0;
         }
