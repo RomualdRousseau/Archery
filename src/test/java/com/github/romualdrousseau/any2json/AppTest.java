@@ -20,7 +20,7 @@ public class AppTest {
     /**
      * Rigorous Test :-)
      */
-    @Test
+    //@Test
     public void testReadVariousDocuments() {
         IDocument document = null;
         ISheet sheet = null;
@@ -69,7 +69,7 @@ public class AppTest {
     /**
      * Test to read various documents, tgas the headers and check the first line
      */
-    @Test
+    //@Test
     public void testTagsVariousDocuments() {
         IDocument document = null;
         ISheet sheet = null;

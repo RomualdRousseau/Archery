@@ -348,11 +348,12 @@ public class NGramNNClassifier implements ITagClassifier {
         final int hiddenCount = inputCount / 2;
         final int outputCount = this.tags.getVectorSize();
 
-        this.model = new Model().add(new DenseBuilder().setInputUnits(inputCount).setUnits(hiddenCount).build())
-                .add(new BatchNormalizerBuilder().build())
-                .add(new ActivationBuilder().setActivation(new LeakyRelu()).build())
-                .add(new DenseBuilder().setInputUnits(hiddenCount).setUnits(outputCount).build())
-                .add(new ActivationBuilder().setActivation(new Softmax()).build());
+        this.model = new Model()
+                .add(new DenseBuilder().setInputUnits(inputCount).setUnits(hiddenCount))
+                .add(new BatchNormalizerBuilder())
+                .add(new ActivationBuilder().setActivation(new LeakyRelu()))
+                .add(new DenseBuilder().setUnits(outputCount))
+                .add(new ActivationBuilder().setActivation(new Softmax()));
 
         this.optimizer = new OptimizerAdamBuilder().build(this.model);
 
