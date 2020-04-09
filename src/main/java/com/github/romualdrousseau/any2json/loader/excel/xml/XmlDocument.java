@@ -1,0 +1,71 @@
+package com.github.romualdrousseau.any2json.loader.excel.xml;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import nl.fountain.xelem.excel.Workbook;
+import nl.fountain.xelem.excel.Worksheet;
+import nl.fountain.xelem.lex.ExcelReader;
+
+import com.github.romualdrousseau.any2json.Document;
+import com.github.romualdrousseau.any2json.Sheet;
+
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+public class XmlDocument implements Document {
+    public boolean open(File excelFile, String encoding) {
+        if (openWithEncoding(excelFile, "UTF-8")) {
+            return true;
+        } else if (encoding != null) {
+            return openWithEncoding(excelFile, encoding);
+        } else {
+            return false;
+        }
+    }
+
+    public void close() {
+        this.sheets.clear();
+    }
+
+    public int getNumberOfSheets() {
+        return this.sheets.size();
+    }
+
+    public Sheet getSheetAt(int i) {
+        return this.sheets.get(i);
+    }
+
+    private boolean openWithEncoding(File excelFile, String encoding) {
+        if (excelFile == null) {
+            throw new IllegalArgumentException();
+        }
+
+        try {
+            this.sheets.clear();
+
+            ExcelReader reader = new ExcelReader();
+            this.workbook = reader.getWorkbook(new InputSource(new FixBadEntityReader(
+                    new BufferedReader(new InputStreamReader(new FileInputStream(excelFile), encoding)))));
+
+            for (Worksheet sheet : this.workbook.getWorksheets()) {
+                this.sheets.add(new XmlSheet(sheet));
+            }
+
+            return this.sheets.size() > 0;
+
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            close();
+            return false;
+        }
+    }
+
+    private Workbook workbook = null;
+    private ArrayList<XmlSheet> sheets = new ArrayList<XmlSheet>();
+}

@@ -1,12 +1,9 @@
 package com.github.romualdrousseau.any2json.classifiers;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.ITagClassifier;
-import com.github.romualdrousseau.any2json.v2.layex.Layex;
-import com.github.romualdrousseau.any2json.v2.layex.LayexMatcher;
+import com.github.romualdrousseau.any2json.layex.Layex;
+import com.github.romualdrousseau.any2json.layex.LayexMatcher;
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.DataSet;
 import com.github.romualdrousseau.shuju.json.JSON;
@@ -22,14 +19,17 @@ import com.github.romualdrousseau.shuju.ml.nn.Optimizer;
 import com.github.romualdrousseau.shuju.ml.nn.activation.LeakyRelu;
 import com.github.romualdrousseau.shuju.ml.nn.activation.Softmax;
 import com.github.romualdrousseau.shuju.ml.nn.layer.builder.ActivationBuilder;
-import com.github.romualdrousseau.shuju.ml.nn.layer.builder.DenseBuilder;
 import com.github.romualdrousseau.shuju.ml.nn.layer.builder.BatchNormalizerBuilder;
+import com.github.romualdrousseau.shuju.ml.nn.layer.builder.DenseBuilder;
 import com.github.romualdrousseau.shuju.ml.nn.loss.SoftmaxCrossEntropy;
 import com.github.romualdrousseau.shuju.ml.nn.optimizer.builder.OptimizerAdamBuilder;
 import com.github.romualdrousseau.shuju.nlp.NgramList;
 import com.github.romualdrousseau.shuju.nlp.RegexList;
 import com.github.romualdrousseau.shuju.nlp.StopWordList;
 import com.github.romualdrousseau.shuju.nlp.StringList;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class NGramNNClassifier implements ITagClassifier {
     private NgramList ngrams;
@@ -56,7 +56,7 @@ public class NGramNNClassifier implements ITagClassifier {
     }
 
     public NGramNNClassifier(NgramList ngrams, RegexList entities, StopWordList stopwords, StringList tags,
-            String[] requiredTags) {
+                             String[] requiredTags) {
         this.accuracy = 0.0f;
         this.mean = 1.0f;
         this.ngrams = ngrams;

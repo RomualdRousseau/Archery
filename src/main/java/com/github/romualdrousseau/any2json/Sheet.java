@@ -1,38 +1,14 @@
 package com.github.romualdrousseau.any2json;
 
-import java.util.List;
+import com.github.romualdrousseau.any2json.ITagClassifier;
 
-import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
+public interface Sheet {
 
-import org.apache.poi.ss.formula.eval.NotImplementedException;
+    String getName();
 
-public abstract class Sheet implements ISheet {
-    public ISearchBitmap getSearchBitmap(int headerColumns, int headerRows) {
-        throw new NotImplementedException("Not implemented");
-    }
+    Table getTable();
 
-    public ITable findTableWithIntelliTag(ITagClassifier classifier) {
-        List<ITable> tables = this.findTables(classifier.getSampleCount(), classifier.getSampleCount());
-        ITable table = null;
+    Table getTable(ITagClassifier classifier);
 
-        if (tables.size() == 0) {
-            table = getTable();
-            if(table != null) {
-                table.enableIntelliTable(true);
-                table.updateHeaderTags(classifier, false);
-            }
-        }
-        else if (tables.size() == 1 && !tables.get(0).isMetaTableEnabled()) {
-            table = tables.get(0);
-            table.updateHeaderTags(classifier, false);
-        } else {
-            table = new IntelliTable(this, tables, classifier);
-            if(table.getNumberOfRows() == 0) {
-                table = findTable(classifier.getSampleCount(), classifier.getSampleCount());
-                table.updateHeaderTags(classifier, false);
-            }
-        }
-
-        return table;
-    }
+    void addSheetListener(SheetListener listener);
 }
