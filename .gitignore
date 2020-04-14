@@ -8,6 +8,7 @@
 *.geany
 *.sublime-project
 *.sublime-workspace
+.vscode
 
 target/
 pom.xml.tag
