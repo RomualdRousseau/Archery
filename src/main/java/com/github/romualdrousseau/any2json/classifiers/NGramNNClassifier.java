@@ -23,7 +23,7 @@ import com.github.romualdrousseau.shuju.ml.nn.activation.LeakyRelu;
 import com.github.romualdrousseau.shuju.ml.nn.activation.Softmax;
 import com.github.romualdrousseau.shuju.ml.nn.layer.builder.ActivationBuilder;
 import com.github.romualdrousseau.shuju.ml.nn.layer.builder.DenseBuilder;
-import com.github.romualdrousseau.shuju.ml.nn.layer.builder.BatchNormalizerBuilder;
+//import com.github.romualdrousseau.shuju.ml.nn.layer.builder.BatchNormalizerBuilder;
 import com.github.romualdrousseau.shuju.ml.nn.loss.SoftmaxCrossEntropy;
 import com.github.romualdrousseau.shuju.ml.nn.optimizer.builder.OptimizerAdamBuilder;
 import com.github.romualdrousseau.shuju.nlp.NgramList;
@@ -350,8 +350,8 @@ public class NGramNNClassifier implements ITagClassifier {
 
         this.model = new Model()
                 .add(new DenseBuilder().setInputUnits(inputCount).setUnits(hiddenCount))
-                .add(new BatchNormalizerBuilder())
                 .add(new ActivationBuilder().setActivation(new LeakyRelu()))
+                //.add(new BatchNormalizerBuilder())
                 .add(new DenseBuilder().setUnits(outputCount))
                 .add(new ActivationBuilder().setActivation(new Softmax()));
 
