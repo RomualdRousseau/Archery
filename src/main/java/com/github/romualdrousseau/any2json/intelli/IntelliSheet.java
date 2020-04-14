@@ -9,6 +9,7 @@ import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.base.AbstractSheet;
 import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.base.SheetBitmap;
+import com.github.romualdrousseau.any2json.base.SimpleTable;
 import com.github.romualdrousseau.any2json.intelli.event.AllTablesExtractedEvent;
 import com.github.romualdrousseau.any2json.intelli.event.BitmapGeneratedEvent;
 import com.github.romualdrousseau.any2json.intelli.event.DataTableListBuiltEvent;
@@ -37,9 +38,15 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
 
     @Override
     public Table getTable(final ITagClassifier classifier) {
-        assert (classifier != null) : "classifier can't be null with a Intelli type Sheet";
-        if (this.getLastRowNum() < 0) {
+        if (this.getLastColumnNum(0) < 0 || this.getLastRowNum() < 0) {
             return null;
+        }
+
+        if(classifier == null) {
+            this.notifyStepCompleted(new BitmapGeneratedEvent(this, null));
+            final Table table = new SimpleTable(this, 0, 0, this.getLastColumnNum(0), this.getLastRowNum());
+            this.notifyStepCompleted(new IntelliTableReadyEvent(this, table));
+            return table;
         }
 
         this.classifier = classifier;

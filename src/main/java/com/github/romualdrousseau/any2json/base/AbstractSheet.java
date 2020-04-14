@@ -38,34 +38,35 @@ public abstract class AbstractSheet implements Sheet {
 
     @Override
     public Table getTable(final ITagClassifier classifier) {
-        Table result = null;
-        final int lastColumnNum = this.getLastColumnNum(0);
-        final int lastRowNum = this.getLastRowNum();
-        if (lastColumnNum >= 0 && lastRowNum >= 0) {
-            this.notifyStepCompleted(new BitmapGeneratedEvent(this, null));
-
-            if(classifier == null) {
-                result = new SimpleTable(this, 0, 0, lastColumnNum, lastRowNum);
-                this.notifyStepCompleted(new IntelliTableReadyEvent(this, result));
-            } else {
-                LinkedList<CompositeTable> tables = new  LinkedList<CompositeTable>();
-                tables.add(new CompositeTable(this, 0, 0, lastColumnNum, lastRowNum, classifier));
-                this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables));
-
-                LinkedList<DataTable> dataTables = new  LinkedList<DataTable>();
-                dataTables.add(new DataTable(tables.getFirst()));
-                this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables));
-
-                TableGraph root = new TableGraph();
-                root.addChild(new TableGraph(dataTables.getFirst()));
-                this.notifyStepCompleted(new TableGraphBuiltEvent(this, root));
-
-                result = new IntelliTable(root, classifier);
-                this.notifyStepCompleted(new IntelliTableReadyEvent(this, result));
-            }
+        if (this.getLastColumnNum(0) < 0 || this.getLastRowNum() < 0) {
+            return null;
         }
 
-        return result;
+        if(classifier == null) {
+            this.notifyStepCompleted(new BitmapGeneratedEvent(this, null));
+            Table table = new SimpleTable(this, 0, 0, this.getLastColumnNum(0), this.getLastRowNum());
+            this.notifyStepCompleted(new IntelliTableReadyEvent(this, table));
+            return table;
+        }
+
+        this.notifyStepCompleted(new BitmapGeneratedEvent(this, null));
+
+        LinkedList<CompositeTable> tables = new  LinkedList<CompositeTable>();
+        tables.add(new CompositeTable(this, 0, 0, this.getLastColumnNum(0), this.getLastRowNum(), classifier));
+        this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables));
+
+        LinkedList<DataTable> dataTables = new  LinkedList<DataTable>();
+        dataTables.add(new DataTable(tables.getFirst()));
+        this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables));
+
+        TableGraph root = new TableGraph();
+        root.addChild(new TableGraph(dataTables.getFirst()));
+        this.notifyStepCompleted(new TableGraphBuiltEvent(this, root));
+
+        Table table = new IntelliTable(root, classifier);
+        this.notifyStepCompleted(new IntelliTableReadyEvent(this, table));
+
+        return table;
     }
 
     @Override

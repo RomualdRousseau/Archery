@@ -29,19 +29,16 @@ public class DocumentFactory {
             throw new IllegalArgumentException();
         }
 
-        System.out.println("xlsx document");
         Document document = new XlsxDocument();
 		if(document.open(file, encoding)) {
 			return document;
         }
 
-        System.out.println("xls document");
         document = new XlsDocument();
 		if(document.open(file, encoding)) {
 			return document;
         }
 
-        System.out.println("xml document");
         document = new XmlDocument();
 		if(document.open(file, encoding)) {
 			return document;
@@ -52,7 +49,6 @@ public class DocumentFactory {
 		// 	return document;
 		// }
 
-        System.out.println("text document");
         document = new TextDocument();
 		if(document.open(file, encoding)) {
 			return document;

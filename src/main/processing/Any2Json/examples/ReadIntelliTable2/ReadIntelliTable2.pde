@@ -3,12 +3,12 @@ import com.github.romualdrousseau.shuju.json.*;
 import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.classifiers.*;
 
-import com.github.romualdrousseau.any2json.v2.*;
-import com.github.romualdrousseau.any2json.v2.base.*;
-import com.github.romualdrousseau.any2json.v2.intelli.*;
-import com.github.romualdrousseau.any2json.v2.intelli.event.*;
-import com.github.romualdrousseau.any2json.v2.intelli.header.*;
-import com.github.romualdrousseau.any2json.v2.layex.*;
+import com.github.romualdrousseau.any2json.*;
+import com.github.romualdrousseau.any2json.base.*;
+import com.github.romualdrousseau.any2json.intelli.*;
+import com.github.romualdrousseau.any2json.intelli.event.*;
+import com.github.romualdrousseau.any2json.intelli.header.*;
+import com.github.romualdrousseau.any2json.layex.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,7 +42,7 @@ void configure() {
   classifier = new NGramNNClassifier(JSON.loadJSONObject(dataPath("brainColumnClassifier.json")), metaLayexes, dataLayexes);
   //classifier = new NGramNNClassifier(JSON.loadJSONObject(dataPath("brainColumnClassifier.json")));
 
-  scrollSpeed = 100; // 100px per scroll  
+  scrollSpeed = 100; // 100px per scroll
 
   gridSize = 10; // 10px
 }
@@ -107,10 +107,10 @@ void loadDocument(String filePath) {
   try {
     tempFile = File.createTempFile("temp", null);
     tempFile.deleteOnExit();
-    Path oldFile = Paths.get(filePath);  
+    Path oldFile = Paths.get(filePath);
     Path newFile = tempFile.toPath();
     Files.copy(oldFile, newFile, StandardCopyOption.REPLACE_EXISTING);
-  } 
+  }
   catch (IOException e) {
     e.printStackTrace();
   }
@@ -129,7 +129,7 @@ void loadDocument(String filePath) {
   }
   );
 
-  com.github.romualdrousseau.any2json.v2.Table table = sheet.getTable(classifier);
+  com.github.romualdrousseau.any2json.Table table = sheet.getTable(classifier);
   println("Tables loaded.");
   println("done.");
 
@@ -183,7 +183,7 @@ void buildImage(SheetEvent e) {
       }
     }
 
-    documentImage.endDraw();  
+    documentImage.endDraw();
     println("Image generated.");
   }
 
