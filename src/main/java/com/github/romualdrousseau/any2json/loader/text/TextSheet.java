@@ -2,10 +2,10 @@ package com.github.romualdrousseau.any2json.loader.text;
 
 import java.util.List;
 
-import com.github.romualdrousseau.any2json.base.AbstractSheet;
+import com.github.romualdrousseau.any2json.simple.SimpleSheet;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
-class TextSheet extends AbstractSheet {
+class TextSheet extends SimpleSheet {
 
     public TextSheet(String name, List<String[]> rows) {
         this.name = name;
@@ -31,6 +31,11 @@ class TextSheet extends AbstractSheet {
     public boolean hasCellDataAt(int colIndex, int rowIndex) {
         String cell = this.getCellAt(colIndex, rowIndex);
         return cell != null && !cell.isEmpty();
+    }
+
+    @Override
+    public boolean hasCellDecorationAt(int colIndex, int rowIndex) {
+        return false;
     }
 
     @Override

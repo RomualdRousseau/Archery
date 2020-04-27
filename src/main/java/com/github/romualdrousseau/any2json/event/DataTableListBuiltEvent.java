@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.any2json.intelli.event;
+package com.github.romualdrousseau.any2json.event;
 
 import java.util.List;
 

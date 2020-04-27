@@ -9,13 +9,11 @@ import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.base.AbstractSheet;
 import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.base.SheetBitmap;
-import com.github.romualdrousseau.any2json.base.SimpleTable;
-import com.github.romualdrousseau.any2json.intelli.event.AllTablesExtractedEvent;
-import com.github.romualdrousseau.any2json.intelli.event.BitmapGeneratedEvent;
-import com.github.romualdrousseau.any2json.intelli.event.DataTableListBuiltEvent;
-import com.github.romualdrousseau.any2json.intelli.event.IntelliTableReadyEvent;
-import com.github.romualdrousseau.any2json.intelli.event.MetaTableListBuiltEvent;
-import com.github.romualdrousseau.any2json.intelli.event.TableGraphBuiltEvent;
+import com.github.romualdrousseau.any2json.event.AllTablesExtractedEvent;
+import com.github.romualdrousseau.any2json.event.BitmapGeneratedEvent;
+import com.github.romualdrousseau.any2json.event.DataTableListBuiltEvent;
+import com.github.romualdrousseau.any2json.event.MetaTableListBuiltEvent;
+import com.github.romualdrousseau.any2json.event.TableGraphBuiltEvent;
 import com.github.romualdrousseau.any2json.layex.LayexMatcher;
 import com.github.romualdrousseau.any2json.util.RowTranslatable;
 import com.github.romualdrousseau.any2json.util.RowTranslator;
@@ -37,20 +35,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
     }
 
     @Override
-    public Table getTable(final ITagClassifier classifier) {
-        if (this.getLastColumnNum(0) < 0 || this.getLastRowNum() < 0) {
-            return null;
-        }
-
-        if(classifier == null) {
-            this.notifyStepCompleted(new BitmapGeneratedEvent(this, null));
-            final Table table = new SimpleTable(this, 0, 0, this.getLastColumnNum(0), this.getLastRowNum());
-            this.notifyStepCompleted(new IntelliTableReadyEvent(this, table));
-            return table;
-        }
-
-        this.classifier = classifier;
-
+    public Table createIntelliTable() {
         final SheetBitmap image = new SheetBitmap(this, classifier.getSampleCount(), this.getLastRowNum() + 1);
         if (!this.notifyStepCompleted(new BitmapGeneratedEvent(this, image))) {
             return null;
@@ -80,10 +65,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
             return null;
         }
 
-        Table table = new IntelliTable(root, classifier);
-        this.notifyStepCompleted(new IntelliTableReadyEvent(this, table));
-
-        return table;
+        return new IntelliTable(root, this.classifier);
     }
 
     @Override
@@ -110,6 +92,18 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
             return false;
         }
         return this.hasInternalCellDataAt(colIndex, translatedRow);
+    }
+
+    @Override
+    public boolean hasCellDecorationAt(final int colIndex, final int rowIndex) {
+        final int translatedRow = this.rowTranslator.translate(rowIndex);
+        if (translatedRow < 0 || translatedRow > this.getInternalLastRowNum()) {
+            return false;
+        }
+        if (colIndex < 0 || colIndex > this.getInternalLastColumnNum(translatedRow)) {
+            return false;
+        }
+        return this.hasInternalCellDecorationAt(colIndex, translatedRow);
     }
 
     @Override
@@ -165,6 +159,8 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
     protected abstract int getInternalLastRowNum();
 
     protected abstract boolean hasInternalCellDataAt(int colIndex, int rowIndex);
+
+    protected abstract boolean hasInternalCellDecorationAt(int colIndex, int rowIndex);
 
     protected abstract String getInternalCellDataAt(int colIndex, int rowIndex);
 

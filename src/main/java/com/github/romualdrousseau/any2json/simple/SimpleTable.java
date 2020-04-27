@@ -1,7 +1,10 @@
-package com.github.romualdrousseau.any2json.base;
+package com.github.romualdrousseau.any2json.simple;
 
 import com.github.romualdrousseau.any2json.Cell;
 import com.github.romualdrousseau.any2json.Header;
+import com.github.romualdrousseau.any2json.base.AbstractSheet;
+import com.github.romualdrousseau.any2json.base.AbstractTable;
+import com.github.romualdrousseau.any2json.base.BaseCell;
 
 public class SimpleTable extends AbstractTable {
 

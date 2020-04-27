@@ -5,7 +5,16 @@ public class XlsxCell {
     public static final XlsxCell Empty = new XlsxCell();
 
     public XlsxCell() {
+        this.decorated = false;
         this.value = null;
+    }
+
+    public boolean isDecorated() {
+        return this.decorated;
+    }
+
+    public void setDecorated(boolean decorated) {
+        this.decorated = decorated;
     }
 
     public String getValue() {
@@ -17,4 +26,5 @@ public class XlsxCell {
     }
 
     private String value;
+    private boolean decorated;
 }

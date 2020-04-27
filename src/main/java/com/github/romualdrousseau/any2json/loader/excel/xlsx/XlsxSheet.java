@@ -82,6 +82,12 @@ public class XlsxSheet extends IntelliSheet {
     }
 
     @Override
+    protected boolean hasInternalCellDecorationAt(int colIndex, int rowIndex) {
+        final XlsxRow row = this.rows.get(rowIndex);
+        return row.cells().get(colIndex).isDecorated();
+    }
+
+    @Override
     protected String getInternalCellDataAt(int colIndex, int rowIndex) {
         final XlsxRow row = this.rows.get(rowIndex);
         return row.cells().get(colIndex).getValue();
@@ -163,6 +169,7 @@ public class XlsxSheet extends IntelliSheet {
                 XlsxCell cell = XlsxCell.Empty;
                 if (this.processCellData(this.currCell)) {
                     cell = new XlsxCell();
+                    cell.setDecorated(this.currCell.decorated);
                     cell.setValue(this.currCell.value);
                 }
                 this.row.addCell(cell);
@@ -256,7 +263,9 @@ public class XlsxSheet extends IntelliSheet {
                 cell.value = "";
             }
 
-            return this.hasData(cell);
+            cell.decorated = hasDecoration(cell);
+
+            return this.hasData(cell) || cell.decorated;
         }
 
         private boolean hasData(final Cell cell) {
@@ -293,11 +302,42 @@ public class XlsxSheet extends IntelliSheet {
             return false;
         }
 
+        private boolean hasDecoration(final Cell cell) {
+            if (cell.style == null) {
+                return false;
+            }
+
+            // Keep cell with borders
+            if (!cell.style.getBorderLeft().equals(BorderStyle.NONE)
+                    && !cell.style.getBorderRight().equals(BorderStyle.NONE)
+                    && !cell.style.getBorderTop().equals(BorderStyle.NONE)
+                    && !cell.style.getBorderBottom().equals(BorderStyle.NONE)) {
+                return true;
+            }
+
+            // Keep cell with a colored (not automatic and not white) pattern
+            final XSSFColor bkcolor = (XSSFColor) cell.style.getFillBackgroundColorColor();
+            if (bkcolor != null && bkcolor.getIndexed() != IndexedColors.AUTOMATIC.index
+                    && (bkcolor.getARGBHex() == null || !bkcolor.getARGBHex().equals("FFFFFFFF"))) {
+                return true;
+            }
+
+            // Keep cell with a colored (not automatic and not white) background
+            final XSSFColor fgcolor = (XSSFColor) cell.style.getFillForegroundColorColor();
+            if (fgcolor != null && fgcolor.getIndexed() != IndexedColors.AUTOMATIC.index
+                    && (fgcolor.getARGBHex() == null || !fgcolor.getARGBHex().equals("FFFFFFFF"))) {
+                return true;
+            }
+
+            return false;
+        }
+
         private class Cell {
             CellAddress address;
             CellType type;
             CellStyle style;
             String value;
+            boolean decorated;
         }
 
         private XlsxRow row;

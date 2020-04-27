@@ -36,6 +36,11 @@ class XmlSheet extends IntelliSheet {
     }
 
     @Override
+    protected boolean hasInternalCellDecorationAt(int colIndex, int rowIndex) {
+        return false;
+    }
+
+    @Override
     protected String getInternalCellDataAt(int colIndex, int rowIndex) {
         Cell cell = this.sheet.getCellAt(rowIndex + 1, colIndex + 1);
         return cell.hasData() ? StringUtility.cleanToken(cell.getData$()) : null;

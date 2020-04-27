@@ -1,12 +1,12 @@
-package com.github.romualdrousseau.any2json.intelli.event;
+package com.github.romualdrousseau.any2json.event;
 
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.SheetEvent;
 import com.github.romualdrousseau.any2json.Table;
 
-public class IntelliTableReadyEvent extends SheetEvent {
+public class TableReadyEvent extends SheetEvent {
 
-    public IntelliTableReadyEvent(final Sheet source, final Table table) {
+    public TableReadyEvent(final Sheet source, final Table table) {
         super(source);
         this.table = table;
     }

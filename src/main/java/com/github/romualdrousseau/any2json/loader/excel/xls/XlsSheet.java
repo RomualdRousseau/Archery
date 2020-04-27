@@ -57,7 +57,17 @@ public class XlsSheet extends IntelliSheet {
             return false;
         }
         final Cell cell = row.getCell(colIndex);
-        return this.hasData(cell);
+        return this.hasData(cell) || this.hasDecoration(cell);
+    }
+
+    @Override
+    protected boolean hasInternalCellDecorationAt(int colIndex, int rowIndex) {
+        final Row row = this.sheet.getRow(rowIndex);
+        if (row == null) {
+            return false;
+        }
+        final Cell cell = row.getCell(colIndex);
+        return this.hasDecoration(cell);
     }
 
     @Override
@@ -67,7 +77,7 @@ public class XlsSheet extends IntelliSheet {
             return null;
         }
         final Cell cell = row.getCell(colIndex);
-        return this.hasData(cell) ? StringUtility.cleanToken(this.getData(cell)) : null;
+        return this.hasData(cell) || this.hasDecoration(cell) ? StringUtility.cleanToken(this.getData(cell)) : null;
     }
 
     @Override
@@ -115,6 +125,14 @@ public class XlsSheet extends IntelliSheet {
 
         if (!type.equals(CellType.BLANK) && !(type.equals(CellType.STRING) && cell.getStringCellValue().isEmpty())) {
             return true;
+        }
+
+        return false;
+    }
+
+    private boolean hasDecoration(Cell cell) {
+        if (cell == null) {
+            return false;
         }
 
         final CellStyle style = cell.getCellStyle();
