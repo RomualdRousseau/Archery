@@ -1,15 +1,4 @@
-# IDEs and editors
-/.idea
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.geany
-*.sublime-project
-*.sublime-workspace
-.vscode
-
+# compiled output
 target/
 pom.xml.tag
 pom.xml.releaseBackup
@@ -22,3 +11,15 @@ buildNumber.properties
 
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
 !/.mvn/wrapper/maven-wrapper.jar
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.geany
+*.sublime-project
+*.sublime-workspace
+.vscode
