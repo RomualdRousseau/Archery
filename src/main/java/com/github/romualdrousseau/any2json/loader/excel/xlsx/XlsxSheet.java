@@ -5,6 +5,9 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
+
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
 import com.github.romualdrousseau.shuju.util.StringUtility;
@@ -25,7 +28,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 public class XlsxSheet extends IntelliSheet {
 
@@ -42,12 +44,13 @@ public class XlsxSheet extends IntelliSheet {
             return this;
         }
         try {
-            final XMLReader parser = XMLReaderFactory.createXMLReader();
+            SAXParserFactory parserFactory = SAXParserFactory.newInstance();
+            XMLReader parser = parserFactory.newSAXParser().getXMLReader();
             parser.setContentHandler(new ContentHandler());
             parser.parse(new InputSource(this.sheetData));
             return this;
 
-        } catch (SAXException | IOException e) {
+        } catch (SAXException | IOException | ParserConfigurationException e) {
             e.printStackTrace();
             return this;
 
