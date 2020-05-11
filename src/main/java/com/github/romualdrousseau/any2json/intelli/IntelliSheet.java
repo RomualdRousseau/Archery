@@ -36,17 +36,17 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
 
     @Override
     public Table createIntelliTable() {
-        final SheetBitmap image = new SheetBitmap(this, classifier.getSampleCount(), this.getLastRowNum() + 1);
+        final SheetBitmap image = new SheetBitmap(this, this.classifier.getSampleCount(), this.getLastRowNum() + 1);
         if (!this.notifyStepCompleted(new BitmapGeneratedEvent(this, image))) {
             return null;
         }
 
-        final List<CompositeTable> tables = this.findAllTables(classifier, image);
+        final List<CompositeTable> tables = this.findAllTables(this.classifier, image);
         if (!this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables))) {
             return null;
         }
 
-        final List<DataTable> dataTables = this.getDataTables(tables, classifier.getDataLayexes());
+        final List<DataTable> dataTables = this.getDataTables(tables, this.classifier.getDataLayexes());
         if (!this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables))) {
             return null;
         }
@@ -55,7 +55,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
             return null;
         }
 
-        final List<MetaTable> metaTables = this.getMetaTables(tables, classifier.getMetaLayexes());
+        final List<MetaTable> metaTables = this.getMetaTables(tables, this.classifier.getMetaLayexes());
         if (!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
             return null;
         }
@@ -457,5 +457,4 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
     }
 
     private RowTranslator rowTranslator;
-    private ITagClassifier classifier;
 }
