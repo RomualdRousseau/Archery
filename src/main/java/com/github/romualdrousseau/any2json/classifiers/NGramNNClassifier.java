@@ -170,7 +170,7 @@ public class NGramNNClassifier implements ITagClassifier {
             Tensor2D input = new Tensor2D(data.featuresAsOneVector(), false);
             Tensor2D target = new Tensor2D(data.label(), false);
 
-            Layer output = this.model.model(input);
+            Layer output = this.model.model(input, true);
             Loss loss = this.criterion.loss(output, target);
 
             this.mean += loss.getValue().flatten(0, 0);
