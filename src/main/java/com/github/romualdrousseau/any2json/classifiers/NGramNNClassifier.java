@@ -19,8 +19,8 @@ import com.github.romualdrousseau.shuju.ml.nn.Optimizer;
 import com.github.romualdrousseau.shuju.ml.nn.activation.LeakyRelu;
 import com.github.romualdrousseau.shuju.ml.nn.activation.Softmax;
 import com.github.romualdrousseau.shuju.ml.nn.layer.builder.ActivationBuilder;
+import com.github.romualdrousseau.shuju.ml.nn.layer.builder.BatchNormalizerBuilder;
 import com.github.romualdrousseau.shuju.ml.nn.layer.builder.DenseBuilder;
-//import com.github.romualdrousseau.shuju.ml.nn.layer.builder.BatchNormalizerBuilder;
 import com.github.romualdrousseau.shuju.ml.nn.loss.SoftmaxCrossEntropy;
 import com.github.romualdrousseau.shuju.ml.nn.optimizer.builder.OptimizerAdamBuilder;
 import com.github.romualdrousseau.shuju.nlp.NgramList;
@@ -173,16 +173,12 @@ public class NGramNNClassifier implements ITagClassifier {
             Layer output = this.model.model(input);
             Loss loss = this.criterion.loss(output, target);
 
-            if (output.detach().argmax(0, 0) != target.argmax(0, 0)) {
-                this.optimizer.minimize(loss);
-            } else {
+            this.mean += loss.getValue().flatten(0, 0);
+            if (output.detach().argmax(0, 0) == target.argmax(0, 0)) {
                 this.accuracy++;
             }
 
-            this.mean += loss.getValue().flatten(0, 0);
-            if (Float.isNaN(this.mean)) {
-                this.mean = total;
-            }
+            this.optimizer.minimize(loss);
         }
 
         this.optimizer.step();
@@ -190,63 +186,6 @@ public class NGramNNClassifier implements ITagClassifier {
         this.accuracy = this.accuracy / total;
         this.mean = Scalar.constrain(this.mean / total, 0, 1);
     }
-
-    // public void fit(DataSet dataset) {
-    // if (dataset.rows().size() == 0) {
-    // return;
-    // }
-
-    // final int total = dataset.shuffle().rows().size();
-    // final int nCount = Math.min(10, total);
-    // final int slice = total / nCount;
-
-    // this.accuracy = 0.0f;
-    // this.mean = 0.0f;
-
-    // for (int n = 0; n < nCount; n++) {
-    // int d1 = total - slice * (n + 1);
-    // int d2 = total - slice * n;
-    // DataSet trainingSet = dataset.subset(0, d1).join(dataset.subset(d2, total));
-    // DataSet testSet = dataset.subset(d1, d2);
-
-    // this.optimizer.zeroGradients();
-
-    // for (DataRow data : trainingSet.rows()) {
-    // Vector input = data.featuresAsOneVector();
-    // Vector target = data.label();
-
-    // Layer output = this.model.model(input);
-    // Loss loss = this.criterion.loss(output, target);
-
-    // if (output.detach().argmax(0) != target.argmax()) {
-    // loss.backward();
-    // }
-    // }
-
-    // this.optimizer.step();
-
-    // for (DataRow data : testSet.rows()) {
-    // Vector input = data.featuresAsOneVector();
-    // Vector target = data.label();
-
-    // Layer output = this.model.model(input);
-    // Loss loss = this.criterion.loss(output, target);
-
-    // if (output.detach().argmax(0) == target.argmax()) {
-    // this.accuracy++;
-    // }
-
-    // this.mean += loss.getValue().flatten(0);
-    // if (Float.isNaN(this.mean)) {
-    // this.mean = (float) (slice * nCount);
-    // }
-    // }
-    // }
-
-    // this.accuracy = Scalar.constrain(this.accuracy / (float) (slice * nCount), 0,
-    // 1);
-    // this.mean = Scalar.constrain(this.mean / (float) (slice * nCount), 0, 1);
-    // }
 
     public String predict(DataRow row) {
         Tensor2D input = new Tensor2D(row.featuresAsOneVector(), false);
@@ -351,7 +290,7 @@ public class NGramNNClassifier implements ITagClassifier {
         this.model = new Model()
                 .add(new DenseBuilder().setInputUnits(inputCount).setUnits(hiddenCount))
                 .add(new ActivationBuilder().setActivation(new LeakyRelu()))
-                //.add(new BatchNormalizerBuilder())
+                .add(new BatchNormalizerBuilder())
                 .add(new DenseBuilder().setUnits(outputCount))
                 .add(new ActivationBuilder().setActivation(new Softmax()));
 

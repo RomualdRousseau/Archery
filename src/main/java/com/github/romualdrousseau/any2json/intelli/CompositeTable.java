@@ -44,11 +44,7 @@ public class CompositeTable extends AbstractTable {
         }
 
         for (Header header : this.headers()) {
-            ((IntelliHeader) header).updateTag(false);
-        }
-
-        for (Header header : this.headers()) {
-            ((IntelliHeader) header).updateTag(true);
+            ((IntelliHeader) header).updateTag(this.findOtherHeaders(header));
         }
 
         for (Header header : this.headers()) {

@@ -1,6 +1,5 @@
 package com.github.romualdrousseau.any2json.simple;
 
-import com.github.romualdrousseau.any2json.Header;
 import com.github.romualdrousseau.any2json.HeaderTag;
 import com.github.romualdrousseau.any2json.base.AbstractHeader;
 import com.github.romualdrousseau.any2json.base.AbstractTable;
@@ -46,7 +45,7 @@ public class SimpleHeader extends AbstractHeader {
     }
 
     @Override
-    public DataRow buildTrainingRow(final String tagValue, final Header[] conflicts, final boolean ensureWordsExists) {
+    public DataRow buildTrainingRow(final String tagValue, final boolean ensureWordsExists) {
         return null;
     }
 

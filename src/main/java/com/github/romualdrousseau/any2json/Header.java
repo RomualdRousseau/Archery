@@ -18,6 +18,5 @@ public interface Header {
 
     String getEntityString();
 
-    DataRow buildTrainingRow(final String tagValue, final Header[] conflicts,
-            final boolean ensureWordsExists);
+    DataRow buildTrainingRow(final String tagValue, final boolean ensureWordsExists);
 }

@@ -1,13 +1,12 @@
 package com.github.romualdrousseau.any2json.intelli.header;
 
-import com.github.romualdrousseau.any2json.base.AbstractHeader;
 import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.math.Tensor1D;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.Header;
@@ -111,20 +110,24 @@ public class IntelliHeader extends CompositeHeader {
     }
 
     @Override
-    public DataRow buildTrainingRow(final String tagValue, final Header[] conflicts, final boolean ensureWordsExists) {
+    public DataRow buildTrainingRow(final String tagValue, final boolean ensureWordsExists) {
+        List<Header> others = this.getTable().findOtherHeaders(this);
+
         if (ensureWordsExists) {
             this.ensureWordExist();
             this.wordVector = null;
-            if (conflicts != null) {
-                for (final Header conflict : conflicts) {
-                    ((IntelliHeader) conflict).ensureWordExist();
-                    ((IntelliHeader) conflict).wordVector = null;
-                }
+            for (final Header other : others) {
+                ((IntelliHeader) other).ensureWordExist();
+                ((IntelliHeader) other).wordVector = null;
             }
         }
 
         Tensor1D label = this.getTable().getClassifier().getTagList().word2vec(tagValue);
-        return new DataRow().addFeature(this.buildFeature(true)).setLabel(label);
+        return new DataRow()
+            .addFeature(this.getEntityVector())
+            .addFeature(this.getWordVector())
+            .addFeature(this.getOthersVector(others))
+            .setLabel(label);
     }
 
     @Override
@@ -139,11 +142,14 @@ public class IntelliHeader extends CompositeHeader {
         this.nextSibbling = null;
     }
 
-    public void updateTag(final boolean checkForConflicts) {
+    public void updateTag(final List<Header> others) {
         if (StringUtility.isFastEmpty(this.getName())) {
             this.tag = HeaderTag.None;
         } else {
-            final DataRow data = new DataRow().addFeature(this.buildFeature(checkForConflicts));
+            final DataRow data = new DataRow()
+                .addFeature(this.getEntityVector())
+                .addFeature(this.getWordVector())
+                .addFeature(this.getOthersVector(others));
             final String tagValue = this.getTable().getClassifier().predict(data);
             this.tag = new HeaderTag(tagValue);
         }
@@ -167,20 +173,15 @@ public class IntelliHeader extends CompositeHeader {
         return this.wordVector;
     }
 
-    private Tensor1D getConflictVector(boolean checkForConflicts) {
+    private Tensor1D getOthersVector(final List<Header> others) {
         final Tensor1D result = new Tensor1D(this.getTable().getClassifier().getWordList().getVectorSize());
 
-        if(!checkForConflicts) {
+        if (others == null) {
             return result;
         }
 
-        AbstractHeader[] conflicts = this.findConflictingHeaders();
-        if (conflicts == null) {
-            return result;
-        }
-
-        for (final Header conflict : conflicts) {
-            result.add(((IntelliHeader) conflict).getWordVector());
+        for (final Header other : others) {
+            result.add(((IntelliHeader) other).getWordVector());
         }
 
         return result.constrain(0, 1);
@@ -219,28 +220,12 @@ public class IntelliHeader extends CompositeHeader {
         this.getTable().getClassifier().getWordList().add(this.getName());
     }
 
-    private Tensor1D buildFeature(boolean checkForConflicts) {
-        final Tensor1D entity2vec = this.getEntityVector();
-        final Tensor1D word2vec = this.getWordVector();
-        final Tensor1D conflict2vec = this.getConflictVector(checkForConflicts);
-        return entity2vec.concat(word2vec).concat(conflict2vec);
-    }
-
-    private AbstractHeader[] findConflictingHeaders() {
-        final ArrayList<AbstractHeader> result = new ArrayList<AbstractHeader>();
-
-        for (final Header other : this.getTable().headers()) {
-            if (other != this && other.hasTag() && !other.getTag().isUndefined() && other.getTag().equals(this.getTag())) {
-                result.add((AbstractHeader) other);
-            }
-        }
-
-        if (result.size() == 0) {
-            return null;
-        } else {
-            return result.toArray(new AbstractHeader[result.size()]);
-        }
-    }
+    // private Tensor1D buildFeature(final List<Header> others) {
+    //     final Tensor1D entity2vec = this.getEntityVector();
+    //     final Tensor1D word2vec = this.getWordVector();
+    //     final Tensor1D conflict2vec = this.getOthersVector(others);
+    //     return entity2vec.concat(word2vec).concat(conflict2vec);
+    // }
 
     private String name;
     private Tensor1D entityVector;

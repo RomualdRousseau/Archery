@@ -165,14 +165,24 @@ public abstract class AbstractTable implements Table, Visitable {
         this.headers.set(i, header);
     }
 
-    public List<AbstractHeader> findHeader(final AbstractHeader headerToFind) {
-        final LinkedList<AbstractHeader> result = new LinkedList<AbstractHeader>();
+    public List<Header> findHeader(final Header headerToFind) {
+        final LinkedList<Header> result = new LinkedList<Header>();
         for (final Header header : this.headers()) {
             if (header.equals(headerToFind)) {
-                result.add((AbstractHeader) header);
+                result.add(header);
             }
         }
         return result;
+    }
+
+    public List<Header> findOtherHeaders(final Header headerToExclude) {
+        LinkedList<Header> others = new LinkedList<Header>();
+        for (Header other : this.headers()) {
+            if (other != headerToExclude) {
+                others.add(other);
+            }
+        }
+        return others;
     }
 
     protected void adjustLastRow(int lastRow, boolean withFooter) {

@@ -136,7 +136,7 @@ public class IntelliTable extends CompositeTable {
         final IntelliRow newRow = new IntelliRow(this, this.tmpHeaders.size());
 
         for (final AbstractHeader abstractHeader : this.tmpHeaders) {
-            List<AbstractHeader> orgHeaders = orgTable.findHeader(abstractHeader);
+            List<Header> orgHeaders = orgTable.findHeader(abstractHeader);
 
             if (abstractHeader instanceof PivotKeyHeader && pivotCell != null) {
                 if (orgHeaders.size() > 0) {
@@ -146,9 +146,10 @@ public class IntelliTable extends CompositeTable {
                 }
             } else {
                 if (orgHeaders.size() > 0) {
-                    for(AbstractHeader orgHeader : orgHeaders) {
-                        if (rowGroup == null || !orgHeader.isRowGroupName()) {
-                            newRow.setCell(abstractHeader.getColumnIndex(), orgHeader.getCellAtRow(orgRow));
+                    for(Header orgHeader : orgHeaders) {
+                        AbstractHeader orgAbstractHeader = (AbstractHeader) orgHeader;
+                        if (rowGroup == null || !orgAbstractHeader.isRowGroupName()) {
+                            newRow.setCell(abstractHeader.getColumnIndex(), orgAbstractHeader.getCellAtRow(orgRow));
                         } else {
                             newRow.setCell(abstractHeader.getColumnIndex(), rowGroup.getCell());
                         }
