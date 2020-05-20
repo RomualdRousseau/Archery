@@ -156,24 +156,24 @@ public class NGramNNClassifier implements ITagClassifier {
         return this.accuracy;
     }
 
-    public void fit(final DataSet dataset) {
+    public void fit(final DataSet trainingSet, final DataSet validationSet) {
         this.accuracy = 0.0f;
         this.mean = 0.0f;
 
-        if (dataset.rows().size() == 0) {
+        if (trainingSet.rows().size() == 0) {
             return;
         }
 
         // Train
 
-        final DataSet trainingSet = dataset.shuffle().subset(0, (int) ((float) dataset.rows().size() * 0.8f));
-        for (int i = 0; i < trainingSet.rows().size();) {
+        final DataSet reducedSet = trainingSet.shuffle().subset(0, (int) ((float) trainingSet.rows().size() * 0.8f));
+        for (int i = 0; i < reducedSet.rows().size();) {
 
             this.optimizer.zeroGradients();
 
-            final int batchSize = Math.min(trainingSet.rows().size() - i, BATCH_SIZE);
+            final int batchSize = Math.min(reducedSet.rows().size() - i, BATCH_SIZE);
             for (int j = 0; j < batchSize; j++) {
-                final DataRow row = trainingSet.rows().get(i++);
+                final DataRow row = reducedSet.rows().get(i++);
 
                 final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), false);
                 final Tensor2D target = new Tensor2D(row.label(), false);
@@ -189,7 +189,6 @@ public class NGramNNClassifier implements ITagClassifier {
 
         // Validate
 
-        final DataSet validationSet = dataset;
         for (DataRow row : validationSet.rows()) {
             final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), false);
             final Tensor2D target = new Tensor2D(row.label(), false);
@@ -198,9 +197,6 @@ public class NGramNNClassifier implements ITagClassifier {
             final Loss loss = this.loss.loss(output, target);
 
             final boolean isCorrect = output.detach().argmax(0, 0) == target.argmax(0, 0);
-            if(!isCorrect) {
-                this.dumpDataRow(dataset, row);
-            }
             this.accuracy += isCorrect ? 1 : 0;
             this.mean += loss.getValue().flatten(0, 0);
         }

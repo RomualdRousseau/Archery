@@ -31,7 +31,7 @@ public interface ITagClassifier {
 
     float getAccuracy();
 
-    void fit(DataSet trainingSet);
+    void fit(DataSet trainingSet, DataSet validationSet);
 
     String predict(DataRow input);
 }
