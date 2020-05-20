@@ -9,7 +9,6 @@ import com.github.romualdrousseau.shuju.DataSet;
 import com.github.romualdrousseau.shuju.json.JSON;
 import com.github.romualdrousseau.shuju.json.JSONArray;
 import com.github.romualdrousseau.shuju.json.JSONObject;
-import com.github.romualdrousseau.shuju.math.Scalar;
 import com.github.romualdrousseau.shuju.math.Tensor1D;
 import com.github.romualdrousseau.shuju.math.Tensor2D;
 import com.github.romualdrousseau.shuju.ml.nn.Layer;
@@ -32,14 +31,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NGramNNClassifier implements ITagClassifier {
-    private NgramList ngrams;
-    private RegexList entities;
-    private StopWordList stopwords;
-    private StringList tags;
+    public static final int BATCH_SIZE = 64;
+
+    private final NgramList ngrams;
+    private final RegexList entities;
+    private final StopWordList stopwords;
+    private final StringList tags;
     private String[] requiredTags;
     private Model model;
     private Optimizer optimizer;
-    private Loss criterion;
+    private Loss loss;
     private float accuracy;
     private float mean;
     private List<LayexMatcher> metaLayexes;
@@ -51,12 +52,13 @@ public class NGramNNClassifier implements ITagClassifier {
             "((v.*$)(vS.+$))((.{2}$)(.{3,}$)+)+(.{2}$)?", "(()(ES.+$))((sS.+$)(S.{2,}$)+)+(.{2}$)?",
             "(()(ES.+$))(()(.{3,}$))+(.{2}$)?" };
 
-    public NGramNNClassifier(NgramList ngrams, RegexList entities, StopWordList stopwords, StringList tags) {
+    public NGramNNClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords,
+            final StringList tags) {
         this(ngrams, entities, stopwords, tags, null);
     }
 
-    public NGramNNClassifier(NgramList ngrams, RegexList entities, StopWordList stopwords, StringList tags,
-                             String[] requiredTags) {
+    public NGramNNClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords,
+            final StringList tags, final String[] requiredTags) {
         this.accuracy = 0.0f;
         this.mean = 1.0f;
         this.ngrams = ngrams;
@@ -67,25 +69,25 @@ public class NGramNNClassifier implements ITagClassifier {
         this.buildModel();
 
         this.metaLayexes = new ArrayList<LayexMatcher>();
-        for (String layex : metaLayexesDefault) {
+        for (final String layex : metaLayexesDefault) {
             this.metaLayexes.add(new Layex(layex).compile());
         }
 
         this.dataLayexes = new ArrayList<LayexMatcher>();
-        for (String layex : dataLayexesDefault) {
+        for (final String layex : dataLayexesDefault) {
             this.dataLayexes.add(new Layex(layex).compile());
         }
     }
 
-    public NGramNNClassifier(JSONObject json) {
+    public NGramNNClassifier(final JSONObject json) {
         this(json, null, null);
     }
 
-    public NGramNNClassifier(JSONObject json, String[] metaLayexes, String[] dataLayexes) {
+    public NGramNNClassifier(final JSONObject json, final String[] metaLayexes, final String[] dataLayexes) {
         this(new NgramList(json.getJSONObject("ngrams")), new RegexList(json.getJSONObject("entities")),
                 new StopWordList(json.getJSONArray("stopwords")), new StringList(json.getJSONObject("tags")), null);
 
-        JSONArray requiredTags = json.getJSONObject("tags").getJSONArray("requiredTypes");
+        final JSONArray requiredTags = json.getJSONObject("tags").getJSONArray("requiredTypes");
         if (requiredTags.size() > 0) {
             this.requiredTags = new String[requiredTags.size()];
             for (int i = 0; i < requiredTags.size(); i++) {
@@ -97,14 +99,14 @@ public class NGramNNClassifier implements ITagClassifier {
 
         if (metaLayexes != null) {
             this.metaLayexes = new ArrayList<LayexMatcher>();
-            for (String layex : metaLayexes) {
+            for (final String layex : metaLayexes) {
                 this.metaLayexes.add(new Layex(layex).compile());
             }
         }
 
         if (dataLayexes != null) {
             this.dataLayexes = new ArrayList<LayexMatcher>();
-            for (String layex : dataLayexes) {
+            for (final String layex : dataLayexes) {
                 this.dataLayexes.add(new Layex(layex).compile());
             }
         }
@@ -154,42 +156,63 @@ public class NGramNNClassifier implements ITagClassifier {
         return this.accuracy;
     }
 
-    public void fit(DataSet dataset) {
+    public void fit(final DataSet dataset) {
+        this.accuracy = 0.0f;
+        this.mean = 0.0f;
+
         if (dataset.rows().size() == 0) {
             return;
         }
 
-        final float total = dataset.shuffle().rows().size();
+        // Train
 
-        this.accuracy = 0.0f;
-        this.mean = 0.0f;
+        final DataSet trainingSet = dataset.shuffle().subset(0, (int) ((float) dataset.rows().size() * 0.8f));
+        for (int i = 0; i < trainingSet.rows().size();) {
 
-        this.optimizer.zeroGradients();
+            this.optimizer.zeroGradients();
 
-        for (DataRow data : dataset.rows()) {
-            Tensor2D input = new Tensor2D(data.featuresAsOneVector(), false);
-            Tensor2D target = new Tensor2D(data.label(), false);
+            final int batchSize = Math.min(trainingSet.rows().size() - i, BATCH_SIZE);
+            for (int j = 0; j < batchSize; j++) {
+                final DataRow row = trainingSet.rows().get(i++);
 
-            Layer output = this.model.model(input, true);
-            Loss loss = this.criterion.loss(output, target);
+                final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), false);
+                final Tensor2D target = new Tensor2D(row.label(), false);
 
-            this.mean += loss.getValue().flatten(0, 0);
-            if (output.detach().argmax(0, 0) == target.argmax(0, 0)) {
-                this.accuracy++;
+                final Layer output = this.model.model(input, true);
+                final Loss loss = this.loss.loss(output, target);
+
+                this.optimizer.minimize(loss);
             }
 
-            this.optimizer.minimize(loss);
+            this.optimizer.step();
         }
 
-        this.optimizer.step();
+        // Validate
 
-        this.accuracy = this.accuracy / total;
-        this.mean = Scalar.constrain(this.mean / total, 0, 1);
+        final DataSet validationSet = dataset;
+        for (DataRow row : validationSet.rows()) {
+            final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), false);
+            final Tensor2D target = new Tensor2D(row.label(), false);
+
+            final Layer output = this.model.model(input);
+            final Loss loss = this.loss.loss(output, target);
+
+            final boolean isCorrect = output.detach().argmax(0, 0) == target.argmax(0, 0);
+            if(!isCorrect) {
+                this.dumpDataRow(dataset, row);
+            }
+            this.accuracy += isCorrect ? 1 : 0;
+            this.mean += loss.getValue().flatten(0, 0);
+        }
+
+        final float total = validationSet.rows().size();
+        this.accuracy /= total;
+        this.mean /= total;
     }
 
-    public String predict(DataRow row) {
-        Tensor2D input = new Tensor2D(row.featuresAsOneVector(), false);
-        Tensor2D output = this.model.model(input).detach();
+    public String predict(final DataRow row) {
+        final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), false);
+        final Tensor2D output = this.model.model(input).detach();
 
         int tagIndex = output.argmax(0, 0);
         if (tagIndex >= this.tags.size()) {
@@ -199,17 +222,17 @@ public class NGramNNClassifier implements ITagClassifier {
     }
 
     public JSONObject toJSON() {
-        JSONArray requiredTags = JSON.newJSONArray();
+        final JSONArray requiredTags = JSON.newJSONArray();
         if (this.requiredTags != null) {
             for (int i = 0; i < this.requiredTags.length; i++) {
                 requiredTags.append(this.requiredTags[i]);
             }
         }
 
-        JSONObject tags = this.tags.toJSON();
+        final JSONObject tags = this.tags.toJSON();
         tags.setJSONArray("requiredTypes", requiredTags);
 
-        JSONObject json = JSON.newJSONObject();
+        final JSONObject json = JSON.newJSONObject();
         json.setJSONObject("ngrams", this.ngrams.toJSON());
         json.setJSONObject("entities", this.entities.toJSON());
         json.setJSONArray("stopwords", this.stopwords.toJSON());
@@ -218,66 +241,88 @@ public class NGramNNClassifier implements ITagClassifier {
         return json;
     }
 
-    public String dumpDataSet(DataSet dataset) {
-        StringBuilder result = new StringBuilder();
-
-        for (DataRow row : dataset.rows()) {
-            Tensor1D v = row.featuresAsOneVector();
-
-            boolean firstPass = true;
-            for (int i = 0; i < 24; i++) {
-                if (v.get(i) == 1.0f) {
-                    if (firstPass) {
-                        result.append(this.getEntityList().get(i));
-                        firstPass = false;
-                    } else {
-                        result.append(":").append(this.getEntityList().get(i));
-                    }
-                }
-            }
-
-            result.append(",");
-            firstPass = true;
-            for (int i = 24; i < 524; i++) {
-                if (v.get(i) == 1.0f) {
-                    if (firstPass) {
-                        result.append(this.getWordList().get(i - 24));
-                        firstPass = false;
-                    } else {
-                        result.append(":").append(this.getWordList().get(i - 24));
-                    }
-                }
-            }
-
-            result.append(",");
-            firstPass = true;
-            for (int i = 524; i < 1024; i++) {
-                if (v.get(i) == 1.0f) {
-                    if (firstPass) {
-                        result.append(this.getWordList().get(i - 524));
-                        firstPass = false;
-                    } else {
-                        result.append(":").append(this.getWordList().get(i - 524));
-                    }
-                }
-            }
-
-            Tensor1D l = row.label();
-            result.append(",");
-            firstPass = true;
-            for (int i = 0; i < 16; i++) {
-                if (l.get(i) == 1.0f) {
-                    if (firstPass) {
-                        result.append(this.getTagList().get(i));
-                        firstPass = false;
-                    } else {
-                        result.append(":").append(this.getTagList().get(i));
-                    }
-                }
-            }
-
-            result.append("\n");
+    public String dumpDataSet(final DataSet dataset) {
+        final StringBuilder result = new StringBuilder();
+        result.append("============================ DUMP TRAININSET ============================\n");
+        for (final DataRow row : dataset.rows()) {
+            result.append(this.dumpDataRow(dataset, row));
         }
+        result.append("================================== END ==================================\n");
+        return result.toString();
+    }
+
+    public String dumpDataRow(final DataSet dataset, final DataRow row) {
+        final StringBuilder result = new StringBuilder();
+
+        Tensor1D v = row.features().get(0);
+        boolean firstPass = true;
+        for (int i = 0; i < v.shape[0]; i++) {
+            if (v.get(i) == 1.0f) {
+                final String e = this.getEntityList().get(i);
+                if (e != null) {
+                    if (firstPass) {
+                        firstPass = false;
+                    } else {
+                        result.append(":");
+                    }
+                    result.append(e);
+                }
+            }
+        }
+
+        result.append(",");
+
+        v = row.features().get(1);
+        firstPass = true;
+        for (int i = 0; i < v.shape[0]; i++) {
+            if (v.get(i) == 1.0f) {
+                final String w = this.getWordList().get(i);
+                if (w != null) {
+                    if (firstPass) {
+                        firstPass = false;
+                    } else {
+                        result.append(":");
+                    }
+                    result.append(w);
+                }
+            }
+        }
+
+        result.append(",");
+
+        v = row.features().get(2);
+        firstPass = true;
+        for (int i = 0; i < v.shape[0]; i++) {
+            if (v.get(i) == 1.0f) {
+                final String w = this.getWordList().get(i);
+                if (w != null) {
+                    if (firstPass) {
+                        firstPass = false;
+                    } else {
+                        result.append(":");
+                    }
+                    result.append(w);
+                }
+            }
+        }
+
+        result.append(",");
+
+        final Tensor1D l = row.label();
+
+        firstPass = true;
+        for (int i = 0; i < 16; i++) {
+            if (l.get(i) == 1.0f) {
+                if (firstPass) {
+                    result.append(this.getTagList().get(i));
+                    firstPass = false;
+                } else {
+                    result.append(":").append(this.getTagList().get(i));
+                }
+            }
+        }
+
+        result.append("\n");
 
         return result.toString();
     }
@@ -287,15 +332,13 @@ public class NGramNNClassifier implements ITagClassifier {
         final int hiddenCount = inputCount / 2;
         final int outputCount = this.tags.getVectorSize();
 
-        this.model = new Model()
-                .add(new DenseBuilder().setInputUnits(inputCount).setUnits(hiddenCount))
-                .add(new ActivationBuilder().setActivation(new LeakyRelu()))
-                .add(new BatchNormalizerBuilder())
+        this.model = new Model().add(new DenseBuilder().setInputUnits(inputCount).setUnits(hiddenCount))
+                .add(new ActivationBuilder().setActivation(new LeakyRelu())).add(new BatchNormalizerBuilder())
                 .add(new DenseBuilder().setUnits(outputCount))
                 .add(new ActivationBuilder().setActivation(new Softmax()));
 
         this.optimizer = new OptimizerAdamBuilder().build(this.model);
 
-        this.criterion = new Loss(new SoftmaxCrossEntropy());
+        this.loss = new Loss(new SoftmaxCrossEntropy());
     }
 }

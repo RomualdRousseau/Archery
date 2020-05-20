@@ -175,16 +175,6 @@ public abstract class AbstractTable implements Table, Visitable {
         return result;
     }
 
-    public List<Header> findOtherHeaders(final Header headerToExclude) {
-        LinkedList<Header> others = new LinkedList<Header>();
-        for (Header other : this.headers()) {
-            if (other != headerToExclude) {
-                others.add(other);
-            }
-        }
-        return others;
-    }
-
     protected void adjustLastRow(int lastRow, boolean withFooter) {
         this.lastRowOffset = withFooter ? -1 : 0;
         this.lastRow = lastRow;
