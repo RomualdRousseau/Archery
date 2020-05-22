@@ -1,5 +1,8 @@
 package com.github.romualdrousseau.any2json.classifiers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.layex.Layex;
@@ -27,9 +30,6 @@ import com.github.romualdrousseau.shuju.nlp.RegexList;
 import com.github.romualdrousseau.shuju.nlp.StopWordList;
 import com.github.romualdrousseau.shuju.nlp.StringList;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class NGramNNClassifier implements ITagClassifier {
     public static final int BATCH_SIZE = 64;
 
@@ -48,17 +48,22 @@ public class NGramNNClassifier implements ITagClassifier {
 
     private final static String[] metaLayexesDefault = { "(v.$)+" };
 
-    private final static String[] dataLayexesDefault = { "((e.*$)(vS.+$))(()(.{3,}$))+(.{2}$)?",
-            "((v.*$)(vS.+$))((.{2}$)(.{3,}$)+)+(.{2}$)?", "(()(ES.+$))((sS.+$)(S.{2,}$)+)+(.{2}$)?",
-            "(()(ES.+$))(()(.{3,}$))+(.{2}$)?" };
+    private final static String[] dataLayexesDefault = {
+            "((e.*$)(vS.+$))(()(.{3,}$))+(.{2}$)?",
+            "((v.*$)(vS.+$))((.{2}$)(.{3,}$)+)+(.{2}$)?",
+            "(()(ES.+$))((sS.+$)(S.{2,}$)+)+(.{2}$)?",
+            "(()(ES.+$))(()(.{3,}$))+(.{2}$)?"
+        };
 
-    public NGramNNClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords,
-            final StringList tags) {
+    public NGramNNClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords, final StringList tags) {
         this(ngrams, entities, stopwords, tags, null);
     }
 
-    public NGramNNClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords,
-            final StringList tags, final String[] requiredTags) {
+    public NGramNNClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords, final StringList tags, final String[] requiredTags) {
+        this(ngrams, entities, stopwords, tags, requiredTags, metaLayexesDefault, dataLayexesDefault);
+    }
+
+    public NGramNNClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords, final StringList tags, final String[] requiredTags, final String[] metaLayexes, final String[] dataLayexes) {
         this.accuracy = 0.0f;
         this.mean = 1.0f;
         this.ngrams = ngrams;
@@ -66,50 +71,54 @@ public class NGramNNClassifier implements ITagClassifier {
         this.stopwords = stopwords;
         this.tags = tags;
         this.requiredTags = requiredTags;
-        this.buildModel();
-
         this.metaLayexes = new ArrayList<LayexMatcher>();
-        for (final String layex : metaLayexesDefault) {
-            this.metaLayexes.add(new Layex(layex).compile());
-        }
-
         this.dataLayexes = new ArrayList<LayexMatcher>();
-        for (final String layex : dataLayexesDefault) {
-            this.dataLayexes.add(new Layex(layex).compile());
-        }
-    }
-
-    public NGramNNClassifier(final JSONObject json) {
-        this(json, null, null);
-    }
-
-    public NGramNNClassifier(final JSONObject json, final String[] metaLayexes, final String[] dataLayexes) {
-        this(new NgramList(json.getJSONObject("ngrams")), new RegexList(json.getJSONObject("entities")),
-                new StopWordList(json.getJSONArray("stopwords")), new StringList(json.getJSONObject("tags")), null);
-
-        final JSONArray requiredTags = json.getJSONObject("tags").getJSONArray("requiredTypes");
-        if (requiredTags.size() > 0) {
-            this.requiredTags = new String[requiredTags.size()];
-            for (int i = 0; i < requiredTags.size(); i++) {
-                this.requiredTags[i] = requiredTags.getString(i);
-            }
-        }
-
-        this.model.fromJSON(json.getJSONArray("model"));
 
         if (metaLayexes != null) {
-            this.metaLayexes = new ArrayList<LayexMatcher>();
             for (final String layex : metaLayexes) {
                 this.metaLayexes.add(new Layex(layex).compile());
             }
         }
 
         if (dataLayexes != null) {
-            this.dataLayexes = new ArrayList<LayexMatcher>();
             for (final String layex : dataLayexes) {
                 this.dataLayexes.add(new Layex(layex).compile());
             }
         }
+
+        this.buildModel();
+    }
+
+    public NGramNNClassifier(final JSONObject json) {
+        this(new NgramList(json.getJSONObject("ngrams")),
+                new RegexList(json.getJSONObject("entities")),
+                new StopWordList(json.getJSONArray("stopwords")),
+                new StringList(json.getJSONObject("tags")),
+                null,
+                null,
+                null);
+
+        final JSONArray requiredTags = json.getJSONObject("tags").getJSONArray("requiredTypes");
+        if (requiredTags != null && requiredTags.size() > 0) {
+            this.requiredTags = new String[requiredTags.size()];
+            for (int i = 0; i < requiredTags.size(); i++) {
+                this.requiredTags[i] = requiredTags.getString(i);
+            }
+        }
+
+        final JSONArray layexes = json.getJSONArray("layexes");
+        if (layexes != null) {
+            for (int i = 0; i < layexes.size(); i++) {
+                final JSONObject layex = layexes.getJSONObject(i);
+                if (layex.getString("type").equals("META")) {
+                    this.metaLayexes.add(new Layex(layex.getString("layex")).compile());
+                } else if (layex.getString("type").equals("DATA")) {
+                    this.dataLayexes.add(new Layex(layex.getString("layex")).compile());
+                }
+            }
+        }
+
+        this.model.fromJSON(json.getJSONArray("model"));
     }
 
     public int getSampleCount() {
@@ -157,16 +166,18 @@ public class NGramNNClassifier implements ITagClassifier {
     }
 
     public void fit(final DataSet trainingSet, final DataSet validationSet) {
+        final float n = trainingSet.rows().size();
+
         this.accuracy = 0.0f;
         this.mean = 0.0f;
 
-        if (trainingSet.rows().size() == 0) {
+        if (n == 0.0f) {
             return;
         }
 
         // Train
 
-        final DataSet reducedSet = trainingSet.shuffle().subset(0, (int) ((float) trainingSet.rows().size() * 0.8f));
+        final DataSet reducedSet = trainingSet.shuffle().subset(0, (int) (n * 0.8f));
         for (int i = 0; i < reducedSet.rows().size();) {
 
             this.optimizer.zeroGradients();
@@ -189,7 +200,7 @@ public class NGramNNClassifier implements ITagClassifier {
 
         // Validate
 
-        for (DataRow row : validationSet.rows()) {
+        for (final DataRow row : validationSet.rows()) {
             final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), false);
             final Tensor2D target = new Tensor2D(row.label(), false);
 
@@ -214,6 +225,7 @@ public class NGramNNClassifier implements ITagClassifier {
         if (tagIndex >= this.tags.size()) {
             tagIndex = 0;
         }
+
         return this.tags.get(tagIndex);
     }
 
@@ -328,8 +340,10 @@ public class NGramNNClassifier implements ITagClassifier {
         final int hiddenCount = inputCount / 2;
         final int outputCount = this.tags.getVectorSize();
 
-        this.model = new Model().add(new DenseBuilder().setInputUnits(inputCount).setUnits(hiddenCount))
-                .add(new ActivationBuilder().setActivation(new LeakyRelu())).add(new BatchNormalizerBuilder())
+        this.model = new Model()
+                .add(new DenseBuilder().setInputUnits(inputCount).setUnits(hiddenCount))
+                .add(new ActivationBuilder().setActivation(new LeakyRelu()))
+                .add(new BatchNormalizerBuilder())
                 .add(new DenseBuilder().setUnits(outputCount))
                 .add(new ActivationBuilder().setActivation(new Softmax()));
 
