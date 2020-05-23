@@ -107,7 +107,7 @@ public class NGramNNClassifier implements ITagClassifier {
         }
 
         final JSONArray layexes = json.getJSONArray("layexes");
-        if (layexes != null) {
+        if (layexes != null && layexes.size() > 0) {
             for (int i = 0; i < layexes.size(); i++) {
                 final JSONObject layex = layexes.getJSONObject(i);
                 if (layex.getString("type").equals("META")) {
@@ -115,6 +115,13 @@ public class NGramNNClassifier implements ITagClassifier {
                 } else if (layex.getString("type").equals("DATA")) {
                     this.dataLayexes.add(new Layex(layex.getString("layex")).compile());
                 }
+            }
+        } else {
+            for (final String layex : metaLayexesDefault) {
+                this.metaLayexes.add(new Layex(layex).compile());
+            }
+            for (final String layex : dataLayexesDefault) {
+                this.dataLayexes.add(new Layex(layex).compile());
             }
         }
 
