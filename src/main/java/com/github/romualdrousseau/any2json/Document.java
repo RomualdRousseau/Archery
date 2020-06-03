@@ -4,7 +4,7 @@ import java.io.File;
 
 public interface Document extends AutoCloseable {
 
-	public boolean open(File excelFile, String encoding);
+	public boolean open(File excelFile, String encoding, final String password);
 
 	public void close();
 

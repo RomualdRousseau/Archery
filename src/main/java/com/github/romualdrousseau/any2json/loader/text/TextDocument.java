@@ -15,10 +15,10 @@ import com.github.romualdrousseau.shuju.util.StringUtility;
 public class TextDocument implements Document {
 
     @Override
-    public boolean open(File txtFile, String encoding) {
+    public boolean open(final File txtFile, final String encoding, final String password) {
         if (openWithEncoding(txtFile, "UTF-8")) {
             return true;
-        } else if(encoding != null) {
+        } else if (encoding != null) {
             return openWithEncoding(txtFile, encoding);
         } else {
             return false;
@@ -27,10 +27,10 @@ public class TextDocument implements Document {
 
     @Override
     public void close() {
-        if(this.reader != null) {
+        if (this.reader != null) {
             try {
                 this.reader.close();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 e.printStackTrace();
             }
             this.reader = null;
@@ -45,11 +45,11 @@ public class TextDocument implements Document {
     }
 
     @Override
-    public Sheet getSheetAt(int i) {
+    public Sheet getSheetAt(final int i) {
         return this.sheet;
     }
 
-    private boolean openWithEncoding(File txtFile, String encoding) {
+    private boolean openWithEncoding(final File txtFile, final String encoding) {
         if (txtFile == null) {
             throw new IllegalArgumentException();
         }
@@ -58,8 +58,7 @@ public class TextDocument implements Document {
             this.sheet = null;
             this.rows = null;
 
-            this.reader = new BufferedReader(
-                new InputStreamReader(new FileInputStream(txtFile), encoding));
+            this.reader = new BufferedReader(new InputStreamReader(new FileInputStream(txtFile), encoding));
 
             if (encoding.equals("UTF-8")) {
                 this.processBOM(reader);
@@ -67,20 +66,20 @@ public class TextDocument implements Document {
 
             this.processRows(reader);
 
-            if(checkIfGoodEncoding(this.rows.get(0))) {
-                String sheetName = StringUtility.removeExtension(txtFile.getName());
+            if (checkIfGoodEncoding(this.rows.get(0))) {
+                final String sheetName = StringUtility.removeExtension(txtFile.getName());
                 this.sheet = new TextSheet(sheetName, this.rows);
             }
 
             return this.sheet != null;
 
-        } catch (IOException x) {
+        } catch (final IOException x) {
             close();
             return false;
         }
     }
 
-    private boolean checkIfGoodEncoding(String[] row) {
+    private boolean checkIfGoodEncoding(final String[] row) {
         boolean result = true;
         for (int i = 0; i < row.length; i++) {
             result &= StringUtility.checkIfGoodEncoding(row[i]);
@@ -88,7 +87,7 @@ public class TextDocument implements Document {
         return result;
     }
 
-    private void processBOM(BufferedReader reader) throws IOException {
+    private void processBOM(final BufferedReader reader) throws IOException {
         // skip BOM if present
         this.reader.mark(1);
         if (this.reader.read() != StringUtility.BOM_CHAR) {
@@ -96,7 +95,7 @@ public class TextDocument implements Document {
         }
     }
 
-    private void processRows(BufferedReader reader) throws IOException {
+    private void processRows(final BufferedReader reader) throws IOException {
         this.rows = new ArrayList<String[]>();
 
         boolean firstPass = true;
@@ -107,9 +106,9 @@ public class TextDocument implements Document {
                 firstPass = false;
             }
 
-            String[] tokens = parseOneRow(textRow);
+            final String[] tokens = parseOneRow(textRow);
 
-            String[] cells = new String[tokens.length];
+            final String[] cells = new String[tokens.length];
             for (int j = 0; j < tokens.length; j++) {
                 cells[j] = StringUtility.cleanToken(tokens[j]);
             }
@@ -118,45 +117,45 @@ public class TextDocument implements Document {
         }
     }
 
-    private String[] parseOneRow(String data) {
-        ArrayList<String> result = new ArrayList<String>();
+    private String[] parseOneRow(final String data) {
+        final ArrayList<String> result = new ArrayList<String>();
         String acc = "";
         int state = 0;
 
         for (int i = 0; i < data.length(); i++) {
-            char c = data.charAt(i);
+            final char c = data.charAt(i);
 
             switch (state) {
-            case 0:
-                if (c == separator.charAt(0)) {
-                    result.add(acc);
-                    acc = "";
-                } else if (c == '"' && acc.trim().equals("")) {
-                    acc = "";
-                    state = 1;
-                } else {
-                    acc += c;
-                }
-                break;
+                case 0:
+                    if (c == separator.charAt(0)) {
+                        result.add(acc);
+                        acc = "";
+                    } else if (c == '"' && acc.trim().equals("")) {
+                        acc = "";
+                        state = 1;
+                    } else {
+                        acc += c;
+                    }
+                    break;
 
-            case 1: // Double quote context
-                if (c == '"') {
-                    state = 2;
-                } else {
-                    acc += c;
-                }
-                break;
+                case 1: // Double quote context
+                    if (c == '"') {
+                        state = 2;
+                    } else {
+                        acc += c;
+                    }
+                    break;
 
-            case 2: // Check double quote context exit
-                if (c == '"') {
-                    acc += c;
-                    state = 1;
-                } else {
-                    result.add(acc);
-                    acc = "";
-                    state = 0;
-                }
-                break;
+                case 2: // Check double quote context exit
+                    if (c == '"') {
+                        acc += c;
+                        state = 1;
+                    } else {
+                        result.add(acc);
+                        acc = "";
+                        state = 0;
+                    }
+                    break;
             }
         }
 
@@ -167,11 +166,11 @@ public class TextDocument implements Document {
         return result.toArray(new String[result.size()]);
     }
 
-    private String guessSeparator(String sample) {
+    private String guessSeparator(final String sample) {
         final String[] separators = { "\t", ",", ";" };
 
         // find the separator generating the more of columns
-        float[] v = new float[separators.length];
+        final float[] v = new float[separators.length];
         for (int i = 0; i < separators.length; i++) {
             v[i] = sample.split(separators[i]).length;
         }

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.io.IOException;
 
 import org.apache.poi.EncryptedDocumentException;
+import org.apache.poi.hssf.record.crypto.Biff8EncryptionKey;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.usermodel.Workbook;
 
@@ -13,9 +14,14 @@ import com.github.romualdrousseau.any2json.Sheet;
 
 public class XlsDocument implements Document {
 
-    public boolean open(File excelFile, String encoding) {
+    @Override
+    public boolean open(final File excelFile, final String encoding, final String password) {
         if (excelFile == null) {
             throw new IllegalArgumentException();
+        }
+
+        if (password != null) {
+            Biff8EncryptionKey.setCurrentUserPassword(password);
         }
 
         Workbook workbook = null;
@@ -38,10 +44,11 @@ public class XlsDocument implements Document {
             if(workbook != null) {
                 try {
                     workbook.close();
-                } catch (IOException ignore) {
+                } catch (final IOException ignore) {
                 }
             }
             workbook = null;
+            Biff8EncryptionKey.setCurrentUserPassword(null);
         }
     }
 
@@ -53,9 +60,9 @@ public class XlsDocument implements Document {
         return this.sheets.size();
     }
 
-    public Sheet getSheetAt(int i) {
+    public Sheet getSheetAt(final int i) {
         return this.sheets.get(i);
     }
 
-    private ArrayList<XlsSheet> sheets = new ArrayList<XlsSheet>();
+    private final ArrayList<XlsSheet> sheets = new ArrayList<XlsSheet>();
 }

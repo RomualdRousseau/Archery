@@ -16,31 +16,31 @@ public class DocumentFactory {
     public static final float DEFAULT_ENTITY_PROBABILITY = 0.6f;
     public static final int MAX_STORE_ROWS = 1000;
 
-	public static Document createInstance(String filePath, String encoding) {
+	public static Document createInstance(String filePath, String encoding, String password) {
 		if(filePath == null) {
             throw new IllegalArgumentException();
         }
 
-		return DocumentFactory.createInstance(new File(filePath), encoding);
+		return DocumentFactory.createInstance(new File(filePath), encoding, password);
 	}
 
-	public static Document createInstance(File file, String encoding) {
+	public static Document createInstance(File file, String encoding, String password) {
 		if(file == null) {
             throw new IllegalArgumentException();
         }
 
         Document document = new XlsxDocument();
-		if(document.open(file, encoding)) {
+		if(document.open(file, encoding, password)) {
 			return document;
         }
 
         document = new XlsDocument();
-		if(document.open(file, encoding)) {
+		if(document.open(file, encoding, password)) {
 			return document;
         }
 
         document = new XmlDocument();
-		if(document.open(file, encoding)) {
+		if(document.open(file, encoding, password)) {
 			return document;
 		}
 
@@ -50,7 +50,7 @@ public class DocumentFactory {
 		// }
 
         document = new TextDocument();
-		if(document.open(file, encoding)) {
+		if(document.open(file, encoding, password)) {
 			return document;
 		}
 

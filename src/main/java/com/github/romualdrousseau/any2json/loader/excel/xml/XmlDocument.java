@@ -20,7 +20,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class XmlDocument implements Document {
-    public boolean open(File excelFile, String encoding) {
+
+    @Override
+    public boolean open(final File excelFile, final String encoding, final String password) {
         if (openWithEncoding(excelFile, "UTF-8")) {
             return true;
         } else if (encoding != null) {
@@ -38,11 +40,11 @@ public class XmlDocument implements Document {
         return this.sheets.size();
     }
 
-    public Sheet getSheetAt(int i) {
+    public Sheet getSheetAt(final int i) {
         return this.sheets.get(i);
     }
 
-    private boolean openWithEncoding(File excelFile, String encoding) {
+    private boolean openWithEncoding(final File excelFile, final String encoding) {
         if (excelFile == null) {
             throw new IllegalArgumentException();
         }
@@ -50,11 +52,11 @@ public class XmlDocument implements Document {
         try {
             this.sheets.clear();
 
-            ExcelReader reader = new ExcelReader();
+            final ExcelReader reader = new ExcelReader();
             this.workbook = reader.getWorkbook(new InputSource(new FixBadEntityReader(
                     new BufferedReader(new InputStreamReader(new FileInputStream(excelFile), encoding)))));
 
-            for (Worksheet sheet : this.workbook.getWorksheets()) {
+            for (final Worksheet sheet : this.workbook.getWorksheets()) {
                 this.sheets.add(new XmlSheet(sheet));
             }
 
@@ -67,5 +69,5 @@ public class XmlDocument implements Document {
     }
 
     private Workbook workbook = null;
-    private ArrayList<XmlSheet> sheets = new ArrayList<XmlSheet>();
+    private final ArrayList<XmlSheet> sheets = new ArrayList<XmlSheet>();
 }

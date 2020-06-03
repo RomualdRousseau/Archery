@@ -270,7 +270,7 @@ public class AppTest {
     }
 
     private Document loadDocument(String resourceName, String encoding) {
-        return DocumentFactory.createInstance(getResourcePath(resourceName).toString(), encoding);
+        return DocumentFactory.createInstance(getResourcePath(resourceName).toString(), encoding, null);
     }
 
     private Path getResourcePath(String resourceName) {
