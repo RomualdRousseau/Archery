@@ -11,6 +11,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
+import com.github.romualdrousseau.shuju.util.StringUtility;
 
 public class XlsDocument implements Document {
 
@@ -20,7 +21,7 @@ public class XlsDocument implements Document {
             throw new IllegalArgumentException();
         }
 
-        if (password != null) {
+        if (!StringUtility.isEmpty(password)) {
             Biff8EncryptionKey.setCurrentUserPassword(password);
         }
 

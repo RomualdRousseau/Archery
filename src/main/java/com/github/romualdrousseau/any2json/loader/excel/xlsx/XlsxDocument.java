@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
+import com.github.romualdrousseau.shuju.util.StringUtility;
 
 import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
@@ -32,7 +33,7 @@ public class XlsxDocument implements Document {
         try {
             this.sheets.clear();
 
-            if (password != null) {
+            if (!StringUtility.isEmpty(password)) {
                 POIFSFileSystem poifs = new POIFSFileSystem(excelFile);
                 EncryptionInfo info = new EncryptionInfo(poifs);
                 Decryptor d = Decryptor.getInstance(info);
