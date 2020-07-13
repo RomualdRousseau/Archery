@@ -1,3 +1,4 @@
+import com.github.romualdrousseau.shuju.nlp.*;
 import com.github.romualdrousseau.shuju.json.*;
 
 import com.github.romualdrousseau.any2json.ITagClassifier;
@@ -6,7 +7,7 @@ import com.github.romualdrousseau.any2json.classifiers.*;
 import com.github.romualdrousseau.any2json.*;
 import com.github.romualdrousseau.any2json.base.*;
 import com.github.romualdrousseau.any2json.intelli.*;
-import com.github.romualdrousseau.any2json.intelli.event.*;
+import com.github.romualdrousseau.any2json.event.*;
 import com.github.romualdrousseau.any2json.intelli.header.*;
 import com.github.romualdrousseau.any2json.layex.*;
 
@@ -39,8 +40,17 @@ PGraphics documentImage;
 int documentTopY;
 
 void configure() {
-  classifier = new NGramNNClassifier(JSON.loadJSONObject(dataPath("brainColumnClassifier.json")), metaLayexes, dataLayexes);
-  //classifier = new NGramNNClassifier(JSON.loadJSONObject(dataPath("brainColumnClassifier.json")));
+  com.github.romualdrousseau.shuju.json.JSONObject ngrams = JSON.loadJSONObject(dataPath("ngrams.json"));
+  com.github.romualdrousseau.shuju.json.JSONObject entities = JSON.loadJSONObject(dataPath("entities.json"));
+  com.github.romualdrousseau.shuju.json.JSONArray stopwords = JSON.loadJSONArray(dataPath("stopwords.json"));
+  com.github.romualdrousseau.shuju.json.JSONObject tags = JSON.loadJSONObject(dataPath("tags.json"));
+  classifier = new NGramNNClassifier(new NgramList(ngrams),
+                new RegexList(entities),
+                new StopWordList(stopwords),
+                new com.github.romualdrousseau.shuju.nlp.StringList(tags),
+                null,
+                metaLayexes,
+                dataLayexes);
 
   scrollSpeed = 100; // 100px per scroll
 
@@ -119,7 +129,7 @@ void loadDocument(String filePath) {
     return;
   }
 
-  Document document = DocumentFactory.createInstance(tempFile.getAbsolutePath(), "UTF-8");
+  Document document = DocumentFactory.createInstance(tempFile.getAbsolutePath(), "UTF-8", null);
 
   Sheet sheet = document.getSheetAt(0);
   sheet.addSheetListener(new SheetListener() {
