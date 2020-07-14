@@ -130,8 +130,8 @@ public class TextDocument implements Document {
                     if (c == separator.charAt(0)) {
                         result.add(acc);
                         acc = "";
-                    } else if (c == '"' && acc.trim().equals("")) {
-                        acc = "";
+                    } else if (c == '"') {
+                        acc += c;
                         state = 1;
                     } else {
                         acc += c;
@@ -140,6 +140,7 @@ public class TextDocument implements Document {
 
                 case 1: // Double quote context
                     if (c == '"') {
+                        acc += c;
                         state = 2;
                     } else {
                         acc += c;
@@ -148,11 +149,13 @@ public class TextDocument implements Document {
 
                 case 2: // Check double quote context exit
                     if (c == '"') {
-                        acc += c;
                         state = 1;
-                    } else {
+                    } else if (c == separator.charAt(0)) {
                         result.add(acc);
                         acc = "";
+                        state = 0;
+                    } else {
+                        acc += c;
                         state = 0;
                     }
                     break;
