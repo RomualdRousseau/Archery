@@ -130,7 +130,7 @@ public class TextDocument implements Document {
                     if (c == separator.charAt(0)) {
                         result.add(acc);
                         acc = "";
-                    } else if (c == '"') {
+                    } else if (c == '"' && acc.trim().equals("")) {
                         acc += c;
                         state = 1;
                     } else {
