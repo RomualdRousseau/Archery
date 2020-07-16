@@ -71,7 +71,7 @@ jobs:
             -   name: Deploy project
                 run: |
                     export GPG_TTY=$(tty)
-                    mvn -B clean deploy -Dmaven.test.skip=true --file pom.xml -s my_settings.xml -P release
+                    mvn -B clean deploy -Dmaven.test.skip=true --file pom.xml -s settings.xml -P release
                 env:
                     MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
                     MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
