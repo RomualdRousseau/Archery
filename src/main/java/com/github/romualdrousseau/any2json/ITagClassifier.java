@@ -21,11 +21,13 @@ public interface ITagClassifier {
 
     StringList getTagList();
 
-    String[] getRequiredTagList();
+    List<String> getRequiredTagList();
 
     List<LayexMatcher> getMetaLayexes();
 
     List<LayexMatcher> getDataLayexes();
+
+    List<String> getPivotEntityList();
 
     float getMean();
 

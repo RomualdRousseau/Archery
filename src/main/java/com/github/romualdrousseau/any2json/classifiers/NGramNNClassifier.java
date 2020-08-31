@@ -1,6 +1,7 @@
 package com.github.romualdrousseau.any2json.classifiers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.github.romualdrousseau.any2json.DocumentFactory;
@@ -37,7 +38,7 @@ public class NGramNNClassifier implements ITagClassifier {
     private final RegexList entities;
     private final StopWordList stopwords;
     private final StringList tags;
-    private String[] requiredTags;
+    private List<String> requiredTags;
     private Model model;
     private Optimizer optimizer;
     private Loss loss;
@@ -45,6 +46,7 @@ public class NGramNNClassifier implements ITagClassifier {
     private float mean;
     private List<LayexMatcher> metaLayexes;
     private List<LayexMatcher> dataLayexes;
+    private List<String> pivotEntityList;
 
     private final static String[] metaLayexesDefault = { "(v.$)+" };
 
@@ -56,23 +58,24 @@ public class NGramNNClassifier implements ITagClassifier {
         };
 
     public NGramNNClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords, final StringList tags) {
-        this(ngrams, entities, stopwords, tags, null);
+        this(ngrams, entities, stopwords, tags, null, null);
     }
 
-    public NGramNNClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords, final StringList tags, final String[] requiredTags) {
-        this(ngrams, entities, stopwords, tags, requiredTags, metaLayexesDefault, dataLayexesDefault);
+    public NGramNNClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords, final StringList tags, final String[] requiredTags, final String[] pivotEntityList) {
+        this(ngrams, entities, stopwords, tags, requiredTags, pivotEntityList, metaLayexesDefault, dataLayexesDefault);
     }
 
-    public NGramNNClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords, final StringList tags, final String[] requiredTags, final String[] metaLayexes, final String[] dataLayexes) {
+    public NGramNNClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords, final StringList tags, final String[] requiredTags, final String[] pivotEntityList, final String[] metaLayexes, final String[] dataLayexes) {
         this.accuracy = 0.0f;
         this.mean = 1.0f;
         this.ngrams = ngrams;
         this.entities = entities;
         this.stopwords = stopwords;
         this.tags = tags;
-        this.requiredTags = requiredTags;
+        this.requiredTags = (requiredTags == null) ? null : Arrays.asList(requiredTags);
         this.metaLayexes = new ArrayList<LayexMatcher>();
         this.dataLayexes = new ArrayList<LayexMatcher>();
+        this.pivotEntityList = (pivotEntityList == null) ? null : Arrays.asList(pivotEntityList);
 
         if (metaLayexes != null) {
             for (final String layex : metaLayexes) {
@@ -96,13 +99,14 @@ public class NGramNNClassifier implements ITagClassifier {
                 new StringList(json.getJSONObject("tags")),
                 null,
                 null,
+                null,
                 null);
 
-        final JSONArray requiredTags = json.getJSONObject("tags").getJSONArray("requiredTypes");
-        if (requiredTags != null && requiredTags.size() > 0) {
-            this.requiredTags = new String[requiredTags.size()];
-            for (int i = 0; i < requiredTags.size(); i++) {
-                this.requiredTags[i] = requiredTags.getString(i);
+        final JSONArray requiredTypes = json.getJSONObject("tags").getJSONArray("requiredTypes");
+        if (requiredTypes != null && requiredTypes.size() > 0) {
+            this.requiredTags = new ArrayList<String>();
+            for (int i = 0; i < requiredTypes.size(); i++) {
+                this.requiredTags.add(requiredTypes.getString(i));
             }
         }
 
@@ -122,6 +126,14 @@ public class NGramNNClassifier implements ITagClassifier {
             }
             for (final String layex : dataLayexesDefault) {
                 this.dataLayexes.add(new Layex(layex).compile());
+            }
+        }
+
+        final JSONArray pivotEntities = json.getJSONObject("entities").getJSONArray("pivotEntityList");
+        if (pivotEntities != null && pivotEntities.size() > 0) {
+            this.pivotEntityList = new ArrayList<String>();
+            for (int i = 0; i < pivotEntities.size(); i++) {
+                this.pivotEntityList.add(pivotEntities.getString(i));
             }
         }
 
@@ -148,7 +160,7 @@ public class NGramNNClassifier implements ITagClassifier {
         return this.tags;
     }
 
-    public String[] getRequiredTagList() {
+    public List<String> getRequiredTagList() {
         return this.requiredTags;
     }
 
@@ -158,6 +170,10 @@ public class NGramNNClassifier implements ITagClassifier {
 
     public List<LayexMatcher> getDataLayexes() {
         return this.dataLayexes;
+    }
+
+    public List<String> getPivotEntityList() {
+        return this.pivotEntityList;
     }
 
     public Model getModel() {
@@ -237,21 +253,31 @@ public class NGramNNClassifier implements ITagClassifier {
     }
 
     public JSONObject toJSON() {
-        final JSONArray requiredTags = JSON.newJSONArray();
-        if (this.requiredTags != null) {
-            for (int i = 0; i < this.requiredTags.length; i++) {
-                requiredTags.append(this.requiredTags[i]);
+        final JSONArray pivotEntities = JSON.newJSONArray();
+        if (this.pivotEntityList != null) {
+            for (String entity : this.pivotEntityList) {
+                pivotEntities.append(entity);
             }
         }
 
-        final JSONObject tags = this.tags.toJSON();
-        tags.setJSONArray("requiredTypes", requiredTags);
+        final JSONObject jsonEntities = this.entities.toJSON();
+        jsonEntities.setJSONArray("pivotEntities", pivotEntities);
+
+        final JSONArray requiredTags = JSON.newJSONArray();
+        if (this.requiredTags != null) {
+            for (String tag : this.requiredTags) {
+                requiredTags.append(tag);
+            }
+        }
+
+        final JSONObject jsonTags = this.tags.toJSON();
+        jsonTags.setJSONArray("requiredTypes", requiredTags);
 
         final JSONObject json = JSON.newJSONObject();
         json.setJSONObject("ngrams", this.ngrams.toJSON());
-        json.setJSONObject("entities", this.entities.toJSON());
+        json.setJSONObject("entities", jsonEntities);
         json.setJSONArray("stopwords", this.stopwords.toJSON());
-        json.setJSONObject("tags", tags);
+        json.setJSONObject("tags", jsonTags);
         json.setJSONArray("model", this.model.toJSON());
         return json;
     }
