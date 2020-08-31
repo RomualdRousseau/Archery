@@ -36,7 +36,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
 
     @Override
     public Table createIntelliTable() {
-        final SheetBitmap image = new SheetBitmap(this, Math.max(this.getLastColumnNum(0), this.classifier.getSampleCount()), this.getLastRowNum() + 1);
+        final SheetBitmap image = new SheetBitmap(this, Math.max(this.getLastColumnNum(), this.classifier.getSampleCount()), this.getLastRowNum() + 1);
         if (!this.notifyStepCompleted(new BitmapGeneratedEvent(this, image))) {
             return null;
         }

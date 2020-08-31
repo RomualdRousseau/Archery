@@ -20,7 +20,6 @@ public class DocumentFactory {
 		if(filePath == null) {
             throw new IllegalArgumentException();
         }
-
 		return DocumentFactory.createInstance(new File(filePath), encoding, password);
 	}
 

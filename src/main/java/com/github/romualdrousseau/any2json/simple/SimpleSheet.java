@@ -20,7 +20,7 @@ public abstract class SimpleSheet extends AbstractSheet {
         this.notifyStepCompleted(new BitmapGeneratedEvent(this, null));
 
         final LinkedList<CompositeTable> tables = new  LinkedList<CompositeTable>();
-        tables.add(new CompositeTable(this, 0, 0, this.getLastColumnNum(0), this.getLastRowNum(), classifier));
+        tables.add(new CompositeTable(this, 0, 0, this.getLastColumnNum(), this.getLastRowNum(), classifier));
         this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables));
 
         LinkedList<DataTable> dataTables = new  LinkedList<DataTable>();

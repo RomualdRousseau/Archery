@@ -1,5 +1,6 @@
 package com.github.romualdrousseau.any2json.base;
 
+import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.SheetEvent;
@@ -20,7 +21,7 @@ public abstract class AbstractSheet implements Sheet {
 
     @Override
     public Table getTable(final ITagClassifier classifier) {
-        if (this.getLastColumnNum(0) < 0 || this.getLastRowNum() < 0) {
+        if (this.getLastColumnNum() < 0 || this.getLastRowNum() < 0) {
             return null;
         }
         this.classifier = classifier;
@@ -43,7 +44,15 @@ public abstract class AbstractSheet implements Sheet {
 
     public Table createSimpleTable() {
         this.notifyStepCompleted(new BitmapGeneratedEvent(this, null));
-        return new SimpleTable(this, 0, 0, this.getLastColumnNum(0), this.getLastRowNum());
+        return new SimpleTable(this, 0, 0, this.getLastColumnNum(), this.getLastRowNum());
+    }
+
+    public int getLastColumnNum() {
+        int result = this.getLastColumnNum(0);
+        for (int i = 1; i < DocumentFactory.DEFAULT_SAMPLE_COUNT; i++) {
+            result = Math.max(result, this.getLastColumnNum(i));
+        }
+        return result;
     }
 
     public abstract Table createIntelliTable();
