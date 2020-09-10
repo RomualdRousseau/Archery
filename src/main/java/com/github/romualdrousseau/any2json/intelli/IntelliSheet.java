@@ -9,12 +9,12 @@ import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.base.AbstractSheet;
 import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.base.SheetBitmap;
+import com.github.romualdrousseau.any2json.base.TableMatcher;
 import com.github.romualdrousseau.any2json.event.AllTablesExtractedEvent;
 import com.github.romualdrousseau.any2json.event.BitmapGeneratedEvent;
 import com.github.romualdrousseau.any2json.event.DataTableListBuiltEvent;
 import com.github.romualdrousseau.any2json.event.MetaTableListBuiltEvent;
 import com.github.romualdrousseau.any2json.event.TableGraphBuiltEvent;
-import com.github.romualdrousseau.any2json.layex.LayexMatcher;
 import com.github.romualdrousseau.any2json.util.RowTranslatable;
 import com.github.romualdrousseau.any2json.util.RowTranslator;
 import com.github.romualdrousseau.any2json.util.TableGraph;
@@ -243,7 +243,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         return root;
     }
 
-    private List<MetaTable> getMetaTables(final List<CompositeTable> tables, final List<LayexMatcher> metaLayexes) {
+    private List<MetaTable> getMetaTables(final List<CompositeTable> tables, final List<TableMatcher> metaLayexes) {
         final ArrayList<MetaTable> result = new ArrayList<MetaTable>();
 
         for (final CompositeTable table : tables) {
@@ -252,7 +252,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
             }
 
             boolean foundMatch = false;
-            for (final LayexMatcher metaLayex : metaLayexes) {
+            for (final TableMatcher metaLayex : metaLayexes) {
                 if (!foundMatch && metaLayex.match(new TableLexer(table), null)) {
                     result.add(new MetaTable(table, metaLayex));
                     foundMatch = true;
@@ -268,7 +268,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         return result;
     }
 
-    private List<DataTable> getDataTables(final List<CompositeTable> tables, final List<LayexMatcher> dataLayexes) {
+    private List<DataTable> getDataTables(final List<CompositeTable> tables, final List<TableMatcher> dataLayexes) {
         final ArrayList<DataTable> result = new ArrayList<DataTable>();
 
         for (final Visitable e : tables) {
@@ -277,7 +277,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
 
         for (final CompositeTable table : tables) {
             boolean foundMatch = false;
-            for (final LayexMatcher dataLayex : dataLayexes) {
+            for (final TableMatcher dataLayex : dataLayexes) {
                 if (!foundMatch && dataLayex.match(new TableLexer(table), null)) {
                     DataTable dataTable = new DataTable(table, dataLayex);
                     result.add(dataTable);
@@ -295,7 +295,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         return result;
     }
 
-    private void splitAllSubTables(CompositeTable table, LayexMatcher layex, DataTableContext context,
+    private void splitAllSubTables(CompositeTable table, TableMatcher layex, DataTableContext context,
             List<DataTable> result) {
         int firstRow = -1;
         for (int splitRow : context.getSplitRows()) {

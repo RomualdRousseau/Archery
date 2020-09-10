@@ -1,16 +1,16 @@
 
-package com.github.romualdrousseau.any2json.layex.operations;
+package com.github.romualdrousseau.any2json.classifiers.layex.operations;
 
 import java.util.LinkedList;
 
-import com.github.romualdrousseau.any2json.layex.Context;
-import com.github.romualdrousseau.any2json.layex.LayexMatcher;
-import com.github.romualdrousseau.any2json.layex.Lexer;
-import com.github.romualdrousseau.any2json.layex.Symbol;
+import com.github.romualdrousseau.any2json.base.Context;
+import com.github.romualdrousseau.any2json.base.Symbol;
+import com.github.romualdrousseau.any2json.base.TableMatcher;
+import com.github.romualdrousseau.any2json.classifiers.layex.Lexer;
 
-public class Or implements LayexMatcher {
+public class Or implements TableMatcher {
 
-    public Or(LinkedList<LayexMatcher> stack) {
+    public Or(LinkedList<TableMatcher> stack) {
         this.a = stack.pop();
         this.b = stack.pop();
     }
@@ -32,6 +32,6 @@ public class Or implements LayexMatcher {
         return "OR(" + this.a + "," + this.b + ")";
     }
 
-    private LayexMatcher a;
-    private LayexMatcher b;
+    private TableMatcher a;
+    private TableMatcher b;
 }

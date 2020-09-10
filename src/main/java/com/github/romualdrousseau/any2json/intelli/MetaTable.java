@@ -3,8 +3,8 @@ package com.github.romualdrousseau.any2json.intelli;
 import com.github.romualdrousseau.any2json.Cell;
 import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.base.BaseCell;
+import com.github.romualdrousseau.any2json.base.TableMatcher;
 import com.github.romualdrousseau.any2json.intelli.header.MetaHeader;
-import com.github.romualdrousseau.any2json.layex.LayexMatcher;
 import com.github.romualdrousseau.any2json.util.TableLexer;
 
 public class MetaTable extends CompositeTable {
@@ -15,7 +15,7 @@ public class MetaTable extends CompositeTable {
         this.setLoadCompleted(true);
     }
 
-    public MetaTable(final CompositeTable table, final LayexMatcher layex) {
+    public MetaTable(final CompositeTable table, final TableMatcher layex) {
         super(table);
         layex.match(new TableLexer(table), new MetaTableContext(this));
     }

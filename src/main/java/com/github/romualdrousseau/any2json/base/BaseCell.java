@@ -1,7 +1,6 @@
 package com.github.romualdrousseau.any2json.base;
 
 import com.github.romualdrousseau.any2json.Cell;
-import com.github.romualdrousseau.any2json.layex.Symbol;
 import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.shuju.math.Tensor1D;
 import com.github.romualdrousseau.shuju.util.StringUtility;

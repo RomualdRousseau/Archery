@@ -6,10 +6,10 @@ import com.github.romualdrousseau.any2json.Cell;
 import com.github.romualdrousseau.any2json.Header;
 import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.base.RowGroup;
+import com.github.romualdrousseau.any2json.base.TableMatcher;
 import com.github.romualdrousseau.any2json.intelli.header.DataTableHeader;
 import com.github.romualdrousseau.any2json.intelli.header.MetaTableHeader;
 import com.github.romualdrousseau.any2json.intelli.header.PivotKeyHeader;
-import com.github.romualdrousseau.any2json.layex.LayexMatcher;
 import com.github.romualdrousseau.any2json.util.TableLexer;
 
 public class DataTable extends CompositeTable {
@@ -19,7 +19,7 @@ public class DataTable extends CompositeTable {
         this.buildIntelliTable(table);
     }
 
-    public DataTable(CompositeTable table, LayexMatcher layex) {
+    public DataTable(CompositeTable table, TableMatcher layex) {
         super(table);
         this.dataTableContext = new DataTableContext(this);
         layex.match(new TableLexer(table), this.dataTableContext);

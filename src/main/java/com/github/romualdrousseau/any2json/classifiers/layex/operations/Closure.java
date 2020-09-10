@@ -1,16 +1,16 @@
 
-package com.github.romualdrousseau.any2json.layex.operations;
+package com.github.romualdrousseau.any2json.classifiers.layex.operations;
 
 import java.util.LinkedList;
 
-import com.github.romualdrousseau.any2json.layex.Context;
-import com.github.romualdrousseau.any2json.layex.LayexMatcher;
-import com.github.romualdrousseau.any2json.layex.Lexer;
-import com.github.romualdrousseau.any2json.layex.Symbol;
+import com.github.romualdrousseau.any2json.base.Context;
+import com.github.romualdrousseau.any2json.base.Symbol;
+import com.github.romualdrousseau.any2json.base.TableMatcher;
+import com.github.romualdrousseau.any2json.classifiers.layex.Lexer;
 
-public class Closure implements LayexMatcher {
+public class Closure implements TableMatcher {
 
-    public Closure(LinkedList<LayexMatcher> stack, int minCount, int maxCount) {
+    public Closure(LinkedList<TableMatcher> stack, int minCount, int maxCount) {
         this.a = stack.pop();
         this.minCount = minCount;
         this.maxCount = maxCount;
@@ -36,7 +36,7 @@ public class Closure implements LayexMatcher {
         return "CLOSURE(" + this.a + ", " + this.minCount + ", " + this.maxCount + ")";
     }
 
-    private LayexMatcher a;
+    private TableMatcher a;
     private int minCount;
     private int maxCount;
 }

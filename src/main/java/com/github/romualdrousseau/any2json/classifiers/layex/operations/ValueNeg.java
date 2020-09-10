@@ -1,11 +1,11 @@
-package com.github.romualdrousseau.any2json.layex.operations;
+package com.github.romualdrousseau.any2json.classifiers.layex.operations;
 
-import com.github.romualdrousseau.any2json.layex.Context;
-import com.github.romualdrousseau.any2json.layex.LayexMatcher;
-import com.github.romualdrousseau.any2json.layex.Lexer;
-import com.github.romualdrousseau.any2json.layex.Symbol;
+import com.github.romualdrousseau.any2json.base.Context;
+import com.github.romualdrousseau.any2json.base.Symbol;
+import com.github.romualdrousseau.any2json.base.TableMatcher;
+import com.github.romualdrousseau.any2json.classifiers.layex.Lexer;
 
-public class ValueNeg implements LayexMatcher {
+public class ValueNeg implements TableMatcher {
 
     public ValueNeg(String v) {
         this.v = v.toLowerCase();

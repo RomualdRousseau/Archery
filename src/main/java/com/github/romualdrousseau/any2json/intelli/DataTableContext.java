@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.romualdrousseau.any2json.base.BaseCell;
+import com.github.romualdrousseau.any2json.base.Context;
 import com.github.romualdrousseau.any2json.base.RowGroup;
 import com.github.romualdrousseau.any2json.intelli.header.MetaTableHeader;
 import com.github.romualdrousseau.any2json.intelli.header.PivotKeyHeader;
 import com.github.romualdrousseau.any2json.intelli.header.DataTableHeader;
-import com.github.romualdrousseau.any2json.layex.Context;
 
 public class DataTableContext extends Context<BaseCell> {
 

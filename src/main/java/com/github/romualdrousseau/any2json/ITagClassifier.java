@@ -1,6 +1,6 @@
 package com.github.romualdrousseau.any2json;
 
-import com.github.romualdrousseau.any2json.layex.LayexMatcher;
+import com.github.romualdrousseau.any2json.base.TableMatcher;
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.DataSet;
 import com.github.romualdrousseau.shuju.nlp.NgramList;
@@ -23,9 +23,9 @@ public interface ITagClassifier {
 
     List<String> getRequiredTagList();
 
-    List<LayexMatcher> getMetaLayexes();
+    List<TableMatcher> getMetaLayexes();
 
-    List<LayexMatcher> getDataLayexes();
+    List<TableMatcher> getDataLayexes();
 
     List<String> getPivotEntityList();
 

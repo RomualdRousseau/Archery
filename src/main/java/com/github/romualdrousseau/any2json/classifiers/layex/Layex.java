@@ -1,29 +1,30 @@
-package com.github.romualdrousseau.any2json.layex;
+package com.github.romualdrousseau.any2json.classifiers.layex;
 
 import java.util.LinkedList;
 
-import com.github.romualdrousseau.any2json.layex.operations.Any;
-import com.github.romualdrousseau.any2json.layex.operations.Closure;
-import com.github.romualdrousseau.any2json.layex.operations.Concat;
-import com.github.romualdrousseau.any2json.layex.operations.EndOfRow;
-import com.github.romualdrousseau.any2json.layex.operations.Group;
-import com.github.romualdrousseau.any2json.layex.operations.Nop;
-import com.github.romualdrousseau.any2json.layex.operations.Or;
-import com.github.romualdrousseau.any2json.layex.operations.Value;
-import com.github.romualdrousseau.any2json.layex.operations.ValueNeg;
+import com.github.romualdrousseau.any2json.base.TableMatcher;
+import com.github.romualdrousseau.any2json.classifiers.layex.operations.Any;
+import com.github.romualdrousseau.any2json.classifiers.layex.operations.Closure;
+import com.github.romualdrousseau.any2json.classifiers.layex.operations.Concat;
+import com.github.romualdrousseau.any2json.classifiers.layex.operations.EndOfRow;
+import com.github.romualdrousseau.any2json.classifiers.layex.operations.Group;
+import com.github.romualdrousseau.any2json.classifiers.layex.operations.Nop;
+import com.github.romualdrousseau.any2json.classifiers.layex.operations.Or;
+import com.github.romualdrousseau.any2json.classifiers.layex.operations.Value;
+import com.github.romualdrousseau.any2json.classifiers.layex.operations.ValueNeg;
 
 public class Layex {
-    public Layex(String pattern) {
+    public Layex(final String pattern) {
         this.pattern = new StringLexer(pattern.replaceAll(" ", ""));
     }
 
-    public LayexMatcher compile() {
-        this.stack = new LinkedList<LayexMatcher>();
+    public TableMatcher compile() {
+        this.stack = new LinkedList<TableMatcher>();
         this.groupCounter = 0;
         return this.r();
     }
 
-    private LayexMatcher r() {
+    private TableMatcher r() {
         // Grammar
         // R = RR
         // R = R|R
@@ -34,7 +35,7 @@ public class Layex {
         // R = R+
         // R = R{n}
         // R = s
-        String c = this.getSymbol();
+        final String c = this.getSymbol();
 
         if (c.equals("")) {
             return new Nop();
@@ -43,8 +44,8 @@ public class Layex {
         } else if (c.equals("]")) {
             return new Nop();
         } else {
-            LayexMatcher e1 = r2();
-            LayexMatcher e2 = r();
+            final TableMatcher e1 = r2();
+            final TableMatcher e2 = r();
 
             if (e2 instanceof Nop) { // Small optimization
                 return e1;
@@ -56,8 +57,8 @@ public class Layex {
         }
     }
 
-    private LayexMatcher r2() {
-        String c = this.getSymbol();
+    private TableMatcher r2() {
+        final String c = this.getSymbol();
 
         if (c.charAt(0) >= 'a' && c.charAt(0) <= 'z') {
             this.acceptPreviousSymbol();
@@ -73,13 +74,13 @@ public class Layex {
             return r3(new EndOfRow());
         } else if (c.equals("(")) {
             this.acceptPreviousSymbol();
-            LayexMatcher e = r();
+            final TableMatcher e = r();
             this.acceptSymbol(")");
             this.stack.push(r3(e));
             return new Group(this.stack, this.groupCounter++);
         } else if (c.equals("[")) {
             this.acceptPreviousSymbol();
-            LayexMatcher e = r();
+            final TableMatcher e = r();
             this.acceptSymbol("]");
             return r3(e);
         } else {
@@ -87,8 +88,8 @@ public class Layex {
         }
     }
 
-    private LayexMatcher r3(LayexMatcher e) {
-        String c = this.getSymbol();
+    private TableMatcher r3(final TableMatcher e) {
+        final String c = this.getSymbol();
 
         if (c.equals("?")) {
             this.acceptPreviousSymbol();
@@ -104,12 +105,12 @@ public class Layex {
             return new Closure(this.stack, 1, Integer.MAX_VALUE);
         } else if (c.equals("{")) {
             this.acceptPreviousSymbol();
-            LayexMatcher e2 = r4(e);
+            final TableMatcher e2 = r4(e);
             this.acceptSymbol("}");
             return e2;
         } else if (c.equals("|")) {
             this.acceptPreviousSymbol();
-            LayexMatcher e2 = r();
+            final TableMatcher e2 = r();
             this.stack.push(e2);
             this.stack.push(e);
             return new Or(this.stack);
@@ -118,16 +119,16 @@ public class Layex {
         }
     }
 
-    private LayexMatcher r4(LayexMatcher e) {
+    private TableMatcher r4(final TableMatcher e) {
         String c = this.getSymbol();
 
         if (c.charAt(0) >= '0' && c.charAt(0) <= '9') {
             this.acceptPreviousSymbol();
-            int n1 = Integer.valueOf(c);
+            final int n1 = Integer.valueOf(c);
             int n2 = n1;
 
             c = this.getSymbol();
-            if(c.equals(",")) {
+            if (c.equals(",")) {
                 this.acceptPreviousSymbol();
                 n2 = Integer.MAX_VALUE;
 
@@ -153,13 +154,13 @@ public class Layex {
         this.pattern.read();
     }
 
-    private void acceptSymbol(String s) {
+    private void acceptSymbol(final String s) {
         if (!this.pattern.read().getSymbol().equals(s)) {
             throw new RuntimeException("Syntax Error");
         }
     }
 
-    private LinkedList<LayexMatcher> stack;
-    private StringLexer pattern;
+    private LinkedList<TableMatcher> stack;
+    private final StringLexer pattern;
     private int groupCounter;
 }

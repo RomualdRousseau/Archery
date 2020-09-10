@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.base.BaseRow;
+import com.github.romualdrousseau.any2json.classifiers.layex.Lexer;
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
-import com.github.romualdrousseau.any2json.layex.Lexer;
 
 public class TableLexer implements Lexer<BaseCell, TableLexer.Cursor> {
 

@@ -1,9 +1,9 @@
 package com.github.romualdrousseau.any2json.intelli;
 
 import com.github.romualdrousseau.any2json.base.BaseCell;
+import com.github.romualdrousseau.any2json.base.Context;
 import com.github.romualdrousseau.any2json.intelli.header.MetaHeader;
 import com.github.romualdrousseau.any2json.intelli.header.MetaKeyValueHeader;
-import com.github.romualdrousseau.any2json.layex.Context;
 
 public class MetaTableContext extends Context<BaseCell> {
 

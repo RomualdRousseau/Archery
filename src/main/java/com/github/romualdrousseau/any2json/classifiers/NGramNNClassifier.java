@@ -6,8 +6,8 @@ import java.util.List;
 
 import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.ITagClassifier;
-import com.github.romualdrousseau.any2json.layex.Layex;
-import com.github.romualdrousseau.any2json.layex.LayexMatcher;
+import com.github.romualdrousseau.any2json.base.TableMatcher;
+import com.github.romualdrousseau.any2json.classifiers.layex.Layex;
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.DataSet;
 import com.github.romualdrousseau.shuju.json.JSON;
@@ -44,8 +44,8 @@ public class NGramNNClassifier implements ITagClassifier {
     private Loss loss;
     private float accuracy;
     private float mean;
-    private List<LayexMatcher> metaLayexes;
-    private List<LayexMatcher> dataLayexes;
+    private List<TableMatcher> metaLayexes;
+    private List<TableMatcher> dataLayexes;
     private List<String> pivotEntityList;
 
     private final static String[] metaLayexesDefault = { "(v.$)+" };
@@ -57,9 +57,6 @@ public class NGramNNClassifier implements ITagClassifier {
             "(()(ES.+$))(()(.{3,}$))+(.{2}$)?"
         };
 
-    public NGramNNClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords, final StringList tags) {
-        this(ngrams, entities, stopwords, tags, null, null);
-    }
 
     public NGramNNClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords, final StringList tags, final String[] requiredTags, final String[] pivotEntityList) {
         this(ngrams, entities, stopwords, tags, requiredTags, pivotEntityList, metaLayexesDefault, dataLayexesDefault);
@@ -73,9 +70,9 @@ public class NGramNNClassifier implements ITagClassifier {
         this.stopwords = stopwords;
         this.tags = tags;
         this.requiredTags = (requiredTags == null) ? null : Arrays.asList(requiredTags);
-        this.metaLayexes = new ArrayList<LayexMatcher>();
-        this.dataLayexes = new ArrayList<LayexMatcher>();
         this.pivotEntityList = (pivotEntityList == null) ? null : Arrays.asList(pivotEntityList);
+        this.metaLayexes = new ArrayList<TableMatcher>();
+        this.dataLayexes = new ArrayList<TableMatcher>();
 
         if (metaLayexes != null) {
             for (final String layex : metaLayexes) {
@@ -110,6 +107,14 @@ public class NGramNNClassifier implements ITagClassifier {
             }
         }
 
+        final JSONArray pivotEntities = json.getJSONObject("entities").getJSONArray("pivotEntityList");
+        if (pivotEntities != null && pivotEntities.size() > 0) {
+            this.pivotEntityList = new ArrayList<String>();
+            for (int i = 0; i < pivotEntities.size(); i++) {
+                this.pivotEntityList.add(pivotEntities.getString(i));
+            }
+        }
+
         final JSONArray layexes = json.getJSONArray("layexes");
         if (layexes != null && layexes.size() > 0) {
             for (int i = 0; i < layexes.size(); i++) {
@@ -126,14 +131,6 @@ public class NGramNNClassifier implements ITagClassifier {
             }
             for (final String layex : dataLayexesDefault) {
                 this.dataLayexes.add(new Layex(layex).compile());
-            }
-        }
-
-        final JSONArray pivotEntities = json.getJSONObject("entities").getJSONArray("pivotEntityList");
-        if (pivotEntities != null && pivotEntities.size() > 0) {
-            this.pivotEntityList = new ArrayList<String>();
-            for (int i = 0; i < pivotEntities.size(); i++) {
-                this.pivotEntityList.add(pivotEntities.getString(i));
             }
         }
 
@@ -164,11 +161,11 @@ public class NGramNNClassifier implements ITagClassifier {
         return this.requiredTags;
     }
 
-    public List<LayexMatcher> getMetaLayexes() {
+    public List<TableMatcher> getMetaLayexes() {
         return this.metaLayexes;
     }
 
-    public List<LayexMatcher> getDataLayexes() {
+    public List<TableMatcher> getDataLayexes() {
         return this.dataLayexes;
     }
 
