@@ -21,7 +21,7 @@ public abstract class AbstractSheet implements Sheet {
 
     @Override
     public Table getTable(final ITagClassifier classifier) {
-        if (this.getLastColumnNum() < 0 || this.getLastRowNum() < 0) {
+        if (this.getLastRowNum() < 0 || this.getLastColumnNum() < 0) {
             return null;
         }
         this.classifier = classifier;
@@ -49,7 +49,7 @@ public abstract class AbstractSheet implements Sheet {
 
     public int getLastColumnNum() {
         int result = this.getLastColumnNum(0);
-        for (int i = 1; i < DocumentFactory.DEFAULT_SAMPLE_COUNT; i++) {
+        for (int i = 1; i < Math.min(DocumentFactory.DEFAULT_SAMPLE_COUNT, this.getLastRowNum()); i++) {
             result = Math.max(result, this.getLastColumnNum(i));
         }
         return result;
