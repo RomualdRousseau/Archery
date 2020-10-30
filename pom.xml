@@ -113,7 +113,7 @@
         <dependency>
             <groupId>com.github.romualdrousseau</groupId>
             <artifactId>shuju</artifactId>
-            <version>1.11-SNAPSHOT</version>
+            <version>1.11</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
