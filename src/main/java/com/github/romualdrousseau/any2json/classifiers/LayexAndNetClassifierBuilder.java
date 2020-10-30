@@ -1,0 +1,68 @@
+package com.github.romualdrousseau.any2json.classifiers;
+
+import com.github.romualdrousseau.any2json.ClassifierFactory;
+import com.github.romualdrousseau.any2json.IClassifierBuilder;
+import com.github.romualdrousseau.shuju.json.JSONObject;
+import com.github.romualdrousseau.shuju.nlp.NgramList;
+import com.github.romualdrousseau.shuju.nlp.RegexList;
+import com.github.romualdrousseau.shuju.nlp.StopWordList;
+import com.github.romualdrousseau.shuju.nlp.StringList;
+
+public class LayexAndNetClassifierBuilder implements IClassifierBuilder<LayexAndNetClassifier> {
+
+    public LayexAndNetClassifierBuilder setModel(JSONObject model) {
+        this.model = model;
+        return this;
+    }
+
+    public LayexAndNetClassifierBuilder setNgramList(NgramList ngramList) {
+        this.ngramList = ngramList;
+		return this;
+    }
+
+    public LayexAndNetClassifierBuilder setEntityList(RegexList entityList) {
+        this.entityList = entityList;
+		return this;
+    }
+
+    public LayexAndNetClassifierBuilder setStopWordList(StopWordList stopWordList) {
+        this.stopWordList = stopWordList;
+		return this;
+    }
+
+    public LayexAndNetClassifierBuilder setTagList(StringList tagList) {
+        this.tagList = tagList;
+		return this;
+    }
+
+    public LayexAndNetClassifierBuilder setRequiredTagList(String[] requiredTagList) {
+        this.requiredTagList = requiredTagList;
+		return this;
+    }
+
+    public LayexAndNetClassifierBuilder setPivotEntityList(String[] pivotEntityList) {
+        this.pivotEntityList = pivotEntityList;
+		return this;
+	}
+
+    public LayexAndNetClassifier build() {
+        final LayexAndNetClassifier classifier;
+        if (model == null) {
+            classifier = new LayexAndNetClassifier(ngramList, entityList, stopWordList, tagList, requiredTagList, pivotEntityList);
+        } else {
+            classifier = new LayexAndNetClassifier(model);
+        }
+        ClassifierFactory.get()
+            .setLayoutClassifier(classifier)
+            .setTagClassifier(classifier);
+        return classifier;
+    }
+
+    private JSONObject model;
+    private NgramList ngramList;
+    private RegexList entityList;
+    private StopWordList stopWordList;
+    private StringList tagList;
+    private String[] requiredTagList;
+    private String[] pivotEntityList;
+}

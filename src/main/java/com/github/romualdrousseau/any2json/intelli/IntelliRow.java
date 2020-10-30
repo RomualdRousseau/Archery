@@ -17,9 +17,9 @@ public class IntelliRow extends BaseRow {
         return (cell == null) ? BaseCell.Empty : cell;
     }
 
-    public void setCellValue(final int colIndex, final String value) {
+    public void setCellValue(final int colIndex, final String value, final String rawValue) {
         if(value != null) {
-            this.setCell(colIndex, new BaseCell(value, colIndex, 1, this.getTable().getClassifier()));
+            this.setCell(colIndex, new BaseCell(value, colIndex, 1, rawValue));
         }
     }
 
@@ -29,7 +29,7 @@ public class IntelliRow extends BaseRow {
             if (cell.getMergedCount() == 1) {
                 this.cellsData[colIndex] = cell;
             } else {
-                this.cellsData[colIndex] = new BaseCell(cell.getValue(), colIndex, 1, this.getTable().getClassifier());
+                this.cellsData[colIndex] = new BaseCell(cell.getValue(), colIndex, 1, cell.getRawValue());
             }
         }
     }

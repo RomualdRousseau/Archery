@@ -7,34 +7,22 @@ import com.github.romualdrousseau.any2json.intelli.header.IntelliHeader;
 
 import java.util.HashMap;
 
-import com.github.romualdrousseau.any2json.ITagClassifier;
-
 public class CompositeTable extends AbstractTable {
 
-    public CompositeTable(final ITagClassifier classifier) {
-        this(null, 0, 0, 0, 0, classifier);
+    public CompositeTable() {
+        this(null, 0, 0, 0, 0);
     }
 
     public CompositeTable(final CompositeTable parent) {
         super(parent);
-        this.classifier = parent.classifier;
     }
 
     public CompositeTable(final CompositeTable parent, final int firstRow, final int lastRow) {
         super(parent, firstRow, lastRow);
-        this.classifier = parent.classifier;
     }
 
-    public CompositeTable(AbstractSheet sheet, int firstColumn, int firstRow, int lastColumn, int lastRow,
-            ITagClassifier classifier) {
+    public CompositeTable(AbstractSheet sheet, int firstColumn, int firstRow, int lastColumn, int lastRow) {
         super(sheet, firstColumn, firstRow, lastColumn, lastRow);
-        assert (classifier != null) : "classifier must be defined";
-        this.classifier = classifier;
-    }
-
-    @Override
-    public ITagClassifier getClassifier() {
-        return this.classifier;
     }
 
     @Override
@@ -67,6 +55,5 @@ public class CompositeTable extends AbstractTable {
         return this.headersByTag.values();
     }
 
-    private final ITagClassifier classifier;
     private final HashMap<String, Header> headersByTag = new HashMap<String, Header>();
 }

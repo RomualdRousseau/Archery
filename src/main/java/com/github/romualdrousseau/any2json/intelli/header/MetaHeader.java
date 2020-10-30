@@ -1,5 +1,6 @@
 package com.github.romualdrousseau.any2json.intelli.header;
 
+import com.github.romualdrousseau.any2json.ClassifierFactory;
 import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
@@ -18,8 +19,8 @@ public class MetaHeader extends CompositeHeader {
     public String getName() {
         if (this.name == null) {
             final String v1 = this.getCell().getValue();
-            final String v2 = this.getTable().getClassifier().getEntityList().anonymize(v1);
-            this.name = this.getTable().getClassifier().getStopWordList().removeStopWords(v2);
+            final String v2 = ClassifierFactory.get().getLayoutClassifier().get().getEntityList().anonymize(v1);
+            this.name = ClassifierFactory.get().getLayoutClassifier().get().getStopWordList().removeStopWords(v2);
         }
         return this.name;
     }
@@ -28,7 +29,7 @@ public class MetaHeader extends CompositeHeader {
     public String getValue() {
         if (this.value == null) {
             final String v1 = this.getCell().getValue();
-            final String v2 = this.getTable().getClassifier().getEntityList().find(v1);
+            final String v2 = ClassifierFactory.get().getLayoutClassifier().get().getEntityList().find(v1);
             this.value = (v2 == null) ? v1 : v2;
         }
         return this.value;
@@ -38,12 +39,12 @@ public class MetaHeader extends CompositeHeader {
     public BaseCell getCellAtRow(final Row row) {
         if (this.transformedCell == null) {
             final String v1 = this.getCell().getValue();
-            final String v2 = this.getTable().getClassifier().getEntityList().find(v1);
+            final String v2 = ClassifierFactory.get().getLayoutClassifier().get().getEntityList().find(v1);
             if (v2 == null) {
                 this.transformedCell = this.getCell();
             } else {
                 this.transformedCell = new BaseCell(v2, this.getCell().getColumnIndex(),
-                        this.getCell().getMergedCount(), this.getTable().getClassifier());
+                        this.getCell().getMergedCount(), this.getCell().getRawValue());
             }
         }
         return this.transformedCell;

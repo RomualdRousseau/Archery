@@ -3,7 +3,6 @@ package com.github.romualdrousseau.any2json.base;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.Header;
 import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.Table;
@@ -77,10 +76,6 @@ public abstract class AbstractTable implements Table, Visitable {
 
     public AbstractSheet getSheet() {
         return this.sheet;
-    }
-
-    public ITagClassifier getClassifier() {
-        return null;
     }
 
     public int getFirstColumn() {

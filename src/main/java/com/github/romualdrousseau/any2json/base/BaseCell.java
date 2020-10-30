@@ -1,24 +1,30 @@
 package com.github.romualdrousseau.any2json.base;
 
 import com.github.romualdrousseau.any2json.Cell;
-import com.github.romualdrousseau.any2json.ITagClassifier;
+import com.github.romualdrousseau.any2json.ClassifierFactory;
 import com.github.romualdrousseau.shuju.math.Tensor1D;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 public class BaseCell implements Cell, Symbol {
 
-    public final static BaseCell Empty = new BaseCell("", 0, 1, null);
+    public final static BaseCell Empty = new BaseCell("", 0, 1);
 
-    public final static BaseCell EndOfRow = new BaseCell("", 0, 0, null);
+    public final static BaseCell EndOfRow = new BaseCell("", 0, 0);
 
-    public final static BaseCell EndOfStream = new BaseCell("", 0, 0, null);
+    public final static BaseCell EndOfStream = new BaseCell("", 0, 0);
 
-    public BaseCell(final String value, final int colIndex, final int mergedCount,
-            final ITagClassifier classifier) {
+    public BaseCell(final String value, final int colIndex, final int mergedCount) {
         this.value = value;
         this.colIndex = colIndex;
         this.mergedCount = mergedCount;
-        this.classifier = classifier;
+        this.rawValue = value;
+    }
+
+    public BaseCell(final String value, final int colIndex, final int mergedCount, final String rawValue) {
+        this.value = value;
+        this.colIndex = colIndex;
+        this.mergedCount = mergedCount;
+        this.rawValue = rawValue;
     }
 
     @Override
@@ -33,12 +39,12 @@ public class BaseCell implements Cell, Symbol {
 
     @Override
     public String getEntityString() {
-        if (this.classifier == null) {
+        if (ClassifierFactory.get().getTagClassifier() == null) {
             return null;
         } else {
             Tensor1D v = this.getEntityVector();
             if(v.sparsity() < 1.0f) {
-                return this.classifier.getEntityList().get(v.argmax());
+                return ClassifierFactory.get().getLayoutClassifier().get().getEntityList().get(v.argmax());
             } else {
                 return null;
             }
@@ -63,6 +69,10 @@ public class BaseCell implements Cell, Symbol {
         return this.symbol;
     }
 
+    public String getRawValue() {
+        return (this.rawValue == null) ? "" : this.rawValue;
+    }
+
     public int getMergedCount() {
         return this.mergedCount;
     }
@@ -73,10 +83,10 @@ public class BaseCell implements Cell, Symbol {
 
     public Tensor1D getEntityVector() {
         if (this.entityVector == null) {
-            if(this.classifier == null) {
+            if(ClassifierFactory.get().getTagClassifier() == null) {
                 this.entityVector = Tensor1D.Null;
             } else {
-                this.entityVector = this.classifier.getEntityList().word2vec(this.value);
+                this.entityVector = ClassifierFactory.get().getLayoutClassifier().get().getEntityList().word2vec(this.value);
             }
         }
         return this.entityVector;
@@ -85,7 +95,7 @@ public class BaseCell implements Cell, Symbol {
     private final String value;
     private final int colIndex;
     private final int mergedCount;
+    private final String rawValue;
     private Tensor1D entityVector;
-    private final ITagClassifier classifier;
     private String symbol;
 }

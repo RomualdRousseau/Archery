@@ -3,7 +3,6 @@ package com.github.romualdrousseau.any2json.intelli;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.Header;
 import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.base.BaseCell;
@@ -17,8 +16,8 @@ import com.github.romualdrousseau.any2json.util.TableGraph;
 
 public class IntelliTable extends CompositeTable {
 
-    public IntelliTable(final TableGraph root, final ITagClassifier classifier) {
-        super(classifier);
+    public IntelliTable(final TableGraph root) {
+        super();
         this.buildHeaders(root);
         this.buildTable(root, findPivotHeader());
         this.setHeaders();
@@ -140,7 +139,7 @@ public class IntelliTable extends CompositeTable {
 
             if (abstractHeader instanceof PivotKeyHeader && pivotCell != null) {
                 if (orgHeaders.size() > 0) {
-                    newRow.setCellValue(abstractHeader.getColumnIndex(), pivotCell.getValue());
+                    newRow.setCellValue(abstractHeader.getColumnIndex(), pivotCell.getValue(), pivotCell.getRawValue());
                     newRow.setCell(abstractHeader.getColumnIndex() + 1,
                             orgRow.getCellAt(pivotCell.getColumnIndex()));
                 }
@@ -155,7 +154,7 @@ public class IntelliTable extends CompositeTable {
                         }
                     }
                 } else {
-                    newRow.setCellValue(abstractHeader.getColumnIndex(), abstractHeader.getValue());
+                    newRow.setCellValue(abstractHeader.getColumnIndex(), abstractHeader.getValue(), abstractHeader.getCell().getRawValue());
                 }
             }
         }

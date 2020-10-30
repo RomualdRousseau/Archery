@@ -6,7 +6,5 @@ public interface Sheet {
 
     Table getTable();
 
-    Table getTable(ITagClassifier classifier);
-
     void addSheetListener(SheetListener listener);
 }

@@ -1,5 +1,6 @@
 package com.github.romualdrousseau.any2json.intelli.header;
 
+import com.github.romualdrousseau.any2json.ClassifierFactory;
 import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.base.BaseRow;
@@ -20,7 +21,7 @@ public class PivotValueHeader extends PivotKeyHeader {
         if (this.name == null) {
             final Tensor1D v = this.buildEntityVector();
             if(v.sparsity() < 1.0f) {
-                this.name = this.getTable().getClassifier().getEntityList().get(v.argmax());
+                this.name = ClassifierFactory.get().getLayoutClassifier().get().getEntityList().get(v.argmax());
             } else {
                 this.name = "#VALUE?";
             }
@@ -34,11 +35,11 @@ public class PivotValueHeader extends PivotKeyHeader {
     }
 
     public Tensor1D buildEntityVector() {
-        final Tensor1D result = new Tensor1D(this.getTable().getClassifier().getEntityList().getVectorSize());
+        final Tensor1D result = new Tensor1D(ClassifierFactory.get().getLayoutClassifier().get().getEntityList().getVectorSize());
 
         int n = 0;
         for (int i = 0; i < Math.min(this.getTable().getNumberOfRows(),
-                this.getTable().getClassifier().getSampleCount()); i++) {
+            ClassifierFactory.get().getLayoutClassifier().get().getSampleCount()); i++) {
             final BaseRow row = this.getTable().getRowAt(i);
             if (row == null) {
                 continue;

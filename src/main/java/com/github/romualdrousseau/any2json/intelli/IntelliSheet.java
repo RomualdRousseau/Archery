@@ -3,7 +3,7 @@ package com.github.romualdrousseau.any2json.intelli;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.romualdrousseau.any2json.ITagClassifier;
+import com.github.romualdrousseau.any2json.ClassifierFactory;
 import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.base.AbstractSheet;
@@ -32,21 +32,22 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
 
     public IntelliSheet() {
         this.rowTranslator = new RowTranslator(this);
+        assert(ClassifierFactory.get().getLayoutClassifier().isPresent());
     }
 
     @Override
     public Table createIntelliTable() {
-        final SheetBitmap image = new SheetBitmap(this, Math.max(this.getLastColumnNum(), this.classifier.getSampleCount()), this.getLastRowNum() + 1);
+        final SheetBitmap image = new SheetBitmap(this, Math.max(this.getLastColumnNum(), ClassifierFactory.get().getLayoutClassifier().get().getSampleCount()), this.getLastRowNum() + 1);
         if (!this.notifyStepCompleted(new BitmapGeneratedEvent(this, image))) {
             return null;
         }
 
-        final List<CompositeTable> tables = this.findAllTables(this.classifier, image);
+        final List<CompositeTable> tables = this.findAllTables(image);
         if (!this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables))) {
             return null;
         }
 
-        final List<DataTable> dataTables = this.getDataTables(tables, this.classifier.getDataLayexes());
+        final List<DataTable> dataTables = this.getDataTables(tables, ClassifierFactory.get().getLayoutClassifier().get().getDataMatcherList());
         if (!this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables))) {
             return null;
         }
@@ -55,7 +56,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
             return null;
         }
 
-        final List<MetaTable> metaTables = this.getMetaTables(tables, this.classifier.getMetaLayexes());
+        final List<MetaTable> metaTables = this.getMetaTables(tables, ClassifierFactory.get().getLayoutClassifier().get().getMetaMatcherList());
         if (!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
             return null;
         }
@@ -65,7 +66,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
             return null;
         }
 
-        return new IntelliTable(root, this.classifier);
+        return new IntelliTable(root);
     }
 
     @Override
@@ -180,15 +181,13 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
                 if (value.isEmpty()) {
                     hash += "s";
                     countEmptyCells++;
-                } else if (this.classifier != null) {
-                    Tensor1D v = this.classifier.getEntityList().word2vec(value);
+                } else {
+                    Tensor1D v = ClassifierFactory.get().getLayoutClassifier().get().getEntityList().word2vec(value);
                     if (v.sparsity() < 1.0f) {
                         hash += "e";
                     } else {
                         hash += "v";
                     }
-                } else {
-                    hash += "v";
                 }
             }
 
@@ -243,7 +242,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         return root;
     }
 
-    private List<MetaTable> getMetaTables(final List<CompositeTable> tables, final List<TableMatcher> metaLayexes) {
+    private List<MetaTable> getMetaTables(final List<CompositeTable> tables, final List<TableMatcher> metaMatchers) {
         final ArrayList<MetaTable> result = new ArrayList<MetaTable>();
 
         for (final CompositeTable table : tables) {
@@ -252,9 +251,9 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
             }
 
             boolean foundMatch = false;
-            for (final TableMatcher metaLayex : metaLayexes) {
-                if (!foundMatch && metaLayex.match(new TableLexer(table), null)) {
-                    result.add(new MetaTable(table, metaLayex));
+            for (final TableMatcher matcher : metaMatchers) {
+                if (!foundMatch && matcher.match(new TableLexer(table), null)) {
+                    result.add(new MetaTable(table, matcher));
                     foundMatch = true;
                 }
             }
@@ -268,7 +267,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         return result;
     }
 
-    private List<DataTable> getDataTables(final List<CompositeTable> tables, final List<TableMatcher> dataLayexes) {
+    private List<DataTable> getDataTables(final List<CompositeTable> tables, final List<TableMatcher> dataMatchers) {
         final ArrayList<DataTable> result = new ArrayList<DataTable>();
 
         for (final Visitable e : tables) {
@@ -277,13 +276,13 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
 
         for (final CompositeTable table : tables) {
             boolean foundMatch = false;
-            for (final TableMatcher dataLayex : dataLayexes) {
-                if (!foundMatch && dataLayex.match(new TableLexer(table), null)) {
-                    DataTable dataTable = new DataTable(table, dataLayex);
+            for (final TableMatcher matcher : dataMatchers) {
+                if (!foundMatch && matcher.match(new TableLexer(table), null)) {
+                    DataTable dataTable = new DataTable(table, matcher);
                     result.add(dataTable);
 
                     if (dataTable.getContext().getSplitRows().size() > 0) {
-                        this.splitAllSubTables(table, dataLayex, dataTable.getContext(), result);
+                        this.splitAllSubTables(table, matcher, dataTable.getContext(), result);
                     }
 
                     table.setVisited(true);
@@ -307,7 +306,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         }
     }
 
-    private List<CompositeTable> findAllTables(final ITagClassifier classifier, final SheetBitmap image) {
+    private List<CompositeTable> findAllTables(final SheetBitmap image) {
         final ArrayList<CompositeTable> result = new ArrayList<CompositeTable>();
 
         final List<SearchPoint[]> rectangles = findAllRectangles(image);
@@ -321,8 +320,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
                 continue;
             }
 
-            final CompositeTable table = new CompositeTable(this, firstColumnNum, firstRowNum, lastColumnNum,
-                    lastRowNum, classifier);
+            final CompositeTable table = new CompositeTable(this, firstColumnNum, firstRowNum, lastColumnNum, lastRowNum);
 
             boolean isSplitted = false;
             for (int i = 0; i < table.getNumberOfRows(); i++) {

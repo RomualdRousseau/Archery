@@ -4,9 +4,9 @@ import com.github.romualdrousseau.shuju.DataRow;
 
 public interface Header {
 
-    String getName();
+    String getRawName();
 
-    String getValue();
+    String getName();
 
     Cell getCellAtRow(Row row);
 

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.github.romualdrousseau.any2json.DocumentFactory;
+import com.github.romualdrousseau.any2json.ILayoutClassifier;
 import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.base.TableMatcher;
 import com.github.romualdrousseau.any2json.classifiers.layex.Layex;
@@ -31,7 +32,7 @@ import com.github.romualdrousseau.shuju.nlp.RegexList;
 import com.github.romualdrousseau.shuju.nlp.StopWordList;
 import com.github.romualdrousseau.shuju.nlp.StringList;
 
-public class NGramNNClassifier implements ITagClassifier {
+public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier {
     public static final int BATCH_SIZE = 64;
 
     private final NgramList ngrams;
@@ -58,11 +59,11 @@ public class NGramNNClassifier implements ITagClassifier {
         };
 
 
-    public NGramNNClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords, final StringList tags, final String[] requiredTags, final String[] pivotEntityList) {
+    public LayexAndNetClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords, final StringList tags, final String[] requiredTags, final String[] pivotEntityList) {
         this(ngrams, entities, stopwords, tags, requiredTags, pivotEntityList, metaLayexesDefault, dataLayexesDefault);
     }
 
-    public NGramNNClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords, final StringList tags, final String[] requiredTags, final String[] pivotEntityList, final String[] metaLayexes, final String[] dataLayexes) {
+    public LayexAndNetClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords, final StringList tags, final String[] requiredTags, final String[] pivotEntityList, final String[] metaLayexes, final String[] dataLayexes) {
         this.accuracy = 0.0f;
         this.mean = 1.0f;
         this.ngrams = ngrams;
@@ -89,7 +90,7 @@ public class NGramNNClassifier implements ITagClassifier {
         this.buildModel();
     }
 
-    public NGramNNClassifier(final JSONObject json) {
+    public LayexAndNetClassifier(final JSONObject json) {
         this(new NgramList(json.getJSONObject("ngrams")),
                 new RegexList(json.getJSONObject("entities")),
                 new StopWordList(json.getJSONArray("stopwords")),
@@ -161,11 +162,11 @@ public class NGramNNClassifier implements ITagClassifier {
         return this.requiredTags;
     }
 
-    public List<TableMatcher> getMetaLayexes() {
+    public List<TableMatcher> getMetaMatcherList() {
         return this.metaLayexes;
     }
 
-    public List<TableMatcher> getDataLayexes() {
+    public List<TableMatcher> getDataMatcherList() {
         return this.dataLayexes;
     }
 

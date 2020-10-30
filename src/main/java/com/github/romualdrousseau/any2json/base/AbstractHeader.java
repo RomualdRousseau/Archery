@@ -12,6 +12,11 @@ public abstract class AbstractHeader implements Header {
     }
 
     @Override
+    public String getRawName() {
+        return this.cell.getRawValue();
+    }
+
+    @Override
     public BaseCell getCellAtRow(final Row row) {
         return ((BaseRow)row).getCellAt(this.getColumnIndex());
     }
@@ -53,6 +58,8 @@ public abstract class AbstractHeader implements Header {
     public boolean equals(final Object o) {
         return o instanceof AbstractHeader && this.equals((AbstractHeader) o);
     }
+
+    public abstract String getValue();
 
     private AbstractTable table;
     private final BaseCell cell;

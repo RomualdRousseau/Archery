@@ -1,7 +1,7 @@
 package com.github.romualdrousseau.any2json.base;
 
+import com.github.romualdrousseau.any2json.ClassifierFactory;
 import com.github.romualdrousseau.any2json.DocumentFactory;
-import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.SheetEvent;
 import com.github.romualdrousseau.any2json.SheetListener;
@@ -16,16 +16,10 @@ public abstract class AbstractSheet implements Sheet {
 
     @Override
     public Table getTable() {
-        return this.getTable(null);
-    }
-
-    @Override
-    public Table getTable(final ITagClassifier classifier) {
         if (this.getLastRowNum() < 0 || this.getLastColumnNum() < 0) {
             return null;
         }
-        this.classifier = classifier;
-        Table table = (this.classifier == null) ? this.createSimpleTable() : this.createIntelliTable();
+        Table table = ClassifierFactory.get().getTagClassifier().isPresent() ? this.createIntelliTable() : this.createSimpleTable();
         this.notifyStepCompleted(new TableReadyEvent(this, table));
         return table;
     }
@@ -68,8 +62,6 @@ public abstract class AbstractSheet implements Sheet {
     public abstract String getCellDataAt(int colIndex, int rowIndex);
 
     public abstract int getNumberOfMergedCellsAt(int colIndex, int rowIndex);
-
-    protected ITagClassifier classifier = null;
 
     private final ArrayList<SheetListener> listeners = new ArrayList<SheetListener>();
 }

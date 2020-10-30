@@ -5,7 +5,7 @@ import com.github.romualdrousseau.any2json.intelli.CompositeTable;
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.math.Tensor1D;
 import com.github.romualdrousseau.shuju.util.StringUtility;
-
+import com.github.romualdrousseau.any2json.ClassifierFactory;
 import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.Header;
 import com.github.romualdrousseau.any2json.HeaderTag;
@@ -20,7 +20,7 @@ public class IntelliHeader extends CompositeHeader {
     }
 
     public IntelliHeader(final CompositeHeader header) {
-        super(header.getTable(), new BaseCell(header.getName(), header.getColumnIndex(), 1, header.getTable().getClassifier()));
+        super(header.getTable(), new BaseCell(header.getName(), header.getColumnIndex(), 1, header.getRawName()));
         this.setColumnIndex(header.getColumnIndex());
         this.isMeta = header instanceof MetaHeader;
     }
@@ -33,11 +33,11 @@ public class IntelliHeader extends CompositeHeader {
     public String getName() {
         if (this.name == null) {
             final String v1 = this.getCell().getValue();
-            this.name = this.getTable().getClassifier().getStopWordList().removeStopWords(v1);
+            this.name = ClassifierFactory.get().getLayoutClassifier().get().getStopWordList().removeStopWords(v1);
             if(this.name.isEmpty()) {
                 final Tensor1D v = this.getEntityVector();
                 if(v.sparsity() < 1.0f) {
-                    this.name = this.getTable().getClassifier().getEntityList().get(v.argmax());
+                    this.name = ClassifierFactory.get().getLayoutClassifier().get().getEntityList().get(v.argmax());
                 } else {
                     this.name = "#VALUE?";
                 }
@@ -71,7 +71,7 @@ public class IntelliHeader extends CompositeHeader {
         if (buffer.isEmpty()) {
             return this.getCellAtRow(row);
         } else {
-            return new BaseCell(buffer, this.getColumnIndex(), 1, this.getTable().getClassifier());
+            return new BaseCell(buffer, this.getColumnIndex(), 1);
         }
     }
 
@@ -79,13 +79,13 @@ public class IntelliHeader extends CompositeHeader {
     public String getEntityString() {
         String result = "";
         boolean firstValue = true;
-        for (int i = 0; i < this.getTable().getClassifier().getEntityList().size(); i++) {
+        for (int i = 0; i < ClassifierFactory.get().getLayoutClassifier().get().getEntityList().size(); i++) {
             if (this.getEntityVector().get(i) == 1) {
                 if (firstValue) {
-                    result = this.getTable().getClassifier().getEntityList().get(i);
+                    result = ClassifierFactory.get().getLayoutClassifier().get().getEntityList().get(i);
                     firstValue = false;
                 } else {
-                    result += "|" + this.getTable().getClassifier().getEntityList().get(i);
+                    result += "|" + ClassifierFactory.get().getLayoutClassifier().get().getEntityList().get(i);
                 }
             }
         }
@@ -115,7 +115,7 @@ public class IntelliHeader extends CompositeHeader {
             }
         }
 
-        final Tensor1D label = this.getTable().getClassifier().getTagList().word2vec(tagValue);
+        final Tensor1D label = ClassifierFactory.get().getTagClassifier().get().getTagList().word2vec(tagValue);
         return new DataRow().addFeature(this.getEntityVector()).addFeature(this.getWordVector())
                 .addFeature(this.getContextVector()).setLabel(label);
     }
@@ -139,7 +139,7 @@ public class IntelliHeader extends CompositeHeader {
         } else {
             final DataRow data = new DataRow().addFeature(this.getEntityVector()).addFeature(this.getWordVector())
                     .addFeature(this.getContextVector());
-            final String tagValue = this.getTable().getClassifier().predict(data);
+            final String tagValue = ClassifierFactory.get().getTagClassifier().get().predict(data);
             this.tag = new HeaderTag(tagValue);
         }
     }
@@ -170,11 +170,11 @@ public class IntelliHeader extends CompositeHeader {
     }
 
     private Tensor1D buildEntityVector() {
-        final Tensor1D result = new Tensor1D(this.getTable().getClassifier().getEntityList().getVectorSize());
+        final Tensor1D result = new Tensor1D(ClassifierFactory.get().getLayoutClassifier().get().getEntityList().getVectorSize());
 
         int n = 0;
         for (int i = 0; i < Math.min(this.getTable().getNumberOfRows(),
-                this.getTable().getClassifier().getSampleCount()); i++) {
+            ClassifierFactory.get().getLayoutClassifier().get().getSampleCount()); i++) {
             final BaseRow row = this.getTable().getRowAt(i);
             if (row == null) {
                 continue;
@@ -195,7 +195,7 @@ public class IntelliHeader extends CompositeHeader {
     }
 
     private Tensor1D buildWordVector() {
-        return this.getTable().getClassifier().getWordList().word2vec(this.getName());
+        return ClassifierFactory.get().getTagClassifier().get().getWordList().word2vec(this.getName());
     }
 
     private Tensor1D buildContextVector() {
@@ -215,7 +215,7 @@ public class IntelliHeader extends CompositeHeader {
     }
 
     private void ensureWordExist() {
-        this.getTable().getClassifier().getWordList().add(this.getName());
+        ClassifierFactory.get().getTagClassifier().get().getWordList().add(this.getName());
         this.entityVector = null;
         this.wordVector = null;
         this.contextVector = null;

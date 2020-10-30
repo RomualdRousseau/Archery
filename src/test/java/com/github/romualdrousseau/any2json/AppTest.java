@@ -3,7 +3,7 @@ package com.github.romualdrousseau.any2json;
 import java.nio.file.Paths;
 import java.util.Iterator;
 
-import com.github.romualdrousseau.any2json.classifiers.NGramNNClassifier;
+import com.github.romualdrousseau.any2json.classifiers.LayexAndNetClassifierBuilder;
 import com.github.romualdrousseau.shuju.json.JSON;
 
 import java.nio.file.Path;
@@ -82,8 +82,9 @@ public class AppTest {
         Row firstRow = null;
         int fileNo = 0;
 
-        NGramNNClassifier Brain = new NGramNNClassifier(
-                JSON.loadJSONObject(getResourcePath("/data/all.json").toString()));
+        new LayexAndNetClassifierBuilder()
+            .setModel(JSON.loadJSONObject(getResourcePath("/data/model.json").toString()))
+            .build();
 
         for (String[] expectedValues : scenarios2) {
             int state = 0;
@@ -92,7 +93,7 @@ public class AppTest {
                     case 0:
                         document = loadDocument(expectedValue, "CP949");
                         sheet = document.getSheetAt(0);
-                        table = sheet.getTable(Brain);
+                        table = sheet.getTable();
                         assert table != null;
                         firstRow = table.rows().iterator().next();
                         state = 1;
