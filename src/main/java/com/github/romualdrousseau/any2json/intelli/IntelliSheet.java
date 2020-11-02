@@ -181,13 +181,15 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
                 if (value.isEmpty()) {
                     hash += "s";
                     countEmptyCells++;
-                } else {
+                } else if(ClassifierFactory.get().getLayoutClassifier().isPresent()) {
                     Tensor1D v = ClassifierFactory.get().getLayoutClassifier().get().getEntityList().word2vec(value);
                     if (v.sparsity() < 1.0f) {
                         hash += "e";
                     } else {
                         hash += "v";
                     }
+                } else {
+                    hash += "v";
                 }
             }
 
