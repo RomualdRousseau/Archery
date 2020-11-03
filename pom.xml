@@ -55,7 +55,7 @@
         <repository>
             <id>ossrh</id>
             <name>Open Source Project Repository Hosting</name>
-            <url>https://oss.sonatype.org/content/groups/public</url>
+            <url>https://oss.sonatype.org/content/groups/staging</url>
         </repository>
         <repository>
             <id>in-project</id>
