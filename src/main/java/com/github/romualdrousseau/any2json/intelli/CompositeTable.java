@@ -9,8 +9,8 @@ import java.util.HashMap;
 
 public class CompositeTable extends AbstractTable {
 
-    public CompositeTable() {
-        this(null, 0, 0, 0, 0);
+    public CompositeTable(final AbstractSheet sheet) {
+        this(sheet, 0, 0, 0, 0);
     }
 
     public CompositeTable(final CompositeTable parent) {

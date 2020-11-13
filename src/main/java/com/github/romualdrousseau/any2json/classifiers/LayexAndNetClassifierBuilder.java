@@ -8,7 +8,7 @@ import com.github.romualdrousseau.shuju.nlp.RegexList;
 import com.github.romualdrousseau.shuju.nlp.StopWordList;
 import com.github.romualdrousseau.shuju.nlp.StringList;
 
-public class LayexAndNetClassifierBuilder implements IClassifierBuilder<LayexAndNetClassifier> {
+public class LayexAndNetClassifierBuilder implements IClassifierBuilder {
 
     public LayexAndNetClassifierBuilder setModel(JSONObject model) {
         this.model = model;
@@ -45,17 +45,16 @@ public class LayexAndNetClassifierBuilder implements IClassifierBuilder<LayexAnd
 		return this;
 	}
 
-    public LayexAndNetClassifier build() {
+    public ClassifierFactory build() {
         final LayexAndNetClassifier classifier;
         if (model == null) {
             classifier = new LayexAndNetClassifier(ngramList, entityList, stopWordList, tagList, requiredTagList, pivotEntityList);
         } else {
             classifier = new LayexAndNetClassifier(model);
         }
-        ClassifierFactory.get()
+        return new ClassifierFactory()
             .setLayoutClassifier(classifier)
             .setTagClassifier(classifier);
-        return classifier;
     }
 
     private JSONObject model;

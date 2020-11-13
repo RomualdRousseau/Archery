@@ -1,7 +1,6 @@
 package com.github.romualdrousseau.any2json.intelli.header;
 
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
-import com.github.romualdrousseau.any2json.ClassifierFactory;
 import com.github.romualdrousseau.any2json.base.BaseCell;
 
 public class DataTableHeader extends CompositeHeader {
@@ -18,7 +17,7 @@ public class DataTableHeader extends CompositeHeader {
     public String getName() {
         if (this.name == null) {
             final String v1 = this.getCell().getValue();
-            this.name = ClassifierFactory.get().getLayoutClassifier().get().getStopWordList().removeStopWords(v1);
+            this.name = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getStopWordList().removeStopWords(v1);
         }
         return this.name;
     }

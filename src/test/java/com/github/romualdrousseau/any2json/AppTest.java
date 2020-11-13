@@ -4,6 +4,7 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 
 import com.github.romualdrousseau.any2json.classifiers.LayexAndNetClassifierBuilder;
+import com.github.romualdrousseau.any2json.classifiers.SimpleClassifierBuilder;
 import com.github.romualdrousseau.shuju.json.JSON;
 
 import java.nio.file.Path;
@@ -30,6 +31,9 @@ public class AppTest {
         Row firstRow = null;
         int fileNo = 0;
 
+        ClassifierFactory classifierFactor = new SimpleClassifierBuilder()
+            .build();
+
         for (String[] expectedValues : scenarios1) {
             int state = 0;
             Iterator<Header> itHeader = null;
@@ -38,7 +42,7 @@ public class AppTest {
                     case 0:
                         document = loadDocument(expectedValue, "CP949");
                         sheet = document.getSheetAt(0);
-                        table = sheet.getTable();
+                        table = sheet.getTable(classifierFactor);
                         assert table != null;
                         itHeader = table.headers().iterator();
                         header = itHeader.next();
@@ -82,7 +86,7 @@ public class AppTest {
         Row firstRow = null;
         int fileNo = 0;
 
-        new LayexAndNetClassifierBuilder()
+        ClassifierFactory classifierFactor = new LayexAndNetClassifierBuilder()
             .setModel(JSON.loadJSONObject(getResourcePath("/data/model.json").toString()))
             .build();
 
@@ -93,7 +97,7 @@ public class AppTest {
                     case 0:
                         document = loadDocument(expectedValue, "CP949");
                         sheet = document.getSheetAt(0);
-                        table = sheet.getTable();
+                        table = sheet.getTable(classifierFactor);
                         assert table != null;
                         firstRow = table.rows().iterator().next();
                         state = 1;

@@ -7,6 +7,7 @@ import com.github.romualdrousseau.any2json.Header;
 import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.base.AbstractHeader;
+import com.github.romualdrousseau.any2json.base.AbstractSheet;
 import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.base.RowGroup;
 import com.github.romualdrousseau.any2json.intelli.header.CompositeHeader;
@@ -16,8 +17,8 @@ import com.github.romualdrousseau.any2json.util.TableGraph;
 
 public class IntelliTable extends CompositeTable {
 
-    public IntelliTable(final TableGraph root) {
-        super();
+    public IntelliTable(final AbstractSheet sheet, final TableGraph root) {
+        super(sheet);
         this.buildHeaders(root);
         this.buildTable(root, findPivotHeader());
         this.setHeaders();

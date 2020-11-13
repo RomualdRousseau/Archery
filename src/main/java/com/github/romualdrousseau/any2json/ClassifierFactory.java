@@ -4,13 +4,6 @@ import java.util.Optional;
 
 public class ClassifierFactory {
 
-    public static ClassifierFactory get() {
-        if (ClassifierFactory.singleton == null) {
-            ClassifierFactory.singleton = new ClassifierFactory();
-        }
-        return ClassifierFactory.singleton;
-    }
-
     public ClassifierFactory setLayoutClassifier(ILayoutClassifier layoutClassifier) {
         this.layoutClassifier = layoutClassifier;
         return this;
@@ -29,7 +22,6 @@ public class ClassifierFactory {
         return (this.tagClassifier == null) ? Optional.empty() : Optional.of(this.tagClassifier);
     }
 
-    private static ClassifierFactory singleton;
     private ILayoutClassifier layoutClassifier;
     private ITagClassifier tagClassifier;
 }

@@ -3,7 +3,6 @@ package com.github.romualdrousseau.any2json.intelli;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.romualdrousseau.any2json.ClassifierFactory;
 import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.base.AbstractSheet;
@@ -32,12 +31,12 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
 
     public IntelliSheet() {
         this.rowTranslator = new RowTranslator(this);
-        assert(ClassifierFactory.get().getLayoutClassifier().isPresent());
+        assert(this.getClassifierFactory().getLayoutClassifier().isPresent());
     }
 
     @Override
     public Table createIntelliTable() {
-        final SheetBitmap image = new SheetBitmap(this, Math.max(this.getLastColumnNum(), ClassifierFactory.get().getLayoutClassifier().get().getSampleCount()), this.getLastRowNum() + 1);
+        final SheetBitmap image = new SheetBitmap(this, Math.max(this.getLastColumnNum(), this.getClassifierFactory().getLayoutClassifier().get().getSampleCount()), this.getLastRowNum() + 1);
         if (!this.notifyStepCompleted(new BitmapGeneratedEvent(this, image))) {
             return null;
         }
@@ -47,7 +46,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
             return null;
         }
 
-        final List<DataTable> dataTables = this.getDataTables(tables, ClassifierFactory.get().getLayoutClassifier().get().getDataMatcherList());
+        final List<DataTable> dataTables = this.getDataTables(tables, this.getClassifierFactory().getLayoutClassifier().get().getDataMatcherList());
         if (!this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables))) {
             return null;
         }
@@ -56,7 +55,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
             return null;
         }
 
-        final List<MetaTable> metaTables = this.getMetaTables(tables, ClassifierFactory.get().getLayoutClassifier().get().getMetaMatcherList());
+        final List<MetaTable> metaTables = this.getMetaTables(tables, this.getClassifierFactory().getLayoutClassifier().get().getMetaMatcherList());
         if (!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
             return null;
         }
@@ -66,7 +65,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
             return null;
         }
 
-        return new IntelliTable(root);
+        return new IntelliTable(this, root);
     }
 
     @Override
@@ -181,8 +180,8 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
                 if (value.isEmpty()) {
                     hash += "s";
                     countEmptyCells++;
-                } else if(ClassifierFactory.get().getLayoutClassifier().isPresent()) {
-                    Tensor1D v = ClassifierFactory.get().getLayoutClassifier().get().getEntityList().word2vec(value);
+                } else if(this.getClassifierFactory().getLayoutClassifier().isPresent()) {
+                    Tensor1D v = this.getClassifierFactory().getLayoutClassifier().get().getEntityList().word2vec(value);
                     if (v.sparsity() < 1.0f) {
                         hash += "e";
                     } else {

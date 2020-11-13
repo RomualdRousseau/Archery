@@ -15,11 +15,15 @@ import java.util.ArrayList;
 public abstract class AbstractSheet implements Sheet {
 
     @Override
-    public Table getTable() {
+    public Table getTable(final ClassifierFactory classifierFactory) {
+        assert(classifierFactory != null);
+        this.classifierFactory = classifierFactory;
+
         if (this.getLastRowNum() < 0 || this.getLastColumnNum() < 0) {
             return null;
         }
-        Table table = ClassifierFactory.get().getTagClassifier().isPresent() ? this.createIntelliTable() : this.createSimpleTable();
+
+        Table table = this.classifierFactory.getTagClassifier().isPresent() ? this.createIntelliTable() : this.createSimpleTable();
         this.notifyStepCompleted(new TableReadyEvent(this, table));
         return table;
     }
@@ -27,6 +31,10 @@ public abstract class AbstractSheet implements Sheet {
     @Override
     public void addSheetListener(final SheetListener listener) {
         this.listeners.add(listener);
+    }
+
+    public ClassifierFactory getClassifierFactory() {
+        return this.classifierFactory;
     }
 
     public boolean notifyStepCompleted(final SheetEvent e) {
@@ -64,4 +72,6 @@ public abstract class AbstractSheet implements Sheet {
     public abstract int getNumberOfMergedCellsAt(int colIndex, int rowIndex);
 
     private final ArrayList<SheetListener> listeners = new ArrayList<SheetListener>();
+
+    private ClassifierFactory classifierFactory;
 }

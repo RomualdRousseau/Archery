@@ -31,6 +31,6 @@ public abstract class SimpleSheet extends AbstractSheet {
         root.addChild(new TableGraph(dataTables.getFirst()));
         this.notifyStepCompleted(new TableGraphBuiltEvent(this, root));
 
-        return new IntelliTable(root);
+        return new IntelliTable(this, root);
     }
 }

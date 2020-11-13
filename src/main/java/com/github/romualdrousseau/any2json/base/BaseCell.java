@@ -7,24 +7,26 @@ import com.github.romualdrousseau.shuju.util.StringUtility;
 
 public class BaseCell implements Cell, Symbol {
 
-    public final static BaseCell Empty = new BaseCell("", 0, 1);
+    public final static BaseCell Empty = new BaseCell("", 0, 1, null);
 
-    public final static BaseCell EndOfRow = new BaseCell("", 0, 0);
+    public final static BaseCell EndOfRow = new BaseCell("", 0, 0, null);
 
-    public final static BaseCell EndOfStream = new BaseCell("", 0, 0);
+    public final static BaseCell EndOfStream = new BaseCell("", 0, 0, null);
 
-    public BaseCell(final String value, final int colIndex, final int mergedCount) {
+    public BaseCell(final String value, final int colIndex, final int mergedCount, final ClassifierFactory classifierFactory) {
         this.value = value;
         this.colIndex = colIndex;
         this.mergedCount = mergedCount;
         this.rawValue = value;
+        this.classifierFactory = classifierFactory;
     }
 
-    public BaseCell(final String value, final int colIndex, final int mergedCount, final String rawValue) {
+    public BaseCell(final String value, final int colIndex, final int mergedCount, final String rawValue, final ClassifierFactory classifierFactory) {
         this.value = value;
         this.colIndex = colIndex;
         this.mergedCount = mergedCount;
         this.rawValue = rawValue;
+        this.classifierFactory = classifierFactory;
     }
 
     @Override
@@ -39,12 +41,12 @@ public class BaseCell implements Cell, Symbol {
 
     @Override
     public String getEntityString() {
-        if (ClassifierFactory.get().getTagClassifier() == null) {
+        if(classifierFactory == null || !classifierFactory.getLayoutClassifier().isPresent()) {
             return null;
         } else {
             Tensor1D v = this.getEntityVector();
             if(v.sparsity() < 1.0f) {
-                return ClassifierFactory.get().getLayoutClassifier().get().getEntityList().get(v.argmax());
+                return classifierFactory.getLayoutClassifier().get().getEntityList().get(v.argmax());
             } else {
                 return null;
             }
@@ -83,10 +85,10 @@ public class BaseCell implements Cell, Symbol {
 
     public Tensor1D getEntityVector() {
         if (this.entityVector == null) {
-            if(ClassifierFactory.get().getTagClassifier() == null) {
+            if(classifierFactory == null || !classifierFactory.getLayoutClassifier().isPresent()) {
                 this.entityVector = Tensor1D.Null;
             } else {
-                this.entityVector = ClassifierFactory.get().getLayoutClassifier().get().getEntityList().word2vec(this.value);
+                this.entityVector = classifierFactory.getLayoutClassifier().get().getEntityList().word2vec(this.value);
             }
         }
         return this.entityVector;
@@ -98,4 +100,5 @@ public class BaseCell implements Cell, Symbol {
     private final String rawValue;
     private Tensor1D entityVector;
     private String symbol;
+    private ClassifierFactory classifierFactory;
 }

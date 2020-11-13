@@ -43,7 +43,7 @@ public class BaseRow implements Row {
         BaseCell result = cachedCells[colIndex];
         if (result == null) {
             String v = this.getCellValueAt(colIndex);
-            result = new BaseCell(v, colIndex, this.getNumberOfMergedCellsAt(colIndex));
+            result = new BaseCell(v, colIndex, this.getNumberOfMergedCellsAt(colIndex), this.table.getSheet().getClassifierFactory());
             cachedCells[colIndex] = result;
         }
         return result;

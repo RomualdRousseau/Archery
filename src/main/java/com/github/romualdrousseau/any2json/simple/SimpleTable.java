@@ -8,7 +8,8 @@ import com.github.romualdrousseau.any2json.base.BaseCell;
 
 public class SimpleTable extends AbstractTable {
 
-    public SimpleTable(AbstractSheet sheet, int firstColumn, int firstRow, int lastColumn, int lastRow) {
+    public SimpleTable(final AbstractSheet sheet, final int firstColumn, final int firstRow, final int lastColumn,
+            final int lastRow) {
         super(sheet, firstColumn, firstRow, lastColumn, lastRow);
         this.buildSimpleTable(this);
         this.setLoadCompleted(true);
@@ -28,8 +29,8 @@ public class SimpleTable extends AbstractTable {
     public void updateHeaderTags() {
     }
 
-	private void buildSimpleTable(AbstractTable table) {
-        for (Cell cell : table.getRowAt(0).cells()) {
+    private void buildSimpleTable(final AbstractTable table) {
+        for (final Cell cell : table.getRowAt(0).cells()) {
             this.addHeader(new SimpleHeader(this, (BaseCell) cell));
         }
         this.setFirstRowOffset(1);

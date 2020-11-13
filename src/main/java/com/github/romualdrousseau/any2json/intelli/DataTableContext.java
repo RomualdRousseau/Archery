@@ -3,7 +3,6 @@ package com.github.romualdrousseau.any2json.intelli;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.romualdrousseau.any2json.ClassifierFactory;
 import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.base.Context;
 import com.github.romualdrousseau.any2json.base.RowGroup;
@@ -26,7 +25,7 @@ public class DataTableContext extends Context<BaseCell> {
         this.firstRowGroupProcessed = false;
         this.footerProcessed = false;
         this.splitRows = new ArrayList<Integer>();
-        this.pivotEntityList = ClassifierFactory.get().getLayoutClassifier().get().getPivotEntityList();
+        this.pivotEntityList = this.dataTable.getSheet().getClassifierFactory().getLayoutClassifier().get().getPivotEntityList();
     }
 
     public void processSymbolFunc(final BaseCell cell) {
@@ -83,6 +82,8 @@ public class DataTableContext extends Context<BaseCell> {
             this.dataTable.setFirstRowOffset(this.getRow() + 1);
         } else if (symbol.equals("e") && (this.pivotEntityList != null && this.pivotEntityList.contains(cell.getEntityString()))) {
             PivotKeyHeader foundPivot = this.dataTable.findFirstPivotHeader();
+            System.out.println(this.pivotEntityList);
+            System.out.println(cell.getEntityString());
             if (foundPivot == null) {
                 this.dataTable.addHeader(new PivotKeyHeader(this.dataTable, cell));
             } else {
@@ -110,7 +111,7 @@ public class DataTableContext extends Context<BaseCell> {
                 MetaTableHeader meta = this.dataTable.findFirstMetaTableHeader();
                 if (meta == null) {
                     meta = new MetaTableHeader(this.dataTable,
-                            new BaseCell("#GROUP?", 0, 1, cell.getRawValue()));
+                            new BaseCell("#GROUP?", 0, 1, cell.getRawValue(), this.dataTable.getSheet().getClassifierFactory()));
                     this.dataTable.addHeader(meta);
                 }
                 meta.assignRowGroup(this.lastRowGroup);
