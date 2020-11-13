@@ -25,7 +25,6 @@ public class DataTableContext extends Context<BaseCell> {
         this.firstRowGroupProcessed = false;
         this.footerProcessed = false;
         this.splitRows = new ArrayList<Integer>();
-        this.pivotEntityList = this.dataTable.getSheet().getClassifierFactory().getLayoutClassifier().get().getPivotEntityList();
     }
 
     public void processSymbolFunc(final BaseCell cell) {
@@ -78,12 +77,12 @@ public class DataTableContext extends Context<BaseCell> {
     }
 
     private void processHeader(final BaseCell cell, final String symbol) {
+        final List<String> pivotEntityList = this.dataTable.getSheet().getClassifierFactory().getLayoutClassifier().get().getPivotEntityList();
+
         if (symbol.equals("$")) {
             this.dataTable.setFirstRowOffset(this.getRow() + 1);
-        } else if (symbol.equals("e") && (this.pivotEntityList != null && this.pivotEntityList.contains(cell.getEntityString()))) {
+        } else if (symbol.equals("e") && (pivotEntityList != null && pivotEntityList.contains(cell.getEntityString()))) {
             PivotKeyHeader foundPivot = this.dataTable.findFirstPivotHeader();
-            System.out.println(this.pivotEntityList);
-            System.out.println(cell.getEntityString());
             if (foundPivot == null) {
                 this.dataTable.addHeader(new PivotKeyHeader(this.dataTable, cell));
             } else {
@@ -157,5 +156,4 @@ public class DataTableContext extends Context<BaseCell> {
     private BaseCell firstRowCell;
     private boolean footerProcessed;
     private final ArrayList<Integer> splitRows;
-    private List<String> pivotEntityList;
 }

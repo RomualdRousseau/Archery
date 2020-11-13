@@ -1,5 +1,7 @@
 package com.github.romualdrousseau.any2json.intelli;
 
+
+import java.util.List;
 import java.util.LinkedList;
 
 import com.github.romualdrousseau.any2json.Cell;
@@ -16,7 +18,7 @@ public class DataTable extends CompositeTable {
 
     public DataTable(CompositeTable table) {
         super(table);
-        this.buildIntelliTable(table);
+        this.buildIntelliTable();
     }
 
     public DataTable(CompositeTable table, TableMatcher layex) {
@@ -67,9 +69,11 @@ public class DataTable extends CompositeTable {
 		return this.dataTableContext;
     }
 
-    private void buildIntelliTable(CompositeTable table) {
-        for (Cell cell : table.getRowAt(0).cells()) {
-            if(cell.getEntityString() != null) {
+    private void buildIntelliTable() {
+        final List<String> pivotEntityList = this.getSheet().getClassifierFactory().getLayoutClassifier().get().getPivotEntityList();
+
+        for (Cell cell : this.getRowAt(0).cells()) {
+            if(cell.getEntityString() != null && pivotEntityList != null && pivotEntityList.contains(cell.getEntityString())) {
                 this.addHeader(new PivotKeyHeader(this, (BaseCell) cell));
             } else {
                 this.addHeader(new DataTableHeader(this, (BaseCell) cell));

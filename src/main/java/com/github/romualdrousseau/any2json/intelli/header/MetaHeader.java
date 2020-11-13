@@ -1,5 +1,7 @@
 package com.github.romualdrousseau.any2json.intelli.header;
 
+import java.util.List;
+
 import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
@@ -17,8 +19,15 @@ public class MetaHeader extends CompositeHeader {
     @Override
     public String getName() {
         if (this.name == null) {
+            final List<String> pivotEntityList = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getPivotEntityList();
+
             final String v1 = this.getCell().getValue();
-            final String v2 = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getEntityList().anonymize(v1);
+            final String v2;
+            if (pivotEntityList != null && pivotEntityList.contains(this.getEntityString())) {
+                v2 = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getEntityList().anonymize(v1);
+            } else {
+                v2 = v1;
+            }
             this.name = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getStopWordList().removeStopWords(v2);
         }
         return this.name;
