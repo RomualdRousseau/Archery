@@ -12,9 +12,10 @@ public class SimpleHeader extends AbstractHeader {
         super(table, cell);
     }
 
-    private SimpleHeader(final SimpleHeader parent) {
+    public SimpleHeader(final AbstractHeader parent) {
         super(parent.getTable(), parent.getCell());
     }
+
 
     @Override
     public String getName() {

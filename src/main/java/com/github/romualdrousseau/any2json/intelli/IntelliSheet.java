@@ -31,7 +31,6 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
 
     public IntelliSheet() {
         this.rowTranslator = new RowTranslator(this);
-        assert(this.getClassifierFactory().getLayoutClassifier().isPresent());
     }
 
     @Override

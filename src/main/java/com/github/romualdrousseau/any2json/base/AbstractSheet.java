@@ -23,7 +23,7 @@ public abstract class AbstractSheet implements Sheet {
             return null;
         }
 
-        Table table = this.classifierFactory.getTagClassifier().isPresent() ? this.createIntelliTable() : this.createSimpleTable();
+        Table table = this.classifierFactory.getLayoutClassifier().isPresent() ? this.createIntelliTable() : this.createSimpleTable();
         this.notifyStepCompleted(new TableReadyEvent(this, table));
         return table;
     }

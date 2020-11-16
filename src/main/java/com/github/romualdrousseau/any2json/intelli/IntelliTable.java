@@ -13,6 +13,7 @@ import com.github.romualdrousseau.any2json.base.RowGroup;
 import com.github.romualdrousseau.any2json.intelli.header.CompositeHeader;
 import com.github.romualdrousseau.any2json.intelli.header.IntelliHeader;
 import com.github.romualdrousseau.any2json.intelli.header.PivotKeyHeader;
+import com.github.romualdrousseau.any2json.simple.SimpleHeader;
 import com.github.romualdrousseau.any2json.util.TableGraph;
 
 public class IntelliTable extends CompositeTable {
@@ -172,8 +173,14 @@ public class IntelliTable extends CompositeTable {
             this.addHeader(this.tmpHeaders.get(i));
         }
         this.setLoadCompleted(true); // Give chance to pivot header value to update their name
-        for (int i = 0; i < this.tmpHeaders.size(); i++) {
-            this.setHeader(i, new IntelliHeader(this.tmpHeaders.get(i)));
+        if (this.getSheet().getClassifierFactory().getTagClassifier().isPresent()) {
+            for (int i = 0; i < this.tmpHeaders.size(); i++) {
+                this.setHeader(i, new IntelliHeader(this.tmpHeaders.get(i)));
+            }
+        } else {
+            for (int i = 0; i < this.tmpHeaders.size(); i++) {
+                this.setHeader(i, new SimpleHeader(this.tmpHeaders.get(i)));
+            }
         }
         this.setLoadCompleted(false);
     }
