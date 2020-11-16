@@ -21,7 +21,7 @@ public class IntelliTable extends CompositeTable {
     public IntelliTable(final AbstractSheet sheet, final TableGraph root) {
         super(sheet);
         this.buildHeaders(root);
-        this.buildTable(root, findPivotHeader());
+        this.buildTable(root, this.findPivotHeader());
         this.setHeaders();
         this.updateHeaderTags();
         this.setLoadCompleted(true);
