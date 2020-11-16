@@ -108,7 +108,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
             }
         }
 
-        final JSONArray pivotEntities = json.getJSONObject("entities").getJSONArray("pivotEntityList");
+        final JSONArray pivotEntities = json.getJSONObject("entities").getJSONArray("pivotEntities");
         if (pivotEntities != null && pivotEntities.size() > 0) {
             this.pivotEntityList = new ArrayList<String>();
             for (int i = 0; i < pivotEntities.size(); i++) {

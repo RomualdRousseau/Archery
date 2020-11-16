@@ -32,18 +32,8 @@ public class IntelliHeader extends CompositeHeader {
     public String getName() {
         if (this.name == null) {
             final String v1 = this.getCell().getValue();
-            if (this.isMeta) {
-                final String v2;
-                if (this.isPivotHeader()) {
-                    v2 = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getEntityList().anonymize(v1);
-                } else {
-                    v2 = v1;
-                }
-                this.name = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getStopWordList().removeStopWords(v2);
-            } else {
-                this.name = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getStopWordList().removeStopWords(v1);
-            }
-            if(this.name.isEmpty()) {
+            this.name = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getStopWordList().removeStopWords(v1);
+            if(StringUtility.isFastEmpty(this.name)) {
                 final Tensor1D v = this.getEntityVector();
                 if(v.sparsity() < 1.0f) {
                     this.name = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getEntityList().get(v.argmax());
