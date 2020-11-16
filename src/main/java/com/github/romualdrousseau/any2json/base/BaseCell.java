@@ -1,5 +1,7 @@
 package com.github.romualdrousseau.any2json.base;
 
+import java.util.List;
+
 import com.github.romualdrousseau.any2json.Cell;
 import com.github.romualdrousseau.any2json.ClassifierFactory;
 import com.github.romualdrousseau.shuju.math.Tensor1D;
@@ -92,6 +94,16 @@ public class BaseCell implements Cell, Symbol {
             }
         }
         return this.entityVector;
+    }
+
+    public boolean isPivotHeader() {
+        if (classifierFactory == null || !this.classifierFactory.getLayoutClassifier().isPresent()) {
+            return false;
+        } else {
+            final List<String> pivotEntityList = this.classifierFactory.getLayoutClassifier().get().getPivotEntityList();
+            final String entityString = this.getEntityString();
+            return pivotEntityList != null && entityString != null && pivotEntityList.contains(entityString);
+        }
     }
 
     private final String value;

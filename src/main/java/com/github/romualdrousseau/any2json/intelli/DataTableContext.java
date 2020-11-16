@@ -77,11 +77,9 @@ public class DataTableContext extends Context<BaseCell> {
     }
 
     private void processHeader(final BaseCell cell, final String symbol) {
-        final List<String> pivotEntityList = this.dataTable.getSheet().getClassifierFactory().getLayoutClassifier().get().getPivotEntityList();
-
         if (symbol.equals("$")) {
             this.dataTable.setFirstRowOffset(this.getRow() + 1);
-        } else if (symbol.equals("e") && (pivotEntityList != null && pivotEntityList.contains(cell.getEntityString()))) {
+        } else if (symbol.equals("e") && cell.isPivotHeader()) {
             PivotKeyHeader foundPivot = this.dataTable.findFirstPivotHeader();
             if (foundPivot == null) {
                 this.dataTable.addHeader(new PivotKeyHeader(this.dataTable, cell));
