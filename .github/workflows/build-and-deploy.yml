@@ -32,7 +32,7 @@ jobs:
     deploy-dev:
         needs: [build]
         runs-on: [ubuntu-latest]
-        ssteps:
+        steps:
             -   uses: actions/checkout@v2
 
             -   name: Abort if version isn't snapshot
