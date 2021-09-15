@@ -44,7 +44,7 @@ jobs:
 
     deploy-dev:
         needs: [check-version-is-release]
-        if: needs.check-version-is-release.outputs.is_release == 0
+        if: needs.check-version-is-release.outputs.is_release == 0  # deploy only if the version is a snapshot
         runs-on: [ubuntu-latest]
         steps:
             -   uses: actions/checkout@v2
