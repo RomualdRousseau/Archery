@@ -22,7 +22,7 @@ public class PivotKeyHeader extends MetaHeader {
 
     @Override
     public String getName() {
-        return super.getName() + " " + DocumentFactory.PIVOT_SUFFIX;
+        return super.getName() + " " + DocumentFactory.PIVOT_KEY_SUFFIX;
     }
 
     @Override

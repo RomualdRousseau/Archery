@@ -252,7 +252,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
 
             boolean foundMatch = false;
             for (final TableMatcher matcher : metaMatchers) {
-                if (!foundMatch && matcher.match(new TableLexer(table), null)) {
+                if (!foundMatch && matcher.match(new TableLexer(table, 0), null)) {
                     result.add(new MetaTable(table, matcher));
                     foundMatch = true;
                 }
@@ -277,16 +277,20 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         for (final CompositeTable table : tables) {
             boolean foundMatch = false;
             for (final TableMatcher matcher : dataMatchers) {
-                if (!foundMatch && matcher.match(new TableLexer(table), null)) {
-                    DataTable dataTable = new DataTable(table, matcher);
-                    result.add(dataTable);
+                if (!foundMatch) {
+                    for (int tryCount = 0; tryCount < 3; tryCount++) {
+                        if (!foundMatch && matcher.match(new TableLexer(table, tryCount), null)) {
+                            DataTable dataTable = new DataTable(table, matcher, tryCount);
+                            result.add(dataTable);
 
-                    if (dataTable.getContext().getSplitRows().size() > 0) {
-                        this.splitAllSubTables(table, matcher, dataTable.getContext(), result);
+                            if (dataTable.getContext().getSplitRows().size() > 0) {
+                                this.splitAllSubTables(table, matcher, dataTable.getContext(), result);
+                            }
+
+                            table.setVisited(true);
+                            foundMatch = true;
+                        }
                     }
-
-                    table.setVisited(true);
-                    foundMatch = true;
                 }
             }
         }
@@ -300,7 +304,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         for (int splitRow : context.getSplitRows()) {
             if (firstRow >= 0) {
                 CompositeTable subTable = new CompositeTable(table, firstRow, table.getFirstRow() + splitRow - 1);
-                result.add(new DataTable(subTable, layex));
+                result.add(new DataTable(subTable, layex, 0));
             }
             firstRow = table.getFirstRow() + splitRow;
         }

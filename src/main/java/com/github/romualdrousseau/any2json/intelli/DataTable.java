@@ -19,12 +19,15 @@ public class DataTable extends CompositeTable {
         this.buildIntelliTable();
     }
 
-    public DataTable(CompositeTable table, TableMatcher layex) {
+    public DataTable(CompositeTable table, TableMatcher layex, int rowOffset) {
         super(table);
         this.dataTableContext = new DataTableContext(this);
-        layex.match(new TableLexer(table), this.dataTableContext);
+        layex.match(new TableLexer(table, rowOffset), this.dataTableContext);
         if (this.dataTableContext.getSplitRows().size() > 0) {
             this.adjustLastRow(table.getFirstRow() + this.dataTableContext.getSplitRows().get(0) - 1, true);
+        }
+        if (rowOffset > 0) {
+            this.setFirstRowOffset(this.getFirstRowOffset() + rowOffset);
         }
         this.setLoadCompleted(true);
     }

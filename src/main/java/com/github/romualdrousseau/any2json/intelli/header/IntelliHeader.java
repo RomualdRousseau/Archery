@@ -38,7 +38,7 @@ public class IntelliHeader extends CompositeHeader {
                 if(v.sparsity() < 1.0f) {
                     this.name = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getEntityList().get(v.argmax());
                 } else {
-                    this.name = "#VALUE?";
+                    this.name =  DocumentFactory.PIVOT_VALUE_SUFFIX;
                 }
             }
         }
@@ -78,8 +78,9 @@ public class IntelliHeader extends CompositeHeader {
     public String getEntityString() {
         String result = "";
         boolean firstValue = true;
+        Tensor1D entityVector = this.getEntityVector();
         for (int i = 0; i < this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getEntityList().size(); i++) {
-            if (this.getEntityVector().get(i) == 1) {
+            if (entityVector.get(i) == 1) {
                 if (firstValue) {
                     result = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getEntityList().get(i);
                     firstValue = false;

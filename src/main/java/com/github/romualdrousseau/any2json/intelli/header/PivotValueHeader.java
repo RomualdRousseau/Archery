@@ -9,23 +9,16 @@ public class PivotValueHeader extends PivotKeyHeader {
 
     public PivotValueHeader(final PivotKeyHeader parent) {
         super(parent.getTable(), parent.getCell());
+        this.name = parent.getPivotEntityString();
     }
 
     @Override
     public String getName() {
         if(!this.getTable().isLoadCompleted()) {
-            return "#VALUE? " + DocumentFactory.PIVOT_SUFFIX;
+            return DocumentFactory.PIVOT_VALUE_SUFFIX;
+        } else {
+            return this.name + " " + DocumentFactory.PIVOT_VALUE_SUFFIX;
         }
-
-        if (this.name == null) {
-            final Tensor1D v = this.buildEntityVector();
-            if(v.sparsity() < 1.0f) {
-                this.name = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getEntityList().get(v.argmax());
-            } else {
-                this.name = "#VALUE?";
-            }
-        }
-        return this.name + " " + DocumentFactory.PIVOT_SUFFIX;
     }
 
     @Override

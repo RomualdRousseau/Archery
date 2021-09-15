@@ -17,7 +17,7 @@ public class MetaTable extends CompositeTable {
 
     public MetaTable(final CompositeTable table, final TableMatcher layex) {
         super(table);
-        layex.match(new TableLexer(table), new MetaTableContext(this));
+        layex.match(new TableLexer(table, 0), new MetaTableContext(this));
     }
 
     private void buildSimpleMeta(final CompositeTable table) {

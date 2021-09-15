@@ -20,7 +20,7 @@ public class MetaHeader extends CompositeHeader {
             final String v1 = this.getCell().getValue();
             final String v2;
             if (this.isPivotHeader()) {
-                v2 = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getEntityList().anonymize(v1);
+                v2 = this.getPivotEntityString();
             } else {
                 // TODO: check if ok with english
                 v2 = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getEntityList().anonymize(v1);

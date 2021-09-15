@@ -97,12 +97,26 @@ public class BaseCell implements Cell, Symbol {
     }
 
     public boolean isPivotHeader() {
+        return this.getPivotEntityString() != null;
+    }
+
+    public String getPivotEntityString() {
         if (classifierFactory == null || !this.classifierFactory.getLayoutClassifier().isPresent()) {
-            return false;
+            return null;
         } else {
             final List<String> pivotEntityList = this.classifierFactory.getLayoutClassifier().get().getPivotEntityList();
-            final String entityString = this.getEntityString();
-            return pivotEntityList != null && entityString != null && pivotEntityList.contains(entityString);
+            if (pivotEntityList != null) {
+                Tensor1D entityVector = this.getEntityVector();
+                for (int i = 0; i < this.classifierFactory.getLayoutClassifier().get().getEntityList().size(); i++) {
+                    if (entityVector.get(i) == 1) {
+                        String entityString = this.classifierFactory.getLayoutClassifier().get().getEntityList().get(i);
+                        if (pivotEntityList.contains(entityString)) {
+                            return entityString;
+                        }
+                    }
+                }
+            }
+            return null;
         }
     }
 

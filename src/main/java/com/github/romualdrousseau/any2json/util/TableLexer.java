@@ -29,11 +29,11 @@ public class TableLexer implements Lexer<BaseCell, TableLexer.Cursor> {
         private final int rowIndex;
     }
 
-    public TableLexer(final Table table) {
+    public TableLexer(final Table table, int rowOffset) {
         this.stack = new ArrayList<Cursor>();
         this.table = (CompositeTable) table;
         this.colIndex = 0;
-        this.rowIndex = 0;
+        this.rowIndex = rowOffset;
     }
 
     @Override
