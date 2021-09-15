@@ -43,7 +43,7 @@ jobs:
                     if [[ $version == *"snapshot"* ]]; then echo "::set-output name=is_release::0"; else echo "::set-output name=is_release::1"; fi
 
     deploy-dev:
-        needs: [build]
+        needs: [check-version-is-release]
         if: needs.check-version-is-release.outputs.is_release == 0
         runs-on: [ubuntu-latest]
         steps:
