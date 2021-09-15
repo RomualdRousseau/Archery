@@ -29,8 +29,22 @@ jobs:
                     name: target
                     path: target
 
+    check-version-is-release:
+        needs: [build]
+        runs-on: [ubuntu-latest]
+        outputs:
+            is_release: ${{ steps.check_version.outputs.is_release }}
+        steps:
+            -   uses: actions/checkout@v2
+            -   name: Check if that version is a release (i.e. not a snapshot)
+                id: check_version
+                run: |
+                    declare version=$(cat pom.xml  | grep -i "<version>" | head -n 1 | sed -re 's@[ \t]*.version.(.*)./version.@\1@g' | tr [:upper:] [:lower:])
+                    if [[ $version == *"snapshot"* ]]; then echo "::set-output name=is_release::0"; else echo "::set-output name=is_release::1"; fi
+
     deploy-dev:
         needs: [build]
+        if: needs.check-version-is-release.outputs.is_release == 0
         runs-on: [ubuntu-latest]
         steps:
             -   uses: actions/checkout@v2
@@ -55,19 +69,6 @@ jobs:
                 env:
                     MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
                     MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
-
-    check-version-is-release:
-        needs: [deploy-dev]
-        runs-on: [ubuntu-latest]
-        outputs:
-            is_release: ${{ steps.check_version.outputs.is_release }}
-        steps:
-            -   uses: actions/checkout@v2
-            -   name: Check if that version is a release (i.e. not a snapshot)
-                id: check_version
-                run: |
-                    declare version=$(cat pom.xml  | grep -i "<version>" | head -n 1 | sed -re 's@[ \t]*.version.(.*)./version.@\1@g' | tr [:upper:] [:lower:])
-                    if [[ $version == *"snapshot"* ]]; then echo "::set-output name=is_release::0"; else echo "::set-output name=is_release::1"; fi
 
     deploy-prd:
         needs: [check-version-is-release]
@@ -113,7 +114,7 @@ jobs:
                     name: target
 
     clean-dev:
-        needs: [check-version-is-release]
+        needs: [deploy-dev]
         if: needs.check-version-is-release.outputs.is_release == 0
         runs-on: [ubuntu-latest]
         steps:
