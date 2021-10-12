@@ -22,7 +22,6 @@ public class MetaHeader extends CompositeHeader {
             if (this.isPivotHeader()) {
                 v2 = this.getPivotEntityString();
             } else {
-                // TODO: check if ok with english
                 v2 = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getEntityList().anonymize(v1);
             }
             this.name = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getStopWordList().removeStopWords(v2);
