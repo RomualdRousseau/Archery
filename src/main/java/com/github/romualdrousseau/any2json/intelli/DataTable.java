@@ -74,7 +74,12 @@ public class DataTable extends CompositeTable {
         for (Cell cell : this.getRowAt(0).cells()) {
             BaseCell baseCell = (BaseCell) cell;
             if(baseCell.isPivotHeader()) {
-                this.addHeader(new PivotKeyHeader(this, baseCell));
+                PivotKeyHeader foundPivot = this.findFirstPivotHeader();
+                if (foundPivot == null) {
+                    this.addHeader(new PivotKeyHeader(this, baseCell));
+                } else {
+                    foundPivot.addEntry(baseCell);
+                }
             } else {
                 this.addHeader(new DataTableHeader(this, baseCell));
             }
