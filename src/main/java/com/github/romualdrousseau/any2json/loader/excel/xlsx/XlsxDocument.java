@@ -10,7 +10,6 @@ import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
-import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.openxml4j.opc.PackageAccess;
@@ -55,10 +54,7 @@ public class XlsxDocument implements Document {
 
             return this.sheets.size() > 0;
 
-        } catch (IOException | OpenXML4JException | NotOfficeXmlFileException e) {
-            close();
-            return false;
-        } catch (GeneralSecurityException e) {
+        } catch (IllegalArgumentException | IOException | OpenXML4JException | GeneralSecurityException e) {
             close();
             return false;
         }
