@@ -5,8 +5,8 @@
     <servers>
         <server>
             <id>ossrh</id>
-            <username>${env.MAVEN_USERNAME}</username>
-            <password>${env.MAVEN_PASSWORD}</password>
+            <username>${env.OSSRH_USERNAME}</username>
+            <password>${env.OSSRH_TOKEN}</password>
         </server>
         <server>
             <id>gpg.passphrase</id>

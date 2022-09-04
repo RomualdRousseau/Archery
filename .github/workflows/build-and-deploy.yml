@@ -67,8 +67,8 @@ jobs:
             -   name: Deploy project snapshot
                 run: mvn -B clean deploy -Dmaven.test.skip=true --file pom.xml -s settings.xml
                 env:
-                    MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-                    MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+                    OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+                    OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
 
     deploy-prd:
         needs: [check-version-is-release]
@@ -100,8 +100,8 @@ jobs:
                     export GPG_TTY=$(tty)
                     mvn -B clean deploy -Dmaven.test.skip=true --file pom.xml -s settings.xml -P release
                 env:
-                    MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-                    MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+                    OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+                    OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
                     GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
     clean-prd:
