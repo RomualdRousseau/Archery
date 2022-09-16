@@ -57,11 +57,6 @@
             <name>Open Source Project Repository Hosting</name>
             <url>https://oss.sonatype.org/content/groups/public</url>
         </repository>
-        <repository>
-            <id>in-project</id>
-            <name>In Project Repo</name>
-            <url>file://${project.basedir}/libs</url>
-        </repository>
     </repositories>
 
     <dependencies>
@@ -172,11 +167,27 @@
             <plugin>
                 <artifactId>maven-install-plugin</artifactId>
                 <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>xelem</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <file>libs/xelem-3.1/xelem-3.1.jar</file>
+                            <groupId>nl.fountain</groupId>
+                            <artifactId>xelem</artifactId>
+                            <version>3.1</version>
+                            <packaging>jar</packaging>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.8</version>
+                <version>1.6.13</version>
                 <extensions>true</extensions>
                 <configuration>
                     <serverId>ossrh</serverId>
