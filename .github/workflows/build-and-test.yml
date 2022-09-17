@@ -20,6 +20,9 @@ jobs:
                     path: ~/.m2/repository
                     key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
 
+            -   name: Installing local dependencies
+                run: mvn initialize
+
             -   name: Build project
                 run: mvn -B compile --file pom.xml
 
