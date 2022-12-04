@@ -31,7 +31,8 @@ class XmlSheet extends IntelliSheet {
 
     @Override
     protected boolean hasInternalCellDataAt(int colIndex, int rowIndex) {
-        Cell cell = this.sheet.getCellAt(rowIndex + 1, colIndex + 1);
+        final int n = this.getInternalMergeDown(colIndex, rowIndex);
+        Cell cell = this.sheet.getCellAt(n + 1, colIndex + 1);
         return cell.hasData();
     }
 
@@ -42,7 +43,8 @@ class XmlSheet extends IntelliSheet {
 
     @Override
     protected String getInternalCellDataAt(int colIndex, int rowIndex) {
-        Cell cell = this.sheet.getCellAt(rowIndex + 1, colIndex + 1);
+        final int n = this.getInternalMergeDown(colIndex, rowIndex);
+        Cell cell = this.sheet.getCellAt(n + 1, colIndex + 1);
         return cell.hasData() ? StringUtility.cleanToken(cell.getData$()) : null;
     }
 
@@ -52,13 +54,12 @@ class XmlSheet extends IntelliSheet {
         return cell.getMergeAcross() + 1;
     }
 
-    @Override
-    protected int getInternalMergeDown(int colIndex, int rowIndex) {
+    private int getInternalMergeDown(int colIndex, int rowIndex) {
         if (rowIndex <= 0) {
             return 0;
         }
 
-        int numberOfCells = 0;
+        int rowToReturn = rowIndex;
         for (int i = 1; i < 5; i++) {
             int firstRow = rowIndex - i;
             if (firstRow < 0) {
@@ -67,12 +68,12 @@ class XmlSheet extends IntelliSheet {
 
             int lastRow = firstRow + this.sheet.getCellAt(firstRow + 1, colIndex + 1).getMergeDown();
             if (lastRow > firstRow && firstRow <= rowIndex && rowIndex <= lastRow) {
-                numberOfCells = lastRow - firstRow;
+                rowToReturn = firstRow;
                 break;
             }
         }
 
-        return numberOfCells;
+        return rowToReturn;
     }
 
     private Worksheet sheet;

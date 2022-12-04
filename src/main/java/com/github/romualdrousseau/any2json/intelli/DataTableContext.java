@@ -16,6 +16,7 @@ public class DataTableContext extends Context<BaseCell> {
     public static final int TABLE_HEADER = 1;
     public static final int TABLE_GROUP = 3;
     public static final int TABLE_DATA = 4;
+    public static final int TABLE_SUB_FOOTER = 5;
     public static final int TABLE_FOOTER = 6;
 
     public DataTableContext(final DataTable dataTable) {
@@ -25,6 +26,7 @@ public class DataTableContext extends Context<BaseCell> {
         this.firstRowGroupProcessed = false;
         this.footerProcessed = false;
         this.splitRows = new ArrayList<Integer>();
+        this.ignoreRows = new ArrayList<Integer>();
     }
 
     public void processSymbolFunc(final BaseCell cell) {
@@ -55,6 +57,10 @@ public class DataTableContext extends Context<BaseCell> {
                 this.processData(cell, symbol);
                 break;
 
+            case TABLE_SUB_FOOTER:
+                this.processSubFooter(cell, symbol);
+                break;
+
             case TABLE_FOOTER:
                 this.processFooter(cell, symbol);
                 break;
@@ -66,6 +72,10 @@ public class DataTableContext extends Context<BaseCell> {
 
     public List<Integer> getSplitRows() {
         return this.splitRows;
+    }
+
+    public List<Integer> getIgnoreRows() {
+        return this.ignoreRows;
     }
 
     private void processMeta(final BaseCell cell, final String symbol) {
@@ -129,6 +139,15 @@ public class DataTableContext extends Context<BaseCell> {
         }
     }
 
+    private void processSubFooter(final BaseCell cell, final String symbol) {
+        if (!symbol.equals("$")) {
+            return;
+        }
+
+        this.ignoreRows.add(this.getRow() - 1);
+        this.dataTable.getRowAt(this.getRow() - 1).setIgnored(true);
+    }
+
     private void processFooter(final BaseCell cell, final String symbol) {
         if (!symbol.equals("$")) {
             return;
@@ -154,4 +173,5 @@ public class DataTableContext extends Context<BaseCell> {
     private BaseCell firstRowCell;
     private boolean footerProcessed;
     private final ArrayList<Integer> splitRows;
+    private final ArrayList<Integer> ignoreRows;
 }

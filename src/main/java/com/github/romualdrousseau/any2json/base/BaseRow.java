@@ -14,11 +14,20 @@ public class BaseRow implements Row {
         this.islandCellCount = 0;
         this.cellCountUpdated = false;
         this.cachedCells = new BaseCell[table.getNumberOfColumns()];
+        this.ignored = false;
     }
 
     @Override
     public boolean isEmpty() {
         return (this.sparsity() == 1.0f);
+    }
+
+    public boolean isIgnored() {
+        return this.ignored;
+    }
+
+    public void setIgnored(boolean flag) {
+        this.ignored = flag;
     }
 
     @Override
@@ -108,4 +117,5 @@ public class BaseRow implements Row {
     private int islandCellCount;
     private boolean cellCountUpdated;
     private final BaseCell[] cachedCells;
+    private boolean ignored;
 }

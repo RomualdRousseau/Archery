@@ -29,6 +29,7 @@ public class DataTable extends CompositeTable {
         if (rowOffset > 0) {
             this.setFirstRowOffset(this.getFirstRowOffset() + rowOffset);
         }
+        this.ignoreRows.addAll(this.dataTableContext.getIgnoreRows());
         this.setLoadCompleted(true);
     }
 
@@ -38,6 +39,10 @@ public class DataTable extends CompositeTable {
 
     public Iterable<RowGroup> rowGroups() {
         return this.rowGroups;
+    }
+
+    public Iterable<Integer> ignoreRows() {
+        return this.ignoreRows;
     }
 
     public void addRowGroup(RowGroup rowGroup) {
@@ -88,5 +93,6 @@ public class DataTable extends CompositeTable {
     }
 
     private final LinkedList<RowGroup> rowGroups = new LinkedList<RowGroup>();
+    private final LinkedList<Integer> ignoreRows = new LinkedList<Integer>();
     private DataTableContext dataTableContext;
 }
