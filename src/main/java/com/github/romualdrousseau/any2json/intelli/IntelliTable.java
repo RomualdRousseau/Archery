@@ -10,10 +10,10 @@ import com.github.romualdrousseau.any2json.base.AbstractHeader;
 import com.github.romualdrousseau.any2json.base.AbstractSheet;
 import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.base.RowGroup;
+import com.github.romualdrousseau.any2json.base.SimpleHeader;
 import com.github.romualdrousseau.any2json.intelli.header.CompositeHeader;
 import com.github.romualdrousseau.any2json.intelli.header.IntelliHeader;
 import com.github.romualdrousseau.any2json.intelli.header.PivotKeyHeader;
-import com.github.romualdrousseau.any2json.simple.SimpleHeader;
 import com.github.romualdrousseau.any2json.util.TableGraph;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 

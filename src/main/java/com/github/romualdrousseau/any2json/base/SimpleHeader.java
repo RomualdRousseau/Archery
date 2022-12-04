@@ -1,9 +1,6 @@
-package com.github.romualdrousseau.any2json.simple;
+package com.github.romualdrousseau.any2json.base;
 
 import com.github.romualdrousseau.any2json.HeaderTag;
-import com.github.romualdrousseau.any2json.base.AbstractHeader;
-import com.github.romualdrousseau.any2json.base.AbstractTable;
-import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.shuju.DataRow;
 
 public class SimpleHeader extends AbstractHeader {
