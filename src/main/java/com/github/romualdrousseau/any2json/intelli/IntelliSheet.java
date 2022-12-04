@@ -35,10 +35,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
 
     @Override
     public Table createIntelliTable() {
-        final SheetBitmap image = new SheetBitmap(this,
-                Math.max(this.getLastColumnNum(),
-                        this.getClassifierFactory().getLayoutClassifier().get().getSampleCount()),
-                this.getLastRowNum() + 1);
+        final SheetBitmap image = this.getSheetBitmap();
         if (!this.notifyStepCompleted(new BitmapGeneratedEvent(this, image))) {
             return null;
         }
@@ -158,17 +155,133 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         return FuzzyString.Hamming(hashPrev, hashNext) >= DocumentFactory.DEFAULT_RATIO_SIMILARITY;
     }
 
-    protected abstract int getInternalLastColumnNum(int rowIndex);
+    protected int getInternalLastColumnNum(int rowIndex) {
+        return getLastColumnNum(rowIndex);
+    }
 
-    protected abstract int getInternalLastRowNum();
+    protected int getInternalLastRowNum() {
+        return getLastRowNum();
+    }
 
-    protected abstract boolean hasInternalCellDataAt(int colIndex, int rowIndex);
+    protected boolean hasInternalCellDataAt(int colIndex, int rowIndex) {
+        return hasCellDataAt(colIndex, rowIndex);
+    }
 
-    protected abstract boolean hasInternalCellDecorationAt(int colIndex, int rowIndex);
+    protected boolean hasInternalCellDecorationAt(int colIndex, int rowIndex) {
+        return false;
+    }
 
-    protected abstract String getInternalCellDataAt(int colIndex, int rowIndex);
+    protected String getInternalCellDataAt(int colIndex, int rowIndex) {
+        return getCellDataAt(colIndex, rowIndex);
+    }
 
-    protected abstract int getInternalMergeAcross(int colIndex, int rowIndex);
+    protected int getInternalMergeAcross(int colIndex, int rowIndex) {
+        return 1;
+    }
+
+    protected SheetBitmap getSheetBitmap() {
+        return new SheetBitmap(this,
+                Math.max(this.getLastColumnNum(),
+                        this.getClassifierFactory().getLayoutClassifier().get().getSampleCount()),
+                this.getLastRowNum() + 1);
+    }
+
+    protected List<CompositeTable> findAllTables(final SheetBitmap image) {
+        final ArrayList<CompositeTable> result = new ArrayList<CompositeTable>();
+
+        final List<SearchPoint[]> rectangles = findAllRectangles(image);
+        for (final SearchPoint[] rectangle : rectangles) {
+            final int firstColumnNum = rectangle[0].getX();
+            int firstRowNum = rectangle[0].getY();
+            final int lastColumnNum = rectangle[1].getX();
+            final int lastRowNum = rectangle[1].getY();
+
+            if (firstColumnNum > lastColumnNum || firstRowNum > lastRowNum) {
+                continue;
+            }
+
+            final CompositeTable table = new CompositeTable(this, firstColumnNum, firstRowNum, lastColumnNum,
+                    lastRowNum);
+
+            boolean isSplitted = false;
+            for (int i = 0; i < table.getNumberOfRows(); i++) {
+                final BaseRow row = table.getRowAt(i);
+                if (row.isEmpty()) {
+                    final int currRowNum = table.getFirstRow() + i;
+                    if (firstRowNum <= (currRowNum - 1)) {
+                        result.add(new CompositeTable(table, firstRowNum, currRowNum - 1));
+                    }
+                    result.add(new CompositeTable(table, currRowNum, currRowNum));
+                    firstRowNum = currRowNum + 1;
+                    isSplitted |= true;
+                }
+            }
+
+            if (!isSplitted) {
+                result.add(table);
+            } else if (firstRowNum <= lastRowNum) {
+                result.add(new CompositeTable(table, firstRowNum, lastRowNum));
+            }
+        }
+
+        return result;
+    }
+
+    protected List<MetaTable> getMetaTables(final List<CompositeTable> tables, final List<TableMatcher> metaMatchers) {
+        final ArrayList<MetaTable> result = new ArrayList<MetaTable>();
+
+        for (final CompositeTable table : tables) {
+            if (table.isVisited()) {
+                continue;
+            }
+
+            boolean foundMatch = false;
+            for (final TableMatcher matcher : metaMatchers) {
+                if (!foundMatch && matcher.match(new TableLexer(table, 0), null)) {
+                    result.add(new MetaTable(table, matcher));
+                    foundMatch = true;
+                }
+            }
+            if (!foundMatch) {
+                result.add(new MetaTable(table));
+            }
+
+            table.setVisited(true);
+        }
+
+        return result;
+    }
+
+    protected List<DataTable> getDataTables(final List<CompositeTable> tables, final List<TableMatcher> dataMatchers) {
+        final ArrayList<DataTable> result = new ArrayList<DataTable>();
+
+        for (final Visitable e : tables) {
+            e.setVisited(false);
+        }
+
+        for (final CompositeTable table : tables) {
+            boolean foundMatch = false;
+            for (final TableMatcher matcher : dataMatchers) {
+                if (!foundMatch) {
+                    for (int tryCount = 0; tryCount < 3; tryCount++) {
+                        if (!foundMatch && matcher.match(new TableLexer(table, tryCount), null)) {
+                            DataTable dataTable = new DataTable(table, matcher, tryCount);
+                            result.add(dataTable);
+
+                            if (dataTable.getContext().getSplitRows().size() > 0) {
+                                this.splitAllSubTables(table, matcher, dataTable.getContext(), result);
+                            }
+
+                            table.setVisited(true);
+                            foundMatch = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
 
     private String getRowPattern(int rowIndex) {
         String hash = "";
@@ -181,7 +294,8 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
                 if (value.isEmpty()) {
                     hash += "s";
                     countEmptyCells++;
-                } if (this.getClassifierFactory().getLayoutClassifier().isPresent()) {
+                }
+                if (this.getClassifierFactory().getLayoutClassifier().isPresent()) {
                     Tensor1D v = this.getClassifierFactory().getLayoutClassifier().get().getEntityList()
                             .word2vec(value);
                     if (v.sparsity() < 1.0f) {
@@ -199,8 +313,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
 
         if (rejectRow) {
             hash = "X";
-        }
-        else if (countEmptyCells == hash.length()) {
+        } else if (countEmptyCells == hash.length()) {
             hash = "";
         }
 
@@ -242,62 +355,6 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         return root;
     }
 
-    private List<MetaTable> getMetaTables(final List<CompositeTable> tables, final List<TableMatcher> metaMatchers) {
-        final ArrayList<MetaTable> result = new ArrayList<MetaTable>();
-
-        for (final CompositeTable table : tables) {
-            if (table.isVisited()) {
-                continue;
-            }
-
-            boolean foundMatch = false;
-            for (final TableMatcher matcher : metaMatchers) {
-                if (!foundMatch && matcher.match(new TableLexer(table, 0), null)) {
-                    result.add(new MetaTable(table, matcher));
-                    foundMatch = true;
-                }
-            }
-            if (!foundMatch) {
-                result.add(new MetaTable(table));
-            }
-
-            table.setVisited(true);
-        }
-
-        return result;
-    }
-
-    private List<DataTable> getDataTables(final List<CompositeTable> tables, final List<TableMatcher> dataMatchers) {
-        final ArrayList<DataTable> result = new ArrayList<DataTable>();
-
-        for (final Visitable e : tables) {
-            e.setVisited(false);
-        }
-
-        for (final CompositeTable table : tables) {
-            boolean foundMatch = false;
-            for (final TableMatcher matcher : dataMatchers) {
-                if (!foundMatch) {
-                    for (int tryCount = 0; tryCount < 3; tryCount++) {
-                        if (!foundMatch && matcher.match(new TableLexer(table, tryCount), null)) {
-                            DataTable dataTable = new DataTable(table, matcher, tryCount);
-                            result.add(dataTable);
-
-                            if (dataTable.getContext().getSplitRows().size() > 0) {
-                                this.splitAllSubTables(table, matcher, dataTable.getContext(), result);
-                            }
-
-                            table.setVisited(true);
-                            foundMatch = true;
-                        }
-                    }
-                }
-            }
-        }
-
-        return result;
-    }
-
     private void splitAllSubTables(CompositeTable table, TableMatcher layex, DataTableContext context,
             List<DataTable> result) {
         int firstRow = -1;
@@ -308,50 +365,6 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
             }
             firstRow = table.getFirstRow() + splitRow;
         }
-    }
-
-    private List<CompositeTable> findAllTables(final SheetBitmap image) {
-        final ArrayList<CompositeTable> result = new ArrayList<CompositeTable>();
-
-        final List<SearchPoint[]> rectangles = findAllRectangles(image);
-        for (final SearchPoint[] rectangle : rectangles) {
-            final int firstColumnNum = rectangle[0].getX();
-            int firstRowNum = rectangle[0].getY();
-            final int lastColumnNum = rectangle[1].getX();
-            final int lastRowNum = rectangle[1].getY();
-
-            if (firstColumnNum > lastColumnNum || firstRowNum > lastRowNum) {
-                continue;
-            }
-
-            final CompositeTable table = new CompositeTable(this, firstColumnNum, firstRowNum, lastColumnNum,
-                    lastRowNum);
-
-            boolean isSplitted = false;
-            for (int i = 0; i < table.getNumberOfRows(); i++) {
-                final BaseRow row = table.getRowAt(i);
-                if (row.isEmpty()) {
-                    // if (row.density() >= DocumentFactory.DEFAULT_RATIO_DENSITY) {
-                    // if (row.sparsity() > DocumentFactory.DEFAULT_RATIO_SCARSITY
-                    // && row.density() > DocumentFactory.DEFAULT_RATIO_DENSITY) {
-                    final int currRowNum = table.getFirstRow() + i;
-                    if (firstRowNum <= (currRowNum - 1)) {
-                        result.add(new CompositeTable(table, firstRowNum, currRowNum - 1));
-                    }
-                    result.add(new CompositeTable(table, currRowNum, currRowNum));
-                    firstRowNum = currRowNum + 1;
-                    isSplitted |= true;
-                }
-            }
-
-            if (!isSplitted) {
-                result.add(table);
-            } else if (firstRowNum <= lastRowNum) {
-                result.add(new CompositeTable(table, firstRowNum, lastRowNum));
-            }
-        }
-
-        return result;
     }
 
     private List<SearchPoint[]> findAllRectangles(final SheetBitmap original) {

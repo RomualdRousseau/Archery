@@ -1,15 +1,22 @@
 package com.github.romualdrousseau.any2json.loader.text;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
-import com.github.romualdrousseau.any2json.simple.SimpleSheet;
+import com.github.romualdrousseau.any2json.base.SheetBitmap;
+import com.github.romualdrousseau.any2json.base.TableMatcher;
+import com.github.romualdrousseau.any2json.intelli.CompositeTable;
+import com.github.romualdrousseau.any2json.intelli.DataTable;
+import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
+import com.github.romualdrousseau.any2json.intelli.MetaTable;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
-class TextSheet extends SimpleSheet {
+class TextSheet extends IntelliSheet {
 
     public TextSheet(String name, List<String[]> rows) {
         this.name = name;
-        this.rows =  rows;
+        this.rows = rows;
     }
 
     @Override
@@ -50,6 +57,31 @@ class TextSheet extends SimpleSheet {
     @Override
     public int getNumberOfMergedCellsAt(int colIndex, int rowIndex) {
         return 1;
+    }
+
+    @Override
+    protected SheetBitmap getSheetBitmap() {
+        return null;
+    }
+
+    @Override
+    protected List<CompositeTable> findAllTables(final SheetBitmap image) {
+        final LinkedList<CompositeTable> tables = new  LinkedList<CompositeTable>();
+        tables.add(new CompositeTable(this, 0, 0, this.getLastColumnNum(), this.getLastRowNum()));
+        return tables;
+    }
+
+    @Override
+    protected List<DataTable> getDataTables(final List<CompositeTable> tables, final List<TableMatcher> dataMatchers) {
+        LinkedList<DataTable> dataTables = new  LinkedList<DataTable>();
+        dataTables.add(new DataTable(tables.get(0)));
+        return dataTables;
+    }
+
+    @Override
+    protected List<MetaTable> getMetaTables(final List<CompositeTable> tables, final List<TableMatcher> metaMatchers) {
+        final ArrayList<MetaTable> result = new ArrayList<MetaTable>();
+        return result;
     }
 
     private String getCellAt(int colIndex, int rowIndex) {

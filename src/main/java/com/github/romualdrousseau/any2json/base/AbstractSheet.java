@@ -8,7 +8,6 @@ import com.github.romualdrousseau.any2json.SheetListener;
 import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.event.BitmapGeneratedEvent;
 import com.github.romualdrousseau.any2json.event.TableReadyEvent;
-import com.github.romualdrousseau.any2json.simple.SimpleTable;
 
 import java.util.ArrayList;
 
