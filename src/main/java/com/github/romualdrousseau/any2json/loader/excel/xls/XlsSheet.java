@@ -52,7 +52,8 @@ public class XlsSheet extends IntelliSheet {
 
     @Override
     protected boolean hasInternalCellDataAt(int colIndex, int rowIndex) {
-        final Row row = this.sheet.getRow(rowIndex);
+        final int n = this.getInternalMergeDown(colIndex, rowIndex);
+        final Row row = this.sheet.getRow(n);
         if (row == null) {
             return false;
         }
@@ -62,7 +63,8 @@ public class XlsSheet extends IntelliSheet {
 
     @Override
     protected boolean hasInternalCellDecorationAt(int colIndex, int rowIndex) {
-        final Row row = this.sheet.getRow(rowIndex);
+        final int n = this.getInternalMergeDown(colIndex, rowIndex);
+        final Row row = this.sheet.getRow(n);
         if (row == null) {
             return false;
         }
@@ -72,7 +74,8 @@ public class XlsSheet extends IntelliSheet {
 
     @Override
     protected String getInternalCellDataAt(int colIndex, int rowIndex) {
-        final Row row = this.sheet.getRow(rowIndex);
+        final int n = this.getInternalMergeDown(colIndex, rowIndex);
+        final Row row = this.sheet.getRow(n);
         if (row == null) {
             return null;
         }
@@ -97,23 +100,21 @@ public class XlsSheet extends IntelliSheet {
         return numberOfCells + 1;
     }
 
-    @Override
-    protected int getInternalMergeDown(int colIndex, int rowIndex) {
+    private int getInternalMergeDown(int colIndex, int rowIndex) {
         if (this.cachedRegion.size() == 0) {
-            return 0;
+            return rowIndex;
         }
 
-        int numberOfCells = 0;
+        int rowToReturn = rowIndex;
         for (final CellRangeAddress region : cachedRegion) {
-            if (region.getLastRow() > region.getFirstRow()
-                    && region.isInRange(rowIndex, colIndex)
-                    && rowIndex > region.getFirstRow()) {
-                numberOfCells = region.getLastRow() - region.getFirstRow();
+            if (region.getLastRow() > region.getFirstRow() && rowIndex > region.getFirstRow()
+                    && region.isInRange(rowIndex, colIndex)) {
+                rowToReturn = region.getFirstRow();
                 break;
             }
         }
 
-        return numberOfCells;
+        return rowToReturn;
     }
 
     private boolean hasData(Cell cell) {
@@ -194,26 +195,26 @@ public class XlsSheet extends IntelliSheet {
         String value = "";
 
         switch (cell.getCellType()) {
-        case STRING:
-            value = cell.getRichStringCellValue().getString();
-            break;
-        case NUMERIC:
-            if (DateUtil.isCellDateFormatted(cell)) {
-                value = new SimpleDateFormat("yyyy-MM-dd").format(cell.getDateCellValue());
-            } else {
-                double d = cell.getNumericCellValue();
-                if (d != Math.rint(d)) {
-                    value = String.valueOf(cell.getNumericCellValue());
+            case STRING:
+                value = cell.getRichStringCellValue().getString();
+                break;
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    value = new SimpleDateFormat("yyyy-MM-dd").format(cell.getDateCellValue());
                 } else {
-                    value = String.valueOf((int) cell.getNumericCellValue());
+                    double d = cell.getNumericCellValue();
+                    if (d != Math.rint(d)) {
+                        value = String.valueOf(cell.getNumericCellValue());
+                    } else {
+                        value = String.valueOf((int) cell.getNumericCellValue());
+                    }
                 }
-            }
-            break;
-        case BOOLEAN:
-            value = cell.getBooleanCellValue() ? "TRUE" : "FALSE";
-            break;
-        default:
-            // Do nothing
+                break;
+            case BOOLEAN:
+                value = cell.getBooleanCellValue() ? "TRUE" : "FALSE";
+                break;
+            default:
+                // Do nothing
         }
 
         return value;

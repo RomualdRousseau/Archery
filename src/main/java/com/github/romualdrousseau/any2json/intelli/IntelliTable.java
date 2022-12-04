@@ -122,6 +122,10 @@ public class IntelliTable extends CompositeTable {
             final PivotKeyHeader pivot, final RowGroup rowGroup) {
         final ArrayList<IntelliRow> newRows = new ArrayList<IntelliRow>();
 
+        if(orgRow.isIgnored()) {
+            return newRows;
+        }
+
         if (pivot == null) {
             newRows.add(buildOneRow(orgTable, orgRow, null, rowGroup));
         } else {

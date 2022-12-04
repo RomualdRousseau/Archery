@@ -80,20 +80,20 @@ public class XlsxSheet extends IntelliSheet {
 
     @Override
     protected boolean hasInternalCellDataAt(int colIndex, int rowIndex) {
-        final XlsxRow row = this.rows.get(rowIndex);
-        return row.cells().get(colIndex).getValue() != null;
+        final int n = this.getInternalMergeDown(colIndex, rowIndex);
+        return this.rows.get(n).cells().get(colIndex).getValue() != null;
     }
 
     @Override
     protected boolean hasInternalCellDecorationAt(int colIndex, int rowIndex) {
-        final XlsxRow row = this.rows.get(rowIndex);
-        return row.cells().get(colIndex).isDecorated();
+        final int n = this.getInternalMergeDown(colIndex, rowIndex);
+        return this.rows.get(n).cells().get(colIndex).isDecorated();
     }
 
     @Override
     protected String getInternalCellDataAt(int colIndex, int rowIndex) {
-        final XlsxRow row = this.rows.get(rowIndex);
-        return row.cells().get(colIndex).getValue();
+        final int n = this.getInternalMergeDown(colIndex, rowIndex);
+        return this.rows.get(n).cells().get(colIndex).getValue();
     }
 
     @Override
@@ -105,7 +105,7 @@ public class XlsxSheet extends IntelliSheet {
         int numberOfCells = 0;
         for (final CellRangeAddress region : mergedRegions) {
             if (region.isInRange(rowIndex, colIndex)) {
-                numberOfCells = (region.getLastColumn() - region.getFirstColumn());
+                numberOfCells = region.getLastColumn() - region.getFirstColumn();
                 break;
             }
         }
@@ -113,22 +113,21 @@ public class XlsxSheet extends IntelliSheet {
         return numberOfCells + 1;
     }
 
-    @Override
-    protected int getInternalMergeDown(final int colIndex, final int rowIndex) {
+    private int getInternalMergeDown(final int colIndex, final int rowIndex) {
         if (this.mergedRegions.size() == 0) {
-            return 0;
+            return rowIndex;
         }
 
-        int numberOfCells = 0;
+        int rowToReturn = rowIndex;
         for (final CellRangeAddress region : mergedRegions) {
-            if (region.getLastRow() > region.getFirstRow() && region.isInRange(rowIndex, colIndex)
-                    && rowIndex > region.getFirstRow()) {
-                numberOfCells = region.getLastRow() - region.getFirstRow();
+            if (region.getLastRow() > region.getFirstRow() && rowIndex > region.getFirstRow()
+                    && region.isInRange(rowIndex, colIndex)) {
+                rowToReturn = region.getFirstRow();
                 break;
             }
         }
 
-        return numberOfCells;
+        return rowToReturn;
     }
 
     private class ContentHandler extends DefaultHandler {

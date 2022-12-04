@@ -35,7 +35,10 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
 
     @Override
     public Table createIntelliTable() {
-        final SheetBitmap image = new SheetBitmap(this, Math.max(this.getLastColumnNum(), this.getClassifierFactory().getLayoutClassifier().get().getSampleCount()), this.getLastRowNum() + 1);
+        final SheetBitmap image = new SheetBitmap(this,
+                Math.max(this.getLastColumnNum(),
+                        this.getClassifierFactory().getLayoutClassifier().get().getSampleCount()),
+                this.getLastRowNum() + 1);
         if (!this.notifyStepCompleted(new BitmapGeneratedEvent(this, image))) {
             return null;
         }
@@ -45,7 +48,8 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
             return null;
         }
 
-        final List<DataTable> dataTables = this.getDataTables(tables, this.getClassifierFactory().getLayoutClassifier().get().getDataMatcherList());
+        final List<DataTable> dataTables = this.getDataTables(tables,
+                this.getClassifierFactory().getLayoutClassifier().get().getDataMatcherList());
         if (!this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables))) {
             return null;
         }
@@ -54,7 +58,8 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
             return null;
         }
 
-        final List<MetaTable> metaTables = this.getMetaTables(tables, this.getClassifierFactory().getLayoutClassifier().get().getMetaMatcherList());
+        final List<MetaTable> metaTables = this.getMetaTables(tables,
+                this.getClassifierFactory().getLayoutClassifier().get().getMetaMatcherList());
         if (!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
             return null;
         }
@@ -165,13 +170,10 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
 
     protected abstract int getInternalMergeAcross(int colIndex, int rowIndex);
 
-    protected abstract int getInternalMergeDown(int colIndex, int rowIndex);
-
     private String getRowPattern(int rowIndex) {
         String hash = "";
         int countEmptyCells = 0;
-        boolean checkIfRowMergedVertically = false;
-
+        boolean rejectRow = false;
         for (int i = 0; i < this.getInternalLastColumnNum(rowIndex);) {
             final String value = this.getInternalCellDataAt(i, rowIndex);
 
@@ -179,8 +181,9 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
                 if (value.isEmpty()) {
                     hash += "s";
                     countEmptyCells++;
-                } else if(this.getClassifierFactory().getLayoutClassifier().isPresent()) {
-                    Tensor1D v = this.getClassifierFactory().getLayoutClassifier().get().getEntityList().word2vec(value);
+                } if (this.getClassifierFactory().getLayoutClassifier().isPresent()) {
+                    Tensor1D v = this.getClassifierFactory().getLayoutClassifier().get().getEntityList()
+                            .word2vec(value);
                     if (v.sparsity() < 1.0f) {
                         hash += "e";
                     } else {
@@ -191,16 +194,13 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
                 }
             }
 
-            if (!checkIfRowMergedVertically && this.getInternalMergeDown(i, rowIndex) > 0) {
-                checkIfRowMergedVertically = true;
-            }
-
             i += this.getInternalMergeAcross(i, rowIndex);
         }
 
-        if (checkIfRowMergedVertically) {
+        if (rejectRow) {
             hash = "X";
-        } else if (countEmptyCells == hash.length()) {
+        }
+        else if (countEmptyCells == hash.length()) {
             hash = "";
         }
 
@@ -324,7 +324,8 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
                 continue;
             }
 
-            final CompositeTable table = new CompositeTable(this, firstColumnNum, firstRowNum, lastColumnNum, lastRowNum);
+            final CompositeTable table = new CompositeTable(this, firstColumnNum, firstRowNum, lastColumnNum,
+                    lastRowNum);
 
             boolean isSplitted = false;
             for (int i = 0; i < table.getNumberOfRows(); i++) {
