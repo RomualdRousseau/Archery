@@ -40,8 +40,8 @@ public class MetaKeyValueHeader extends MetaHeader {
     }
 
     @Override
-    public String getEntityString() {
-        return this.value.getEntityString();
+    public String getMainEntityAsString() {
+        return this.value.getMainEntityAsString();
     }
 
     @Override

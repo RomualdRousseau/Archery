@@ -42,7 +42,7 @@ public class BaseCell implements Cell, Symbol {
     }
 
     @Override
-    public String getEntityString() {
+    public String getMainEntityAsString() {
         if(classifierFactory == null || !classifierFactory.getLayoutClassifier().isPresent()) {
             return null;
         } else {
@@ -73,6 +73,10 @@ public class BaseCell implements Cell, Symbol {
         return this.symbol;
     }
 
+    public ClassifierFactory getClassifierFactory() {
+        return this.classifierFactory;
+    }
+
     public String getRawValue() {
         return (this.rawValue == null) ? "" : this.rawValue;
     }
@@ -97,10 +101,10 @@ public class BaseCell implements Cell, Symbol {
     }
 
     public boolean isPivotHeader() {
-        return this.getPivotEntityString() != null;
+        return this.getPivotEntityAsString() != null;
     }
 
-    public String getPivotEntityString() {
+    public String getPivotEntityAsString() {
         if (classifierFactory == null || !this.classifierFactory.getLayoutClassifier().isPresent()) {
             return null;
         } else {

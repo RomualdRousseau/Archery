@@ -4,7 +4,6 @@ import com.github.romualdrousseau.any2json.HeaderTag;
 import com.github.romualdrousseau.any2json.base.AbstractHeader;
 import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
-import com.github.romualdrousseau.shuju.DataRow;
 
 public abstract class CompositeHeader extends AbstractHeader {
 
@@ -15,8 +14,8 @@ public abstract class CompositeHeader extends AbstractHeader {
     }
 
     @Override
-    public String getEntityString() {
-        return this.getCell().getEntityString();
+    public String getMainEntityAsString() {
+        return this.getCell().getMainEntityAsString();
     }
 
     @Override
@@ -26,11 +25,6 @@ public abstract class CompositeHeader extends AbstractHeader {
 
     @Override
     public HeaderTag getTag() {
-        return null;
-    }
-
-    @Override
-    public DataRow buildTrainingRow(final String tagValue, final boolean ensureWordsExists) {
         return null;
     }
 

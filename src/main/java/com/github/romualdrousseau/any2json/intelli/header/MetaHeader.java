@@ -1,5 +1,7 @@
 package com.github.romualdrousseau.any2json.intelli.header;
 
+import java.util.List;
+
 import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
@@ -57,6 +59,11 @@ public class MetaHeader extends CompositeHeader {
     @Override
     public CompositeHeader clone() {
         return new MetaHeader(this);
+    }
+
+    @Override
+    public List<String> entities() {
+        return null;
     }
 
     private String name;

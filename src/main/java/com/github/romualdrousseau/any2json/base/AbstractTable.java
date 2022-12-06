@@ -1,5 +1,6 @@
 package com.github.romualdrousseau.any2json.base;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -57,6 +58,15 @@ public abstract class AbstractTable implements Table, Visitable {
     @Override
     public int getNumberOfHeaders() {
         return this.headers.size();
+    }
+
+    @Override
+    public Iterable<String> getHeaderNames() {
+        List<String> result = new ArrayList<String>();
+        for(Header header: this.headers()) {
+            result.add(header.getName());
+        }
+        return result;
     }
 
     @Override

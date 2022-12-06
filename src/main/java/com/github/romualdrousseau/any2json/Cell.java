@@ -6,5 +6,5 @@ public interface Cell {
 
     String getValue();
 
-    String getEntityString();
+    String getMainEntityAsString();
 }

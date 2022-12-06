@@ -1,6 +1,9 @@
 package com.github.romualdrousseau.any2json.intelli.header;
 
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
+
+import java.util.List;
+
 import com.github.romualdrousseau.any2json.base.BaseCell;
 
 public class DataTableHeader extends CompositeHeader {
@@ -24,6 +27,11 @@ public class DataTableHeader extends CompositeHeader {
 
     @Override
     public String getValue() {
+        return null;
+    }
+
+    @Override
+    public List<String> entities() {
         return null;
     }
 

@@ -55,7 +55,7 @@ public abstract class AbstractHeader implements Header {
     }
 
     public String getPivotEntityString() {
-        return this.cell.getPivotEntityString();
+        return this.cell.getPivotEntityAsString();
     }
 
     public boolean equals(final AbstractHeader o) {
