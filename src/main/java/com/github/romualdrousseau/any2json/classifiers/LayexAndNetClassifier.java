@@ -56,13 +56,16 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
             "((v.*$)(vS.+$))((.{2}$)(.{3,}$)+)+(.{2}$)?",
             "(()(ES.+$))((sS.+$)(S.{2,}$)+)+(.{2}$)?",
             "(()(ES.+$))(()(.{3,}$))+(.{2}$)?"
-        };
+    };
 
-    public LayexAndNetClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords, final StringList tags, final String[] requiredTags, final String[] pivotEntityList) {
+    public LayexAndNetClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords,
+            final StringList tags, final String[] requiredTags, final String[] pivotEntityList) {
         this(ngrams, entities, stopwords, tags, requiredTags, pivotEntityList, metaLayexesDefault, dataLayexesDefault);
     }
 
-    public LayexAndNetClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords, final StringList tags, final String[] requiredTags, final String[] pivotEntityList, final String[] metaLayexes, final String[] dataLayexes) {
+    public LayexAndNetClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords,
+            final StringList tags, final String[] requiredTags, final String[] pivotEntityList,
+            final String[] metaLayexes, final String[] dataLayexes) {
         this.accuracy = 0.0f;
         this.mean = 1.0f;
         this.ngrams = ngrams;
@@ -185,6 +188,37 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         return this.accuracy;
     }
 
+    @Override
+    public DataRow buildPredictRow(final String name, final Iterable<String> entities, final Iterable<String> context) {
+        final Tensor1D entityVector = new Tensor1D(this.getEntityList().getVectorSize());
+        entities.forEach(entity -> {
+            int i = this.getEntityList().ordinal(entity);
+            if (i != -1) {
+                entityVector.set(i, 1);
+            }
+        });
+
+        final Tensor1D wordVector = this.getWordList().word2vec(name);
+
+        final Tensor1D contextVector = wordVector.copy().zero();
+        context.forEach(other -> contextVector.add(this.getWordList().word2vec(other)));
+        final Tensor1D word_mask = wordVector.copy().ones().sub(wordVector);
+        contextVector.mul(word_mask).constrain(0, 1);
+
+        return new DataRow().addFeature(entityVector).addFeature(wordVector)
+                .addFeature(contextVector);
+    }
+
+    @Override
+    public DataRow buildTrainingRow(final String name, final Iterable<String> entities, final Iterable<String> context,
+            final String tag, final boolean ensureWordsExists) {
+        if (ensureWordsExists) {
+            context.forEach(this.getWordList()::add);
+        }
+        final Tensor1D label = this.getTagList().word2vec(tag);
+        return this.buildPredictRow(name, entities, context).setLabel(label);
+    }
+
     public void fit(final DataSet trainingSet, final DataSet validationSet) {
         final float n = trainingSet.rows().size();
 
@@ -197,14 +231,13 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
 
         // Train
 
-        final DataSet reducedSet = trainingSet.shuffle().subset(0, (int) (n * 0.8f));
-        for (int i = 0; i < reducedSet.rows().size();) {
+        for (int i = 0; i < trainingSet.rows().size();) {
 
             this.optimizer.zeroGradients();
 
-            final int batchSize = Math.min(reducedSet.rows().size() - i, BATCH_SIZE);
+            final int batchSize = Math.min(trainingSet.rows().size() - i, BATCH_SIZE);
             for (int j = 0; j < batchSize; j++) {
-                final DataRow row = reducedSet.rows().get(i++);
+                final DataRow row = trainingSet.rows().get(i++);
 
                 final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), false);
                 final Tensor2D target = new Tensor2D(row.label(), false);
@@ -367,11 +400,14 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
 
     private void buildModel() {
         final int inputCount = this.entities.getVectorSize() + 2 * this.ngrams.getVectorSize();
-        final int hiddenCount = inputCount / 2;
+        final int hiddenCount1 = inputCount * 3 / 4;
+        final int hiddenCount2 = inputCount / 2;
         final int outputCount = this.tags.getVectorSize();
 
         this.model = new Model()
-                .add(new DenseBuilder().setInputUnits(inputCount).setUnits(hiddenCount))
+                .add(new DenseBuilder().setInputUnits(inputCount).setUnits(hiddenCount1))
+                .add(new ActivationBuilder().setActivation(new LeakyRelu()))
+                .add(new DenseBuilder().setUnits(hiddenCount2))
                 .add(new ActivationBuilder().setActivation(new LeakyRelu()))
                 .add(new BatchNormalizerBuilder())
                 .add(new DenseBuilder().setUnits(outputCount))

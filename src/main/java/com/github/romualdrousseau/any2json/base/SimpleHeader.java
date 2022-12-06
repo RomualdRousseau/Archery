@@ -1,7 +1,8 @@
 package com.github.romualdrousseau.any2json.base;
 
+import java.util.List;
+
 import com.github.romualdrousseau.any2json.HeaderTag;
-import com.github.romualdrousseau.shuju.DataRow;
 
 public class SimpleHeader extends AbstractHeader {
 
@@ -12,7 +13,6 @@ public class SimpleHeader extends AbstractHeader {
     public SimpleHeader(final AbstractHeader parent) {
         super(parent.getTable(), parent.getCell());
     }
-
 
     @Override
     public String getName() {
@@ -38,12 +38,12 @@ public class SimpleHeader extends AbstractHeader {
     }
 
     @Override
-    public String getEntityString() {
+    public String getMainEntityAsString() {
         return null;
     }
 
     @Override
-    public DataRow buildTrainingRow(final String tagValue, final boolean ensureWordsExists) {
+    public List<String> entities() {
         return null;
     }
 

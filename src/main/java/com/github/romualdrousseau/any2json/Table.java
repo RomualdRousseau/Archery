@@ -6,6 +6,8 @@ public interface Table {
 
     int getNumberOfRows();
 
+    Iterable<String> getHeaderNames();
+
     Iterable<Row> rows();
 
     int getNumberOfHeaders();

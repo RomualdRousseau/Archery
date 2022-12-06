@@ -5,19 +5,21 @@ import com.github.romualdrousseau.shuju.DataSet;
 import com.github.romualdrousseau.shuju.nlp.NgramList;
 import com.github.romualdrousseau.shuju.nlp.StringList;
 
-import java.util.List;
-
 public interface ITagClassifier {
 
     NgramList getWordList();
 
     StringList getTagList();
 
-    List<String> getRequiredTagList();
+    Iterable<String> getRequiredTagList();
 
     float getMean();
 
     float getAccuracy();
+
+    DataRow buildPredictRow(final String name, final Iterable<String> entities, final Iterable<String> context);
+
+    DataRow buildTrainingRow(final String name, final Iterable<String> entities, final Iterable<String> context, final String tag, final boolean ensureWordsExists);
 
     void fit(DataSet trainingSet, DataSet validationSet);
 

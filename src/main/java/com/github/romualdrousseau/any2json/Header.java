@@ -1,12 +1,12 @@
 package com.github.romualdrousseau.any2json;
 
-import com.github.romualdrousseau.shuju.DataRow;
-
 public interface Header {
 
     String getRawName();
 
     String getName();
+
+
 
     Cell getCellAtRow(Row row);
 
@@ -16,7 +16,7 @@ public interface Header {
 
     HeaderTag getTag();
 
-    String getEntityString();
+    Iterable<String> entities();
 
-    DataRow buildTrainingRow(final String tagValue, final boolean ensureWordsExists);
+    String getMainEntityAsString();
 }
