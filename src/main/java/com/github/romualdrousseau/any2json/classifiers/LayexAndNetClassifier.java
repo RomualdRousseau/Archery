@@ -221,13 +221,12 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
 
     public void fit(final DataSet trainingSet, final DataSet validationSet) {
         final float n = trainingSet.rows().size();
-
-        this.accuracy = 0.0f;
-        this.mean = 0.0f;
-
         if (n == 0.0f) {
             return;
         }
+
+        this.accuracy = 0.0f;
+        this.mean = 0.0f;
 
         // Train
 
@@ -239,8 +238,8 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
             for (int j = 0; j < batchSize; j++) {
                 final DataRow row = trainingSet.rows().get(i++);
 
-                final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), false);
-                final Tensor2D target = new Tensor2D(row.label(), false);
+                final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), true);
+                final Tensor2D target = new Tensor2D(row.label(), true);
 
                 final Layer output = this.model.model(input, true);
                 final Loss loss = this.loss.loss(output, target);
@@ -254,8 +253,8 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         // Validate
 
         for (final DataRow row : validationSet.rows()) {
-            final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), false);
-            final Tensor2D target = new Tensor2D(row.label(), false);
+            final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), true);
+            final Tensor2D target = new Tensor2D(row.label(), true);
 
             final Layer output = this.model.model(input);
             final Loss loss = this.loss.loss(output, target);
