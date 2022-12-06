@@ -270,7 +270,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
     }
 
     public String predict(final DataRow row) {
-        final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), false);
+        final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), true);
         final Tensor2D output = this.model.model(input).detach();
 
         int tagIndex = output.argmax(0, 0);
