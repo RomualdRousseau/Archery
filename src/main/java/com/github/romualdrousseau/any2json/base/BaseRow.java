@@ -15,11 +15,21 @@ public class BaseRow implements Row {
         this.cellCountUpdated = false;
         this.cachedCells = new BaseCell[table.getNumberOfColumns()];
         this.ignored = false;
+        this.rowNum = 0;
     }
 
     @Override
     public boolean isEmpty() {
         return (this.sparsity() == 1.0f);
+    }
+
+    @Override
+    public int getRowNum() {
+        return this.rowNum;
+    }
+
+    public void setRowNum(int rowNum) {
+        this.rowNum = rowNum;
     }
 
     public boolean isIgnored() {
@@ -118,4 +128,5 @@ public class BaseRow implements Row {
     private boolean cellCountUpdated;
     private final BaseCell[] cachedCells;
     private boolean ignored;
+    private int rowNum;
 }
