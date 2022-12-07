@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.base.AbstractTable;
+import com.github.romualdrousseau.any2json.base.BaseRow;
 
 public class RowIterator implements Iterator<Row>
 {
@@ -17,7 +18,9 @@ public class RowIterator implements Iterator<Row>
 	}
 
 	public Row next() {
-		return this.table.getRowAt(this.currRowIdx++);
+        BaseRow row = this.table.getRowAt(this.currRowIdx++);
+        row.setRowNum(this.currRowIdx);
+		return row;
 	}
 
 	private AbstractTable table;

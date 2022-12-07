@@ -4,9 +4,11 @@ public interface Row {
 
     boolean isEmpty();
 
-    int getNumberOfCells();
+    int getRowNum();
 
     Iterable<Cell> cells();
+
+    int getNumberOfCells();
 
     Cell getCellAt(int colIndex);
 }
