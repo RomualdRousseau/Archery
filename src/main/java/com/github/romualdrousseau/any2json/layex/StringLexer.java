@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.any2json.classifiers.layex;
+package com.github.romualdrousseau.any2json.layex;
 
 import java.util.LinkedList;
 

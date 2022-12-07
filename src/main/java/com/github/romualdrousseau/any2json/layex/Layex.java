@@ -1,17 +1,18 @@
-package com.github.romualdrousseau.any2json.classifiers.layex;
+package com.github.romualdrousseau.any2json.layex;
 
 import java.util.LinkedList;
 
-import com.github.romualdrousseau.any2json.base.TableMatcher;
-import com.github.romualdrousseau.any2json.classifiers.layex.operations.Any;
-import com.github.romualdrousseau.any2json.classifiers.layex.operations.Closure;
-import com.github.romualdrousseau.any2json.classifiers.layex.operations.Concat;
-import com.github.romualdrousseau.any2json.classifiers.layex.operations.EndOfRow;
-import com.github.romualdrousseau.any2json.classifiers.layex.operations.Group;
-import com.github.romualdrousseau.any2json.classifiers.layex.operations.Nop;
-import com.github.romualdrousseau.any2json.classifiers.layex.operations.Or;
-import com.github.romualdrousseau.any2json.classifiers.layex.operations.Value;
-import com.github.romualdrousseau.any2json.classifiers.layex.operations.ValueNeg;
+import com.github.romualdrousseau.any2json.layex.operations.Any;
+import com.github.romualdrousseau.any2json.layex.operations.Closure;
+import com.github.romualdrousseau.any2json.layex.operations.Concat;
+import com.github.romualdrousseau.any2json.layex.operations.EndOfRow;
+import com.github.romualdrousseau.any2json.layex.operations.Group;
+import com.github.romualdrousseau.any2json.layex.operations.Literal;
+import com.github.romualdrousseau.any2json.layex.operations.LiteralNeg;
+import com.github.romualdrousseau.any2json.layex.operations.Nop;
+import com.github.romualdrousseau.any2json.layex.operations.Or;
+import com.github.romualdrousseau.any2json.layex.operations.Value;
+import com.github.romualdrousseau.any2json.layex.operations.ValueNeg;
 
 public class Layex {
     public Layex(final String pattern) {
@@ -33,7 +34,11 @@ public class Layex {
         // R = R?
         // R = R*
         // R = R+
-        // R = R{n}
+        // R = R$
+        // R = R{n,m}
+        // R = /lit/
+        // R = /!lit/
+        // R = .
         // R = s
         final String c = this.getSymbol();
 
@@ -46,7 +51,6 @@ public class Layex {
         } else {
             final TableMatcher e1 = r2();
             final TableMatcher e2 = r();
-
             if (e2 instanceof Nop) { // Small optimization
                 return e1;
             } else {
@@ -82,6 +86,11 @@ public class Layex {
             this.acceptPreviousSymbol();
             final TableMatcher e = r();
             this.acceptSymbol("]");
+            return r3(e);
+        } else if (c.equals("/")) {
+            this.acceptPreviousSymbol();
+            final TableMatcher e = this.lit();
+            this.acceptSymbol("/");
             return r3(e);
         } else {
             throw new RuntimeException("Syntax Error: " + c);
@@ -144,6 +153,23 @@ public class Layex {
         } else {
             throw new RuntimeException("Syntax Error: " + c);
         }
+    }
+
+    private TableMatcher lit() {
+        String l = "";
+        boolean neg = false;
+        String c = this.getSymbol();
+        if(c.equals("^")) {
+            this.acceptPreviousSymbol();
+            neg = true;
+            c = this.getSymbol();
+        }
+        while (c.charAt(0) >= 'A' && c.charAt(0) <= 'Z' || c.charAt(0) >= 'a' && c.charAt(0) <= 'z') {
+            this.acceptPreviousSymbol();
+            l += c;
+            c = this.getSymbol();
+        }
+        return neg ? new LiteralNeg(l) : new Literal(l);
     }
 
     private String getSymbol() {

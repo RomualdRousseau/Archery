@@ -5,11 +5,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.github.romualdrousseau.any2json.base.SheetBitmap;
-import com.github.romualdrousseau.any2json.base.TableMatcher;
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
 import com.github.romualdrousseau.any2json.intelli.DataTable;
 import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
 import com.github.romualdrousseau.any2json.intelli.MetaTable;
+import com.github.romualdrousseau.any2json.layex.TableMatcher;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 class TextSheet extends IntelliSheet {

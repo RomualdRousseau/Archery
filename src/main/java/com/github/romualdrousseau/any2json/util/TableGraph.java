@@ -13,7 +13,7 @@ public class TableGraph {
         this.parent = null;
     }
 
-    public TableGraph(CompositeTable table) {
+    public TableGraph(final CompositeTable table) {
         this.table = table;
         this.parent = null;
     }
@@ -34,19 +34,19 @@ public class TableGraph {
         return this.children;
     }
 
-    public void addChild(TableGraph child) {
+    public void addChild(final TableGraph child) {
         child.parent = this;
         this.children.add(child);
 
         this.children.sort(new Comparator<TableGraph>() {
-			@Override
-			public int compare(TableGraph o1, TableGraph o2) {
-				return o1.table.getFirstRow() - o2.table.getFirstRow();
-			}
+            @Override
+            public int compare(final TableGraph o1, final TableGraph o2) {
+                return o1.table.getFirstRow() - o2.table.getFirstRow();
+            }
         });
     }
 
-    private CompositeTable table;
+    private final CompositeTable table;
     private TableGraph parent;
-    private LinkedList<TableGraph> children = new LinkedList<TableGraph>();
+    private final LinkedList<TableGraph> children = new LinkedList<TableGraph>();
 }

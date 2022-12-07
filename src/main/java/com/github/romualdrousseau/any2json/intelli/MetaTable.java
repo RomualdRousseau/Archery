@@ -3,9 +3,9 @@ package com.github.romualdrousseau.any2json.intelli;
 import com.github.romualdrousseau.any2json.Cell;
 import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.base.BaseCell;
-import com.github.romualdrousseau.any2json.base.TableMatcher;
 import com.github.romualdrousseau.any2json.intelli.header.MetaHeader;
-import com.github.romualdrousseau.any2json.util.TableLexer;
+import com.github.romualdrousseau.any2json.layex.TableLexer;
+import com.github.romualdrousseau.any2json.layex.TableMatcher;
 
 public class MetaTable extends CompositeTable {
 

@@ -1,5 +1,7 @@
 package com.github.romualdrousseau.any2json.base;
 
+import com.github.romualdrousseau.any2json.layex.Symbol;
+
 public abstract class Context<S extends Symbol> {
 
     public int getGroup() {
@@ -34,4 +36,5 @@ public abstract class Context<S extends Symbol> {
     private int group = 0;
     private int column = 0;
     private int row = 0;
+
 }

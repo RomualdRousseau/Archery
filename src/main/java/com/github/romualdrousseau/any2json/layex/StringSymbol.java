@@ -1,6 +1,4 @@
-package com.github.romualdrousseau.any2json.classifiers.layex;
-
-import com.github.romualdrousseau.any2json.base.Symbol;
+package com.github.romualdrousseau.any2json.layex;
 
 public class StringSymbol implements Symbol {
 
@@ -17,6 +15,11 @@ public class StringSymbol implements Symbol {
         } else {
             return this.s;
         }
+    }
+
+    @Override
+    public boolean matchLiteral(String literal) {
+        return true;
     }
 
     private final String s;

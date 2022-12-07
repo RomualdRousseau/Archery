@@ -1,11 +1,11 @@
-package com.github.romualdrousseau.any2json.classifiers.layex.operations;
+package com.github.romualdrousseau.any2json.layex.operations;
 
 import java.util.LinkedList;
 
 import com.github.romualdrousseau.any2json.base.Context;
-import com.github.romualdrousseau.any2json.base.Symbol;
-import com.github.romualdrousseau.any2json.base.TableMatcher;
-import com.github.romualdrousseau.any2json.classifiers.layex.Lexer;
+import com.github.romualdrousseau.any2json.layex.Lexer;
+import com.github.romualdrousseau.any2json.layex.Symbol;
+import com.github.romualdrousseau.any2json.layex.TableMatcher;
 
 public class Not implements TableMatcher {
 

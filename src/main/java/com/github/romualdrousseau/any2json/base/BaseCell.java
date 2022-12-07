@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.github.romualdrousseau.any2json.Cell;
 import com.github.romualdrousseau.any2json.ClassifierFactory;
+import com.github.romualdrousseau.any2json.layex.Symbol;
 import com.github.romualdrousseau.shuju.math.Tensor1D;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
@@ -71,6 +72,11 @@ public class BaseCell implements Cell, Symbol {
             }
         }
         return this.symbol;
+    }
+
+    @Override
+    public boolean matchLiteral(String literal) {
+        return this.getMainEntityAsString().equals(literal);
     }
 
     public ClassifierFactory getClassifierFactory() {

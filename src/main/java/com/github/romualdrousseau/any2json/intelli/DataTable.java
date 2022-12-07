@@ -6,11 +6,11 @@ import com.github.romualdrousseau.any2json.Cell;
 import com.github.romualdrousseau.any2json.Header;
 import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.base.RowGroup;
-import com.github.romualdrousseau.any2json.base.TableMatcher;
 import com.github.romualdrousseau.any2json.intelli.header.DataTableHeader;
 import com.github.romualdrousseau.any2json.intelli.header.MetaTableHeader;
 import com.github.romualdrousseau.any2json.intelli.header.PivotKeyHeader;
-import com.github.romualdrousseau.any2json.util.TableLexer;
+import com.github.romualdrousseau.any2json.layex.TableLexer;
+import com.github.romualdrousseau.any2json.layex.TableMatcher;
 
 public class DataTable extends CompositeTable {
 

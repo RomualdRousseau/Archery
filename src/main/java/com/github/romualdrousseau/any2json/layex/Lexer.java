@@ -1,6 +1,4 @@
-package com.github.romualdrousseau.any2json.classifiers.layex;
-
-import com.github.romualdrousseau.any2json.base.Symbol;
+package com.github.romualdrousseau.any2json.layex;
 
 public interface Lexer<S extends Symbol, C> {
 
