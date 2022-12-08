@@ -20,7 +20,7 @@ public class DataTableHeader extends CompositeHeader {
     public String getName() {
         if (this.name == null) {
             final String v1 = this.getCell().getValue();
-            this.name = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getStopWordList().removeStopWords(v1);
+            this.name = this.getLayoutClassifier().getStopWordList().removeStopWords(v1);
         }
         return this.name;
     }

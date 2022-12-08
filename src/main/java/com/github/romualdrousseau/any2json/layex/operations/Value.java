@@ -15,6 +15,7 @@ public class Value implements TableMatcher {
     public <S extends Symbol, C> boolean match(final Lexer<S, C> stream, final Context<S> context) {
         final S symbol = stream.read();
         final String c = symbol.getSymbol();
+        System.out.println(this.v + " " + c);
         if (!c.equals("") && c.charAt(0) >= 'a' && c.charAt(0) <= 'z' && c.equals(this.v)) {
             if (context != null) {
                 context.notify(symbol);

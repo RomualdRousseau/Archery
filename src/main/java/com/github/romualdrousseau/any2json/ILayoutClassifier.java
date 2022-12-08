@@ -19,6 +19,4 @@ public interface ILayoutClassifier {
     List<TableMatcher> getMetaMatcherList();
 
     List<TableMatcher> getDataMatcherList();
-
-    //boolean filterHeader(String s);
 }

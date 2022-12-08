@@ -1,7 +1,5 @@
 package com.github.romualdrousseau.any2json.base;
 
-import java.util.List;
-
 import com.github.romualdrousseau.any2json.HeaderTag;
 
 public class SimpleHeader extends AbstractHeader {
@@ -34,16 +32,6 @@ public class SimpleHeader extends AbstractHeader {
 
     @Override
     public HeaderTag getTag() {
-        return null;
-    }
-
-    @Override
-    public String getMainEntityAsString() {
-        return null;
-    }
-
-    @Override
-    public List<String> entities() {
         return null;
     }
 

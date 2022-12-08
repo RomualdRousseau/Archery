@@ -1,7 +1,7 @@
 
 package com.github.romualdrousseau.any2json.layex.operations;
 
-import java.util.LinkedList;
+import java.util.Deque;
 
 import com.github.romualdrousseau.any2json.base.Context;
 import com.github.romualdrousseau.any2json.layex.Lexer;
@@ -10,7 +10,7 @@ import com.github.romualdrousseau.any2json.layex.TableMatcher;
 
 public class Closure implements TableMatcher {
 
-    public Closure(LinkedList<TableMatcher> stack, int minCount, int maxCount) {
+    public Closure(Deque<TableMatcher> stack, int minCount, int maxCount) {
         this.a = stack.pop();
         this.minCount = minCount;
         this.maxCount = maxCount;

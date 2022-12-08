@@ -17,9 +17,9 @@ public interface ITagClassifier {
 
     float getAccuracy();
 
-    DataRow buildPredictRow(final String name, final Iterable<String> entities, final Iterable<String> context);
-
     DataRow buildTrainingRow(final String name, final Iterable<String> entities, final Iterable<String> context, final String tag, final boolean ensureWordsExists);
+
+    DataRow buildPredictRow(final String name, final Iterable<String> entities, final Iterable<String> context);
 
     void fit(DataSet trainingSet, DataSet validationSet);
 

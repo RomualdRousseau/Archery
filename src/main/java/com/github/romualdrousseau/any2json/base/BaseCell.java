@@ -1,11 +1,15 @@
 package com.github.romualdrousseau.any2json.base;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import com.github.romualdrousseau.any2json.Cell;
 import com.github.romualdrousseau.any2json.ClassifierFactory;
 import com.github.romualdrousseau.any2json.layex.Symbol;
 import com.github.romualdrousseau.shuju.math.Tensor1D;
+import com.github.romualdrousseau.shuju.nlp.RegexList;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 public class BaseCell implements Cell, Symbol {
@@ -43,16 +47,24 @@ public class BaseCell implements Cell, Symbol {
     }
 
     @Override
-    public String getMainEntityAsString() {
+    public String getEntitiesAsString() {
+        return String.join("|", this.entities());
+    }
+
+    @Override
+    public Iterable<String> entities() {
         if(classifierFactory == null || !classifierFactory.getLayoutClassifier().isPresent()) {
-            return null;
+            return Collections.emptyList();
         } else {
-            Tensor1D v = this.getEntityVector();
-            if(v.sparsity() < 1.0f) {
-                return classifierFactory.getLayoutClassifier().get().getEntityList().get(v.argmax());
-            } else {
-                return null;
+            final List<String> result = new ArrayList<String>();
+            final Tensor1D entityVector = this.getEntityVector();
+            final RegexList entityList = classifierFactory.getLayoutClassifier().get().getEntityList();
+            for (int i = 0; i < entityList.size(); i++) {
+                if (entityVector.get(i) == 1) {
+                    result.add(entityList.get(i));
+                }
             }
+            return result;
         }
     }
 
@@ -75,8 +87,13 @@ public class BaseCell implements Cell, Symbol {
     }
 
     @Override
-    public boolean matchLiteral(String literal) {
-        return this.getMainEntityAsString().equals(literal);
+    public boolean matchLiteral(final String literal) {
+        for (final String entity: this.entities()) {
+            if (entity.equalsIgnoreCase(literal)) {
+                return true;
+            }
+        };
+        return false;
     }
 
     public ClassifierFactory getClassifierFactory() {
@@ -107,27 +124,26 @@ public class BaseCell implements Cell, Symbol {
     }
 
     public boolean isPivotHeader() {
-        return this.getPivotEntityAsString() != null;
+        return this.getPivotEntityAsString().isPresent();
     }
 
-    public String getPivotEntityAsString() {
-        if (classifierFactory == null || !this.classifierFactory.getLayoutClassifier().isPresent()) {
-            return null;
-        } else {
-            final List<String> pivotEntityList = this.classifierFactory.getLayoutClassifier().get().getPivotEntityList();
-            if (pivotEntityList != null) {
-                Tensor1D entityVector = this.getEntityVector();
-                for (int i = 0; i < this.classifierFactory.getLayoutClassifier().get().getEntityList().size(); i++) {
-                    if (entityVector.get(i) == 1) {
-                        String entityString = this.classifierFactory.getLayoutClassifier().get().getEntityList().get(i);
-                        if (pivotEntityList.contains(entityString)) {
-                            return entityString;
-                        }
+    public Optional<String> getPivotEntityAsString() {
+        if (classifierFactory == null) {
+            return Optional.empty();
+        }
+        return this.classifierFactory.getLayoutClassifier().flatMap(classifier -> {
+            final List<String> pivotEntityList = classifier.getPivotEntityList();
+            final Tensor1D entityVector = this.getEntityVector();
+            for (int i = 0; i < classifier.getEntityList().size(); i++) {
+                if (entityVector.get(i) > 0) {
+                    final String entityString = classifier.getEntityList().get(i);
+                    if (pivotEntityList.contains(entityString)) {
+                        return Optional.of(entityString);
                     }
                 }
             }
-            return null;
-        }
+            return Optional.empty();
+        });
     }
 
     private final String value;
@@ -136,5 +152,5 @@ public class BaseCell implements Cell, Symbol {
     private final String rawValue;
     private Tensor1D entityVector;
     private String symbol;
-    private ClassifierFactory classifierFactory;
+    private final ClassifierFactory classifierFactory;
 }

@@ -1,6 +1,5 @@
 package com.github.romualdrousseau.any2json.intelli.header;
 
-import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.math.Tensor1D;
@@ -14,6 +13,7 @@ import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.HeaderTag;
 import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.base.BaseCell;
+import com.github.romualdrousseau.any2json.base.BaseRow;
 
 public class IntelliHeader extends CompositeHeader {
 
@@ -36,11 +36,11 @@ public class IntelliHeader extends CompositeHeader {
     public String getName() {
         if (this.name == null) {
             final String v1 = this.getCell().getValue();
-            this.name = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getStopWordList().removeStopWords(v1);
+            this.name = this.getLayoutClassifier().getStopWordList().removeStopWords(v1);
             if(StringUtility.isFastEmpty(this.name)) {
-                final Tensor1D v = this.buildEntityVector();
+                final Tensor1D v = this.sampleEntityVector();
                 if(v.sparsity() < 1.0f) {
-                    this.name = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getEntityList().get(v.argmax());
+                    this.name = this.getLayoutClassifier().getEntityList().get(v.argmax());
                 } else {
                     this.name =  DocumentFactory.PIVOT_VALUE_SUFFIX;
                 }
@@ -74,20 +74,15 @@ public class IntelliHeader extends CompositeHeader {
         if (buffer.isEmpty()) {
             return this.getCellAtRow(row);
         } else {
-            return new BaseCell(buffer, this.getColumnIndex(), 1, this.getTable().getSheet().getClassifierFactory());
+            return new BaseCell(buffer, this.getColumnIndex(), 1, this.getClassifierFactory());
         }
-    }
-
-    @Override
-    public String getMainEntityAsString() {
-        return String.join("|", this.entities());
     }
 
     @Override
     public Iterable<String> entities() {
         final List<String> result = new ArrayList<String>();
-        final Tensor1D entityVector = this.buildEntityVector();
-        final RegexList entityList = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getEntityList();
+        final Tensor1D entityVector = this.sampleEntityVector();
+        final RegexList entityList = this.getLayoutClassifier().getEntityList();
         for (int i = 0; i < entityList.size(); i++) {
             if (entityVector.get(i) == 1) {
                 result.add(entityList.get(i));
@@ -125,7 +120,7 @@ public class IntelliHeader extends CompositeHeader {
         if (StringUtility.isFastEmpty(this.getName())) {
             this.tag = HeaderTag.None;
         } else {
-            this.getTable().getSheet().getClassifierFactory().getTagClassifier().ifPresent(classifier -> {
+            this.getClassifierFactory().getTagClassifier().ifPresent(classifier -> {
                 final DataRow data = classifier.buildPredictRow(this.getName(), this.entities(), this.getTable().getHeaderNames());
                 final String tagValue = classifier.predict(data);
                 this.tag = new HeaderTag(tagValue);
@@ -137,26 +132,24 @@ public class IntelliHeader extends CompositeHeader {
         this.nextSibbling = other;
     }
 
-    private Tensor1D buildEntityVector() {
-        return this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().map(classifier -> {
-            final Tensor1D result = new Tensor1D(classifier.getEntityList().getVectorSize());
-            int n = 0;
-            for (int i = 0; i < Math.min(this.getTable().getNumberOfRows(), classifier.getSampleCount()); i++) {
-                final BaseRow row = this.getTable().getRowAt(i);
-                if (row == null) {
-                    continue;
-                }
-                final BaseCell cell = row.getCellAt(this.getColumnIndex());
-                if (cell.hasValue() && !cell.getEntityVector().isNull()) {
-                    result.add(cell.getEntityVector());
-                    n++;
-                }
+    private Tensor1D sampleEntityVector() {
+        final Tensor1D result = new Tensor1D(this.getLayoutClassifier().getEntityList().getVectorSize());
+        int n = 0;
+        for (int i = 0; i < Math.min(this.getTable().getNumberOfRows(), this.getLayoutClassifier().getSampleCount()); i++) {
+            final BaseRow row = this.getTable().getRowAt(i);
+            if (row == null) {
+                continue;
             }
-            if (n > 0) {
-                result.if_lt_then(DocumentFactory.DEFAULT_ENTITY_PROBABILITY * ((float) n), 0.0f, 1.0f);
+            final BaseCell cell = row.getCellAt(this.getColumnIndex());
+            if (cell.hasValue() && !cell.getEntityVector().isNull()) {
+                result.add(cell.getEntityVector());
+                n++;
             }
-            return result;
-        }).get();
+        }
+        if (n > 0) {
+            result.if_lt_then(DocumentFactory.DEFAULT_ENTITY_PROBABILITY * ((float) n), 0.0f, 1.0f);
+        }
+        return result;
     }
 
     private String name;

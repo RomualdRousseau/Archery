@@ -136,19 +136,15 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         if (rowIndex <= 0 || rowIndex >= this.getInternalLastRowNum()) {
             return false;
         }
-
         String hash = this.getRowPattern(rowIndex);
-
         // Remove unwanted row
         if (hash.equals("X")) {
             return true;
         }
-
         // Keep non empty rows
         if (!hash.isEmpty()) {
             return false;
         }
-
         // Test if the previous and next rows can be "stiched"
         String hashPrev = this.getRowPattern(rowIndex - 1);
         String hashNext = this.getRowPattern(rowIndex + 1);
@@ -261,17 +257,15 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
 
         for (final CompositeTable table : tables) {
             boolean foundMatch = false;
-            for (final TableMatcher matcher : dataMatchers) {
+            for (int tryCount = 0; tryCount < 3; tryCount++) {
                 if (!foundMatch) {
-                    for (int tryCount = 0; tryCount < 3; tryCount++) {
+                    for (final TableMatcher matcher : dataMatchers) {
                         if (!foundMatch && matcher.match(new TableLexer(table, tryCount), null)) {
                             DataTable dataTable = new DataTable(table, matcher, tryCount);
                             result.add(dataTable);
-
                             if (dataTable.getContext().getSplitRows().size() > 0) {
                                 this.splitAllSubTables(table, matcher, dataTable.getContext(), result);
                             }
-
                             table.setVisited(true);
                             foundMatch = true;
                         }
@@ -289,7 +283,6 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         boolean rejectRow = false;
         for (int i = 0; i < this.getInternalLastColumnNum(rowIndex);) {
             final String value = this.getInternalCellDataAt(i, rowIndex);
-
             if (value != null) {
                 if (value.isEmpty()) {
                     hash += "s";
@@ -307,16 +300,13 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
                     hash += "v";
                 }
             }
-
             i += this.getInternalMergeAcross(i, rowIndex);
         }
-
         if (rejectRow) {
             hash = "X";
         } else if (countEmptyCells == hash.length()) {
             hash = "";
         }
-
         return hash;
     }
 
@@ -382,7 +372,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
                 SearchPoint.ExpandInX(SearchPoint.MergeInX(SearchPoint.RemoveOverlaps(rectangles)), original),
                 original);
 
-        final List<SearchPoint> points = extractAllPoints(original, rectangles);
+        final List<SearchPoint> points = extractAllSearchPoints(original, rectangles);
 
         for (final SearchPoint point : points) {
             final SearchPoint neighboor = new SearchPoint(point.getX() + 1, point.getY(), point.getSAD());
@@ -396,9 +386,8 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         return rectangles;
     }
 
-    private List<SearchPoint> extractAllPoints(final ISearchBitmap filtered, List<SearchPoint[]> rectangles) {
+    private List<SearchPoint> extractAllSearchPoints(final ISearchBitmap filtered, List<SearchPoint[]> rectangles) {
         ArrayList<SearchPoint> result = new ArrayList<SearchPoint>();
-
         for (int i = 0; i < filtered.getHeight(); i++) {
             for (int j = 0; j < filtered.getWidth(); j++) {
                 if (filtered.get(j, i) > 0) {
@@ -415,7 +404,6 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
                 }
             }
         }
-
         return result;
     }
 

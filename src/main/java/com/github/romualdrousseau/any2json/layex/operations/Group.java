@@ -1,7 +1,7 @@
 
 package com.github.romualdrousseau.any2json.layex.operations;
 
-import java.util.LinkedList;
+import java.util.Deque;
 
 import com.github.romualdrousseau.any2json.base.Context;
 import com.github.romualdrousseau.any2json.layex.Lexer;
@@ -10,7 +10,7 @@ import com.github.romualdrousseau.any2json.layex.TableMatcher;
 
 public class Group implements TableMatcher {
 
-    public Group(LinkedList<TableMatcher> stack, int group) {
+    public Group(Deque<TableMatcher> stack, int group) {
       this.a = stack.pop();
       this.group = group;
     }

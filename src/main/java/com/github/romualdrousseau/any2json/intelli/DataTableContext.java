@@ -17,7 +17,7 @@ public class DataTableContext extends Context<BaseCell> {
     public static final int TABLE_GROUP = 3;
     public static final int TABLE_DATA = 4;
     public static final int TABLE_SUB_FOOTER = 5;
-    public static final int TABLE_FOOTER = 6;
+    public static final int TABLE_FOOTER = 7;
 
     public DataTableContext(final DataTable dataTable) {
         this.dataTable = dataTable;

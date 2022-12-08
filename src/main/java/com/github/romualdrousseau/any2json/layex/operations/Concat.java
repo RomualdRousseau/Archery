@@ -1,6 +1,6 @@
 package com.github.romualdrousseau.any2json.layex.operations;
 
-import java.util.LinkedList;
+import java.util.Deque;
 
 import com.github.romualdrousseau.any2json.base.Context;
 import com.github.romualdrousseau.any2json.layex.Lexer;
@@ -9,7 +9,7 @@ import com.github.romualdrousseau.any2json.layex.TableMatcher;
 
 public class Concat implements TableMatcher {
 
-    public Concat(LinkedList<TableMatcher> stack) {
+    public Concat(Deque<TableMatcher> stack) {
         this.a = stack.pop();
         this.b = stack.pop();
     }

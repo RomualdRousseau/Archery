@@ -19,7 +19,7 @@ public class MetaKeyValueHeader extends MetaHeader {
     public String getName() {
         if (this.name == null) {
             final String v1 = this.getCell().getValue();
-            this.name = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getStopWordList().removeStopWords(v1);
+            this.name = this.getLayoutClassifier().getStopWordList().removeStopWords(v1);
         }
         return this.name;
     }
@@ -28,7 +28,7 @@ public class MetaKeyValueHeader extends MetaHeader {
     public String getValue() {
         if (this.valueOfValue == null) {
             final String v1 = this.value.getValue();
-            final String v2 = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getEntityList().find(v1);
+            final String v2 = this.getLayoutClassifier().getEntityList().find(v1);
             this.valueOfValue = (v2 == null) ? v1 : v2;
         }
         return this.valueOfValue;
@@ -40,8 +40,8 @@ public class MetaKeyValueHeader extends MetaHeader {
     }
 
     @Override
-    public String getMainEntityAsString() {
-        return this.value.getMainEntityAsString();
+    public String getEntitiesAsString() {
+        return this.value.getEntitiesAsString();
     }
 
     @Override

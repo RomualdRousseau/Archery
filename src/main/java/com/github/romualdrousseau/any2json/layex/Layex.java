@@ -1,6 +1,7 @@
 package com.github.romualdrousseau.any2json.layex;
 
-import java.util.LinkedList;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import com.github.romualdrousseau.any2json.layex.operations.Any;
 import com.github.romualdrousseau.any2json.layex.operations.Closure;
@@ -20,7 +21,7 @@ public class Layex {
     }
 
     public TableMatcher compile() {
-        this.stack = new LinkedList<TableMatcher>();
+        this.stack = new ArrayDeque<TableMatcher>();
         this.groupCounter = 0;
         return this.r();
     }
@@ -35,11 +36,10 @@ public class Layex {
         // R = R*
         // R = R+
         // R = R$
-        // R = R{n,m}
+        // R = R{n,m}|R{n,}
         // R = /lit/
         // R = /!lit/
-        // R = .
-        // R = s
+        // R = s|v|e|.
         final String c = this.getSymbol();
 
         if (c.equals("")) {
@@ -63,7 +63,6 @@ public class Layex {
 
     private TableMatcher r2() {
         final String c = this.getSymbol();
-
         if (c.charAt(0) >= 'a' && c.charAt(0) <= 'z') {
             this.acceptPreviousSymbol();
             return r3(new Value(c));
@@ -99,7 +98,6 @@ public class Layex {
 
     private TableMatcher r3(final TableMatcher e) {
         final String c = this.getSymbol();
-
         if (c.equals("?")) {
             this.acceptPreviousSymbol();
             this.stack.push(e);
@@ -130,24 +128,20 @@ public class Layex {
 
     private TableMatcher r4(final TableMatcher e) {
         String c = this.getSymbol();
-
         if (c.charAt(0) >= '0' && c.charAt(0) <= '9') {
             this.acceptPreviousSymbol();
             final int n1 = Integer.valueOf(c);
             int n2 = n1;
-
             c = this.getSymbol();
             if (c.equals(",")) {
                 this.acceptPreviousSymbol();
                 n2 = Integer.MAX_VALUE;
-
                 c = this.getSymbol();
                 if (c.charAt(0) >= '0' && c.charAt(0) <= '9') {
                     this.acceptPreviousSymbol();
                     n2 = Integer.valueOf(c);
                 }
             }
-
             this.stack.push(e);
             return new Closure(this.stack, n1, n2);
         } else {
@@ -186,7 +180,7 @@ public class Layex {
         }
     }
 
-    private LinkedList<TableMatcher> stack;
+    private Deque<TableMatcher> stack;
     private final StringLexer pattern;
     private int groupCounter;
 }

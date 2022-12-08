@@ -1,5 +1,7 @@
 package com.github.romualdrousseau.any2json.base;
 
+import java.util.Optional;
+
 import com.github.romualdrousseau.any2json.Header;
 import com.github.romualdrousseau.any2json.Row;
 
@@ -18,12 +20,22 @@ public abstract class AbstractHeader implements Header {
 
     @Override
     public BaseCell getCellAtRow(final Row row) {
-        return ((BaseRow)row).getCellAt(this.getColumnIndex());
+        return ((BaseRow) row).getCellAt(this.getColumnIndex());
     }
 
     @Override
     public BaseCell getCellAtRow(final Row row, final boolean merged) {
-		return this.getCellAtRow(row);
+        return this.getCellAtRow(row);
+    }
+
+    @Override
+    public String getEntitiesAsString() {
+        return String.join("|", this.entities());
+    }
+
+    @Override
+    public Iterable<String> entities() {
+        return this.getCell().entities();
     }
 
     public int getColumnIndex() {
@@ -54,7 +66,7 @@ public abstract class AbstractHeader implements Header {
         return this.cell.isPivotHeader();
     }
 
-    public String getPivotEntityString() {
+    public Optional<String> getPivotEntityString() {
         return this.cell.getPivotEntityAsString();
     }
 

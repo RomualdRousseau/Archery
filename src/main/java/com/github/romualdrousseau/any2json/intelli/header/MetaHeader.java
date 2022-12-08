@@ -20,13 +20,8 @@ public class MetaHeader extends CompositeHeader {
     public String getName() {
         if (this.name == null) {
             final String v1 = this.getCell().getValue();
-            final String v2;
-            if (this.isPivotHeader()) {
-                v2 = this.getPivotEntityString();
-            } else {
-                v2 = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getEntityList().anonymize(v1);
-            }
-            this.name = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getStopWordList().removeStopWords(v2);
+            final String v2 = this.getPivotEntityString().orElseGet(() -> this.getLayoutClassifier().getEntityList().anonymize(v1));
+            this.name = this.getLayoutClassifier().getStopWordList().removeStopWords(v2);
         }
         return this.name;
     }
@@ -35,7 +30,7 @@ public class MetaHeader extends CompositeHeader {
     public String getValue() {
         if (this.value == null) {
             final String v1 = this.getCell().getValue();
-            final String v2 = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getEntityList().find(v1);
+            final String v2 = this.getLayoutClassifier().getEntityList().find(v1);
             this.value = (v2 == null) ? v1 : v2;
         }
         return this.value;
@@ -45,7 +40,7 @@ public class MetaHeader extends CompositeHeader {
     public BaseCell getCellAtRow(final Row row) {
         if (this.transformedCell == null) {
             final String v1 = this.getCell().getValue();
-            final String v2 = this.getTable().getSheet().getClassifierFactory().getLayoutClassifier().get().getEntityList().find(v1);
+            final String v2 = this.getLayoutClassifier().getEntityList().find(v1);
             if (v2 == null) {
                 this.transformedCell = this.getCell();
             } else {

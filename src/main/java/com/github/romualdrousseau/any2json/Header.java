@@ -6,8 +6,6 @@ public interface Header {
 
     String getName();
 
-
-
     Cell getCellAtRow(Row row);
 
     Cell getCellAtRow(Row row, boolean merged);
@@ -18,5 +16,5 @@ public interface Header {
 
     Iterable<String> entities();
 
-    String getMainEntityAsString();
+    String getEntitiesAsString();
 }
