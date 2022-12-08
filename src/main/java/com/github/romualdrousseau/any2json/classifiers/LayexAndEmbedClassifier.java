@@ -32,7 +32,7 @@ import com.github.romualdrousseau.shuju.nlp.RegexList;
 import com.github.romualdrousseau.shuju.nlp.StopWordList;
 import com.github.romualdrousseau.shuju.nlp.StringList;
 
-public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier {
+public class LayexAndEmbedClassifier implements ILayoutClassifier, ITagClassifier {
     public static final int BATCH_SIZE = 64;
 
     private final NgramList ngrams;
@@ -58,12 +58,12 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
             "(()(ES.+$))(()(.{3,}$))+(.{2}$)?"
     };
 
-    public LayexAndNetClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords,
+    public LayexAndEmbedClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords,
             final StringList tags, final String[] requiredTags, final String[] pivotEntityList) {
         this(ngrams, entities, stopwords, tags, requiredTags, pivotEntityList, metaLayexesDefault, dataLayexesDefault);
     }
 
-    public LayexAndNetClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords,
+    public LayexAndEmbedClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords,
             final StringList tags, final String[] requiredTags, final String[] pivotEntityList,
             final String[] metaLayexes, final String[] dataLayexes) {
         this.accuracy = 0.0f;
@@ -92,7 +92,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         this.buildModel();
     }
 
-    public LayexAndNetClassifier(final JSONObject json) {
+    public LayexAndEmbedClassifier(final JSONObject json) {
         this(new NgramList(json.getJSONObject("ngrams")),
                 new RegexList(json.getJSONObject("entities")),
                 new StopWordList(json.getJSONArray("stopwords")),
@@ -190,23 +190,19 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
 
     @Override
     public DataRow buildPredictRow(final String name, final Iterable<String> entities, final Iterable<String> context) {
-        final Tensor1D entityVector = new Tensor1D(this.getEntityList().getVectorSize());
+        final Tensor1D entityVector = new Tensor1D(0);
         entities.forEach(entity -> {
-            int i = this.getEntityList().ordinal(entity);
-            if (i != -1) {
-                entityVector.set(i, 1);
-            }
+            float i = this.getEntityList().ordinal(entity);
+            entityVector.concat(new Tensor1D(new Float[] { i }));
         });
 
-        final Tensor1D wordVector = this.getWordList().word2vec(name);
+        final Tensor1D wordVector = this.getWordList().embedding(name);
 
-        final Tensor1D contextVector = wordVector.copy().zero();
-        context.forEach(other -> contextVector.add(this.getWordList().word2vec(other)));
-        final Tensor1D word_mask = wordVector.copy().ones().sub(wordVector);
-        contextVector.mul(word_mask).constrain(0, 1);
+        final Tensor1D contextVector = new Tensor1D(0);
+        context.forEach(other -> { if (!other.equals(name)) contextVector.concat(this.getWordList().embedding(other)); });
 
-        return new DataRow().addFeature(entityVector).addFeature(wordVector)
-                .addFeature(contextVector);
+        return new DataRow().addFeature(entityVector.pad(5, 0)).addFeature(wordVector.pad(5, 0))
+                .addFeature(contextVector.pad(100, 0));
     }
 
     @Override
