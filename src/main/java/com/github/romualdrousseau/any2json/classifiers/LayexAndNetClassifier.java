@@ -385,7 +385,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
 
     private static List<String> unmarshallStringList(final JSONObject json, final String object, final String key) {
         final JSONArray jsonArray = json.getJSONObject(object).getJSONArray(key);
-        if (jsonArray != null && jsonArray.size() > 0) {
+        if (jsonArray == null || jsonArray.size() == 0) {
             return Collections.emptyList();
         }
         final ArrayList<String> list = new ArrayList<String>();
@@ -397,7 +397,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
 
     private static List<String> unmarshallLayex(final JSONObject json, final String parent, final String query) {
         final JSONArray jsonArray = json.getJSONArray(parent);
-        if (jsonArray != null && jsonArray.size() > 0) {
+        if (jsonArray == null || jsonArray.size() == 0) {
             return Collections.emptyList();
         }
         final ArrayList<String> list = new ArrayList<String>();
