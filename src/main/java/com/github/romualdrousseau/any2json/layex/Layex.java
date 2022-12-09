@@ -16,14 +16,19 @@ import com.github.romualdrousseau.any2json.layex.operations.Value;
 import com.github.romualdrousseau.any2json.layex.operations.ValueNeg;
 
 public class Layex {
-    public Layex(final String pattern) {
-        this.pattern = new StringLexer(pattern.replaceAll(" ", ""));
+    public Layex(final String layex) {
+        this.layex = layex;
+        this.pattern = new StringLexer(layex.replaceAll(" ", ""));
     }
 
     public TableMatcher compile() {
         this.stack = new ArrayDeque<TableMatcher>();
         this.groupCounter = 0;
         return this.r();
+    }
+
+    public String toString() {
+        return this.layex;
     }
 
     private TableMatcher r() {
@@ -181,6 +186,7 @@ public class Layex {
     }
 
     private Deque<TableMatcher> stack;
+    private final String layex;
     private final StringLexer pattern;
     private int groupCounter;
 }

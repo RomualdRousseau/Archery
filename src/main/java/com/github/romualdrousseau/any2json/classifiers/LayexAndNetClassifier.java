@@ -1,8 +1,9 @@
 package com.github.romualdrousseau.any2json.classifiers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.ILayoutClassifier;
@@ -35,59 +36,46 @@ import com.github.romualdrousseau.shuju.nlp.StringList;
 public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier {
     public static final int BATCH_SIZE = 64;
 
+    // public final static String[] MetaLayexesDefault = { "(v.$)+" };
+    // public final static String[] DataLayexesDefault = {
+    // "((e.*$)(vS.+$))(()(.{3,}$)())+(.{2}$)?",
+    // "((v.*$)(vS.+$))((.{2}$)(.{3,}$)+())+(.{2}$)?",
+    // "(()(ES.+$))((sS.+$)(S.{2,}$)+())+(.{2}$)?",
+    // "(()(ES.+$))(()(.{3,}$)())+(.{2}$)?"
+    // };
+
     private final NgramList ngrams;
     private final RegexList entities;
-    private final StopWordList stopwords;
     private final StringList tags;
-    private List<String> requiredTags;
+    private final StopWordList stopwords;
+    private final List<String> requiredTags;
+    private final List<String> pivotEntityList;
+    private final List<Layex> metaLayexes;
+    private final List<Layex> dataLayexes;
+
+    private final List<TableMatcher> metaMatchers;
+    private final List<TableMatcher> dataMatchers;
+
     private Model model;
     private Optimizer optimizer;
     private Loss loss;
     private float accuracy;
     private float mean;
-    private List<TableMatcher> metaLayexes;
-    private List<TableMatcher> dataLayexes;
-    private List<String> pivotEntityList;
-
-    private final static String[] metaLayexesDefault = { "(v.$)+" };
-
-    private final static String[] dataLayexesDefault = {
-            "((e.*$)(vS.+$))(()(.{3,}$))+(.{2}$)?",
-            "((v.*$)(vS.+$))((.{2}$)(.{3,}$)+)+(.{2}$)?",
-            "(()(ES.+$))((sS.+$)(S.{2,}$)+)+(.{2}$)?",
-            "(()(ES.+$))(()(.{3,}$))+(.{2}$)?"
-    };
 
     public LayexAndNetClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords,
-            final StringList tags, final String[] requiredTags, final String[] pivotEntityList) {
-        this(ngrams, entities, stopwords, tags, requiredTags, pivotEntityList, metaLayexesDefault, dataLayexesDefault);
-    }
-
-    public LayexAndNetClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords,
-            final StringList tags, final String[] requiredTags, final String[] pivotEntityList,
-            final String[] metaLayexes, final String[] dataLayexes) {
-        this.accuracy = 0.0f;
-        this.mean = 1.0f;
+            final StringList tags, final List<String> requiredTags, final List<String> pivotEntityList,
+            final List<String> metaLayexes, final List<String> dataLayexes) {
         this.ngrams = ngrams;
         this.entities = entities;
         this.stopwords = stopwords;
         this.tags = tags;
-        this.requiredTags = (requiredTags == null) ? null : Arrays.asList(requiredTags);
-        this.pivotEntityList = (pivotEntityList == null) ? null : Arrays.asList(pivotEntityList);
-        this.metaLayexes = new ArrayList<TableMatcher>();
-        this.dataLayexes = new ArrayList<TableMatcher>();
+        this.requiredTags = requiredTags;
+        this.pivotEntityList = pivotEntityList;
+        this.metaLayexes = metaLayexes.stream().map(Layex::new).collect(Collectors.toList());
+        this.dataLayexes = dataLayexes.stream().map(Layex::new).collect(Collectors.toList());
 
-        if (metaLayexes != null) {
-            for (final String layex : metaLayexes) {
-                this.metaLayexes.add(new Layex(layex).compile());
-            }
-        }
-
-        if (dataLayexes != null) {
-            for (final String layex : dataLayexes) {
-                this.dataLayexes.add(new Layex(layex).compile());
-            }
-        }
+        this.metaMatchers = this.metaLayexes.stream().map(Layex::compile).collect(Collectors.toList());
+        this.dataMatchers = this.dataLayexes.stream().map(Layex::compile).collect(Collectors.toList());
 
         this.buildModel();
     }
@@ -97,46 +85,10 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
                 new RegexList(json.getJSONObject("entities")),
                 new StopWordList(json.getJSONArray("stopwords")),
                 new StringList(json.getJSONObject("tags")),
-                null,
-                null,
-                null,
-                null);
-
-        final JSONArray requiredTypes = json.getJSONObject("tags").getJSONArray("requiredTypes");
-        if (requiredTypes != null && requiredTypes.size() > 0) {
-            this.requiredTags = new ArrayList<String>();
-            for (int i = 0; i < requiredTypes.size(); i++) {
-                this.requiredTags.add(requiredTypes.getString(i));
-            }
-        }
-
-        final JSONArray pivotEntities = json.getJSONObject("entities").getJSONArray("pivotEntities");
-        if (pivotEntities != null && pivotEntities.size() > 0) {
-            this.pivotEntityList = new ArrayList<String>();
-            for (int i = 0; i < pivotEntities.size(); i++) {
-                this.pivotEntityList.add(pivotEntities.getString(i));
-            }
-        }
-
-        final JSONArray layexes = json.getJSONArray("layexes");
-        if (layexes != null && layexes.size() > 0) {
-            for (int i = 0; i < layexes.size(); i++) {
-                final JSONObject layex = layexes.getJSONObject(i);
-                if (layex.getString("type").equals("META")) {
-                    this.metaLayexes.add(new Layex(layex.getString("layex")).compile());
-                } else if (layex.getString("type").equals("DATA")) {
-                    this.dataLayexes.add(new Layex(layex.getString("layex")).compile());
-                }
-            }
-        } else {
-            for (final String layex : metaLayexesDefault) {
-                this.metaLayexes.add(new Layex(layex).compile());
-            }
-            for (final String layex : dataLayexesDefault) {
-                this.dataLayexes.add(new Layex(layex).compile());
-            }
-        }
-
+                unmarshallStringList(json, "tags", "requiredTags"),
+                unmarshallStringList(json, "entities", "pivotEntities"),
+                unmarshallLayex(json, "layexes", "META"),
+                unmarshallLayex(json, "layexes", "DATA"));
         this.model.fromJSON(json.getJSONArray("model"));
     }
 
@@ -164,12 +116,20 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         return this.requiredTags;
     }
 
-    public List<TableMatcher> getMetaMatcherList() {
+    public List<Layex> getMetaLayexList() {
         return this.metaLayexes;
     }
 
-    public List<TableMatcher> getDataMatcherList() {
+    public List<Layex> getDataLayexList() {
         return this.dataLayexes;
+    }
+
+    public List<TableMatcher> getMetaMatcherList() {
+        return this.metaMatchers;
+    }
+
+    public List<TableMatcher> getDataMatcherList() {
+        return this.dataMatchers;
     }
 
     public List<String> getPivotEntityList() {
@@ -192,7 +152,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
     public DataRow buildPredictRow(final String name, final Iterable<String> entities, final Iterable<String> context) {
         final Tensor1D entityVector = new Tensor1D(this.getEntityList().getVectorSize());
         entities.forEach(entity -> {
-            int i = this.getEntityList().ordinal(entity);
+            final int i = this.getEntityList().ordinal(entity);
             if (i != -1) {
                 entityVector.set(i, 1);
             }
@@ -205,8 +165,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         final Tensor1D word_mask = wordVector.copy().ones().sub(wordVector);
         contextVector.mul(word_mask).constrain(0, 1);
 
-        return new DataRow().addFeature(entityVector).addFeature(wordVector)
-                .addFeature(contextVector);
+        return new DataRow().addFeature(entityVector).addFeature(wordVector).addFeature(contextVector);
     }
 
     @Override
@@ -282,31 +241,36 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
     }
 
     public JSONObject toJSON() {
-        final JSONArray pivotEntities = JSON.newJSONArray();
-        if (this.pivotEntityList != null) {
-            for (String entity : this.pivotEntityList) {
-                pivotEntities.append(entity);
-            }
-        }
-
-        final JSONObject jsonEntities = this.entities.toJSON();
-        jsonEntities.setJSONArray("pivotEntities", pivotEntities);
-
-        final JSONArray requiredTags = JSON.newJSONArray();
-        if (this.requiredTags != null) {
-            for (String tag : this.requiredTags) {
-                requiredTags.append(tag);
-            }
-        }
-
+        final JSONArray jsonRequiredTags = JSON.newJSONArray();
+        this.requiredTags.forEach(x -> jsonRequiredTags.append(x));
         final JSONObject jsonTags = this.tags.toJSON();
-        jsonTags.setJSONArray("requiredTypes", requiredTags);
+        jsonTags.setJSONArray("requiredTags", jsonRequiredTags);
+
+        final JSONArray jsonPivotEntities = JSON.newJSONArray();
+        this.pivotEntityList.forEach(x -> jsonPivotEntities.append(x));
+        final JSONObject jsonEntities = this.entities.toJSON();
+        jsonEntities.setJSONArray("pivotEntities", jsonPivotEntities);
+
+        final JSONArray jsonLayexes = JSON.newJSONArray();
+        this.metaLayexes.forEach(x -> {
+            final JSONObject jsonMeta = JSON.newJSONObject();
+            jsonMeta.setString("type", "META");
+            jsonMeta.setString("layex", x.toString());
+            jsonLayexes.append(jsonMeta);
+        });
+        this.dataLayexes.forEach(x -> {
+            final JSONObject jsonData = JSON.newJSONObject();
+            jsonData.setString("type", "DATA");
+            jsonData.setString("layex", x.toString());
+            jsonLayexes.append(jsonData);
+        });
 
         final JSONObject json = JSON.newJSONObject();
         json.setJSONObject("ngrams", this.ngrams.toJSON());
         json.setJSONObject("entities", jsonEntities);
         json.setJSONArray("stopwords", this.stopwords.toJSON());
         json.setJSONObject("tags", jsonTags);
+        json.setJSONArray("layexes", jsonLayexes);
         json.setJSONArray("model", this.model.toJSON());
         return json;
     }
@@ -415,5 +379,34 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         this.optimizer = new OptimizerAdamBuilder().build(this.model);
 
         this.loss = new Loss(new SoftmaxCrossEntropy());
+        this.accuracy = 0.0f;
+        this.mean = 1.0f;
+    }
+
+    private static List<String> unmarshallStringList(final JSONObject json, final String object, final String key) {
+        final JSONArray jsonArray = json.getJSONObject(object).getJSONArray(key);
+        if (jsonArray != null && jsonArray.size() > 0) {
+            return Collections.emptyList();
+        }
+        final ArrayList<String> list = new ArrayList<String>();
+        for (int i = 0; i < jsonArray.size(); i++) {
+            list.add(jsonArray.getString(i));
+        }
+        return list;
+    }
+
+    private static List<String> unmarshallLayex(final JSONObject json, final String parent, final String query) {
+        final JSONArray jsonArray = json.getJSONArray(parent);
+        if (jsonArray != null && jsonArray.size() > 0) {
+            return Collections.emptyList();
+        }
+        final ArrayList<String> list = new ArrayList<String>();
+        for (int i = 0; i < jsonArray.size(); i++) {
+            final JSONObject jsonObject = jsonArray.getJSONObject(i);
+            if (jsonObject.getString("type").equals(query)) {
+                list.add(jsonObject.getString("layex"));
+            }
+        }
+        return list;
     }
 }

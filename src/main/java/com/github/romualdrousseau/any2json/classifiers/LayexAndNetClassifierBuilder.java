@@ -1,5 +1,9 @@
 package com.github.romualdrousseau.any2json.classifiers;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import com.github.romualdrousseau.any2json.ClassifierFactory;
 import com.github.romualdrousseau.any2json.IClassifierBuilder;
 import com.github.romualdrousseau.shuju.json.JSONObject;
@@ -9,6 +13,13 @@ import com.github.romualdrousseau.shuju.nlp.StopWordList;
 import com.github.romualdrousseau.shuju.nlp.StringList;
 
 public class LayexAndNetClassifierBuilder implements IClassifierBuilder {
+
+    public LayexAndNetClassifierBuilder() {
+        this.requiredTagList = Collections.emptyList();
+        this.pivotEntityList = Collections.emptyList();
+        this.metaLayexes = Collections.emptyList();
+        this.dataLayexes = Collections.emptyList();
+    }
 
     public LayexAndNetClassifierBuilder setModel(JSONObject model) {
         this.model = model;
@@ -36,33 +47,29 @@ public class LayexAndNetClassifierBuilder implements IClassifierBuilder {
     }
 
     public LayexAndNetClassifierBuilder setRequiredTagList(String[] requiredTagList) {
-        this.requiredTagList = requiredTagList;
+        this.requiredTagList = Arrays.asList(requiredTagList);
 		return this;
     }
 
     public LayexAndNetClassifierBuilder setPivotEntityList(String[] pivotEntityList) {
-        this.pivotEntityList = pivotEntityList;
+        this.pivotEntityList = Arrays.asList(pivotEntityList);
 		return this;
 	}
 
     public LayexAndNetClassifierBuilder setMetaLayexes(String[] metaLayexes) {
-        this.metaLayexes = metaLayexes;
+        this.metaLayexes = Arrays.asList(metaLayexes);
 		return this;
     }
 
     public LayexAndNetClassifierBuilder setDataLayexes(String[] dataLayexes) {
-        this.dataLayexes = dataLayexes;
+        this.dataLayexes = Arrays.asList(dataLayexes);
 		return this;
 	}
 
     public ClassifierFactory build() {
         final LayexAndNetClassifier classifier;
         if (model == null) {
-            if (metaLayexes != null && dataLayexes != null) {
-                classifier = new LayexAndNetClassifier(ngramList, entityList, stopWordList, tagList, requiredTagList, pivotEntityList, metaLayexes, dataLayexes);
-            } else {
-                classifier = new LayexAndNetClassifier(ngramList, entityList, stopWordList, tagList, requiredTagList, pivotEntityList);
-            }
+            classifier = new LayexAndNetClassifier(ngramList, entityList, stopWordList, tagList, requiredTagList, pivotEntityList, metaLayexes, dataLayexes);
         } else {
             classifier = new LayexAndNetClassifier(model);
         }
@@ -76,8 +83,8 @@ public class LayexAndNetClassifierBuilder implements IClassifierBuilder {
     private RegexList entityList;
     private StopWordList stopWordList;
     private StringList tagList;
-    private String[] requiredTagList;
-    private String[] pivotEntityList;
-    private String[] metaLayexes;
-    private String[] dataLayexes;
+    private List<String> requiredTagList;
+    private List<String> pivotEntityList;
+    private List<String> metaLayexes;
+    private List<String> dataLayexes;
 }
