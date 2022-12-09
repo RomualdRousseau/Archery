@@ -133,9 +133,8 @@ public class BaseCell implements Cell, Symbol {
         }
         return this.classifierFactory.getLayoutClassifier().flatMap(classifier -> {
             final List<String> pivotEntityList = classifier.getPivotEntityList();
-            final Tensor1D entityVector = this.getEntityVector();
             for (int i = 0; i < classifier.getEntityList().size(); i++) {
-                if (entityVector.get(i) > 0) {
+                if (this.getEntityVector().get(i) > 0) {
                     final String entityString = classifier.getEntityList().get(i);
                     if (pivotEntityList.contains(entityString)) {
                         return Optional.of(entityString);

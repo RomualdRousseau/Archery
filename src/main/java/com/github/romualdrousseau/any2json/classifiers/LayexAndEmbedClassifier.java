@@ -190,19 +190,24 @@ public class LayexAndEmbedClassifier implements ILayoutClassifier, ITagClassifie
 
     @Override
     public DataRow buildPredictRow(final String name, final Iterable<String> entities, final Iterable<String> context) {
-        final Tensor1D entityVector = new Tensor1D(0);
-        entities.forEach(entity -> {
-            float i = this.getEntityList().ordinal(entity);
-            entityVector.concat(new Tensor1D(new Float[] { i }));
-        });
+        Tensor1D entityVector = Tensor1D.Null;
+        for (String entity : entities) {
+            float j = this.getEntityList().ordinal(entity);
+            entityVector = entityVector.concat(new Tensor1D(new Float[] { j }));
+        }
+        entityVector = entityVector.pad(5, 0);
 
-        final Tensor1D wordVector = this.getWordList().embedding(name);
+        final Tensor1D wordVector = this.getWordList().embedding(name).pad(5, 0);
 
-        final Tensor1D contextVector = new Tensor1D(0);
-        context.forEach(other -> { if (!other.equals(name)) contextVector.concat(this.getWordList().embedding(other)); });
+        Tensor1D contextVector = Tensor1D.Null;
+        for (String other : context) {
+            if (!other.equals(name)) {
+                contextVector = contextVector.concat(this.getWordList().embedding(other));
+            }
+        }
+        contextVector = contextVector.pad(100, 0);
 
-        return new DataRow().addFeature(entityVector.pad(5, 0)).addFeature(wordVector.pad(5, 0))
-                .addFeature(contextVector.pad(100, 0));
+        return new DataRow().addFeature(entityVector).addFeature(wordVector).addFeature(contextVector);
     }
 
     @Override
