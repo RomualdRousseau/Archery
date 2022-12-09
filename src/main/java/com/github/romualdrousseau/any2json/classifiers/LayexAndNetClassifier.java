@@ -71,11 +71,11 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         this.tags = tags;
         this.requiredTags = requiredTags;
         this.pivotEntityList = pivotEntityList;
-        this.metaLayexes = metaLayexes.stream().map(Layex::new).collect(Collectors.toList());
-        this.dataLayexes = dataLayexes.stream().map(Layex::new).collect(Collectors.toList());
+        this.metaLayexes = metaLayexes.stream().map(Layex::new).collect(Collectors.toCollection(ArrayList::new));
+        this.dataLayexes = dataLayexes.stream().map(Layex::new).collect(Collectors.toCollection(ArrayList::new));
 
-        this.metaMatchers = this.metaLayexes.stream().map(Layex::compile).collect(Collectors.toList());
-        this.dataMatchers = this.dataLayexes.stream().map(Layex::compile).collect(Collectors.toList());
+        this.metaMatchers = this.metaLayexes.stream().map(Layex::compile).collect(Collectors.toCollection(ArrayList::new));
+        this.dataMatchers = this.dataLayexes.stream().map(Layex::compile).collect(Collectors.toCollection(ArrayList::new));
 
         this.buildModel();
     }
@@ -85,10 +85,10 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
                 new RegexList(json.getJSONObject("entities")),
                 new StopWordList(json.getJSONArray("stopwords")),
                 new StringList(json.getJSONObject("tags")),
-                unmarshallStringList(json, "tags", "requiredTags"),
-                unmarshallStringList(json, "entities", "pivotEntities"),
-                unmarshallLayex(json, "layexes", "META"),
-                unmarshallLayex(json, "layexes", "DATA"));
+                unmarshallStringList(json.getJSONObject("tags").getJSONArray("requiredTags")),
+                unmarshallStringList(json.getJSONObject("entities").getJSONArray("pivotEntities")),
+                unmarshallStringList(json.getJSONArray("layexes"), "META"),
+                unmarshallStringList(json.getJSONArray("layexes"), "DATA"));
         this.model.fromJSON(json.getJSONArray("model"));
     }
 
@@ -383,8 +383,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         this.mean = 1.0f;
     }
 
-    private static List<String> unmarshallStringList(final JSONObject json, final String object, final String key) {
-        final JSONArray jsonArray = json.getJSONObject(object).getJSONArray(key);
+    private static List<String> unmarshallStringList(final JSONArray jsonArray) {
         if (jsonArray == null || jsonArray.size() == 0) {
             return Collections.emptyList();
         }
@@ -395,8 +394,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         return list;
     }
 
-    private static List<String> unmarshallLayex(final JSONObject json, final String parent, final String query) {
-        final JSONArray jsonArray = json.getJSONArray(parent);
+    private static List<String> unmarshallStringList(final JSONArray jsonArray, final String query) {
         if (jsonArray == null || jsonArray.size() == 0) {
             return Collections.emptyList();
         }

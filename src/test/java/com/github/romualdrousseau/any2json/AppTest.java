@@ -290,10 +290,10 @@ public class AppTest {
     }
 
     private String[][] scenarios1 = {
-            { "/data/Singapore - ZUELLIG - Sales - 202101", "Aggregated", "6", ""}
-        };
+        //{ "/data/Singapore - ZUELLIG - Sales - 202101", "Aggregated", "6", ""}
+    };
 
     private String[][] scenarios2 = {
-        { "/data/HongKong - ZUELLIG - Sales - 20220305.xlsx", "Aggregated", "6", ""}
+        //{ "/data/HongKong - ZUELLIG - Sales - 20220305.xlsx", "Aggregated", "6", ""}
     };
 }
