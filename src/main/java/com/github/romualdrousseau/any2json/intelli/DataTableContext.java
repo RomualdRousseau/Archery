@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.romualdrousseau.any2json.base.BaseCell;
-import com.github.romualdrousseau.any2json.base.Context;
 import com.github.romualdrousseau.any2json.base.RowGroup;
 import com.github.romualdrousseau.any2json.intelli.header.MetaTableHeader;
 import com.github.romualdrousseau.any2json.intelli.header.PivotKeyHeader;
+import com.github.romualdrousseau.any2json.layex.TableContext;
 import com.github.romualdrousseau.any2json.intelli.header.DataTableHeader;
 
-public class DataTableContext extends Context<BaseCell> {
+public class DataTableContext extends TableContext<BaseCell> {
 
     public static final int TABLE_META = 0;
     public static final int TABLE_HEADER = 1;

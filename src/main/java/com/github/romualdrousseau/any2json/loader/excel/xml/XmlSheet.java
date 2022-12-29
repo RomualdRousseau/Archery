@@ -1,13 +1,13 @@
 package com.github.romualdrousseau.any2json.loader.excel.xml;
 
-import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
+import com.github.romualdrousseau.any2json.util.SheetStore;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 import nl.fountain.xelem.excel.Cell;
 import nl.fountain.xelem.excel.Row;
 import nl.fountain.xelem.excel.Worksheet;
 
-class XmlSheet extends IntelliSheet {
+class XmlSheet implements SheetStore {
 
     public XmlSheet(Worksheet sheet) {
         this.sheet = sheet;
@@ -19,39 +19,44 @@ class XmlSheet extends IntelliSheet {
     }
 
     @Override
-    protected int getInternalLastColumnNum(int rowIndex) {
+    public int getLastColumnNum(int rowIndex) {
         Row row = this.sheet.getRowAt(rowIndex + 1);
         return row.maxCellIndex();
     }
 
     @Override
-    protected int getInternalLastRowNum() {
+    public int getLastRowNum() {
         return this.sheet.getRows().size() - 1;
     }
 
     @Override
-    protected boolean hasInternalCellDataAt(int colIndex, int rowIndex) {
+    public boolean hasCellDataAt(int colIndex, int rowIndex) {
         final int n = this.getInternalMergeDown(colIndex, rowIndex);
         Cell cell = this.sheet.getCellAt(n + 1, colIndex + 1);
         return cell.hasData();
     }
 
     @Override
-    protected boolean hasInternalCellDecorationAt(int colIndex, int rowIndex) {
+    public boolean hasCellDecorationAt(int colIndex, int rowIndex) {
         return false;
     }
 
     @Override
-    protected String getInternalCellDataAt(int colIndex, int rowIndex) {
+    public String getCellDataAt(int colIndex, int rowIndex) {
         final int n = this.getInternalMergeDown(colIndex, rowIndex);
         Cell cell = this.sheet.getCellAt(n + 1, colIndex + 1);
         return cell.hasData() ? StringUtility.cleanToken(cell.getData$()) : null;
     }
 
     @Override
-    protected int getInternalMergeAcross(int colIndex, int rowIndex) {
+    public int getNumberOfMergedCellsAt(int colIndex, int rowIndex) {
         Cell cell = this.sheet.getCellAt(rowIndex + 1, colIndex + 1);
         return cell.getMergeAcross() + 1;
+    }
+
+    @Override
+    public void copyCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2) {
+        this.sheet.addCellAt(rowIndex2 + 1, colIndex2 + 1, this.sheet.getCellAt(rowIndex1 + 1, colIndex1 + 1));
     }
 
     private int getInternalMergeDown(int colIndex, int rowIndex) {

@@ -3,12 +3,12 @@ package com.github.romualdrousseau.any2json.util;
 import java.util.Iterator;
 
 import com.github.romualdrousseau.any2json.Row;
-import com.github.romualdrousseau.any2json.base.AbstractTable;
+import com.github.romualdrousseau.any2json.base.BaseTable;
 import com.github.romualdrousseau.any2json.base.BaseRow;
 
 public class RowIterator implements Iterator<Row>
 {
-	public RowIterator(AbstractTable table) {
+	public RowIterator(BaseTable table) {
 		this.table = table;
 		this.currRowIdx = 0;
 	}
@@ -23,7 +23,7 @@ public class RowIterator implements Iterator<Row>
 		return row;
 	}
 
-	private AbstractTable table;
+	private BaseTable table;
 	private int currRowIdx;
 }
 

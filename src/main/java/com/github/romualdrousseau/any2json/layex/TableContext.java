@@ -1,8 +1,6 @@
-package com.github.romualdrousseau.any2json.base;
+package com.github.romualdrousseau.any2json.layex;
 
-import com.github.romualdrousseau.any2json.layex.Symbol;
-
-public abstract class Context<S extends Symbol> {
+public abstract class TableContext<S extends Symbol> {
 
     public int getGroup() {
         return this.group;

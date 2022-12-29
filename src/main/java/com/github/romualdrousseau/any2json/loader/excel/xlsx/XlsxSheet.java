@@ -8,8 +8,7 @@ import java.util.ArrayList;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
-import com.github.romualdrousseau.any2json.Sheet;
-import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
+import com.github.romualdrousseau.any2json.util.SheetStore;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
@@ -29,7 +28,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
-public class XlsxSheet extends IntelliSheet {
+public class XlsxSheet implements SheetStore {
 
     public XlsxSheet(final String name, final InputStream sheetData, final SharedStrings sharedStrings,
             final StylesTable styles) {
@@ -39,7 +38,7 @@ public class XlsxSheet extends IntelliSheet {
         this.styles = styles;
     }
 
-    public Sheet ensureDataLoaded() {
+    public XlsxSheet ensureDataLoaded() {
         if (this.dataLoaded) {
             return this;
         }
@@ -49,11 +48,9 @@ public class XlsxSheet extends IntelliSheet {
             parser.setContentHandler(new ContentHandler());
             parser.parse(new InputSource(this.sheetData));
             return this;
-
         } catch (SAXException | IOException | ParserConfigurationException e) {
             e.printStackTrace();
             return this;
-
         } finally {
             try {
                 this.dataLoaded = true;
@@ -69,39 +66,38 @@ public class XlsxSheet extends IntelliSheet {
     }
 
     @Override
-    protected int getInternalLastColumnNum(int rowIndex) {
+    public int getLastColumnNum(int rowIndex) {
         return this.rows.get(rowIndex).getLastColumnNum();
     }
 
     @Override
-    protected int getInternalLastRowNum() {
+    public int getLastRowNum() {
         return this.rows.size() - 1;
     }
 
     @Override
-    protected boolean hasInternalCellDataAt(int colIndex, int rowIndex) {
+    public boolean hasCellDataAt(int colIndex, int rowIndex) {
         final int n = this.getInternalMergeDown(colIndex, rowIndex);
         return this.rows.get(n).cells().get(colIndex).getValue() != null;
     }
 
     @Override
-    protected boolean hasInternalCellDecorationAt(int colIndex, int rowIndex) {
+    public boolean hasCellDecorationAt(int colIndex, int rowIndex) {
         final int n = this.getInternalMergeDown(colIndex, rowIndex);
         return this.rows.get(n).cells().get(colIndex).isDecorated();
     }
 
     @Override
-    protected String getInternalCellDataAt(int colIndex, int rowIndex) {
+    public String getCellDataAt(int colIndex, int rowIndex) {
         final int n = this.getInternalMergeDown(colIndex, rowIndex);
         return this.rows.get(n).cells().get(colIndex).getValue();
     }
 
     @Override
-    protected int getInternalMergeAcross(final int colIndex, final int rowIndex) {
+    public int getNumberOfMergedCellsAt(final int colIndex, final int rowIndex) {
         if (mergedRegions.size() == 0) {
             return 1;
         }
-
         int numberOfCells = 0;
         for (final CellRangeAddress region : mergedRegions) {
             if (region.isInRange(rowIndex, colIndex)) {
@@ -109,15 +105,18 @@ public class XlsxSheet extends IntelliSheet {
                 break;
             }
         }
-
         return numberOfCells + 1;
+    }
+
+    @Override
+    public void copyCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2) {
+        this.rows.get(rowIndex2).cells().set(colIndex2, this.rows.get(rowIndex1).cells().get(colIndex1));
     }
 
     private int getInternalMergeDown(final int colIndex, final int rowIndex) {
         if (this.mergedRegions.size() == 0) {
             return rowIndex;
         }
-
         int rowToReturn = rowIndex;
         for (final CellRangeAddress region : mergedRegions) {
             if (region.getLastRow() > region.getFirstRow() && rowIndex > region.getFirstRow()
@@ -126,7 +125,6 @@ public class XlsxSheet extends IntelliSheet {
                 break;
             }
         }
-
         return rowToReturn;
     }
 

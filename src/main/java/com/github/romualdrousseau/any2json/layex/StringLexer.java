@@ -35,10 +35,10 @@ public class StringLexer implements Lexer<StringSymbol, Integer> {
     }
 
     public void seek(final Integer i) {
-      this.i = i;
+        this.i = i;
     }
 
-    LinkedList<Integer> stack;
-    String s;
-    int i;
-  }
+    private final LinkedList<Integer> stack;
+    private final String s;
+    private int i;
+}

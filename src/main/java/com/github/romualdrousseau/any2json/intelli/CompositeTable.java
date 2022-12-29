@@ -1,15 +1,15 @@
 package com.github.romualdrousseau.any2json.intelli;
 
 import com.github.romualdrousseau.any2json.Header;
-import com.github.romualdrousseau.any2json.base.AbstractTable;
-import com.github.romualdrousseau.any2json.base.AbstractSheet;
+import com.github.romualdrousseau.any2json.base.BaseTable;
+import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.intelli.header.IntelliHeader;
 
 import java.util.HashMap;
 
-public class CompositeTable extends AbstractTable {
+public class CompositeTable extends BaseTable {
 
-    public CompositeTable(final AbstractSheet sheet) {
+    public CompositeTable(final BaseSheet sheet) {
         this(sheet, 0, 0, 0, 0);
     }
 
@@ -21,7 +21,7 @@ public class CompositeTable extends AbstractTable {
         super(parent, firstRow, lastRow);
     }
 
-    public CompositeTable(AbstractSheet sheet, int firstColumn, int firstRow, int lastColumn, int lastRow) {
+    public CompositeTable(BaseSheet sheet, int firstColumn, int firstRow, int lastColumn, int lastRow) {
         super(sheet, firstColumn, firstRow, lastColumn, lastRow);
     }
 

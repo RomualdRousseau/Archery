@@ -11,6 +11,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
+import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 public class XlsDocument implements Document {
@@ -62,7 +63,7 @@ public class XlsDocument implements Document {
     }
 
     public Sheet getSheetAt(final int i) {
-        return this.sheets.get(i);
+        return new IntelliSheet(this.sheets.get(i), false);
     }
 
     private final ArrayList<XlsSheet> sheets = new ArrayList<XlsSheet>();

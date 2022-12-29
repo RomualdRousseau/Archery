@@ -1,18 +1,13 @@
 package com.github.romualdrousseau.any2json.loader.text;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
-import com.github.romualdrousseau.any2json.base.SheetBitmap;
-import com.github.romualdrousseau.any2json.intelli.CompositeTable;
-import com.github.romualdrousseau.any2json.intelli.DataTable;
-import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
-import com.github.romualdrousseau.any2json.intelli.MetaTable;
-import com.github.romualdrousseau.any2json.layex.TableMatcher;
+import org.apache.poi.ss.formula.eval.NotImplementedException;
+
+import com.github.romualdrousseau.any2json.util.SheetStore;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
-class TextSheet extends IntelliSheet {
+class TextSheet implements SheetStore {
 
     public TextSheet(String name, List<String[]> rows) {
         this.name = name;
@@ -60,28 +55,8 @@ class TextSheet extends IntelliSheet {
     }
 
     @Override
-    protected SheetBitmap getSheetBitmap() {
-        return null;
-    }
-
-    @Override
-    protected List<CompositeTable> findAllTables(final SheetBitmap image) {
-        final LinkedList<CompositeTable> tables = new  LinkedList<CompositeTable>();
-        tables.add(new CompositeTable(this, 0, 0, this.getLastColumnNum(), this.getLastRowNum()));
-        return tables;
-    }
-
-    @Override
-    protected List<DataTable> getDataTables(final List<CompositeTable> tables, final List<TableMatcher> dataMatchers) {
-        LinkedList<DataTable> dataTables = new  LinkedList<DataTable>();
-        dataTables.add(new DataTable(tables.get(0)));
-        return dataTables;
-    }
-
-    @Override
-    protected List<MetaTable> getMetaTables(final List<CompositeTable> tables, final List<TableMatcher> metaMatchers) {
-        final ArrayList<MetaTable> result = new ArrayList<MetaTable>();
-        return result;
+    public void copyCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2) {
+        throw new NotImplementedException("This format doesn't allow sheet edition.");
     }
 
     private String getCellAt(int colIndex, int rowIndex) {

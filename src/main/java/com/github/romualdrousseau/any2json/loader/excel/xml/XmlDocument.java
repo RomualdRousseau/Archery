@@ -15,6 +15,7 @@ import nl.fountain.xelem.lex.ExcelReader;
 
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
+import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -41,7 +42,7 @@ public class XmlDocument implements Document {
     }
 
     public Sheet getSheetAt(final int i) {
-        return this.sheets.get(i);
+        return new IntelliSheet(this.sheets.get(i), false);
     }
 
     private boolean openWithEncoding(final File excelFile, final String encoding) {

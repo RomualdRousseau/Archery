@@ -6,7 +6,7 @@ import com.github.romualdrousseau.any2json.util.CellIterable;
 
 public class BaseRow implements Row {
 
-    public BaseRow(final AbstractTable table, final int rowIndex) {
+    public BaseRow(final BaseTable table, final int rowIndex) {
         this.table = table;
         this.rowIndex = rowIndex;
         this.cellCount = 0;
@@ -68,7 +68,7 @@ public class BaseRow implements Row {
         return result;
     }
 
-    public AbstractTable getTable() {
+    public BaseTable getTable() {
         return this.table;
     }
 
@@ -120,7 +120,7 @@ public class BaseRow implements Row {
         }
     }
 
-    private final AbstractTable table;
+    private final BaseTable table;
     private final int rowIndex;
     private int cellCount;
     private int emptyCellCount;

@@ -128,7 +128,7 @@ public class BaseCell implements Cell, Symbol {
     }
 
     public Optional<String> getPivotEntityAsString() {
-        if (classifierFactory == null) {
+        if (this.classifierFactory == null) {
             return Optional.empty();
         }
         return this.classifierFactory.getLayoutClassifier().flatMap(classifier -> {
@@ -145,11 +145,11 @@ public class BaseCell implements Cell, Symbol {
         });
     }
 
+    private final ClassifierFactory classifierFactory;
     private final String value;
     private final int colIndex;
     private final int mergedCount;
     private final String rawValue;
     private Tensor1D entityVector;
     private String symbol;
-    private final ClassifierFactory classifierFactory;
 }

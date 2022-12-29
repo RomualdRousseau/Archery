@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
-import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
+import com.github.romualdrousseau.any2json.util.SheetStore;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 import org.apache.poi.hssf.util.HSSFColor;
@@ -20,7 +20,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 
-public class XlsSheet extends IntelliSheet {
+public class XlsSheet implements SheetStore {
 
     public XlsSheet(Sheet sheet) throws IOException {
         this.sheet = sheet;
@@ -37,7 +37,7 @@ public class XlsSheet extends IntelliSheet {
     }
 
     @Override
-    protected int getInternalLastColumnNum(int rowIndex) {
+    public int getLastColumnNum(int rowIndex) {
         Row row = this.sheet.getRow(rowIndex);
         if (row == null) {
             return 0;
@@ -46,12 +46,12 @@ public class XlsSheet extends IntelliSheet {
     }
 
     @Override
-    protected int getInternalLastRowNum() {
+    public int getLastRowNum() {
         return this.sheet.getLastRowNum();
     }
 
     @Override
-    protected boolean hasInternalCellDataAt(int colIndex, int rowIndex) {
+    public boolean hasCellDataAt(int colIndex, int rowIndex) {
         final int n = this.getInternalMergeDown(colIndex, rowIndex);
         final Row row = this.sheet.getRow(n);
         if (row == null) {
@@ -62,7 +62,7 @@ public class XlsSheet extends IntelliSheet {
     }
 
     @Override
-    protected boolean hasInternalCellDecorationAt(int colIndex, int rowIndex) {
+    public boolean hasCellDecorationAt(int colIndex, int rowIndex) {
         final int n = this.getInternalMergeDown(colIndex, rowIndex);
         final Row row = this.sheet.getRow(n);
         if (row == null) {
@@ -73,7 +73,7 @@ public class XlsSheet extends IntelliSheet {
     }
 
     @Override
-    protected String getInternalCellDataAt(int colIndex, int rowIndex) {
+    public String getCellDataAt(int colIndex, int rowIndex) {
         final int n = this.getInternalMergeDown(colIndex, rowIndex);
         final Row row = this.sheet.getRow(n);
         if (row == null) {
@@ -84,7 +84,7 @@ public class XlsSheet extends IntelliSheet {
     }
 
     @Override
-    protected int getInternalMergeAcross(int colIndex, int rowIndex) {
+    public int getNumberOfMergedCellsAt(int colIndex, int rowIndex) {
         if (this.cachedRegion.size() == 0) {
             return 1;
         }
@@ -98,6 +98,22 @@ public class XlsSheet extends IntelliSheet {
         }
 
         return numberOfCells + 1;
+    }
+
+    @Override
+    public void copyCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2) {
+        final Row row1 = this.sheet.getRow(rowIndex1);
+        if (row1 == null) {
+            return;
+        }
+        final Cell cell1 = row1.getCell(colIndex1);
+        final Row row2 = this.sheet.getRow(rowIndex2);
+        if (row2 == null) {
+            return;
+        }
+        final Cell cell2 = row2.getCell(colIndex2);
+        cell2.setCellStyle(cell1.getCellStyle());
+        cell2.setCellValue(this.getData(cell2));
     }
 
     private int getInternalMergeDown(int colIndex, int rowIndex) {

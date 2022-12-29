@@ -3,11 +3,11 @@ package com.github.romualdrousseau.any2json.intelli.header;
 import com.github.romualdrousseau.any2json.ClassifierFactory;
 import com.github.romualdrousseau.any2json.HeaderTag;
 import com.github.romualdrousseau.any2json.ILayoutClassifier;
-import com.github.romualdrousseau.any2json.base.AbstractHeader;
+import com.github.romualdrousseau.any2json.base.BaseHeader;
 import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
 
-public abstract class CompositeHeader extends AbstractHeader {
+public abstract class CompositeHeader extends BaseHeader {
 
     public abstract CompositeHeader clone();
 

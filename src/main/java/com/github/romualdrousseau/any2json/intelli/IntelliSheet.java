@@ -1,22 +1,23 @@
 package com.github.romualdrousseau.any2json.intelli;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
-import com.github.romualdrousseau.any2json.DocumentFactory;
+import org.python.util.PythonInterpreter;
+
 import com.github.romualdrousseau.any2json.Table;
-import com.github.romualdrousseau.any2json.base.AbstractSheet;
 import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.base.SheetBitmap;
 import com.github.romualdrousseau.any2json.event.AllTablesExtractedEvent;
 import com.github.romualdrousseau.any2json.event.BitmapGeneratedEvent;
 import com.github.romualdrousseau.any2json.event.DataTableListBuiltEvent;
 import com.github.romualdrousseau.any2json.event.MetaTableListBuiltEvent;
+import com.github.romualdrousseau.any2json.event.SheetPreparedEvent;
 import com.github.romualdrousseau.any2json.event.TableGraphBuiltEvent;
 import com.github.romualdrousseau.any2json.layex.TableLexer;
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
-import com.github.romualdrousseau.any2json.util.RowTranslatable;
-import com.github.romualdrousseau.any2json.util.RowTranslator;
+import com.github.romualdrousseau.any2json.util.SheetStore;
 import com.github.romualdrousseau.any2json.util.TableGraph;
 import com.github.romualdrousseau.any2json.util.Visitable;
 import com.github.romualdrousseau.shuju.cv.Filter;
@@ -24,41 +25,89 @@ import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
 import com.github.romualdrousseau.shuju.cv.SearchPoint;
 import com.github.romualdrousseau.shuju.cv.Template;
 import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.RectangleExtractor;
-import com.github.romualdrousseau.shuju.math.Tensor1D;
-import com.github.romualdrousseau.shuju.util.FuzzyString;
 
-public abstract class IntelliSheet extends AbstractSheet implements RowTranslatable {
+public class IntelliSheet extends EditableSheet {
 
-    public IntelliSheet() {
-        this.rowTranslator = new RowTranslator(this);
+    public IntelliSheet(SheetStore store, boolean documentIsStructured) {
+        super(store);
+        this.documentIsStructured = documentIsStructured;
     }
 
     @Override
     public Table createIntelliTable() {
-        final SheetBitmap image = this.getSheetBitmap();
-        if (!this.notifyStepCompleted(new BitmapGeneratedEvent(this, image))) {
-            return null;
-        }
+        final List<DataTable> dataTables;
+        final List<MetaTable> metaTables;
+        if (this.documentIsStructured) {
+            final List<CompositeTable> tables = new LinkedList<CompositeTable>();
+            tables.add(new CompositeTable(this, 0, 0, this.getLastColumnNum(), this.getLastRowNum()));
+            if (!this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables))) {
+                return null;
+            }
 
-        final List<CompositeTable> tables = this.findAllTables(image);
-        if (!this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables))) {
-            return null;
-        }
+            dataTables = new LinkedList<DataTable>();
+            dataTables.add(new DataTable(tables.get(0)));
+            if (!this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables))) {
+                return null;
+            }
 
-        final List<DataTable> dataTables = this.getDataTables(tables,
-                this.getClassifierFactory().getLayoutClassifier().get().getDataMatcherList());
-        if (!this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables))) {
-            return null;
+            metaTables = new ArrayList<MetaTable>();
+            if (!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
+                return null;
+            }
         }
+        else {
+            this.stichRows();
 
-        if (dataTables.size() == 0) {
-            return null;
-        }
+            String recipe = """
+            def clean_up():
+                sheet.deleteNullColumns(0.0)
+                sheet.autoMergeCell(0)
+                sheet.autoMergeCell(1)
+                sheet.autoMergeCell(2)
+                sheet.deleteNullRows(0.5)
 
-        final List<MetaTable> metaTables = this.getMetaTables(tables,
-                this.getClassifierFactory().getLayoutClassifier().get().getMetaMatcherList());
-        if (!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
-            return null;
+            def add_headers():
+                #sheet.setCellData(0, 0, "Inventory");
+                #sheet.setCellData(1, 0, "Manufacturer");
+                #sheet.setCellData(2, 0, "productName");
+                pass
+
+            clean_up()
+            add_headers()
+            """;
+
+            try(PythonInterpreter pyInterp = new PythonInterpreter()) {
+                pyInterp.set("sheet", this);
+                pyInterp.exec(recipe);
+            }
+            if (!this.notifyStepCompleted(new SheetPreparedEvent(this))) {
+                return null;
+            }
+
+            final SheetBitmap image = this.getSheetBitmap();
+            if (!this.notifyStepCompleted(new BitmapGeneratedEvent(this, image))) {
+                return null;
+            }
+
+            final List<CompositeTable> tables = this.findAllTables(image);
+            if (!this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables))) {
+                return null;
+            }
+
+            dataTables = this.getDataTables(tables,
+                    this.getClassifierFactory().getLayoutClassifier().get().getDataMatcherList());
+            if (!this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables))) {
+                return null;
+            }
+            if (dataTables.size() == 0) {
+                return null;
+            }
+
+            metaTables = this.getMetaTables(tables,
+                    this.getClassifierFactory().getLayoutClassifier().get().getMetaMatcherList());
+            if (!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
+                return null;
+            }
         }
 
         final TableGraph root = this.buildTableGraph(metaTables, dataTables);
@@ -69,117 +118,11 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         return new IntelliTable(this, root);
     }
 
-    @Override
-    public int getLastColumnNum(final int rowIndex) {
-        final int translatedRow = this.rowTranslator.translate(rowIndex);
-        if (translatedRow < 0 || translatedRow > this.getInternalLastRowNum()) {
-            return -1;
-        }
-        return this.getInternalLastColumnNum(translatedRow);
-    }
-
-    @Override
-    public int getLastRowNum() {
-        return this.getInternalLastRowNum() - this.rowTranslator.getTranslatedRowCount();
-    }
-
-    @Override
-    public boolean hasCellDataAt(final int colIndex, final int rowIndex) {
-        final int translatedRow = this.rowTranslator.translate(rowIndex);
-        if (translatedRow < 0 || translatedRow > this.getInternalLastRowNum()) {
-            return false;
-        }
-        if (colIndex < 0 || colIndex > this.getInternalLastColumnNum(translatedRow)) {
-            return false;
-        }
-        return this.hasInternalCellDataAt(colIndex, translatedRow);
-    }
-
-    @Override
-    public boolean hasCellDecorationAt(final int colIndex, final int rowIndex) {
-        final int translatedRow = this.rowTranslator.translate(rowIndex);
-        if (translatedRow < 0 || translatedRow > this.getInternalLastRowNum()) {
-            return false;
-        }
-        if (colIndex < 0 || colIndex > this.getInternalLastColumnNum(translatedRow)) {
-            return false;
-        }
-        return this.hasInternalCellDecorationAt(colIndex, translatedRow);
-    }
-
-    @Override
-    public String getCellDataAt(final int colIndex, final int rowIndex) {
-        final int translatedRow = this.rowTranslator.translate(rowIndex);
-        if (translatedRow < 0 || translatedRow > this.getInternalLastRowNum()) {
-            return null;
-        }
-        if (colIndex < 0 || colIndex > this.getInternalLastColumnNum(translatedRow)) {
-            return null;
-        }
-        return this.getInternalCellDataAt(colIndex, translatedRow);
-    }
-
-    @Override
-    public int getNumberOfMergedCellsAt(final int colIndex, final int rowIndex) {
-        final int translatedRow = this.rowTranslator.translate(rowIndex);
-        if (translatedRow < 0 || translatedRow > this.getInternalLastRowNum()) {
-            return 1;
-        }
-        if (colIndex < 0 || colIndex > this.getInternalLastColumnNum(translatedRow)) {
-            return 1;
-        }
-        return this.getInternalMergeAcross(colIndex, translatedRow);
-    }
-
-    @Override
-    public boolean isInvalidRow(int rowIndex) {
-        if (rowIndex <= 0 || rowIndex >= this.getInternalLastRowNum()) {
-            return false;
-        }
-        String hash = this.getRowPattern(rowIndex);
-        // Remove unwanted row
-        if (hash.equals("X")) {
-            return true;
-        }
-        // Keep non empty rows
-        if (!hash.isEmpty()) {
-            return false;
-        }
-        // Test if the previous and next rows can be "stiched"
-        String hashPrev = this.getRowPattern(rowIndex - 1);
-        String hashNext = this.getRowPattern(rowIndex + 1);
-        return FuzzyString.Hamming(hashPrev, hashNext) >= DocumentFactory.DEFAULT_RATIO_SIMILARITY;
-    }
-
-    protected int getInternalLastColumnNum(int rowIndex) {
-        return getLastColumnNum(rowIndex);
-    }
-
-    protected int getInternalLastRowNum() {
-        return getLastRowNum();
-    }
-
-    protected boolean hasInternalCellDataAt(int colIndex, int rowIndex) {
-        return hasCellDataAt(colIndex, rowIndex);
-    }
-
-    protected boolean hasInternalCellDecorationAt(int colIndex, int rowIndex) {
-        return false;
-    }
-
-    protected String getInternalCellDataAt(int colIndex, int rowIndex) {
-        return getCellDataAt(colIndex, rowIndex);
-    }
-
-    protected int getInternalMergeAcross(int colIndex, int rowIndex) {
-        return 1;
-    }
-
     protected SheetBitmap getSheetBitmap() {
         return new SheetBitmap(this,
-                Math.max(this.getLastColumnNum(),
+                Math.min(this.getLastColumnNum(),
                         this.getClassifierFactory().getLayoutClassifier().get().getSampleCount()),
-                this.getLastRowNum() + 1);
+                this.getLastRowNum());
     }
 
     protected List<CompositeTable> findAllTables(final SheetBitmap image) {
@@ -261,7 +204,7 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
                 if (!foundMatch) {
                     for (final TableMatcher matcher : dataMatchers) {
                         if (!foundMatch && matcher.match(new TableLexer(table, tryCount), null)) {
-                            DataTable dataTable = new DataTable(table, matcher, tryCount);
+                            final DataTable dataTable = new DataTable(table, matcher, tryCount);
                             result.add(dataTable);
                             if (dataTable.getContext().getSplitRows().size() > 0) {
                                 this.splitAllSubTables(table, matcher, dataTable.getContext(), result);
@@ -275,39 +218,6 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         }
 
         return result;
-    }
-
-    private String getRowPattern(int rowIndex) {
-        String hash = "";
-        int countEmptyCells = 0;
-        boolean rejectRow = false;
-        for (int i = 0; i < this.getInternalLastColumnNum(rowIndex);) {
-            final String value = this.getInternalCellDataAt(i, rowIndex);
-            if (value != null) {
-                if (value.isEmpty()) {
-                    hash += "s";
-                    countEmptyCells++;
-                }
-                if (this.getClassifierFactory().getLayoutClassifier().isPresent()) {
-                    Tensor1D v = this.getClassifierFactory().getLayoutClassifier().get().getEntityList()
-                            .word2vec(value);
-                    if (v.sparsity() < 1.0f) {
-                        hash += "e";
-                    } else {
-                        hash += "v";
-                    }
-                } else {
-                    hash += "v";
-                }
-            }
-            i += this.getInternalMergeAcross(i, rowIndex);
-        }
-        if (rejectRow) {
-            hash = "X";
-        } else if (countEmptyCells == hash.length()) {
-            hash = "";
-        }
-        return hash;
     }
 
     private TableGraph buildTableGraph(final List<MetaTable> metaTables, final List<DataTable> dataTables) {
@@ -345,12 +255,12 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         return root;
     }
 
-    private void splitAllSubTables(CompositeTable table, TableMatcher layex, DataTableContext context,
-            List<DataTable> result) {
+    private void splitAllSubTables(final CompositeTable table, final TableMatcher layex, final DataTableContext context,
+            final List<DataTable> result) {
         int firstRow = -1;
-        for (int splitRow : context.getSplitRows()) {
+        for (final int splitRow : context.getSplitRows()) {
             if (firstRow >= 0) {
-                CompositeTable subTable = new CompositeTable(table, firstRow, table.getFirstRow() + splitRow - 1);
+                final CompositeTable subTable = new CompositeTable(table, firstRow, table.getFirstRow() + splitRow - 1);
                 result.add(new DataTable(subTable, layex, 0));
             }
             firstRow = table.getFirstRow() + splitRow;
@@ -386,13 +296,13 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         return rectangles;
     }
 
-    private List<SearchPoint> extractAllSearchPoints(final ISearchBitmap filtered, List<SearchPoint[]> rectangles) {
-        ArrayList<SearchPoint> result = new ArrayList<SearchPoint>();
+    private List<SearchPoint> extractAllSearchPoints(final ISearchBitmap filtered, final List<SearchPoint[]> rectangles) {
+        final ArrayList<SearchPoint> result = new ArrayList<SearchPoint>();
         for (int i = 0; i < filtered.getHeight(); i++) {
             for (int j = 0; j < filtered.getWidth(); j++) {
                 if (filtered.get(j, i) > 0) {
                     boolean isOutside = true;
-                    for (SearchPoint[] rectangle : rectangles) {
+                    for (final SearchPoint[] rectangle : rectangles) {
                         if (SearchPoint.IsInside(rectangle, j, i)) {
                             isOutside = false;
                             break;
@@ -460,5 +370,5 @@ public abstract class IntelliSheet extends AbstractSheet implements RowTranslata
         }
     }
 
-    private RowTranslator rowTranslator;
+    private final boolean documentIsStructured;
 }

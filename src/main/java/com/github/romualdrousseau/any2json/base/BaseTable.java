@@ -11,9 +11,9 @@ import com.github.romualdrousseau.any2json.util.RowIterable;
 import com.github.romualdrousseau.any2json.util.RowStore;
 import com.github.romualdrousseau.any2json.util.Visitable;
 
-public abstract class AbstractTable implements Table, Visitable {
+public abstract class BaseTable implements Table, Visitable {
 
-    public AbstractTable(final AbstractSheet sheet, final int firstColumn, final int firstRow, final int lastColumn,
+    public BaseTable(final BaseSheet sheet, final int firstColumn, final int firstRow, final int lastColumn,
             final int lastRow) {
         assert (firstColumn <= lastColumn) : "fisrt column must be before last column";
         assert (firstRow <= lastRow) : "first row must be before last row";
@@ -30,12 +30,12 @@ public abstract class AbstractTable implements Table, Visitable {
         this.loadCompleted = false;
     }
 
-    public AbstractTable(final AbstractTable parent) {
+    public BaseTable(final BaseTable parent) {
         this(parent.sheet, parent.firstColumn, parent.firstRow, parent.lastColumn, parent.lastRow);
         this.cachedRows = parent.cachedRows;
     }
 
-    public AbstractTable(final AbstractTable parent, final int firstRow, final int lastRow) {
+    public BaseTable(final BaseTable parent, final int firstRow, final int lastRow) {
         this(parent.sheet, parent.firstColumn, firstRow, parent.lastColumn, lastRow);
         this.cachedRows = parent.cachedRows;
     }
@@ -84,7 +84,7 @@ public abstract class AbstractTable implements Table, Visitable {
         this.visited = flag;
     }
 
-    public AbstractSheet getSheet() {
+    public BaseSheet getSheet() {
         return this.sheet;
     }
 
@@ -162,11 +162,11 @@ public abstract class AbstractTable implements Table, Visitable {
         return result;
     }
 
-    public void addHeader(final AbstractHeader header) {
+    public void addHeader(final BaseHeader header) {
         this.headers.addLast(header);
     }
 
-    public void setHeader(final int i, final AbstractHeader header) {
+    public void setHeader(final int i, final BaseHeader header) {
         this.headers.set(i, header);
     }
 
@@ -185,8 +185,8 @@ public abstract class AbstractTable implements Table, Visitable {
         this.lastRow = lastRow;
     }
 
-    private boolean visited;
-    private final AbstractSheet sheet;
+    private final LinkedList<Header> headers = new LinkedList<Header>();
+    private final BaseSheet sheet;
     private final int firstColumn;
     private final int firstRow;
     private final int lastColumn;
@@ -195,6 +195,6 @@ public abstract class AbstractTable implements Table, Visitable {
     private int lastRowOffset;
     private int headerRowOffset;
     private RowStore cachedRows;
-    private final LinkedList<Header> headers = new LinkedList<Header>();
     private boolean loadCompleted;
+    private boolean visited;
 }

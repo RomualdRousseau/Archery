@@ -5,9 +5,9 @@ import java.util.Optional;
 import com.github.romualdrousseau.any2json.Header;
 import com.github.romualdrousseau.any2json.Row;
 
-public abstract class AbstractHeader implements Header {
+public abstract class BaseHeader implements Header {
 
-    public AbstractHeader(final AbstractTable table, final BaseCell cell) {
+    public BaseHeader(final BaseTable table, final BaseCell cell) {
         this.table = table;
         this.cell = cell;
         this.colIndex = cell.getColumnIndex();
@@ -46,11 +46,11 @@ public abstract class AbstractHeader implements Header {
         this.colIndex = colIndex;
     }
 
-    public AbstractTable getTable() {
+    public BaseTable getTable() {
         return this.table;
     }
 
-    public void setTable(final AbstractTable table) {
+    public void setTable(final BaseTable table) {
         this.table = table;
     }
 
@@ -70,18 +70,18 @@ public abstract class AbstractHeader implements Header {
         return this.cell.getPivotEntityAsString();
     }
 
-    public boolean equals(final AbstractHeader o) {
+    public boolean equals(final BaseHeader o) {
         return this.getName().equalsIgnoreCase(o.getName());
     }
 
     @Override
     public boolean equals(final Object o) {
-        return o instanceof AbstractHeader && this.equals((AbstractHeader) o);
+        return o instanceof BaseHeader && this.equals((BaseHeader) o);
     }
 
     public abstract String getValue();
 
-    private AbstractTable table;
+    private BaseTable table;
     private final BaseCell cell;
     private int colIndex;
 }

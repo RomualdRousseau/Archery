@@ -2,13 +2,13 @@ package com.github.romualdrousseau.any2json.base;
 
 import com.github.romualdrousseau.any2json.HeaderTag;
 
-public class SimpleHeader extends AbstractHeader {
+public class SimpleHeader extends BaseHeader {
 
-    public SimpleHeader(final AbstractTable table, final BaseCell cell) {
+    public SimpleHeader(final BaseTable table, final BaseCell cell) {
         super(table, cell);
     }
 
-    public SimpleHeader(final AbstractHeader parent) {
+    public SimpleHeader(final BaseHeader parent) {
         super(parent.getTable(), parent.getCell());
     }
 

@@ -6,8 +6,8 @@ import java.util.List;
 import com.github.romualdrousseau.any2json.Header;
 import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.base.BaseCell;
-import com.github.romualdrousseau.any2json.base.AbstractHeader;
-import com.github.romualdrousseau.any2json.base.AbstractSheet;
+import com.github.romualdrousseau.any2json.base.BaseHeader;
+import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.base.RowGroup;
 import com.github.romualdrousseau.any2json.base.SimpleHeader;
@@ -19,7 +19,7 @@ import com.github.romualdrousseau.shuju.util.StringUtility;
 
 public class IntelliTable extends CompositeTable {
 
-    public IntelliTable(final AbstractSheet sheet, final TableGraph root) {
+    public IntelliTable(final BaseSheet sheet, final TableGraph root) {
         super(sheet);
         this.buildHeaders(root);
         this.buildTable(root, this.findPivotHeader());
@@ -143,7 +143,7 @@ public class IntelliTable extends CompositeTable {
             final RowGroup rowGroup) {
         final IntelliRow newRow = new IntelliRow(this, this.tmpHeaders.size());
 
-        for (final AbstractHeader abstractHeader : this.tmpHeaders) {
+        for (final BaseHeader abstractHeader : this.tmpHeaders) {
             List<Header> orgHeaders = orgTable.findHeader(abstractHeader);
 
             if (abstractHeader instanceof PivotKeyHeader && pivotCell != null) {
@@ -155,7 +155,7 @@ public class IntelliTable extends CompositeTable {
             } else {
                 if (orgHeaders.size() > 0) {
                     for(Header orgHeader : orgHeaders) {
-                        AbstractHeader orgAbstractHeader = (AbstractHeader) orgHeader;
+                        BaseHeader orgAbstractHeader = (BaseHeader) orgHeader;
                         if (rowGroup == null || !orgAbstractHeader.isRowGroupName()) {
                             newRow.setCell(abstractHeader.getColumnIndex(), orgAbstractHeader.getCellAtRow(orgRow));
                         } else {
@@ -171,7 +171,7 @@ public class IntelliTable extends CompositeTable {
         return newRow;
     }
 
-    private boolean checkIfHeaderExists(final AbstractHeader header) {
+    private boolean checkIfHeaderExists(final BaseHeader header) {
         return this.tmpHeaders.contains(header);
     }
 

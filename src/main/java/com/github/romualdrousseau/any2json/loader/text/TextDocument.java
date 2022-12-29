@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
+import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
 import com.github.romualdrousseau.shuju.math.Tensor1D;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
@@ -46,7 +47,7 @@ public class TextDocument implements Document {
 
     @Override
     public Sheet getSheetAt(final int i) {
-        return this.sheet;
+        return new IntelliSheet(this.sheet, true);
     }
 
     private boolean openWithEncoding(final File txtFile, final String encoding) {

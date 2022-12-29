@@ -25,6 +25,13 @@ public class XlsxCell {
         this.value = value;
     }
 
+    public XlsxCell copy() {
+        XlsxCell newCell = new XlsxCell();
+        newCell.value = this.value;
+        newCell.decorated = this.decorated;
+        return newCell;
+    }
+
     private String value;
     private boolean decorated;
 }

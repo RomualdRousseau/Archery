@@ -10,7 +10,7 @@ public class SheetBitmap implements ISearchBitmap
         this.data = new byte[this.height][this.width];
     }
 
-    public SheetBitmap(final AbstractSheet sheet, final int columns, final int rows) {
+    public SheetBitmap(final BaseSheet sheet, final int columns, final int rows) {
         this.width = columns;
         this.height = rows;
         this.data = new byte[this.height][(this.width / 8) + 1];
@@ -54,7 +54,7 @@ public class SheetBitmap implements ISearchBitmap
         return result;
     }
 
-    private void convertSheetToBitmap(final AbstractSheet sheet) {
+    private void convertSheetToBitmap(final BaseSheet sheet) {
         for (int y = 0; y < this.height; y++) {
             for (int x = 0; x < this.width;) {
                 final int n = sheet.getNumberOfMergedCellsAt(x, y);
