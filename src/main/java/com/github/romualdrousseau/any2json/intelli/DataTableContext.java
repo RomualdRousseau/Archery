@@ -12,11 +12,11 @@ import com.github.romualdrousseau.any2json.intelli.header.DataTableHeader;
 
 public class DataTableContext extends TableContext<BaseCell> {
 
-    public static final int TABLE_META = 0;
-    public static final int TABLE_HEADER = 1;
-    public static final int TABLE_GROUP = 3;
-    public static final int TABLE_DATA = 4;
-    public static final int TABLE_SUB_FOOTER = 5;
+    public static final int TABLE_META = 1;
+    public static final int TABLE_HEADER = 2;
+    public static final int TABLE_SUB_HEADER = 4;
+    public static final int TABLE_DATA = 5;
+    public static final int TABLE_SUB_FOOTER = 6;
     public static final int TABLE_FOOTER = 7;
 
     public DataTableContext(final DataTable dataTable) {
@@ -38,10 +38,10 @@ public class DataTableContext extends TableContext<BaseCell> {
         if (this.firstRowCell == null && cell.hasValue()) {
             this.firstRowCell = cell;
         }
-
-        if (!this.footerProcessed) {
+        
+        if (!this.footerProcessed) { 
             switch (this.getGroup()) {
-            case TABLE_META:
+            case TABLE_META:   
                 this.processMeta(cell, symbol);
                 break;
 
@@ -49,8 +49,8 @@ public class DataTableContext extends TableContext<BaseCell> {
                 this.processHeader(cell, symbol);
                 break;
 
-            case TABLE_GROUP:
-                this.processGroup(cell, symbol);
+            case TABLE_SUB_HEADER:
+                this.processSubHeader(cell, symbol);
                 break;
 
             case TABLE_DATA:
@@ -102,7 +102,7 @@ public class DataTableContext extends TableContext<BaseCell> {
         }
     }
 
-    private void processGroup(final BaseCell cell, final String symbol) {
+    private void processSubHeader(final BaseCell cell, final String symbol) {
         if (!symbol.equals("$")) {
             return;
         }
@@ -144,8 +144,8 @@ public class DataTableContext extends TableContext<BaseCell> {
             return;
         }
 
-        this.ignoreRows.add(this.getRow() - 1);
-        this.dataTable.getRowAt(this.getRow() - 1).setIgnored(true);
+        this.ignoreRows.add(this.getRow() - this.dataTable.getFirstRowOffset());
+        this.dataTable.getRowAt(this.getRow() - this.dataTable.getFirstRowOffset()).setIgnored(true);
     }
 
     private void processFooter(final BaseCell cell, final String symbol) {

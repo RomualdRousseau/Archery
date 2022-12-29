@@ -111,11 +111,11 @@ public abstract class BaseSheet implements Sheet {
     public int getNumberOfMergedCellsAt(final int colIndex, final int rowIndex) {
         final int translatedColumn = this.translateColumn(colIndex);
         if (translatedColumn < 0) {
-            return -1;
+            return 1;
         }
         final int translatedRow = this.translateRow(rowIndex);
         if (translatedRow < 0) {
-            return -1;
+            return 1;
         }
         return this.sheetStore.getNumberOfMergedCellsAt(translatedColumn, translatedRow);
     }
@@ -141,15 +141,19 @@ public abstract class BaseSheet implements Sheet {
     }
 
     protected void markColumnAsNull(final int colIndex) {
-        this.columnMask.set(colIndex, null);
+        if(colIndex < this.columnMask.size()) {
+            this.columnMask.set(colIndex, null);
+        }
     }
 
     protected void removeAllNullColumns() {
         this.columnMask.removeIf(i -> i == null);
     }
 
-    protected void markRowAsNull(final int colIndex) {
-        this.rowMask.set(colIndex, null);
+    protected void markRowAsNull(final int rowIndex) {
+        if(rowIndex < this.rowMask.size()) {
+            this.rowMask.set(rowIndex, null);
+        }
     }
 
     protected void removeAllNullRows() {
@@ -163,12 +167,12 @@ public abstract class BaseSheet implements Sheet {
         return !e.isCanceled();
     }
 
-    private int translateColumn(final int colIndex) {
+    private int translateColumn(final int colIndex) {   
         if (colIndex < 0 || colIndex >= this.columnMask.size()) {
             return -1;
         }
         final int translatedColumn = this.columnMask.get(colIndex);
-        if (translatedColumn < 0 || translatedColumn > this.sheetStore.getLastColumnNum(translatedColumn)) {
+        if (translatedColumn < 0 || translatedColumn > this.getLastColumnNum()) {
             return -1;
         }
         return translatedColumn;

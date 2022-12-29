@@ -48,17 +48,17 @@ public class XlsxSheet implements SheetStore {
             final XMLReader parser = parserFactory.newSAXParser().getXMLReader();
             parser.setContentHandler(new ContentHandler());
             parser.parse(new InputSource(this.sheetData));
-            return this;
-        } catch (SAXException | IOException | ParserConfigurationException e) {
-            e.printStackTrace();
-            return this;
+        } catch (SAXException | IOException | ParserConfigurationException ignore) {
+            ignore.printStackTrace();
         } finally {
             try {
                 this.dataLoaded = true;
                 this.sheetData.close();
             } catch (final IOException ignore) {
+                ignore.printStackTrace();
             }
         }
+        return this;
     }
 
     @Override
@@ -80,22 +80,21 @@ public class XlsxSheet implements SheetStore {
     public boolean hasCellDataAt(final int colIndex, final int rowIndex) {
         final int n = this.getInternalMergeDown(colIndex, rowIndex);
         final List<XlsxCell> cells = this.rows.get(n).cells();
-        return cells != null && cells.get(colIndex).getValue() != null;
+        return cells != null && colIndex < cells.size() && cells.get(colIndex).getValue() != null;
     }
 
     @Override
     public boolean hasCellDecorationAt(final int colIndex, final int rowIndex) {
         final int n = this.getInternalMergeDown(colIndex, rowIndex);
         final List<XlsxCell> cells = this.rows.get(n).cells();
-        return cells != null && cells.get(colIndex).isDecorated();
+        return cells != null && colIndex < cells.size() && cells.get(colIndex).isDecorated();
     }
 
     @Override
     public String getCellDataAt(final int colIndex, final int rowIndex) {
         final int n = this.getInternalMergeDown(colIndex, rowIndex);
         final List<XlsxCell> cells = this.rows.get(n).cells();
-        assert cells != null;
-        return cells.get(colIndex).getValue();
+        return cells != null && colIndex < cells.size() ? cells.get(colIndex).getValue() : null;
     }
 
     @Override
@@ -124,7 +123,7 @@ public class XlsxSheet implements SheetStore {
             newCell.setValue(value);
         }
         final List<XlsxCell> cells = this.rows.get(rowIndex2).cells();
-        if (cells != null) {
+        if (cells != null && colIndex2 < cells.size()) {
             cells.set(colIndex2, newCell);
         }
     }
@@ -288,33 +287,6 @@ public class XlsxSheet implements SheetStore {
             if (!cell.type.equals(CellType.BLANK) && cell.value != null && !cell.value.isEmpty()) {
                 return true;
             }
-
-            if (cell.style == null) {
-                return false;
-            }
-
-            // Keep cell with borders
-            if (!cell.style.getBorderLeft().equals(BorderStyle.NONE)
-                    && !cell.style.getBorderRight().equals(BorderStyle.NONE)
-                    && !cell.style.getBorderTop().equals(BorderStyle.NONE)
-                    && !cell.style.getBorderBottom().equals(BorderStyle.NONE)) {
-                return true;
-            }
-
-            // Keep cell with a colored (not automatic and not white) pattern
-            final XSSFColor bkcolor = (XSSFColor) cell.style.getFillBackgroundColorColor();
-            if (bkcolor != null && bkcolor.getIndexed() != IndexedColors.AUTOMATIC.index
-                    && (bkcolor.getARGBHex() == null || !bkcolor.getARGBHex().equals("FFFFFFFF"))) {
-                return true;
-            }
-
-            // Keep cell with a colored (not automatic and not white) background
-            final XSSFColor fgcolor = (XSSFColor) cell.style.getFillForegroundColorColor();
-            if (fgcolor != null && fgcolor.getIndexed() != IndexedColors.AUTOMATIC.index
-                    && (fgcolor.getARGBHex() == null || !fgcolor.getARGBHex().equals("FFFFFFFF"))) {
-                return true;
-            }
-
             return false;
         }
 

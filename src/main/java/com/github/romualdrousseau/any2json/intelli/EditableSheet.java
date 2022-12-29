@@ -13,7 +13,7 @@ public abstract class EditableSheet extends BaseSheet {
     }
 
     public void stichRows() {
-        for(int i = 0; i < this.getLastRowNum(); i++) {
+        for(int i = 0; i <= this.getLastRowNum(); i++) {
             if (this.isStichedRow(i)) {
                 this.markRowAsNull(i);
             }
@@ -21,28 +21,17 @@ public abstract class EditableSheet extends BaseSheet {
         this.removeAllNullRows();
     }
 
-    public void deleteNullRows(final float fillRatio) {
-        for(int i = 0; i <= this.getLastRowNum(); i++) {
-            int emptyCount = 0;
-            for(int j = 0; j <= this.getLastColumnNum(i); j++) {
-                if(!this.hasCellDataAt(j, i)) {
-                    emptyCount++;
-                }
-            }
-            final float m = 1.0f - (float) emptyCount / (float) this.getLastColumnNum(i);
-            if (m <= fillRatio) {
-                this.markRowAsNull(i);
-            }
-        }
-        this.removeAllNullRows();
+    public void dropColumn(final int colIndex) {
+        this.markColumnAsNull(colIndex);
+        this.removeAllNullColumns();
     }
 
-    public void deleteNullColumns(final float fillRatio) {
+    public void dropNullColumns(final float fillRatio) {
         for(int j = 0; j <= this.getLastColumnNum(); j++) {
-            int emptyCount = 0;
+            int emptyCount = this.getLastRowNum();
             for(int i = 0; i <= this.getLastRowNum(); i++) {
-                if(!this.hasCellDataAt(j, i)) {
-                    emptyCount++;
+                if(this.hasCellDataAt(j, i)) {
+                    emptyCount--;
                 }
             }
             final float m = 1.0f - (float) emptyCount / (float) this.getLastRowNum();
@@ -53,7 +42,28 @@ public abstract class EditableSheet extends BaseSheet {
         this.removeAllNullColumns();
     }
 
-    public void autoMergeCell(final int colIndex) {
+    public void dropRow(final int rowIndex) {
+        this.markRowAsNull(rowIndex);
+        this.removeAllNullRows();
+    }
+
+    public void dropNullRows(final float fillRatio) {
+        for(int i = 0; i <= this.getLastRowNum(); i++) {
+            int emptyCount = this.getLastColumnNum();
+            for(int j = 0; j <= this.getLastColumnNum(i); j++) {
+                if(this.hasCellDataAt(j, i)) {
+                    emptyCount--;
+                }
+            }
+            final float m = 1.0f - (float) emptyCount / (float) this.getLastColumnNum();
+            if (m <= fillRatio) {
+                this.markRowAsNull(i);
+            }
+        }
+        this.removeAllNullRows();
+    }
+
+    public void mergeCell(final int colIndex) {
         int lastRow = -1;
         for(int i = 0; i <= this.getLastRowNum(); i++) {
             if(this.hasCellDataAt(colIndex, i)) {

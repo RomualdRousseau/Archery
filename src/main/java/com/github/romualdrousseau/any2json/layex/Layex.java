@@ -82,10 +82,11 @@ public class Layex {
             return r3(new EndOfRow());
         } else if (c.equals("(")) {
             this.acceptPreviousSymbol();
+            final int group = this.groupCounter++;
             final TableMatcher e = r();
             this.acceptSymbol(")");
             this.stack.push(r3(e));
-            return new Group(this.stack, this.groupCounter++);
+            return new Group(this.stack, group);
         } else if (c.equals("[")) {
             this.acceptPreviousSymbol();
             final TableMatcher e = r();

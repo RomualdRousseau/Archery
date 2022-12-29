@@ -31,8 +31,8 @@ public class TextDocument implements Document {
         if (this.reader != null) {
             try {
                 this.reader.close();
-            } catch (final IOException e) {
-                e.printStackTrace();
+            } catch (final IOException ignore) {
+                ignore.printStackTrace();
             }
             this.reader = null;
         }
