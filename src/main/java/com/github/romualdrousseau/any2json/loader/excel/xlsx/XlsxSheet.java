@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
@@ -43,8 +44,8 @@ public class XlsxSheet implements SheetStore {
             return this;
         }
         try {
-            SAXParserFactory parserFactory = SAXParserFactory.newInstance();
-            XMLReader parser = parserFactory.newSAXParser().getXMLReader();
+            final SAXParserFactory parserFactory = SAXParserFactory.newInstance();
+            final XMLReader parser = parserFactory.newSAXParser().getXMLReader();
             parser.setContentHandler(new ContentHandler());
             parser.parse(new InputSource(this.sheetData));
             return this;
@@ -55,7 +56,7 @@ public class XlsxSheet implements SheetStore {
             try {
                 this.dataLoaded = true;
                 this.sheetData.close();
-            } catch (IOException ignore) {
+            } catch (final IOException ignore) {
             }
         }
     }
@@ -66,7 +67,7 @@ public class XlsxSheet implements SheetStore {
     }
 
     @Override
-    public int getLastColumnNum(int rowIndex) {
+    public int getLastColumnNum(final int rowIndex) {
         return this.rows.get(rowIndex).getLastColumnNum();
     }
 
@@ -76,21 +77,25 @@ public class XlsxSheet implements SheetStore {
     }
 
     @Override
-    public boolean hasCellDataAt(int colIndex, int rowIndex) {
+    public boolean hasCellDataAt(final int colIndex, final int rowIndex) {
         final int n = this.getInternalMergeDown(colIndex, rowIndex);
-        return this.rows.get(n).cells().get(colIndex).getValue() != null;
+        final List<XlsxCell> cells = this.rows.get(n).cells();
+        return cells != null && cells.get(colIndex).getValue() != null;
     }
 
     @Override
-    public boolean hasCellDecorationAt(int colIndex, int rowIndex) {
+    public boolean hasCellDecorationAt(final int colIndex, final int rowIndex) {
         final int n = this.getInternalMergeDown(colIndex, rowIndex);
-        return this.rows.get(n).cells().get(colIndex).isDecorated();
+        final List<XlsxCell> cells = this.rows.get(n).cells();
+        return cells != null && cells.get(colIndex).isDecorated();
     }
 
     @Override
-    public String getCellDataAt(int colIndex, int rowIndex) {
+    public String getCellDataAt(final int colIndex, final int rowIndex) {
         final int n = this.getInternalMergeDown(colIndex, rowIndex);
-        return this.rows.get(n).cells().get(colIndex).getValue();
+        final List<XlsxCell> cells = this.rows.get(n).cells();
+        assert cells != null;
+        return cells.get(colIndex).getValue();
     }
 
     @Override
@@ -109,7 +114,7 @@ public class XlsxSheet implements SheetStore {
     }
 
     @Override
-    public void patchCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2, final String value) {
+    public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2, final String value) {
         final XlsxCell newCell;
         if (value == null) {
             newCell = this.rows.get(rowIndex1).cells().get(colIndex1);
@@ -118,7 +123,10 @@ public class XlsxSheet implements SheetStore {
             newCell = this.rows.get(rowIndex1).cells().get(colIndex1).copy();
             newCell.setValue(value);
         }
-        this.rows.get(rowIndex2).cells().set(colIndex2, newCell);
+        final List<XlsxCell> cells = this.rows.get(rowIndex2).cells();
+        if (cells != null) {
+            cells.set(colIndex2, newCell);
+        }
     }
 
     private int getInternalMergeDown(final int colIndex, final int rowIndex) {
@@ -196,7 +204,7 @@ public class XlsxSheet implements SheetStore {
             }
         }
 
-        private void fillMissingRows(int n) {
+        private void fillMissingRows(final int n) {
             while (rows.size() < n) {
                 rows.add(new XlsxRow());
             }
@@ -262,7 +270,7 @@ public class XlsxSheet implements SheetStore {
                             && DateUtil.isValidExcelDate(d)) {
                         cell.value = new SimpleDateFormat("yyyy-MM-dd").format(DateUtil.getJavaDate(d));
                     }
-                } catch (NumberFormatException x) {
+                } catch (final NumberFormatException x) {
                     cell.type = CellType.STRING;
                     cell.value = StringUtility.cleanToken(cell.value);
                 }

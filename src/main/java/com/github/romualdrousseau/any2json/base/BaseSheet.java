@@ -19,9 +19,9 @@ public abstract class BaseSheet implements Sheet {
 
     public BaseSheet(final SheetStore store) {
         this.sheetStore = store;
-        this.realLastColumnNum = this.computeLastColumnNum();
-        this.columnMask = this.mutableRange(0, this.realLastColumnNum);
-        this.rowMask = this.mutableRange(0, this.sheetStore.getLastRowNum());
+        this.storeLastColumnNum = this.computeLastColumnNum();
+        this.columnMask = this.mutableRange(0, this.storeLastColumnNum + 1);
+        this.rowMask = this.mutableRange(0, this.sheetStore.getLastRowNum() + 1);
     }
 
     @Override
@@ -57,7 +57,7 @@ public abstract class BaseSheet implements Sheet {
     }
 
     public int getLastColumnNum() {
-        return this.columnMask.size();
+        return this.columnMask.size() - 1;
     }
 
     public int getLastColumnNum(final int rowIndex) {
@@ -65,11 +65,11 @@ public abstract class BaseSheet implements Sheet {
         if (translatedRow < 0) {
             return -1;
         }
-        return this.sheetStore.getLastColumnNum(translatedRow) - (this.realLastColumnNum - this.columnMask.size());
+        return this.sheetStore.getLastColumnNum(translatedRow) - (this.storeLastColumnNum - this.columnMask.size() + 1);
     }
 
     public int getLastRowNum() {
-        return this.rowMask.size();
+        return this.rowMask.size() - 1;
     }
 
     public boolean hasCellDataAt(final int colIndex, final int rowIndex) {
@@ -164,6 +164,9 @@ public abstract class BaseSheet implements Sheet {
     }
 
     private int translateColumn(final int colIndex) {
+        if (colIndex < 0 || colIndex >= this.columnMask.size()) {
+            return -1;
+        }
         final int translatedColumn = this.columnMask.get(colIndex);
         if (translatedColumn < 0 || translatedColumn > this.sheetStore.getLastColumnNum(translatedColumn)) {
             return -1;
@@ -172,6 +175,9 @@ public abstract class BaseSheet implements Sheet {
     }
 
     private int translateRow(final int rowIndex) {
+        if (rowIndex < 0 || rowIndex >= this.rowMask.size()) {
+            return -1;
+        }
         final int translatedRow = this.rowMask.get(rowIndex);
         if (translatedRow < 0 || translatedRow > this.sheetStore.getLastRowNum()) {
             return -1;
@@ -204,6 +210,6 @@ public abstract class BaseSheet implements Sheet {
     private final SheetStore sheetStore;
     private final List<Integer> rowMask;
     private final List<Integer> columnMask;
-    private final int realLastColumnNum;
+    private final int storeLastColumnNum;
     private ClassifierFactory classifierFactory;
 }

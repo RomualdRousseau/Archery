@@ -5,14 +5,14 @@ import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
 public class SheetBitmap implements ISearchBitmap
 {
     public SheetBitmap(final int columns, final int rows) {
-        this.width = columns;
-        this.height = rows;
-        this.data = new byte[this.height][this.width];
+        this.width = columns + 1;
+        this.height = rows + 1;
+        this.data = new byte[this.height][(this.width / 8) + 1];
     }
 
     public SheetBitmap(final BaseSheet sheet, final int columns, final int rows) {
-        this.width = columns;
-        this.height = rows;
+        this.width = columns + 1;
+        this.height = rows + 1;
         this.data = new byte[this.height][(this.width / 8) + 1];
         this.convertSheetToBitmap(sheet);
     }

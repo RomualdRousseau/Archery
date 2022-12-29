@@ -22,9 +22,9 @@ public abstract class EditableSheet extends BaseSheet {
     }
 
     public void deleteNullRows(final float fillRatio) {
-        for(int i = 0; i < this.getLastRowNum(); i++) {
+        for(int i = 0; i <= this.getLastRowNum(); i++) {
             int emptyCount = 0;
-            for(int j = 0; j < this.getLastColumnNum(i); j++) {
+            for(int j = 0; j <= this.getLastColumnNum(i); j++) {
                 if(!this.hasCellDataAt(j, i)) {
                     emptyCount++;
                 }
@@ -38,9 +38,9 @@ public abstract class EditableSheet extends BaseSheet {
     }
 
     public void deleteNullColumns(final float fillRatio) {
-        for(int j = 0; j < this.getLastColumnNum(); j++) {
+        for(int j = 0; j <= this.getLastColumnNum(); j++) {
             int emptyCount = 0;
-            for(int i = 0; i < this.getLastRowNum(); i++) {
+            for(int i = 0; i <= this.getLastRowNum(); i++) {
                 if(!this.hasCellDataAt(j, i)) {
                     emptyCount++;
                 }
@@ -55,7 +55,7 @@ public abstract class EditableSheet extends BaseSheet {
 
     public void autoMergeCell(final int colIndex) {
         int lastRow = -1;
-        for(int i = 0; i < this.getLastRowNum(); i++) {
+        for(int i = 0; i <= this.getLastRowNum(); i++) {
             if(this.hasCellDataAt(colIndex, i)) {
                 lastRow = i;
             } else if (lastRow >= 0) {
@@ -82,7 +82,7 @@ public abstract class EditableSheet extends BaseSheet {
     private String getRowPattern(final int rowIndex) {
         String hash = "";
         int countEmptyCells = 0;
-        for (int i = 0; i < this.getSheetStore().getLastColumnNum(rowIndex);) {
+        for (int i = 0; i <= this.getSheetStore().getLastColumnNum(rowIndex);) {
             final String value = this.getSheetStore().getCellDataAt(i, rowIndex);
             if (value != null) {
                 if (value.isEmpty()) {
