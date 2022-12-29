@@ -109,8 +109,16 @@ public class XlsxSheet implements SheetStore {
     }
 
     @Override
-    public void copyCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2) {
-        this.rows.get(rowIndex2).cells().set(colIndex2, this.rows.get(rowIndex1).cells().get(colIndex1));
+    public void patchCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2, final String value) {
+        final XlsxCell newCell;
+        if (value == null) {
+            newCell = this.rows.get(rowIndex1).cells().get(colIndex1);
+        }
+        else {
+            newCell = this.rows.get(rowIndex1).cells().get(colIndex1).copy();
+            newCell.setValue(value);
+        }
+        this.rows.get(rowIndex2).cells().set(colIndex2, newCell);
     }
 
     private int getInternalMergeDown(final int colIndex, final int rowIndex) {

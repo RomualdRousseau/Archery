@@ -101,7 +101,7 @@ public class XlsSheet implements SheetStore {
     }
 
     @Override
-    public void copyCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2) {
+    public void patchCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2, final String value) {
         final Row row1 = this.sheet.getRow(rowIndex1);
         if (row1 == null) {
             return;
@@ -113,7 +113,12 @@ public class XlsSheet implements SheetStore {
         }
         final Cell cell2 = row2.getCell(colIndex2);
         cell2.setCellStyle(cell1.getCellStyle());
-        cell2.setCellValue(this.getData(cell2));
+        if(value == null) {
+            cell2.setCellValue(this.getData(cell2));
+        }
+        else {
+            cell2.setCellValue(value);
+        }
     }
 
     private int getInternalMergeDown(int colIndex, int rowIndex) {

@@ -9,7 +9,7 @@ import com.github.romualdrousseau.shuju.util.StringUtility;
 
 class TextSheet implements SheetStore {
 
-    public TextSheet(String name, List<String[]> rows) {
+    public TextSheet(final String name, final List<String[]> rows) {
         this.name = name;
         this.rows = rows;
     }
@@ -20,7 +20,7 @@ class TextSheet implements SheetStore {
     }
 
     @Override
-    public int getLastColumnNum(int rowIndex) {
+    public int getLastColumnNum(final int rowIndex) {
         return this.rows.get(rowIndex).length - 1;
     }
 
@@ -30,19 +30,19 @@ class TextSheet implements SheetStore {
     }
 
     @Override
-    public boolean hasCellDataAt(int colIndex, int rowIndex) {
-        String cell = this.getCellAt(colIndex, rowIndex);
+    public boolean hasCellDataAt(final int colIndex, final int rowIndex) {
+        final String cell = this.getCellAt(colIndex, rowIndex);
         return cell != null && !cell.isEmpty();
     }
 
     @Override
-    public boolean hasCellDecorationAt(int colIndex, int rowIndex) {
+    public boolean hasCellDecorationAt(final int colIndex, final int rowIndex) {
         return false;
     }
 
     @Override
-    public String getCellDataAt(int colIndex, int rowIndex) {
-        String cell = this.getCellAt(colIndex, rowIndex);
+    public String getCellDataAt(final int colIndex, final int rowIndex) {
+        final String cell = this.getCellAt(colIndex, rowIndex);
         if(cell == null || cell.isEmpty()) {
             return null;
         }
@@ -50,21 +50,21 @@ class TextSheet implements SheetStore {
     }
 
     @Override
-    public int getNumberOfMergedCellsAt(int colIndex, int rowIndex) {
+    public int getNumberOfMergedCellsAt(final int colIndex, final int rowIndex) {
         return 1;
     }
 
     @Override
-    public void copyCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2) {
+    public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2, final String value) {
         throw new NotImplementedException("This format doesn't allow sheet edition.");
     }
 
-    private String getCellAt(int colIndex, int rowIndex) {
+    private String getCellAt(final int colIndex, final int rowIndex) {
         if(rowIndex >= this.rows.size()) {
             return null;
         }
 
-        String[] row = this.rows.get(rowIndex);
+        final String[] row = this.rows.get(rowIndex);
 
         if(colIndex >= row.length) {
             return null;
@@ -73,6 +73,6 @@ class TextSheet implements SheetStore {
         return row[colIndex];
     }
 
-    private String name;
-    private List<String[]> rows;
+    private final String name;
+    private final List<String[]> rows;
 }

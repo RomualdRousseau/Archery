@@ -58,27 +58,12 @@ public class IntelliSheet extends EditableSheet {
         else {
             this.stichRows();
 
-            String recipe = """
-            def clean_up():
-                sheet.deleteNullColumns(0.0)
-                sheet.autoMergeCell(0)
-                sheet.autoMergeCell(1)
-                sheet.autoMergeCell(2)
-                sheet.deleteNullRows(0.5)
-
-            def add_headers():
-                #sheet.setCellData(0, 0, "Inventory");
-                #sheet.setCellData(1, 0, "Manufacturer");
-                #sheet.setCellData(2, 0, "productName");
-                pass
-
-            clean_up()
-            add_headers()
-            """;
-
-            try(PythonInterpreter pyInterp = new PythonInterpreter()) {
-                pyInterp.set("sheet", this);
-                pyInterp.exec(recipe);
+            final String recipe = this.getClassifierFactory().getLayoutClassifier().get().getRecipe();
+            if (recipe != null) {
+                try(PythonInterpreter pyInterp = new PythonInterpreter()) {
+                    pyInterp.set("sheet", this);
+                    pyInterp.exec(recipe);
+                }
             }
             if (!this.notifyStepCompleted(new SheetPreparedEvent(this))) {
                 return null;

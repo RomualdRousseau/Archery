@@ -21,7 +21,7 @@ public abstract class BaseSheet implements Sheet {
         this.sheetStore = store;
         this.realLastColumnNum = this.computeLastColumnNum();
         this.columnMask = this.mutableRange(0, this.realLastColumnNum);
-        this.rowMask = this.mutableRange(0, this.getSheetStore().getLastRowNum());
+        this.rowMask = this.mutableRange(0, this.sheetStore.getLastRowNum());
     }
 
     @Override
@@ -61,8 +61,8 @@ public abstract class BaseSheet implements Sheet {
     }
 
     public int getLastColumnNum(final int rowIndex) {
-        final int translatedRow = this.rowMask.get(rowIndex);
-        if (translatedRow < 0 || translatedRow > this.getSheetStore().getLastRowNum()) {
+        final int translatedRow = this.translateRow(rowIndex);
+        if (translatedRow < 0) {
             return -1;
         }
         return this.sheetStore.getLastColumnNum(translatedRow) - (this.realLastColumnNum - this.columnMask.size());
@@ -73,71 +73,71 @@ public abstract class BaseSheet implements Sheet {
     }
 
     public boolean hasCellDataAt(final int colIndex, final int rowIndex) {
-        final int translatedRow = this.rowMask.get(rowIndex);
-        if (translatedRow < 0 || translatedRow > this.getSheetStore().getLastRowNum()) {
+        final int translatedColumn = this.translateColumn(colIndex);
+        if (translatedColumn < 0) {
             return false;
         }
-        final int translatedColumn = this.columnMask.get(colIndex);
-        if (translatedColumn < 0 || translatedColumn > this.getSheetStore().getLastColumnNum(translatedRow)) {
+        final int translatedRow = this.translateRow(rowIndex);
+        if (translatedRow < 0) {
             return false;
         }
-        return this.getSheetStore().hasCellDataAt(translatedColumn, translatedRow);
+        return this.sheetStore.hasCellDataAt(translatedColumn, translatedRow);
     }
 
     public boolean hasCellDecorationAt(final int colIndex, final int rowIndex) {
-        final int translatedRow = this.rowMask.get(rowIndex);
-        if (translatedRow < 0 || translatedRow > this.getSheetStore().getLastRowNum()) {
+        final int translatedColumn = this.translateColumn(colIndex);
+        if (translatedColumn < 0) {
             return false;
         }
-        final int translatedColumn = this.columnMask.get(colIndex);
-        if (translatedColumn < 0 || translatedColumn > this.getSheetStore().getLastColumnNum(translatedRow)) {
+        final int translatedRow = this.translateRow(rowIndex);
+        if (translatedRow < 0) {
             return false;
         }
-        return this.getSheetStore().hasCellDecorationAt(translatedColumn, translatedRow);
+        return this.sheetStore.hasCellDecorationAt(translatedColumn, translatedRow);
     }
 
     public String getCellDataAt(final int colIndex, final int rowIndex) {
-        final int translatedRow = this.rowMask.get(rowIndex);
-        if (translatedRow < 0 || translatedRow > this.getSheetStore().getLastRowNum()) {
+        final int translatedColumn = this.translateColumn(colIndex);
+        if (translatedColumn < 0) {
             return null;
         }
-        final int translatedColumn = this.columnMask.get(colIndex);
-        if (translatedColumn < 0 || translatedColumn > this.getSheetStore().getLastColumnNum(translatedRow)) {
+        final int translatedRow = this.translateRow(rowIndex);
+        if (translatedRow < 0) {
             return null;
         }
-        return this.getSheetStore().getCellDataAt(translatedColumn, translatedRow);
+        return this.sheetStore.getCellDataAt(translatedColumn, translatedRow);
     }
 
     public int getNumberOfMergedCellsAt(final int colIndex, final int rowIndex) {
-        final int translatedRow = this.rowMask.get(rowIndex);
-        if (translatedRow < 0 || translatedRow > this.getSheetStore().getLastRowNum()) {
-            return 1;
+        final int translatedColumn = this.translateColumn(colIndex);
+        if (translatedColumn < 0) {
+            return -1;
         }
-        final int translatedColumn = this.columnMask.get(colIndex);
-        if (translatedColumn < 0 || translatedColumn > this.getSheetStore().getLastColumnNum(translatedRow)) {
-            return 1;
+        final int translatedRow = this.translateRow(rowIndex);
+        if (translatedRow < 0) {
+            return -1;
         }
-        return this.getSheetStore().getNumberOfMergedCellsAt(translatedColumn, translatedRow);
+        return this.sheetStore.getNumberOfMergedCellsAt(translatedColumn, translatedRow);
     }
 
-    public void copyCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2) {
-        final int translatedRow1 = this.rowMask.get(rowIndex1);
-        if (translatedRow1 < 0 || translatedRow1 > this.getSheetStore().getLastRowNum()) {
+    public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2, final String value) {
+        final int translatedColumn1 = this.translateColumn(colIndex1);
+        if (translatedColumn1 < 0) {
             return;
         }
-        final int translatedColumn1 = this.columnMask.get(colIndex1);
-        if (translatedColumn1 < 0 || translatedColumn1 > this.getSheetStore().getLastColumnNum(translatedRow1)) {
+        final int translatedRow1 = this.translateRow(rowIndex1);
+        if (translatedRow1 < 0) {
             return;
         }
-        final int translatedRow2 = this.rowMask.get(rowIndex2);
-        if (translatedRow2 < 0 || translatedRow2 > this.getSheetStore().getLastRowNum()) {
+        final int translatedColumn2 = this.translateColumn(colIndex2);
+        if (translatedColumn2 < 0) {
             return;
         }
-        final int translatedColumn2 = this.columnMask.get(colIndex2);
-        if (translatedColumn2 < 0 || translatedColumn2 > this.getSheetStore().getLastColumnNum(translatedRow2)) {
+        final int translatedRow2 = this.translateRow(rowIndex2);
+        if (translatedRow2 < 0) {
             return;
         }
-        this.getSheetStore().copyCell(translatedColumn1, translatedRow1, translatedColumn2, translatedRow2);
+        this.sheetStore.patchCell(translatedColumn1, translatedRow1, translatedColumn2, translatedRow2, value);
     }
 
     protected void markColumnAsNull(final int colIndex) {
@@ -161,6 +161,22 @@ public abstract class BaseSheet implements Sheet {
             listener.stepCompleted(e);
         }
         return !e.isCanceled();
+    }
+
+    private int translateColumn(final int colIndex) {
+        final int translatedColumn = this.columnMask.get(colIndex);
+        if (translatedColumn < 0 || translatedColumn > this.sheetStore.getLastColumnNum(translatedColumn)) {
+            return -1;
+        }
+        return translatedColumn;
+    }
+
+    private int translateRow(final int rowIndex) {
+        final int translatedRow = this.rowMask.get(rowIndex);
+        if (translatedRow < 0 || translatedRow > this.sheetStore.getLastRowNum()) {
+            return -1;
+        }
+        return translatedRow;
     }
 
     private int computeLastColumnNum() {

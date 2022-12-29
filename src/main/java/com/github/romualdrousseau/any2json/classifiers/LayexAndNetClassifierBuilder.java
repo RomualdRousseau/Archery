@@ -21,61 +21,64 @@ public class LayexAndNetClassifierBuilder implements IClassifierBuilder {
         this.dataLayexes = Collections.emptyList();
     }
 
-    public LayexAndNetClassifierBuilder setModel(JSONObject model) {
+    public LayexAndNetClassifierBuilder setModel(final JSONObject model) {
         this.model = model;
         return this;
     }
 
-    public LayexAndNetClassifierBuilder setNgramList(NgramList ngramList) {
+    public LayexAndNetClassifierBuilder setNgramList(final NgramList ngramList) {
         this.ngramList = ngramList;
 		return this;
     }
 
-    public LayexAndNetClassifierBuilder setEntityList(RegexList entityList) {
+    public LayexAndNetClassifierBuilder setEntityList(final RegexList entityList) {
         this.entityList = entityList;
 		return this;
     }
 
-    public LayexAndNetClassifierBuilder setStopWordList(StopWordList stopWordList) {
+    public LayexAndNetClassifierBuilder setStopWordList(final StopWordList stopWordList) {
         this.stopWordList = stopWordList;
 		return this;
     }
 
-    public LayexAndNetClassifierBuilder setTagList(StringList tagList) {
+    public LayexAndNetClassifierBuilder setTagList(final StringList tagList) {
         this.tagList = tagList;
 		return this;
     }
 
-    public LayexAndNetClassifierBuilder setRequiredTagList(String[] requiredTagList) {
+    public LayexAndNetClassifierBuilder setRequiredTagList(final String[] requiredTagList) {
         this.requiredTagList = Arrays.asList(requiredTagList);
 		return this;
     }
 
-    public LayexAndNetClassifierBuilder setPivotEntityList(String[] pivotEntityList) {
+    public LayexAndNetClassifierBuilder setPivotEntityList(final String[] pivotEntityList) {
         this.pivotEntityList = Arrays.asList(pivotEntityList);
 		return this;
 	}
 
-    public LayexAndNetClassifierBuilder setMetaLayexes(String[] metaLayexes) {
+    public LayexAndNetClassifierBuilder setMetaLayexes(final String[] metaLayexes) {
         this.metaLayexes = Arrays.asList(metaLayexes);
 		return this;
     }
 
-    public LayexAndNetClassifierBuilder setDataLayexes(String[] dataLayexes) {
+    public LayexAndNetClassifierBuilder setDataLayexes(final String[] dataLayexes) {
         this.dataLayexes = Arrays.asList(dataLayexes);
+		return this;
+	}
+
+    public LayexAndNetClassifierBuilder setRecipe(final String recipe) {
+        this.recipe = recipe;
 		return this;
 	}
 
     public ClassifierFactory build() {
         final LayexAndNetClassifier classifier;
         if (model == null) {
-            classifier = new LayexAndNetClassifier(ngramList, entityList, stopWordList, tagList, requiredTagList, pivotEntityList, metaLayexes, dataLayexes);
+            classifier = new LayexAndNetClassifier(ngramList, entityList, stopWordList, tagList, requiredTagList, pivotEntityList, metaLayexes, dataLayexes, recipe);
         } else {
             classifier = new LayexAndNetClassifier(model);
         }
-        return new ClassifierFactory()
-            .setLayoutClassifier(classifier)
-            .setTagClassifier(classifier);
+        return new ClassifierFactory().setLayoutClassifier(classifier).setTagClassifier(classifier);
     }
 
     private JSONObject model;
@@ -87,4 +90,5 @@ public class LayexAndNetClassifierBuilder implements IClassifierBuilder {
     private List<String> pivotEntityList;
     private List<String> metaLayexes;
     private List<String> dataLayexes;
+    private String recipe;
 }

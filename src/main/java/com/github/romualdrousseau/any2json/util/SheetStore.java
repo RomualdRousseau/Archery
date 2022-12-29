@@ -14,7 +14,7 @@ public interface SheetStore {
 
     String getCellDataAt(int colIndex, int rowIndex);
 
-    int getNumberOfMergedCellsAt(final int colIndex, final int rowIndex);
+    int getNumberOfMergedCellsAt(int colIndex, int rowIndex);
 
-    void copyCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2);
+    void patchCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2, String value);
 }

@@ -55,8 +55,13 @@ class XmlSheet implements SheetStore {
     }
 
     @Override
-    public void copyCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2) {
-        this.sheet.addCellAt(rowIndex2 + 1, colIndex2 + 1, this.sheet.getCellAt(rowIndex1 + 1, colIndex1 + 1));
+    public void patchCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2, final String value) {
+        if(value == null) {
+            this.sheet.addCellAt(rowIndex2 + 1, colIndex2 + 1, this.sheet.getCellAt(rowIndex1 + 1, colIndex1 + 1));
+        }
+        else {
+            this.sheet.addCellAt(rowIndex2 + 1, colIndex2 + 1).setData(value);
+        }
     }
 
     private int getInternalMergeDown(int colIndex, int rowIndex) {

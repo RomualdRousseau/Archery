@@ -8,21 +8,20 @@ import com.github.romualdrousseau.shuju.util.FuzzyString;
 
 public abstract class EditableSheet extends BaseSheet {
 
-    public EditableSheet(SheetStore store) {
+    public EditableSheet(final SheetStore store) {
         super(store);
     }
 
-    public EditableSheet stichRows() {
+    public void stichRows() {
         for(int i = 0; i < this.getLastRowNum(); i++) {
             if (this.isStichedRow(i)) {
                 this.markRowAsNull(i);
             }
         }
         this.removeAllNullRows();
-        return this;
     }
 
-    public EditableSheet deleteNullRows(float fillRatio) {
+    public void deleteNullRows(final float fillRatio) {
         for(int i = 0; i < this.getLastRowNum(); i++) {
             int emptyCount = 0;
             for(int j = 0; j < this.getLastColumnNum(i); j++) {
@@ -30,16 +29,15 @@ public abstract class EditableSheet extends BaseSheet {
                     emptyCount++;
                 }
             }
-            float m = 1.0f - (float) emptyCount / (float) this.getLastColumnNum(i);
+            final float m = 1.0f - (float) emptyCount / (float) this.getLastColumnNum(i);
             if (m <= fillRatio) {
                 this.markRowAsNull(i);
             }
         }
         this.removeAllNullRows();
-        return this;
     }
 
-    public EditableSheet deleteNullColumns(float fillRatio) {
+    public void deleteNullColumns(final float fillRatio) {
         for(int j = 0; j < this.getLastColumnNum(); j++) {
             int emptyCount = 0;
             for(int i = 0; i < this.getLastRowNum(); i++) {
@@ -47,25 +45,23 @@ public abstract class EditableSheet extends BaseSheet {
                     emptyCount++;
                 }
             }
-            float m = 1.0f - (float) emptyCount / (float) this.getLastRowNum();
+            final float m = 1.0f - (float) emptyCount / (float) this.getLastRowNum();
             if (m <= fillRatio) {
                 this.markColumnAsNull(j);
             }
         }
         this.removeAllNullColumns();
-        return this;
     }
 
-    public EditableSheet autoMergeCell(int colIndex) {
+    public void autoMergeCell(final int colIndex) {
         int lastRow = -1;
         for(int i = 0; i < this.getLastRowNum(); i++) {
             if(this.hasCellDataAt(colIndex, i)) {
                 lastRow = i;
             } else if (lastRow >= 0) {
-                this.copyCell(colIndex, lastRow, colIndex, i);
+                this.patchCell(colIndex, lastRow, colIndex, i, null);
             }
         }
-        return this;
     }
 
     private boolean isStichedRow(final int rowIndex) {

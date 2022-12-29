@@ -56,6 +56,8 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
     private final List<TableMatcher> metaMatchers;
     private final List<TableMatcher> dataMatchers;
 
+    private String recipe;
+
     private Model model;
     private Optimizer optimizer;
     private Loss loss;
@@ -64,7 +66,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
 
     public LayexAndNetClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords,
             final StringList tags, final List<String> requiredTags, final List<String> pivotEntityList,
-            final List<String> metaLayexes, final List<String> dataLayexes) {
+            final List<String> metaLayexes, final List<String> dataLayexes, final String recipe) {
         this.ngrams = ngrams;
         this.entities = entities;
         this.stopwords = stopwords;
@@ -77,6 +79,8 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         this.metaMatchers = this.metaLayexes.stream().map(Layex::compile).collect(Collectors.toCollection(ArrayList::new));
         this.dataMatchers = this.dataLayexes.stream().map(Layex::compile).collect(Collectors.toCollection(ArrayList::new));
 
+        this.recipe = recipe;
+
         this.buildModel();
     }
 
@@ -88,7 +92,8 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
                 unmarshallStringList(json.getJSONObject("tags").getJSONArray("requiredTags")),
                 unmarshallStringList(json.getJSONObject("entities").getJSONArray("pivotEntities")),
                 unmarshallStringList(json.getJSONArray("layexes"), "META"),
-                unmarshallStringList(json.getJSONArray("layexes"), "DATA"));
+                unmarshallStringList(json.getJSONArray("layexes"), "DATA"),
+                null);
         this.model.fromJSON(json.getJSONArray("model"));
     }
 
@@ -100,50 +105,57 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         return this.stopwords;
     }
 
+    @Override
     public RegexList getEntityList() {
         return this.entities;
     }
 
+    @Override
     public NgramList getWordList() {
         return this.ngrams;
     }
 
+    @Override
     public StringList getTagList() {
         return this.tags;
     }
 
+    @Override
     public List<String> getRequiredTagList() {
         return this.requiredTags;
     }
 
-    public List<Layex> getMetaLayexList() {
-        return this.metaLayexes;
-    }
-
-    public List<Layex> getDataLayexList() {
-        return this.dataLayexes;
-    }
-
+    @Override
     public List<TableMatcher> getMetaMatcherList() {
         return this.metaMatchers;
     }
 
+    @Override
     public List<TableMatcher> getDataMatcherList() {
         return this.dataMatchers;
     }
 
+    @Override
     public List<String> getPivotEntityList() {
         return this.pivotEntityList;
     }
 
-    public Model getModel() {
-        return this.model;
+    @Override
+    public String getRecipe() {
+        return this.recipe;
     }
 
+    @Override
+    public void setRecipe(String recipe) {
+        this.recipe = recipe;
+    }
+
+    @Override
     public float getMean() {
         return this.mean;
     }
 
+    @Override
     public float getAccuracy() {
         return this.accuracy;
     }
@@ -178,6 +190,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         return this.buildPredictRow(name, entities, context).setLabel(label);
     }
 
+    @Override
     public void fit(final DataSet trainingSet, final DataSet validationSet) {
         final float n = trainingSet.rows().size();
         if (n == 0.0f) {
@@ -228,6 +241,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         this.mean /= total;
     }
 
+    @Override
     public String predict(final DataRow row) {
         final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), true);
         final Tensor2D output = this.model.model(input).detach();
@@ -238,6 +252,18 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         }
 
         return this.tags.get(tagIndex);
+    }
+
+    public List<Layex> getMetaLayexList() {
+        return this.metaLayexes;
+    }
+    
+    public List<Layex> getDataLayexList() {
+        return this.dataLayexes;
+    }
+
+    public Model getModel() {
+        return this.model;
     }
 
     public JSONObject toJSON() {

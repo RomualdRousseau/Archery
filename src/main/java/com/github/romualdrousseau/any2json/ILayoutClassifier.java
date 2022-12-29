@@ -19,4 +19,8 @@ public interface ILayoutClassifier {
     List<TableMatcher> getMetaMatcherList();
 
     List<TableMatcher> getDataMatcherList();
+
+    String getRecipe();
+
+    void setRecipe(String recipe);
 }

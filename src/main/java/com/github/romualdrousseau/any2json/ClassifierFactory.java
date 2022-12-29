@@ -24,4 +24,5 @@ public class ClassifierFactory {
 
     private ILayoutClassifier layoutClassifier;
     private ITagClassifier tagClassifier;
+    
 }
