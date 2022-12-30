@@ -171,27 +171,30 @@ public abstract class BaseSheet implements Sheet {
         if (colIndex < 0 || colIndex >= this.columnMask.size()) {
             return -1;
         }
-        final int translatedColumn = this.columnMask.get(colIndex);
-        if (translatedColumn < 0 || translatedColumn > this.getLastColumnNum()) {
-            return -1;
-        }
-        return translatedColumn;
+        return this.columnMask.get(colIndex);
+        // if (translatedColumn < 0 || translatedColumn > this.getLastColumnNum()) {
+        //     return -1;
+        // }
+        // return translatedColumn;
     }
 
     private int translateRow(final int rowIndex) {
         if (rowIndex < 0 || rowIndex >= this.rowMask.size()) {
             return -1;
         }
-        final int translatedRow = this.rowMask.get(rowIndex);
-        if (translatedRow < 0 || translatedRow > this.sheetStore.getLastRowNum()) {
-            return -1;
-        }
-        return translatedRow;
+        return this.rowMask.get(rowIndex);
+        // if (translatedRow < 0 || translatedRow > this.sheetStore.getLastRowNum()) {
+        //     return -1;
+        // }
+        // return translatedRow;
     }
 
     private int computeLastColumnNum() {
+        if (this.sheetStore.getLastRowNum() < 0) {
+            return -1;
+        }
         int result = this.sheetStore.getLastColumnNum(0);
-        for (int i = 1; i < Math.min(DocumentFactory.DEFAULT_SAMPLE_COUNT, this.sheetStore.getLastRowNum()); i++) {
+        for (int i = 1; i <= Math.min(DocumentFactory.DEFAULT_SAMPLE_COUNT, this.sheetStore.getLastRowNum()); i++) {
             result = Math.max(result, this.sheetStore.getLastColumnNum(i));
         }
         return result;
