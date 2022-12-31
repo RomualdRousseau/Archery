@@ -1,5 +1,7 @@
 package com.github.romualdrousseau.any2json;
 
+import java.util.List;
+
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.DataSet;
 import com.github.romualdrousseau.shuju.nlp.NgramList;
@@ -11,7 +13,7 @@ public interface ITagClassifier {
 
     StringList getTagList();
 
-    Iterable<String> getRequiredTagList();
+    List<String> getRequiredTagList();
 
     float getMean();
 

@@ -240,7 +240,7 @@ public class IntelliSheet extends EditableSheet {
         return root;
     }
 
-    private void splitAllSubTables(final CompositeTable table, final TableMatcher layex, final DataTableContext context,
+    private void splitAllSubTables(final CompositeTable table, final TableMatcher layex, final DataTableGroupSubHeaderParser context,
             final List<DataTable> result) {
         int firstRow = -1;
         for (final int splitRow : context.getSplitRows()) {

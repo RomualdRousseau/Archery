@@ -7,10 +7,10 @@ import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.base.RowGroup;
 import com.github.romualdrousseau.any2json.intelli.header.MetaTableHeader;
 import com.github.romualdrousseau.any2json.intelli.header.PivotKeyHeader;
-import com.github.romualdrousseau.any2json.layex.TableContext;
+import com.github.romualdrousseau.any2json.layex.TableParser;
 import com.github.romualdrousseau.any2json.intelli.header.DataTableHeader;
 
-public class DataTableContext extends TableContext<BaseCell> {
+public class DataTableGroupSubHeaderParser extends TableParser<BaseCell> {
 
     public static final int TABLE_META = 1;
     public static final int TABLE_HEADER = 2;
@@ -19,7 +19,7 @@ public class DataTableContext extends TableContext<BaseCell> {
     public static final int TABLE_SUB_FOOTER = 6;
     public static final int TABLE_FOOTER = 7;
 
-    public DataTableContext(final DataTable dataTable) {
+    public DataTableGroupSubHeaderParser(final DataTable dataTable) {
         this.dataTable = dataTable;
         this.lastRowGroup = null;
         this.firstRowCell = null;

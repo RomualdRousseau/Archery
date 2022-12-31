@@ -1,6 +1,6 @@
 package com.github.romualdrousseau.any2json.layex;
 
-public abstract class TableContext<S extends Symbol> {
+public abstract class TableParser<S extends Symbol> {
 
     public int getGroup() {
         return this.group;

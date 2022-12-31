@@ -146,7 +146,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
     }
 
     @Override
-    public void setRecipe(String recipe) {
+    public void setRecipe(final String recipe) {
         this.recipe = recipe;
     }
 
