@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
-import com.github.romualdrousseau.any2json.util.SheetStore;
+import com.github.romualdrousseau.any2json.base.SheetStore;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 import org.apache.poi.hssf.util.HSSFColor;

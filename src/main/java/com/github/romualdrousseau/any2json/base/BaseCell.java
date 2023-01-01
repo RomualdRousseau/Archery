@@ -20,7 +20,8 @@ public class BaseCell implements Cell, Symbol {
 
     public final static BaseCell EndOfStream = new BaseCell("", 0, 0, null);
 
-    public BaseCell(final String value, final int colIndex, final int mergedCount, final ClassifierFactory classifierFactory) {
+    public BaseCell(final String value, final int colIndex, final int mergedCount,
+            final ClassifierFactory classifierFactory) {
         this.value = value;
         this.colIndex = colIndex;
         this.mergedCount = mergedCount;
@@ -28,7 +29,8 @@ public class BaseCell implements Cell, Symbol {
         this.classifierFactory = classifierFactory;
     }
 
-    public BaseCell(final String value, final int colIndex, final int mergedCount, final String rawValue, final ClassifierFactory classifierFactory) {
+    public BaseCell(final String value, final int colIndex, final int mergedCount, final String rawValue,
+            final ClassifierFactory classifierFactory) {
         this.value = value;
         this.colIndex = colIndex;
         this.mergedCount = mergedCount;
@@ -53,7 +55,7 @@ public class BaseCell implements Cell, Symbol {
 
     @Override
     public Iterable<String> entities() {
-        if(classifierFactory == null || !classifierFactory.getLayoutClassifier().isPresent()) {
+        if (classifierFactory == null || !classifierFactory.getLayoutClassifier().isPresent()) {
             return Collections.emptyList();
         } else {
             final List<String> result = new ArrayList<String>();
@@ -88,11 +90,12 @@ public class BaseCell implements Cell, Symbol {
 
     @Override
     public boolean matchLiteral(final String literal) {
-        for (final String entity: this.entities()) {
+        for (final String entity : this.entities()) {
             if (entity.equalsIgnoreCase(literal)) {
                 return true;
             }
-        };
+        }
+        ;
         return false;
     }
 
@@ -114,7 +117,7 @@ public class BaseCell implements Cell, Symbol {
 
     public Tensor1D getEntityVector() {
         if (this.entityVector == null) {
-            if(classifierFactory == null || !classifierFactory.getLayoutClassifier().isPresent()) {
+            if (classifierFactory == null || !classifierFactory.getLayoutClassifier().isPresent()) {
                 this.entityVector = Tensor1D.Null;
             } else {
                 this.entityVector = classifierFactory.getLayoutClassifier().get().getEntityList().word2vec(this.value);

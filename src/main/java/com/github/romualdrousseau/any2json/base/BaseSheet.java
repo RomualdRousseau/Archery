@@ -6,22 +6,22 @@ import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.SheetEvent;
 import com.github.romualdrousseau.any2json.SheetListener;
 import com.github.romualdrousseau.any2json.Table;
-import com.github.romualdrousseau.any2json.event.BitmapGeneratedEvent;
 import com.github.romualdrousseau.any2json.event.TableReadyEvent;
-import com.github.romualdrousseau.any2json.util.SheetStore;
+import com.github.romualdrousseau.any2json.simple.SimpleTable;
+import com.github.romualdrousseau.any2json.util.Collections;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class BaseSheet implements Sheet {
 
-    public abstract Table createIntelliTable();
+    public abstract Table parseTables();
 
     public BaseSheet(final SheetStore store) {
         this.sheetStore = store;
         this.storeLastColumnNum = this.computeLastColumnNum();
-        this.columnMask = this.mutableRange(0, this.storeLastColumnNum + 1);
-        this.rowMask = this.mutableRange(0, this.sheetStore.getLastRowNum() + 1);
+        this.columnMask = Collections.mutableRange(0, this.storeLastColumnNum + 1);
+        this.rowMask = Collections.mutableRange(0, this.sheetStore.getLastRowNum() + 1);
     }
 
     @Override
@@ -31,14 +31,15 @@ public abstract class BaseSheet implements Sheet {
 
     @Override
     public Table getTable(final ClassifierFactory classifierFactory) {
-        assert(classifierFactory != null);
-        this.classifierFactory = classifierFactory;
-
-        if (this.sheetStore.getLastRowNum() < 0 || this.getLastColumnNum() < 0) {
+        if (this.sheetStore.getLastRowNum() <= 0 || this.getLastColumnNum() <= 0) {
             return null;
         }
-
-        final Table table = this.classifierFactory.getLayoutClassifier().isPresent() ? this.createIntelliTable() : this.createSimpleTable();
+        final Table table;
+        if (this.classifierFactory.getLayoutClassifier().isPresent()) {
+            table = this.parseTables();
+        } else {
+            table = this.parseSimpleTable();
+        }
         this.notifyStepCompleted(new TableReadyEvent(this, table));
         return table;
     }
@@ -120,7 +121,8 @@ public abstract class BaseSheet implements Sheet {
         return this.sheetStore.getNumberOfMergedCellsAt(translatedColumn, translatedRow);
     }
 
-    public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2, final String value) {
+    public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2,
+            final String value) {
         final int translatedColumn1 = this.translateColumn(colIndex1);
         if (translatedColumn1 < 0) {
             return;
@@ -140,8 +142,15 @@ public abstract class BaseSheet implements Sheet {
         this.sheetStore.patchCell(translatedColumn1, translatedRow1, translatedColumn2, translatedRow2, value);
     }
 
+    public boolean notifyStepCompleted(final SheetEvent e) {
+        for (final SheetListener listener : listeners) {
+            listener.stepCompleted(e);
+        }
+        return !e.isCanceled();
+    }
+
     protected void markColumnAsNull(final int colIndex) {
-        if(colIndex < this.columnMask.size()) {
+        if (colIndex < this.columnMask.size()) {
             this.columnMask.set(colIndex, null);
         }
     }
@@ -151,7 +160,7 @@ public abstract class BaseSheet implements Sheet {
     }
 
     protected void markRowAsNull(final int rowIndex) {
-        if(rowIndex < this.rowMask.size()) {
+        if (rowIndex < this.rowMask.size()) {
             this.rowMask.set(rowIndex, null);
         }
     }
@@ -160,22 +169,11 @@ public abstract class BaseSheet implements Sheet {
         this.rowMask.removeIf(i -> i == null);
     }
 
-    protected boolean notifyStepCompleted(final SheetEvent e) {
-        for (final SheetListener listener : listeners) {
-            listener.stepCompleted(e);
-        }
-        return !e.isCanceled();
-    }
-
-    private int translateColumn(final int colIndex) {   
+    private int translateColumn(final int colIndex) {
         if (colIndex < 0 || colIndex >= this.columnMask.size()) {
             return -1;
         }
         return this.columnMask.get(colIndex);
-        // if (translatedColumn < 0 || translatedColumn > this.getLastColumnNum()) {
-        //     return -1;
-        // }
-        // return translatedColumn;
     }
 
     private int translateRow(final int rowIndex) {
@@ -183,10 +181,6 @@ public abstract class BaseSheet implements Sheet {
             return -1;
         }
         return this.rowMask.get(rowIndex);
-        // if (translatedRow < 0 || translatedRow > this.sheetStore.getLastRowNum()) {
-        //     return -1;
-        // }
-        // return translatedRow;
     }
 
     private int computeLastColumnNum() {
@@ -200,17 +194,8 @@ public abstract class BaseSheet implements Sheet {
         return result;
     }
 
-    private Table createSimpleTable() {
-        this.notifyStepCompleted(new BitmapGeneratedEvent(this, null));
-        return new SimpleTable(this, 0, 0, this.getLastColumnNum(), this.sheetStore.getLastRowNum());
-    }
-
-    private List<Integer> mutableRange(int a, int b) {
-        List<Integer> result = new ArrayList<Integer>();
-        for(int i = a; i < b; i++) {
-            result.add(i);
-        }
-        return result;
+    private Table parseSimpleTable() {
+        return new SimpleTable(this, 0, 0, this.getLastColumnNum(), this.getLastRowNum());
     }
 
     private final ArrayList<SheetListener> listeners = new ArrayList<SheetListener>();

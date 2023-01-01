@@ -1,101 +1,50 @@
 package com.github.romualdrousseau.any2json.intelli;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
-import org.python.util.PythonInterpreter;
-
 import com.github.romualdrousseau.any2json.Table;
-import com.github.romualdrousseau.any2json.base.BaseRow;
-import com.github.romualdrousseau.any2json.base.SheetBitmap;
+import com.github.romualdrousseau.any2json.base.SheetParser;
+import com.github.romualdrousseau.any2json.base.SheetStore;
 import com.github.romualdrousseau.any2json.event.AllTablesExtractedEvent;
-import com.github.romualdrousseau.any2json.event.BitmapGeneratedEvent;
 import com.github.romualdrousseau.any2json.event.DataTableListBuiltEvent;
 import com.github.romualdrousseau.any2json.event.MetaTableListBuiltEvent;
 import com.github.romualdrousseau.any2json.event.SheetPreparedEvent;
 import com.github.romualdrousseau.any2json.event.TableGraphBuiltEvent;
-import com.github.romualdrousseau.any2json.layex.TableLexer;
-import com.github.romualdrousseau.any2json.layex.TableMatcher;
-import com.github.romualdrousseau.any2json.util.SheetStore;
-import com.github.romualdrousseau.any2json.util.TableGraph;
 import com.github.romualdrousseau.any2json.util.Visitable;
-import com.github.romualdrousseau.shuju.cv.Filter;
-import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
-import com.github.romualdrousseau.shuju.cv.SearchPoint;
-import com.github.romualdrousseau.shuju.cv.Template;
-import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.RectangleExtractor;
 
-public class IntelliSheet extends EditableSheet {
+public class IntelliSheet extends TransformableSheet {
 
-    public IntelliSheet(SheetStore store, boolean documentIsStructured) {
+    public IntelliSheet(SheetStore store, SheetParser parser) {
         super(store);
-        this.documentIsStructured = documentIsStructured;
+        this.sheetParser = parser;
     }
 
     @Override
-    public Table createIntelliTable() {
-        final List<DataTable> dataTables;
-        final List<MetaTable> metaTables;
-        if (this.documentIsStructured) {
-            final List<CompositeTable> tables = new LinkedList<CompositeTable>();
-            tables.add(new CompositeTable(this, 0, 0, this.getLastColumnNum(), this.getLastRowNum()));
-            if (!this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables))) {
-                return null;
-            }
-
-            dataTables = new LinkedList<DataTable>();
-            dataTables.add(new DataTable(tables.get(0)));
-            if (!this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables))) {
-                return null;
-            }
-
-            metaTables = new ArrayList<MetaTable>();
-            if (!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
-                return null;
-            }
-        }
-        else {
-            this.stichRows();
-
-            final String recipe = this.getClassifierFactory().getLayoutClassifier().get().getRecipe();
-            if (recipe != null) {
-                try(PythonInterpreter pyInterp = new PythonInterpreter()) {
-                    pyInterp.set("sheet", this);
-                    pyInterp.exec(recipe);
-                }
-            }
-            if (!this.notifyStepCompleted(new SheetPreparedEvent(this))) {
-                return null;
-            }
-
-            final SheetBitmap image = this.getSheetBitmap();
-            if (!this.notifyStepCompleted(new BitmapGeneratedEvent(this, image))) {
-                return null;
-            }
-
-            final List<CompositeTable> tables = this.findAllTables(image);
-            if (!this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables))) {
-                return null;
-            }
-
-            dataTables = this.getDataTables(tables,
-                    this.getClassifierFactory().getLayoutClassifier().get().getDataMatcherList());
-            if (!this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables))) {
-                return null;
-            }
-            if (dataTables.size() == 0) {
-                return null;
-            }
-
-            metaTables = this.getMetaTables(tables,
-                    this.getClassifierFactory().getLayoutClassifier().get().getMetaMatcherList());
-            if (!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
-                return null;
-            }
+    public Table parseTables() {
+        this.sheetParser.transformSheet(this);
+        if (!this.notifyStepCompleted(new SheetPreparedEvent(this))) {
+            return null;
         }
 
-        final TableGraph root = this.buildTableGraph(metaTables, dataTables);
+        final List<CompositeTable> tables = this.sheetParser.findAllTables(this);
+        if (!this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables))) {
+            return null;
+        }
+
+        final List<DataTable> dataTables = this.sheetParser.getDataTables(this, tables);
+        if (!this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables))) {
+            return null;
+        }
+        if (dataTables.size() == 0) {
+            return null;
+        }
+
+        final List<MetaTable> metaTables = this.sheetParser.getMetaTables(this, tables);
+        if (!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
+            return null;
+        }
+
+        final CompositeTableGraph root = this.buildTableGraph(metaTables, dataTables);
         if (!this.notifyStepCompleted(new TableGraphBuiltEvent(this, root))) {
             return null;
         }
@@ -103,110 +52,8 @@ public class IntelliSheet extends EditableSheet {
         return new IntelliTable(this, root);
     }
 
-    protected SheetBitmap getSheetBitmap() {
-        return new SheetBitmap(this,
-                Math.min(this.getLastColumnNum(),
-                        this.getClassifierFactory().getLayoutClassifier().get().getSampleCount()),
-                this.getLastRowNum());
-    }
-
-    protected List<CompositeTable> findAllTables(final SheetBitmap image) {
-        final ArrayList<CompositeTable> result = new ArrayList<CompositeTable>();
-
-        final List<SearchPoint[]> rectangles = findAllRectangles(image);
-        for (final SearchPoint[] rectangle : rectangles) {
-            final int firstColumnNum = rectangle[0].getX();
-            int firstRowNum = rectangle[0].getY();
-            final int lastColumnNum = rectangle[1].getX();
-            final int lastRowNum = rectangle[1].getY();
-
-            if (firstColumnNum > lastColumnNum || firstRowNum > lastRowNum) {
-                continue;
-            }
-
-            final CompositeTable table = new CompositeTable(this, firstColumnNum, firstRowNum, lastColumnNum,
-                    lastRowNum);
-
-            boolean isSplitted = false;
-            for (int i = 0; i < table.getNumberOfRows(); i++) {
-                final BaseRow row = table.getRowAt(i);
-                if (row.isEmpty()) {
-                    final int currRowNum = table.getFirstRow() + i;
-                    if (firstRowNum <= (currRowNum - 1)) {
-                        result.add(new CompositeTable(table, firstRowNum, currRowNum - 1));
-                    }
-                    result.add(new CompositeTable(table, currRowNum, currRowNum));
-                    firstRowNum = currRowNum + 1;
-                    isSplitted |= true;
-                }
-            }
-
-            if (!isSplitted) {
-                result.add(table);
-            } else if (firstRowNum <= lastRowNum) {
-                result.add(new CompositeTable(table, firstRowNum, lastRowNum));
-            }
-        }
-
-        return result;
-    }
-
-    protected List<MetaTable> getMetaTables(final List<CompositeTable> tables, final List<TableMatcher> metaMatchers) {
-        final ArrayList<MetaTable> result = new ArrayList<MetaTable>();
-
-        for (final CompositeTable table : tables) {
-            if (table.isVisited()) {
-                continue;
-            }
-
-            boolean foundMatch = false;
-            for (final TableMatcher matcher : metaMatchers) {
-                if (!foundMatch && matcher.match(new TableLexer(table, 0), null)) {
-                    result.add(new MetaTable(table, matcher));
-                    foundMatch = true;
-                }
-            }
-            if (!foundMatch) {
-                result.add(new MetaTable(table));
-            }
-
-            table.setVisited(true);
-        }
-
-        return result;
-    }
-
-    protected List<DataTable> getDataTables(final List<CompositeTable> tables, final List<TableMatcher> dataMatchers) {
-        final ArrayList<DataTable> result = new ArrayList<DataTable>();
-
-        for (final Visitable e : tables) {
-            e.setVisited(false);
-        }
-
-        for (final CompositeTable table : tables) {
-            boolean foundMatch = false;
-            for (int tryCount = 0; tryCount < 3; tryCount++) {
-                if (!foundMatch) {
-                    for (final TableMatcher matcher : dataMatchers) {
-                        if (!foundMatch && matcher.match(new TableLexer(table, tryCount), null)) {
-                            final DataTable dataTable = new DataTable(table, matcher, tryCount);
-                            result.add(dataTable);
-                            if (dataTable.getContext().getSplitRows().size() > 0) {
-                                this.splitAllSubTables(table, matcher, dataTable.getContext(), result);
-                            }
-                            table.setVisited(true);
-                            foundMatch = true;
-                        }
-                    }
-                }
-            }
-        }
-
-        return result;
-    }
-
-    private TableGraph buildTableGraph(final List<MetaTable> metaTables, final List<DataTable> dataTables) {
-        final TableGraph root = new TableGraph();
+    private CompositeTableGraph buildTableGraph(final List<MetaTable> metaTables, final List<DataTable> dataTables) {
+        final CompositeTableGraph root = new CompositeTableGraph();
 
         for (final Visitable e : metaTables) {
             e.setVisited(false);
@@ -215,7 +62,7 @@ public class IntelliSheet extends EditableSheet {
         // First attach all not snapped metaTables to the root nodes
         for (final MetaTable metaTable : metaTables) {
             if (!isJoint(metaTable, dataTables)) {
-                root.addChild(new TableGraph(metaTable));
+                root.addChild(new CompositeTableGraph(metaTable));
                 metaTable.setVisited(true);
             }
         }
@@ -226,80 +73,18 @@ public class IntelliSheet extends EditableSheet {
                 continue;
             }
 
-            final TableGraph parent = findClosestMetaGraph(root, metaTable, 0, 0);
-            parent.addChild(new TableGraph(metaTable));
+            final CompositeTableGraph parent = findClosestMetaGraph(root, metaTable, 0, 0);
+            parent.addChild(new CompositeTableGraph(metaTable));
             metaTable.setVisited(true);
         }
 
         // Third attach datatables to the closest metadatas
         for (final DataTable dataTable : dataTables) {
-            final TableGraph parent = findClosestMetaGraph(root, dataTable, 0, 1);
-            parent.addChild(new TableGraph(dataTable));
+            final CompositeTableGraph parent = findClosestMetaGraph(root, dataTable, 0, 1);
+            parent.addChild(new CompositeTableGraph(dataTable));
         }
 
         return root;
-    }
-
-    private void splitAllSubTables(final CompositeTable table, final TableMatcher layex, final DataTableGroupSubHeaderParser context,
-            final List<DataTable> result) {
-        int firstRow = -1;
-        for (final int splitRow : context.getSplitRows()) {
-            if (firstRow >= 0) {
-                final CompositeTable subTable = new CompositeTable(table, firstRow, table.getFirstRow() + splitRow - 1);
-                result.add(new DataTable(subTable, layex, 0));
-            }
-            firstRow = table.getFirstRow() + splitRow;
-        }
-    }
-
-    private List<SearchPoint[]> findAllRectangles(final SheetBitmap original) {
-        final ISearchBitmap filtered = original.clone();
-        final Filter filter = new Filter(new Template(new float[][] { { 0, 0, 0 }, { 1, 1, 0 }, { 0, 0, 0 } }));
-        filter.apply(original, filtered, 0.5);
-
-        List<SearchPoint[]> rectangles = new RectangleExtractor().extractAll(filtered);
-
-        for (final SearchPoint[] rectangle : rectangles) {
-            rectangle[0].setX(Math.max(0, rectangle[0].getX() - 1));
-        }
-
-        rectangles = SearchPoint.TrimInX(
-                SearchPoint.ExpandInX(SearchPoint.MergeInX(SearchPoint.RemoveOverlaps(rectangles)), original),
-                original);
-
-        final List<SearchPoint> points = extractAllSearchPoints(original, rectangles);
-
-        for (final SearchPoint point : points) {
-            final SearchPoint neighboor = new SearchPoint(point.getX() + 1, point.getY(), point.getSAD());
-            rectangles.add(new SearchPoint[] { point, neighboor });
-        }
-
-        rectangles = SearchPoint.TrimInX(
-                SearchPoint.ExpandInX(SearchPoint.MergeInX(SearchPoint.RemoveOverlaps(rectangles)), original),
-                original);
-
-        return rectangles;
-    }
-
-    private List<SearchPoint> extractAllSearchPoints(final ISearchBitmap filtered, final List<SearchPoint[]> rectangles) {
-        final ArrayList<SearchPoint> result = new ArrayList<SearchPoint>();
-        for (int i = 0; i < filtered.getHeight(); i++) {
-            for (int j = 0; j < filtered.getWidth(); j++) {
-                if (filtered.get(j, i) > 0) {
-                    boolean isOutside = true;
-                    for (final SearchPoint[] rectangle : rectangles) {
-                        if (SearchPoint.IsInside(rectangle, j, i)) {
-                            isOutside = false;
-                            break;
-                        }
-                    }
-                    if (isOutside) {
-                        result.add(new SearchPoint(j, i, 0));
-                    }
-                }
-            }
-        }
-        return result;
     }
 
     private boolean isJoint(final MetaTable metaTable, final List<DataTable> dataTables) {
@@ -311,21 +96,21 @@ public class IntelliSheet extends EditableSheet {
         return false;
     }
 
-    private TableGraph findClosestMetaGraph(final TableGraph root, final CompositeTable table, final int level,
+    private CompositeTableGraph findClosestMetaGraph(final CompositeTableGraph root, final CompositeTable table, final int level,
             final int maxLevel) {
-        TableGraph result = root;
+        CompositeTableGraph result = root;
 
         if (level > maxLevel) {
             return result;
         }
 
         double minDist = Double.MAX_VALUE;
-        for (final TableGraph child : root.children()) {
+        for (final CompositeTableGraph child : root.children()) {
             if (!(child.getTable() instanceof MetaTable)) {
                 continue;
             }
 
-            final TableGraph grandChild = findClosestMetaGraph(child, table, level + 1, maxLevel);
+            final CompositeTableGraph grandChild = findClosestMetaGraph(child, table, level + 1, maxLevel);
             final double dist1 = distanceBetweenTables(grandChild.getTable(), table);
             final double dist2 = distanceBetweenTables(child.getTable(), table);
 
@@ -355,5 +140,5 @@ public class IntelliSheet extends EditableSheet {
         }
     }
 
-    private final boolean documentIsStructured;
+    private final SheetParser sheetParser;
 }

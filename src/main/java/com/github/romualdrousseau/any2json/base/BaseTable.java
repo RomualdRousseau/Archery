@@ -7,8 +7,6 @@ import java.util.List;
 import com.github.romualdrousseau.any2json.Header;
 import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.Table;
-import com.github.romualdrousseau.any2json.util.RowIterable;
-import com.github.romualdrousseau.any2json.util.RowStore;
 import com.github.romualdrousseau.any2json.util.Visitable;
 
 public abstract class BaseTable implements Table, Visitable {

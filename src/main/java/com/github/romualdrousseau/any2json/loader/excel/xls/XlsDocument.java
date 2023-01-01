@@ -1,17 +1,18 @@
 package com.github.romualdrousseau.any2json.loader.excel.xls;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.hssf.record.crypto.Biff8EncryptionKey;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
+import com.github.romualdrousseau.any2json.intelli.parser.SemiStructuredSheetParser;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 public class XlsDocument implements Document {
@@ -63,7 +64,7 @@ public class XlsDocument implements Document {
     }
 
     public Sheet getSheetAt(final int i) {
-        return new IntelliSheet(this.sheets.get(i), false);
+        return new IntelliSheet(this.sheets.get(i), new SemiStructuredSheetParser());
     }
 
     private final ArrayList<XlsSheet> sheets = new ArrayList<XlsSheet>();

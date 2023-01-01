@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
+import com.github.romualdrousseau.any2json.intelli.parser.SemiStructuredSheetParser;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
@@ -80,7 +81,7 @@ public class XlsxDocument implements Document {
 
     @Override
     public Sheet getSheetAt(final int i) {
-        return new IntelliSheet(sheets.get(i).ensureDataLoaded(), false);
+        return new IntelliSheet(sheets.get(i).ensureDataLoaded(), new SemiStructuredSheetParser());
     }
 
     private OPCPackage opcPackage;

@@ -3,8 +3,8 @@ package com.github.romualdrousseau.any2json;
 import java.nio.file.Paths;
 import java.util.Iterator;
 
-import com.github.romualdrousseau.any2json.classifiers.LayexAndNetClassifierBuilder;
-import com.github.romualdrousseau.any2json.classifiers.SimpleClassifierBuilder;
+import com.github.romualdrousseau.any2json.classifier.LayexAndNetClassifierBuilder;
+import com.github.romualdrousseau.any2json.classifier.SimpleClassifierBuilder;
 import com.github.romualdrousseau.shuju.json.JSON;
 
 import java.nio.file.Path;

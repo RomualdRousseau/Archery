@@ -1,6 +1,6 @@
 package com.github.romualdrousseau.any2json.loader.excel.xml;
 
-import com.github.romualdrousseau.any2json.util.SheetStore;
+import com.github.romualdrousseau.any2json.base.SheetStore;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 import nl.fountain.xelem.excel.Cell;

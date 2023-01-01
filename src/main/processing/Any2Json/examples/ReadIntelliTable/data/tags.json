@@ -1,1 +1,0 @@
-{"types":["none","adminArea1","amount","customerCode","customerName","customerType","date","locality","productCode","productName","quantity","dateYear","dateMonth","marketCode","marketName","UnitPrice","transactionType","invoiceNumber","invoiceLineNumber","VendorBatchNumber","ExpiryDate","CreditReasonCode","address"],"requiredTypes":["quantity"],"maxVectorSize":32}

@@ -9,7 +9,7 @@ import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
-import com.github.romualdrousseau.any2json.util.SheetStore;
+import com.github.romualdrousseau.any2json.base.SheetStore;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 import org.apache.poi.ss.usermodel.BorderStyle;

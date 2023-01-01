@@ -10,16 +10,15 @@ import com.github.romualdrousseau.any2json.base.BaseHeader;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.base.RowGroup;
-import com.github.romualdrousseau.any2json.base.SimpleHeader;
 import com.github.romualdrousseau.any2json.intelli.header.CompositeHeader;
 import com.github.romualdrousseau.any2json.intelli.header.IntelliHeader;
 import com.github.romualdrousseau.any2json.intelli.header.PivotKeyHeader;
-import com.github.romualdrousseau.any2json.util.TableGraph;
+import com.github.romualdrousseau.any2json.simple.header.SimpleHeader;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 public class IntelliTable extends CompositeTable {
 
-    public IntelliTable(final BaseSheet sheet, final TableGraph root) {
+    public IntelliTable(final BaseSheet sheet, final CompositeTableGraph root) {
         super(sheet);
         this.buildHeaders(root);
         this.buildTable(root, this.findPivotHeader());
@@ -47,8 +46,8 @@ public class IntelliTable extends CompositeTable {
         return this.rows.get(rowIndex);
     }
 
-    private void buildHeaders(final TableGraph graph) {
-        for (final TableGraph child : graph.children()) {
+    private void buildHeaders(final CompositeTableGraph graph) {
+        for (final CompositeTableGraph child : graph.children()) {
             for (final Header header : child.getTable().headers()) {
                 final CompositeHeader compositeHeader = (CompositeHeader) header;
                 if (this.checkIfHeaderExists(compositeHeader)) {
@@ -69,7 +68,7 @@ public class IntelliTable extends CompositeTable {
             }
         }
 
-        for (final TableGraph child : graph.children()) {
+        for (final CompositeTableGraph child : graph.children()) {
             buildHeaders(child);
         }
     }
@@ -85,14 +84,14 @@ public class IntelliTable extends CompositeTable {
         return result;
     }
 
-    private void buildTable(final TableGraph graph, final PivotKeyHeader pivot) {
-        for (final TableGraph child : graph.children()) {
+    private void buildTable(final CompositeTableGraph graph, final PivotKeyHeader pivot) {
+        for (final CompositeTableGraph child : graph.children()) {
             if (child.getTable() instanceof DataTable) {
                 this.buildRowsForOneTable((DataTable) child.getTable(), pivot);
             }
         }
 
-        for (final TableGraph child : graph.children()) {
+        for (final CompositeTableGraph child : graph.children()) {
             buildTable(child, pivot);
         }
     }

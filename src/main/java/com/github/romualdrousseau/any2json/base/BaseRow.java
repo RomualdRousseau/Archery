@@ -2,7 +2,6 @@ package com.github.romualdrousseau.any2json.base;
 
 import com.github.romualdrousseau.any2json.Cell;
 import com.github.romualdrousseau.any2json.Row;
-import com.github.romualdrousseau.any2json.util.CellIterable;
 
 public class BaseRow implements Row {
 
@@ -28,7 +27,7 @@ public class BaseRow implements Row {
         return this.rowNum;
     }
 
-    public void setRowNum(int rowNum) {
+    public void setRowNum(final int rowNum) {
         this.rowNum = rowNum;
     }
 
@@ -36,7 +35,7 @@ public class BaseRow implements Row {
         return this.ignored;
     }
 
-    public void setIgnored(boolean flag) {
+    public void setIgnored(final boolean flag) {
         this.ignored = flag;
     }
 
@@ -61,7 +60,7 @@ public class BaseRow implements Row {
         }
         BaseCell result = cachedCells[colIndex];
         if (result == null) {
-            String v = this.getCellValueAt(colIndex);
+            final String v = this.getCellValueAt(colIndex);
             result = new BaseCell(v, colIndex, this.getNumberOfMergedCellsAt(colIndex), this.table.getSheet().getClassifierFactory());
             cachedCells[colIndex] = result;
         }

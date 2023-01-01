@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.poi.ss.formula.eval.NotImplementedException;
 
-import com.github.romualdrousseau.any2json.util.SheetStore;
+import com.github.romualdrousseau.any2json.base.SheetStore;
 import com.github.romualdrousseau.shuju.util.StringUtility;
 
 class TextSheet implements SheetStore {

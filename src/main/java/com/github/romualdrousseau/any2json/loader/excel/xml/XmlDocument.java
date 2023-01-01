@@ -9,16 +9,17 @@ import java.util.ArrayList;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import nl.fountain.xelem.excel.Workbook;
-import nl.fountain.xelem.excel.Worksheet;
-import nl.fountain.xelem.lex.ExcelReader;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
+import com.github.romualdrousseau.any2json.intelli.parser.SemiStructuredSheetParser;
 
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+import nl.fountain.xelem.excel.Workbook;
+import nl.fountain.xelem.excel.Worksheet;
+import nl.fountain.xelem.lex.ExcelReader;
 
 public class XmlDocument implements Document {
 
@@ -42,7 +43,7 @@ public class XmlDocument implements Document {
     }
 
     public Sheet getSheetAt(final int i) {
-        return new IntelliSheet(this.sheets.get(i), false);
+        return new IntelliSheet(this.sheets.get(i), new SemiStructuredSheetParser());
     }
 
     private boolean openWithEncoding(final File excelFile, final String encoding) {
