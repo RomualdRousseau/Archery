@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import com.github.romualdrousseau.any2json.base.SheetStore;
-import com.github.romualdrousseau.shuju.util.StringUtility;
+import com.github.romualdrousseau.shuju.util.StringUtils;
 
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.BorderStyle;
@@ -80,7 +80,7 @@ public class XlsSheet implements SheetStore {
             return null;
         }
         final Cell cell = row.getCell(colIndex);
-        return this.hasData(cell) || this.hasDecoration(cell) ? StringUtility.cleanToken(this.getData(cell)) : null;
+        return this.hasData(cell) || this.hasDecoration(cell) ? StringUtils.cleanToken(this.getData(cell)) : null;
     }
 
     @Override

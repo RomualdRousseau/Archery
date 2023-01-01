@@ -4,7 +4,7 @@ import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.base.SheetStore;
 import com.github.romualdrousseau.shuju.math.Tensor1D;
-import com.github.romualdrousseau.shuju.util.FuzzyString;
+import com.github.romualdrousseau.shuju.util.StringFuzzy;
 
 public abstract class TransformableSheet extends BaseSheet {
 
@@ -86,7 +86,7 @@ public abstract class TransformableSheet extends BaseSheet {
         // Test if the previous and next rows can be "stiched"
         final String hashPrev = this.getRowPattern(rowIndex - 1);
         final String hashNext = this.getRowPattern(rowIndex + 1);
-        return FuzzyString.Hamming(hashPrev, hashNext) >= DocumentFactory.DEFAULT_RATIO_SIMILARITY;
+        return StringFuzzy.Hamming(hashPrev, hashNext) >= DocumentFactory.DEFAULT_RATIO_SIMILARITY;
     }
 
     private String getRowPattern(final int rowIndex) {

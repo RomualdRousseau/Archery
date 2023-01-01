@@ -10,7 +10,7 @@ import com.github.romualdrousseau.any2json.ClassifierFactory;
 import com.github.romualdrousseau.any2json.layex.Symbol;
 import com.github.romualdrousseau.shuju.math.Tensor1D;
 import com.github.romualdrousseau.shuju.nlp.RegexList;
-import com.github.romualdrousseau.shuju.util.StringUtility;
+import com.github.romualdrousseau.shuju.util.StringUtils;
 
 public class BaseCell implements Cell, Symbol {
 
@@ -40,7 +40,7 @@ public class BaseCell implements Cell, Symbol {
 
     @Override
     public boolean hasValue() {
-        return !StringUtility.isFastEmpty(this.value);
+        return !StringUtils.isFastBlank(this.value);
     }
 
     @Override

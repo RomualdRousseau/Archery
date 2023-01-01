@@ -10,7 +10,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
 import com.github.romualdrousseau.any2json.base.SheetStore;
-import com.github.romualdrousseau.shuju.util.StringUtility;
+import com.github.romualdrousseau.shuju.util.StringUtils;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -253,15 +253,12 @@ public class XlsxSheet implements SheetStore {
             cell.type = (cell.value != null && cell.type.equals(CellType.BLANK)) ? CellType.NUMERIC : cell.type;
 
             if (cell.type.equals(CellType.STRING)) {
-                if (this.inlineStr) {
-                    cell.value = StringUtility.cleanToken(cell.value);
-                } else {
-                    cell.value = StringUtility
-                            .cleanToken(sharedStrings.getItemAt(Integer.valueOf(cell.value)).toString());
+                if (!this.inlineStr) {
+                    cell.value = sharedStrings.getItemAt(Integer.valueOf(cell.value)).toString();
                 }
+                cell.value = StringUtils.cleanToken(cell.value);
             } else if (cell.type.equals(CellType.BOOLEAN)) {
                 cell.value = cell.value.equals("1") ? "TRUE" : "FALSE";
-
             } else if (cell.type.equals(CellType.NUMERIC)) {
                 try {
                     final double d = Double.valueOf(cell.value);
@@ -271,9 +268,8 @@ public class XlsxSheet implements SheetStore {
                     }
                 } catch (final NumberFormatException x) {
                     cell.type = CellType.STRING;
-                    cell.value = StringUtility.cleanToken(cell.value);
+                    cell.value = StringUtils.cleanToken(cell.value);
                 }
-
             } else if (cell.type.equals(CellType.BLANK)) {
                 cell.value = "";
             }

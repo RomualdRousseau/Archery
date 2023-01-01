@@ -4,7 +4,7 @@ import com.github.romualdrousseau.any2json.intelli.CompositeTable;
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.math.Tensor1D;
 import com.github.romualdrousseau.shuju.nlp.RegexList;
-import com.github.romualdrousseau.shuju.util.StringUtility;
+import com.github.romualdrousseau.shuju.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,9 +35,8 @@ public class IntelliHeader extends CompositeHeader {
     @Override
     public String getName() {
         if (this.name == null) {
-            final String v1 = this.getCell().getValue();
-            this.name = this.getLayoutClassifier().getStopWordList().removeStopWords(v1);
-            if(StringUtility.isFastEmpty(this.name)) {
+            this.name = this.getCell().getValue();
+            if(StringUtils.isFastBlank(this.name)) {
                 final Tensor1D v = this.sampleEntityVector();
                 if(v.sparsity() < 1.0f) {
                     this.name = this.getLayoutClassifier().getEntityList().get(v.argmax());
@@ -117,7 +116,7 @@ public class IntelliHeader extends CompositeHeader {
     }
 
     public void updateTag() {
-        if (StringUtility.isFastEmpty(this.getName())) {
+        if (StringUtils.isFastBlank(this.getName())) {
             this.tag = HeaderTag.None;
         } else {
             this.getClassifierFactory().getTagClassifier().ifPresent(classifier -> {

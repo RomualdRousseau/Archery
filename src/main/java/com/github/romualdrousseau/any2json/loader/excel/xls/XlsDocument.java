@@ -13,7 +13,7 @@ import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
 import com.github.romualdrousseau.any2json.intelli.parser.SemiStructuredSheetParser;
-import com.github.romualdrousseau.shuju.util.StringUtility;
+import com.github.romualdrousseau.shuju.util.StringUtils;
 
 public class XlsDocument implements Document {
 
@@ -23,7 +23,7 @@ public class XlsDocument implements Document {
             throw new IllegalArgumentException();
         }
 
-        if (!StringUtility.isEmpty(password)) {
+        if (!StringUtils.isBLank(password)) {
             Biff8EncryptionKey.setCurrentUserPassword(password);
         }
 

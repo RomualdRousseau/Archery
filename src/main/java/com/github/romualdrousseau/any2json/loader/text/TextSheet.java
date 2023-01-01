@@ -5,7 +5,6 @@ import java.util.List;
 import org.apache.poi.ss.formula.eval.NotImplementedException;
 
 import com.github.romualdrousseau.any2json.base.SheetStore;
-import com.github.romualdrousseau.shuju.util.StringUtility;
 
 class TextSheet implements SheetStore {
 
@@ -46,7 +45,7 @@ class TextSheet implements SheetStore {
         if(cell == null || cell.isEmpty()) {
             return null;
         }
-        return StringUtility.cleanToken(cell);
+        return cell;
     }
 
     @Override

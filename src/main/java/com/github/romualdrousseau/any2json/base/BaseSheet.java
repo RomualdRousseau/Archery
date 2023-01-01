@@ -1,5 +1,8 @@
 package com.github.romualdrousseau.any2json.base;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.github.romualdrousseau.any2json.ClassifierFactory;
 import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.Sheet;
@@ -8,10 +11,7 @@ import com.github.romualdrousseau.any2json.SheetListener;
 import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.event.TableReadyEvent;
 import com.github.romualdrousseau.any2json.simple.SimpleTable;
-import com.github.romualdrousseau.any2json.util.Collections;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.github.romualdrousseau.shuju.util.CollectionUtils;
 
 public abstract class BaseSheet implements Sheet {
 
@@ -20,8 +20,8 @@ public abstract class BaseSheet implements Sheet {
     public BaseSheet(final SheetStore store) {
         this.sheetStore = store;
         this.storeLastColumnNum = this.computeLastColumnNum();
-        this.columnMask = Collections.mutableRange(0, this.storeLastColumnNum + 1);
-        this.rowMask = Collections.mutableRange(0, this.sheetStore.getLastRowNum() + 1);
+        this.columnMask = CollectionUtils.mutableRange(0, this.storeLastColumnNum + 1);
+        this.rowMask = CollectionUtils.mutableRange(0, this.sheetStore.getLastRowNum() + 1);
     }
 
     @Override

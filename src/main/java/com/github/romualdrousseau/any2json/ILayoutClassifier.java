@@ -2,7 +2,7 @@ package com.github.romualdrousseau.any2json;
 
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
 import com.github.romualdrousseau.shuju.nlp.RegexList;
-import com.github.romualdrousseau.shuju.nlp.StopWordList;
+//import com.github.romualdrousseau.shuju.nlp.StopWordList;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ public interface ILayoutClassifier {
 
     RegexList getEntityList();
 
-    StopWordList getStopWordList();
+    //StopWordList getStopWordList();
 
     List<String> getPivotEntityList();
 

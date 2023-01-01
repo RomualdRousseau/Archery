@@ -19,8 +19,7 @@ public class DataTableHeader extends CompositeHeader {
     @Override
     public String getName() {
         if (this.name == null) {
-            final String v1 = this.getCell().getValue();
-            this.name = this.getLayoutClassifier().getStopWordList().removeStopWords(v1);
+            this.name = this.getCell().getValue();
         }
         return this.name;
     }

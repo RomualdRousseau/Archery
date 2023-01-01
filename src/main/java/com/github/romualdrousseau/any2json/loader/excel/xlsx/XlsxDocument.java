@@ -10,7 +10,7 @@ import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
 import com.github.romualdrousseau.any2json.intelli.parser.SemiStructuredSheetParser;
-import com.github.romualdrousseau.shuju.util.StringUtility;
+import com.github.romualdrousseau.shuju.util.StringUtils;
 
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
@@ -34,7 +34,7 @@ public class XlsxDocument implements Document {
         try {
             this.sheets.clear();
 
-            if (!StringUtility.isEmpty(password)) {
+            if (!StringUtils.isBLank(password)) {
                 POIFSFileSystem poifs = new POIFSFileSystem(excelFile);
                 EncryptionInfo info = new EncryptionInfo(poifs);
                 Decryptor d = Decryptor.getInstance(info);

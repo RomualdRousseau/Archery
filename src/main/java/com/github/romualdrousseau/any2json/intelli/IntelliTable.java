@@ -14,7 +14,7 @@ import com.github.romualdrousseau.any2json.intelli.header.CompositeHeader;
 import com.github.romualdrousseau.any2json.intelli.header.IntelliHeader;
 import com.github.romualdrousseau.any2json.intelli.header.PivotKeyHeader;
 import com.github.romualdrousseau.any2json.simple.header.SimpleHeader;
-import com.github.romualdrousseau.shuju.util.StringUtility;
+import com.github.romualdrousseau.shuju.util.StringUtils;
 
 public class IntelliTable extends CompositeTable {
 
@@ -129,7 +129,7 @@ public class IntelliTable extends CompositeTable {
             newRows.add(buildOneRow(orgTable, orgRow, null, rowGroup));
         } else {
             for (final BaseCell pivotCell : pivot.getEntries()) {
-                if (!StringUtility.isFastEmpty(orgRow.getCellAt(pivotCell.getColumnIndex()).getValue())) {
+                if (!StringUtils.isFastBlank(orgRow.getCellAt(pivotCell.getColumnIndex()).getValue())) {
                     newRows.add(buildOneRow(orgTable, orgRow, pivotCell, rowGroup));
                 }
             }

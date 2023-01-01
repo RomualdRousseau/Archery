@@ -20,8 +20,7 @@ public class MetaHeader extends CompositeHeader {
     public String getName() {
         if (this.name == null) {
             final String v1 = this.getCell().getValue();
-            final String v2 = this.getPivotEntityString().orElseGet(() -> this.getLayoutClassifier().getEntityList().anonymize(v1));
-            this.name = this.getLayoutClassifier().getStopWordList().removeStopWords(v2);
+            this.name = this.getPivotEntityString().orElseGet(() -> this.getLayoutClassifier().getEntityList().anonymize(v1));
         }
         return this.name;
     }

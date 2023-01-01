@@ -11,8 +11,9 @@ import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
 import com.github.romualdrousseau.any2json.intelli.parser.StructuredSheetParser;
+import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.shuju.math.Tensor1D;
-import com.github.romualdrousseau.shuju.util.StringUtility;
+import com.github.romualdrousseau.shuju.util.StringUtils;
 
 public class TextDocument implements Document {
 
@@ -69,7 +70,7 @@ public class TextDocument implements Document {
             this.processRows(reader);
 
             if (checkIfGoodEncoding(this.rows.get(0))) {
-                final String sheetName = StringUtility.removeExtension(txtFile.getName());
+                final String sheetName = Disk.removeExtension(txtFile.getName());
                 this.sheet = new TextSheet(sheetName, this.rows);
             }
 
@@ -84,7 +85,7 @@ public class TextDocument implements Document {
     private boolean checkIfGoodEncoding(final String[] row) {
         boolean result = true;
         for (int i = 0; i < row.length; i++) {
-            result &= StringUtility.checkIfGoodEncoding(row[i]);
+            result &= StringUtils.checkIfGoodEncoding(row[i]);
         }
         return result;
     }
@@ -92,7 +93,7 @@ public class TextDocument implements Document {
     private void processBOM(final BufferedReader reader) throws IOException {
         // skip BOM if present
         this.reader.mark(1);
-        if (this.reader.read() != StringUtility.BOM_CHAR) {
+        if (this.reader.read() != StringUtils.BOM_CHAR) {
             this.reader.reset();
         }
     }
@@ -112,7 +113,7 @@ public class TextDocument implements Document {
 
             final String[] cells = new String[tokens.length];
             for (int j = 0; j < tokens.length; j++) {
-                cells[j] = StringUtility.cleanToken(tokens[j]);
+                cells[j] = StringUtils.cleanToken(tokens[j]);
             }
 
             this.rows.add(cells);

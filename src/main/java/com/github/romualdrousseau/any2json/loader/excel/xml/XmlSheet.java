@@ -1,7 +1,7 @@
 package com.github.romualdrousseau.any2json.loader.excel.xml;
 
 import com.github.romualdrousseau.any2json.base.SheetStore;
-import com.github.romualdrousseau.shuju.util.StringUtility;
+import com.github.romualdrousseau.shuju.util.StringUtils;
 
 import nl.fountain.xelem.excel.Cell;
 import nl.fountain.xelem.excel.Row;
@@ -45,7 +45,7 @@ class XmlSheet implements SheetStore {
     public String getCellDataAt(int colIndex, int rowIndex) {
         final int n = this.getInternalMergeDown(colIndex, rowIndex);
         Cell cell = this.sheet.getCellAt(n + 1, colIndex + 1);
-        return cell.hasData() ? StringUtility.cleanToken(cell.getData$()) : null;
+        return cell.hasData() ? StringUtils.cleanToken(cell.getData$()) : null;
     }
 
     @Override
