@@ -30,7 +30,7 @@ public abstract class BaseSheet implements Sheet {
     }
 
     @Override
-    public Table getTable(final ClassifierFactory classifierFactory) {
+    public Table getTable() {
         if (this.sheetStore.getLastRowNum() <= 0 || this.getLastColumnNum() <= 0) {
             return null;
         }
@@ -42,6 +42,11 @@ public abstract class BaseSheet implements Sheet {
         }
         this.notifyStepCompleted(new TableReadyEvent(this, table));
         return table;
+    }
+
+    @Override
+    public void setClassifierFactory(final ClassifierFactory classifierFactory) {
+        this.classifierFactory = classifierFactory;
     }
 
     @Override

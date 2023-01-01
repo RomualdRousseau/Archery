@@ -42,7 +42,8 @@ public class AppTest {
                     case 0:
                         document = loadDocument(expectedValue, "UTF-8");
                         sheet = document.getSheetAt(0);
-                        table = sheet.getTable(classifierFactor);
+                        sheet.setClassifierFactory(classifierFactor);
+                        table = sheet.getTable();
                         assert table != null;
                         itHeader = table.headers().iterator();
                         header = itHeader.next();
@@ -97,7 +98,8 @@ public class AppTest {
                     case 0:
                         document = loadDocument(expectedValue, "CP949");
                         sheet = document.getSheetAt(0);
-                        table = sheet.getTable(classifierFactor);
+                        sheet.setClassifierFactory(classifierFactor);
+                        table = sheet.getTable();
                         assert table != null;
                         firstRow = table.rows().iterator().next();
                         state = 1;

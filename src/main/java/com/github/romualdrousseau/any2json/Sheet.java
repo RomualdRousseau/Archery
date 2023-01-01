@@ -4,7 +4,9 @@ public interface Sheet {
 
     String getName();
 
-    Table getTable(final ClassifierFactory classifierFactory);
+    Table getTable();
+
+    void setClassifierFactory(final ClassifierFactory classifierFactory);
 
     void addSheetListener(final SheetListener listener);
 }
