@@ -23,7 +23,7 @@ public class XlsDocument implements Document {
             throw new IllegalArgumentException();
         }
 
-        if (!StringUtils.isBLank(password)) {
+        if (!StringUtils.isBlank(password)) {
             Biff8EncryptionKey.setCurrentUserPassword(password);
         }
 

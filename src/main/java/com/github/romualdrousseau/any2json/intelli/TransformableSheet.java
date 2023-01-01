@@ -3,7 +3,7 @@ package com.github.romualdrousseau.any2json.intelli;
 import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.base.SheetStore;
-import com.github.romualdrousseau.shuju.math.Tensor1D;
+import com.github.romualdrousseau.shuju.math.deprecated.Tensor1D;
 import com.github.romualdrousseau.shuju.util.StringFuzzy;
 
 public abstract class TransformableSheet extends BaseSheet {

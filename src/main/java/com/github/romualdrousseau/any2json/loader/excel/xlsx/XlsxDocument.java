@@ -34,7 +34,7 @@ public class XlsxDocument implements Document {
         try {
             this.sheets.clear();
 
-            if (!StringUtils.isBLank(password)) {
+            if (!StringUtils.isBlank(password)) {
                 POIFSFileSystem poifs = new POIFSFileSystem(excelFile);
                 EncryptionInfo info = new EncryptionInfo(poifs);
                 Decryptor d = Decryptor.getInstance(info);

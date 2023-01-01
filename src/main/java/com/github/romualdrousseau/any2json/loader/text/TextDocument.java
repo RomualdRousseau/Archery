@@ -12,7 +12,7 @@ import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
 import com.github.romualdrousseau.any2json.intelli.parser.StructuredSheetParser;
 import com.github.romualdrousseau.any2json.util.Disk;
-import com.github.romualdrousseau.shuju.math.Tensor1D;
+import com.github.romualdrousseau.shuju.math.Tensor;
 import com.github.romualdrousseau.shuju.util.StringUtils;
 
 public class TextDocument implements Document {
@@ -174,13 +174,12 @@ public class TextDocument implements Document {
 
     private String guessSeparator(final String sample) {
         final String[] separators = { "\t", ",", ";" };
-
         // find the separator generating the more of columns
         final float[] v = new float[separators.length];
         for (int i = 0; i < separators.length; i++) {
             v[i] = sample.split(separators[i]).length;
         }
-        return separators[new Tensor1D(v).argmax()];
+        return separators[(int) Tensor.create(v).argmax(0).item(0)];
     }
 
     private TextSheet sheet;

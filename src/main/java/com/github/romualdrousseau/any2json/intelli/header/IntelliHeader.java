@@ -2,7 +2,7 @@ package com.github.romualdrousseau.any2json.intelli.header;
 
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
 import com.github.romualdrousseau.shuju.DataRow;
-import com.github.romualdrousseau.shuju.math.Tensor1D;
+import com.github.romualdrousseau.shuju.math.deprecated.Tensor1D;
 import com.github.romualdrousseau.shuju.nlp.RegexList;
 import com.github.romualdrousseau.shuju.util.StringUtils;
 
