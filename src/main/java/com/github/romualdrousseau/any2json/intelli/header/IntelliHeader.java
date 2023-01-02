@@ -1,50 +1,48 @@
 package com.github.romualdrousseau.any2json.intelli.header;
 
-import com.github.romualdrousseau.any2json.intelli.CompositeTable;
-import com.github.romualdrousseau.shuju.DataRow;
-import com.github.romualdrousseau.shuju.math.deprecated.Tensor1D;
-import com.github.romualdrousseau.shuju.nlp.RegexList;
-import com.github.romualdrousseau.shuju.util.StringUtils;
-
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.HeaderTag;
 import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.base.BaseRow;
+import com.github.romualdrousseau.any2json.intelli.CompositeTable;
+import com.github.romualdrousseau.shuju.DataRow;
+import com.github.romualdrousseau.shuju.math.Tensor;
+import com.github.romualdrousseau.shuju.util.StringUtils;
 
 public class IntelliHeader extends CompositeHeader {
 
     public IntelliHeader(final CompositeTable table, final BaseCell cell) {
-        super(table, cell);
-        this.isMeta = false;
+        this(table, cell, false);
     }
 
     public IntelliHeader(final CompositeHeader header) {
-        super(header.getTable(), new BaseCell(header.getName(), header.getColumnIndex(), 1, header.getRawName(), header.getTable().getSheet().getClassifierFactory()));
+        this(header.getTable(), new BaseCell(header.getName(), header.getColumnIndex(), 1, header.getRawName(), header.getClassifierFactory()), header instanceof MetaHeader);
         this.setColumnIndex(header.getColumnIndex());
-        this.isMeta = header instanceof MetaHeader;
     }
 
     private IntelliHeader(final IntelliHeader parent) {
-        this(parent.getTable(), parent.getCell());
+        this(parent.getTable(), parent.getCell(), false); // TODO: isMeta maybe false
+    }
+
+    private IntelliHeader(final CompositeTable table, final BaseCell cell, boolean isMeta) {
+        super(table, cell);
+        this.isMeta = isMeta;
+        this.entities = this.sampleEntities();
+
+        final String cellValue = this.getCell().getValue();
+        if(StringUtils.isFastBlank(cellValue)) {
+            this.name = this.entities().stream().findFirst().orElse(DocumentFactory.PIVOT_VALUE_SUFFIX);
+        } else {
+            this.name = cellValue;
+        }
     }
 
     @Override
     public String getName() {
-        if (this.name == null) {
-            this.name = this.getCell().getValue();
-            if(StringUtils.isFastBlank(this.name)) {
-                final Tensor1D v = this.sampleEntityVector();
-                if(v.sparsity() < 1.0f) {
-                    this.name = this.getLayoutClassifier().getEntityList().get(v.argmax());
-                } else {
-                    this.name =  DocumentFactory.PIVOT_VALUE_SUFFIX;
-                }
-            }
-        }
         return this.name;
     }
 
@@ -58,9 +56,7 @@ public class IntelliHeader extends CompositeHeader {
         if (!merged || this.nextSibbling == null) {
             return this.getCellAtRow(row);
         }
-
         String buffer = "";
-
         IntelliHeader curr = this;
         while (curr != null) {
             final String value = curr.getCellAtRow(row).getValue();
@@ -69,7 +65,6 @@ public class IntelliHeader extends CompositeHeader {
             }
             curr = curr.nextSibbling;
         }
-
         if (buffer.isEmpty()) {
             return this.getCellAtRow(row);
         } else {
@@ -78,16 +73,8 @@ public class IntelliHeader extends CompositeHeader {
     }
 
     @Override
-    public Iterable<String> entities() {
-        final List<String> result = new ArrayList<String>();
-        final Tensor1D entityVector = this.sampleEntityVector();
-        final RegexList entityList = this.getLayoutClassifier().getEntityList();
-        for (int i = 0; i < entityList.size(); i++) {
-            if (entityVector.get(i) == 1) {
-                result.add(entityList.get(i));
-            }
-        }
-        return result;
+    public List<String> entities() {
+        return this.entities;
     }
 
     @Override
@@ -131,28 +118,31 @@ public class IntelliHeader extends CompositeHeader {
         this.nextSibbling = other;
     }
 
-    private Tensor1D sampleEntityVector() {
-        final Tensor1D result = new Tensor1D(this.getLayoutClassifier().getEntityList().getVectorSize());
-        int n = 0;
-        for (int i = 0; i < Math.min(this.getTable().getNumberOfRows(), this.getLayoutClassifier().getSampleCount()); i++) {
+    private List<String> sampleEntities() {
+        final int N = Math.min(this.getTable().getNumberOfRows(), this.getLayoutClassifier().getSampleCount());
+        final Tensor entityVector = Tensor.zeros(this.getLayoutClassifier().getEntityList().size());
+        float n = 0.0f;
+        for (int i = 0; i < N; i++) {
             final BaseRow row = this.getTable().getRowAt(i);
             if (row == null) {
                 continue;
             }
             final BaseCell cell = row.getCellAt(this.getColumnIndex());
-            if (cell.hasValue() && !cell.getEntityVector().isNull()) {
-                result.add(cell.getEntityVector());
-                n++;
+            if (cell.hasValue() && cell.getSymbol().equals("e")) {
+                entityVector.iadd(cell.getEntityVector());
+                n += DocumentFactory.DEFAULT_ENTITY_PROBABILITY;
             }
         }
-        if (n > 0) {
-            result.if_lt_then(DocumentFactory.DEFAULT_ENTITY_PROBABILITY * ((float) n), 0.0f, 1.0f);
+        if (n > 0.0f) {
+            entityVector.if_lt_then(n, 0.0f, 1.0f);
         }
-        return result;
+        final List<String> entityList = this.getLayoutClassifier().getEntityList();
+        return IntStream.range(0, entityVector.size).boxed().filter(i -> entityVector.data[i] == 1).map(i -> entityList.get(i)).toList();
     }
 
-    private String name;
+    private final String name;
+    private final boolean isMeta;
+    private final List<String> entities;
     private HeaderTag tag;
     private IntelliHeader nextSibbling;
-    private final boolean isMeta;
 }

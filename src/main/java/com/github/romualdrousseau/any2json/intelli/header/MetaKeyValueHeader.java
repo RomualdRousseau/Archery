@@ -9,6 +9,10 @@ public class MetaKeyValueHeader extends MetaHeader {
     public MetaKeyValueHeader(final CompositeTable table, final BaseCell key, final BaseCell value) {
         super(table, key);
         this.value = value;
+
+        final String cellValue = this.getCell().getValue();
+        this.name = cellValue;
+        this.valueOfValue = this.getLayoutClassifier().toEntityValue(cellValue).orElse(cellValue);
     }
 
     private MetaKeyValueHeader(final MetaKeyValueHeader parent) {
@@ -17,19 +21,11 @@ public class MetaKeyValueHeader extends MetaHeader {
 
     @Override
     public String getName() {
-        if (this.name == null) {
-            this.name = this.getCell().getValue();
-        }
         return this.name;
     }
 
     @Override
     public String getValue() {
-        if (this.valueOfValue == null) {
-            final String v1 = this.value.getValue();
-            final String v2 = this.getLayoutClassifier().getEntityList().find(v1);
-            this.valueOfValue = (v2 == null) ? v1 : v2;
-        }
         return this.valueOfValue;
     }
 
@@ -48,7 +44,7 @@ public class MetaKeyValueHeader extends MetaHeader {
         return new MetaKeyValueHeader(this);
     }
 
-    private String name;
+    private final String name;
     private final BaseCell value;
-    private String valueOfValue;
+    private final String valueOfValue;
 }

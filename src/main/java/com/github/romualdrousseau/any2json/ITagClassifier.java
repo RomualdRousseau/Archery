@@ -4,14 +4,12 @@ import java.util.List;
 
 import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.DataSet;
-import com.github.romualdrousseau.shuju.nlp.NgramList;
-import com.github.romualdrousseau.shuju.nlp.StringList;
 
 public interface ITagClassifier {
 
-    NgramList getWordList();
+    List<String> getWordList();
 
-    StringList getTagList();
+    List<String> getTagList();
 
     List<String> getRequiredTagList();
 

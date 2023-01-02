@@ -10,6 +10,14 @@ public class MetaHeader extends CompositeHeader {
 
     public MetaHeader(final CompositeTable table, final BaseCell cell) {
         super(table, cell);
+
+        final String cellValue = this.getCell().getValue();
+        this.transformedCell = this.getLayoutClassifier()
+                .toEntityValue(cellValue)
+                .map(x -> new BaseCell(x, this.getCell()))
+                .orElse(this.getCell());
+        this.name = this.getPivotEntityAsString().orElseGet(() -> this.getLayoutClassifier().toEntityName(cellValue));
+        this.value = this.transformedCell.getValue();
     }
 
     private MetaHeader(final MetaHeader parent) {
@@ -18,35 +26,16 @@ public class MetaHeader extends CompositeHeader {
 
     @Override
     public String getName() {
-        if (this.name == null) {
-            final String v1 = this.getCell().getValue();
-            this.name = this.getPivotEntityString().orElseGet(() -> this.getLayoutClassifier().getEntityList().anonymize(v1));
-        }
         return this.name;
     }
 
     @Override
     public String getValue() {
-        if (this.value == null) {
-            final String v1 = this.getCell().getValue();
-            final String v2 = this.getLayoutClassifier().getEntityList().find(v1);
-            this.value = (v2 == null) ? v1 : v2;
-        }
         return this.value;
     }
 
     @Override
     public BaseCell getCellAtRow(final Row row) {
-        if (this.transformedCell == null) {
-            final String v1 = this.getCell().getValue();
-            final String v2 = this.getLayoutClassifier().getEntityList().find(v1);
-            if (v2 == null) {
-                this.transformedCell = this.getCell();
-            } else {
-                this.transformedCell = new BaseCell(v2, this.getCell().getColumnIndex(),
-                        this.getCell().getMergedCount(), this.getCell().getRawValue(), this.getTable().getSheet().getClassifierFactory());
-            }
-        }
         return this.transformedCell;
     }
 
@@ -60,7 +49,7 @@ public class MetaHeader extends CompositeHeader {
         return null;
     }
 
-    private String name;
-    private String value;
-    private BaseCell transformedCell;
+    private final String name;
+    private final String value;
+    private final BaseCell transformedCell;
 }

@@ -3,7 +3,6 @@ package com.github.romualdrousseau.any2json.intelli;
 import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.base.SheetStore;
-import com.github.romualdrousseau.shuju.math.deprecated.Tensor1D;
 import com.github.romualdrousseau.shuju.util.StringFuzzy;
 
 public abstract class TransformableSheet extends BaseSheet {
@@ -99,16 +98,8 @@ public abstract class TransformableSheet extends BaseSheet {
                     hash += "s";
                     countEmptyCells++;
                 }
-                if (this.getClassifierFactory().getLayoutClassifier().isPresent()) {
-                    final Tensor1D v = this.getClassifierFactory().getLayoutClassifier().get().getEntityList()
-                            .word2vec(value);
-                    if (v.sparsity() < 1.0f) {
-                        hash += "e";
-                    } else {
-                        hash += "v";
-                    }
-                } else {
-                    hash += "v";
+                else {
+                    hash += this.getClassifierFactory().getLayoutClassifier().map(c -> c.toEntityValue(value).map(x -> "e").orElse("v")).orElse("v");
                 }
             }
             i += this.getSheetStore().getNumberOfMergedCellsAt(i, rowIndex);

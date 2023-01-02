@@ -30,7 +30,7 @@ public class MetaTableHeader extends MetaHeader {
         return this.rowGroup != null;
     }
 
-	public void assignRowGroup(RowGroup rowGroup) {
+	public void assignRowGroup(final RowGroup rowGroup) {
         this.rowGroup = rowGroup;
     }
 

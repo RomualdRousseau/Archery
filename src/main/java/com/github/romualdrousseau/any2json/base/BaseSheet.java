@@ -9,6 +9,7 @@ import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.SheetEvent;
 import com.github.romualdrousseau.any2json.SheetListener;
 import com.github.romualdrousseau.any2json.Table;
+import com.github.romualdrousseau.any2json.classifier.SimpleClassifierBuilder;
 import com.github.romualdrousseau.any2json.event.TableReadyEvent;
 import com.github.romualdrousseau.any2json.simple.SimpleTable;
 import com.github.romualdrousseau.shuju.util.CollectionUtils;
@@ -22,6 +23,7 @@ public abstract class BaseSheet implements Sheet {
         this.storeLastColumnNum = this.computeLastColumnNum();
         this.columnMask = CollectionUtils.mutableRange(0, this.storeLastColumnNum + 1);
         this.rowMask = CollectionUtils.mutableRange(0, this.sheetStore.getLastRowNum() + 1);
+        this.classifierFactory = new SimpleClassifierBuilder().build();
     }
 
     @Override
@@ -46,7 +48,12 @@ public abstract class BaseSheet implements Sheet {
 
     @Override
     public void setClassifierFactory(final ClassifierFactory classifierFactory) {
-        this.classifierFactory = classifierFactory;
+        if (classifierFactory == null) {
+            this.classifierFactory = new SimpleClassifierBuilder().build();
+        }
+        else {
+            this.classifierFactory = classifierFactory;
+        }
     }
 
     @Override

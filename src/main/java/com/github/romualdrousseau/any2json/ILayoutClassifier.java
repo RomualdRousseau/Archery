@@ -1,26 +1,36 @@
 package com.github.romualdrousseau.any2json;
 
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
-import com.github.romualdrousseau.shuju.nlp.RegexList;
-//import com.github.romualdrousseau.shuju.nlp.StopWordList;
+import com.github.romualdrousseau.shuju.math.Tensor;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ILayoutClassifier {
 
     int getSampleCount();
 
-    RegexList getEntityList();
+    List<String> getEntityList();
 
-    //StopWordList getStopWordList();
+    List<String> getStopWordList();
 
     List<String> getPivotEntityList();
 
     List<TableMatcher> getMetaMatcherList();
 
+    void setMetaMatcherList(List<TableMatcher> matchers);
+
     List<TableMatcher> getDataMatcherList();
+
+    void setDataMatcherList(List<TableMatcher> matchers);
 
     String getRecipe();
 
     void setRecipe(String recipe);
+
+    String toEntityName(String value);
+
+    Optional<String> toEntityValue(String value);
+
+    Tensor toEntityVector(String value);
 }

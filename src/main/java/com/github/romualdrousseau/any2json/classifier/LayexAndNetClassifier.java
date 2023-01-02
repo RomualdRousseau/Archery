@@ -1,8 +1,10 @@
 package com.github.romualdrousseau.any2json.classifier;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.github.romualdrousseau.any2json.DocumentFactory;
@@ -15,6 +17,7 @@ import com.github.romualdrousseau.shuju.DataSet;
 import com.github.romualdrousseau.shuju.json.JSON;
 import com.github.romualdrousseau.shuju.json.JSONArray;
 import com.github.romualdrousseau.shuju.json.JSONObject;
+import com.github.romualdrousseau.shuju.math.Tensor;
 import com.github.romualdrousseau.shuju.math.deprecated.Tensor1D;
 import com.github.romualdrousseau.shuju.math.deprecated.Tensor2D;
 import com.github.romualdrousseau.shuju.ml.nn.Layer;
@@ -53,8 +56,8 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
     private final List<Layex> metaLayexes;
     private final List<Layex> dataLayexes;
 
-    private final List<TableMatcher> metaMatchers;
-    private final List<TableMatcher> dataMatchers;
+    private List<TableMatcher> metaMatchers;
+    private List<TableMatcher> dataMatchers;
 
     private String recipe;
 
@@ -101,23 +104,23 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         return DocumentFactory.DEFAULT_SAMPLE_COUNT;
     }
 
-    public StopWordList getStopWordList() {
-        return this.stopwords;
+    public List<String> getStopWordList() {
+        return Arrays.asList(this.stopwords.values());
     }
 
     @Override
-    public RegexList getEntityList() {
-        return this.entities;
+    public List<String> getEntityList() {
+        return this.entities.values();
     }
 
     @Override
-    public NgramList getWordList() {
-        return this.ngrams;
+    public List<String> getWordList() {
+        return this.ngrams.values();
     }
 
     @Override
-    public StringList getTagList() {
-        return this.tags;
+    public List<String> getTagList() {
+        return this.tags.values();
     }
 
     @Override
@@ -162,18 +165,18 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
 
     @Override
     public DataRow buildPredictRow(final String name, final Iterable<String> entities, final Iterable<String> context) {
-        final Tensor1D entityVector = new Tensor1D(this.getEntityList().getVectorSize());
+        final Tensor1D entityVector = new Tensor1D(this.entities.getVectorSize());
         entities.forEach(entity -> {
-            final int i = this.getEntityList().ordinal(entity);
+            final int i = this.entities.ordinal(entity);
             if (i != -1) {
                 entityVector.set(i, 1);
             }
         });
 
-        final Tensor1D wordVector = this.getWordList().word2vec(name);
+        final Tensor1D wordVector = this.ngrams.word2vec(name);
 
         final Tensor1D contextVector = wordVector.copy().zero();
-        context.forEach(other -> contextVector.add(this.getWordList().word2vec(other)));
+        context.forEach(other -> contextVector.add(this.ngrams.word2vec(other)));
         final Tensor1D word_mask = wordVector.copy().ones().sub(wordVector);
         contextVector.mul(word_mask).constrain(0, 1);
 
@@ -186,7 +189,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         if (ensureWordsExists) {
             context.forEach(this.getWordList()::add);
         }
-        final Tensor1D label = this.getTagList().word2vec(tag);
+        final Tensor1D label = this.tags.word2vec(tag);
         return this.buildPredictRow(name, entities, context).setLabel(label);
     }
 
@@ -432,5 +435,30 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
             }
         }
         return list;
+    }
+
+    @Override
+    public void setMetaMatcherList(List<TableMatcher> matchers) {
+        this.metaMatchers = matchers;
+    }
+
+    @Override
+    public void setDataMatcherList(List<TableMatcher> matchers) {
+        this.dataMatchers = matchers;
+    }
+
+    @Override
+    public String toEntityName(String value) {
+        return this.entities.anonymize(value);
+    }
+
+    @Override
+    public Optional<String> toEntityValue(String value) {
+        return Optional.ofNullable(this.entities.find(value));
+    }
+
+    @Override
+    public Tensor toEntityVector(String value) {
+        return Tensor.create(this.entities.word2vec(value).data);
     }
 }

@@ -24,7 +24,7 @@ public abstract class DefaultSheetParser implements SheetParser {
         final String recipe = sheet.getClassifierFactory().getLayoutClassifier().get().getRecipe();
         if (recipe != null) {
             try(PythonInterpreter pyInterp = new PythonInterpreter()) {
-                pyInterp.set("sheet", this);
+                pyInterp.set("sheet", sheet);
                 pyInterp.exec(recipe);
             }
         }

@@ -66,7 +66,7 @@ public abstract class BaseHeader implements Header {
         return this.cell.isPivotHeader();
     }
 
-    public Optional<String> getPivotEntityString() {
+    public Optional<String> getPivotEntityAsString() {
         return this.cell.getPivotEntityAsString();
     }
 
