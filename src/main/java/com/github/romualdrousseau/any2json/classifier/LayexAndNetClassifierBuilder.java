@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.github.romualdrousseau.any2json.ClassifierFactory;
 import com.github.romualdrousseau.any2json.IClassifierBuilder;
+import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.json.JSONObject;
 import com.github.romualdrousseau.shuju.nlp.NgramList;
 import com.github.romualdrousseau.shuju.nlp.RegexList;
@@ -71,14 +72,14 @@ public class LayexAndNetClassifierBuilder implements IClassifierBuilder {
 		return this;
 	}
 
-    public ClassifierFactory build() {
+    public ClassifierFactory<DataRow> build() {
         final LayexAndNetClassifier classifier;
         if (model == null) {
             classifier = new LayexAndNetClassifier(ngramList, entityList, stopWordList, tagList, requiredTagList, pivotEntityList, metaLayexes, dataLayexes, recipe);
         } else {
             classifier = new LayexAndNetClassifier(model);
         }
-        return new ClassifierFactory().setLayoutClassifier(classifier).setTagClassifier(classifier);
+        return new ClassifierFactory<DataRow>().setLayoutClassifier(classifier).setTagClassifier(classifier);
     }
 
     private JSONObject model;

@@ -12,8 +12,6 @@ public interface ILayoutClassifier {
 
     List<String> getEntityList();
 
-    List<String> getStopWordList();
-
     List<String> getPivotEntityList();
 
     List<TableMatcher> getMetaMatcherList();

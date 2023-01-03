@@ -25,11 +25,11 @@ public class BaseCell implements Cell, Symbol {
     }
 
     public BaseCell(final String value, final int colIndex, final int mergedCount,
-            final ClassifierFactory classifierFactory) {
+            final ClassifierFactory<?> classifierFactory) {
         this(value, colIndex, mergedCount, value, classifierFactory);
     }
 
-    public BaseCell(final String value, final int colIndex, final int mergedCount, final String rawValue, final ClassifierFactory classifierFactory) {
+    public BaseCell(final String value, final int colIndex, final int mergedCount, final String rawValue, final ClassifierFactory<?> classifierFactory) {
         this.value = value;
         this.colIndex = colIndex;
         this.mergedCount = mergedCount;
@@ -87,7 +87,7 @@ public class BaseCell implements Cell, Symbol {
         return this.entityList.stream().anyMatch(x -> x.equalsIgnoreCase(literal));
     }
 
-    public ClassifierFactory getClassifierFactory() {
+    public ClassifierFactory<?> getClassifierFactory() {
         return this.classifierFactory;
     }
 
@@ -116,7 +116,7 @@ public class BaseCell implements Cell, Symbol {
                 .flatMap(c -> this.entityList.stream().filter(x -> c.getPivotEntityList().contains(x)).findFirst());
     }
 
-    private final ClassifierFactory classifierFactory;
+    private final ClassifierFactory<?> classifierFactory;
     private final int colIndex;
     private final int mergedCount;
     private final String value;

@@ -6,7 +6,7 @@ public interface Sheet {
 
     Table getTable();
 
-    void setClassifierFactory(final ClassifierFactory classifierFactory);
+    void setClassifierFactory(final ClassifierFactory<?> classifierFactory);
 
     void addSheetListener(final SheetListener listener);
 }

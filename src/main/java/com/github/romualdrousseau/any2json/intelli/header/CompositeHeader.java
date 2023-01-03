@@ -29,7 +29,7 @@ public abstract class CompositeHeader extends BaseHeader {
         return (CompositeTable) super.getTable();
     }
 
-    protected ClassifierFactory getClassifierFactory() {
+    protected ClassifierFactory<?> getClassifierFactory() {
         return this.getTable().getSheet().getClassifierFactory();
     }
 

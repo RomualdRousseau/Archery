@@ -9,7 +9,6 @@ import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
-import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.math.Tensor;
 import com.github.romualdrousseau.shuju.util.StringUtils;
 
@@ -36,8 +35,10 @@ public class IntelliHeader extends CompositeHeader {
         final String cellValue = this.getCell().getValue();
         if(StringUtils.isFastBlank(cellValue)) {
             this.name = this.entities().stream().findFirst().orElse(DocumentFactory.PIVOT_VALUE_SUFFIX);
+        } else if (isMeta) {
+            this.name = this.entities().stream().findFirst().orElse(cellValue);
         } else {
-            this.name = cellValue;
+            this.name = this.getLayoutClassifier().toEntityName(cellValue);
         }
     }
 
@@ -106,9 +107,8 @@ public class IntelliHeader extends CompositeHeader {
         if (StringUtils.isFastBlank(this.getName())) {
             this.tag = HeaderTag.None;
         } else {
-            this.getClassifierFactory().getTagClassifier().ifPresent(classifier -> {
-                final DataRow data = classifier.buildPredictRow(this.getName(), this.entities(), this.getTable().getHeaderNames());
-                final String tagValue = classifier.predict(data);
+            this.getClassifierFactory().getTagClassifier().ifPresent(classifier -> { 
+                final String tagValue = classifier.predict(this.getName(), this.entities(), this.getTable().getHeaderNames());
                 this.tag = new HeaderTag(tagValue);
             });
         }

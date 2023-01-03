@@ -1,9 +1,9 @@
 package com.github.romualdrousseau.any2json.classifier;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -36,7 +36,7 @@ import com.github.romualdrousseau.shuju.nlp.RegexList;
 import com.github.romualdrousseau.shuju.nlp.StopWordList;
 import com.github.romualdrousseau.shuju.nlp.StringList;
 
-public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier {
+public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<DataRow> {
     public static final int BATCH_SIZE = 64;
 
     // public final static String[] MetaLayexesDefault = { "(v.$)+" };
@@ -58,7 +58,6 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
 
     private List<TableMatcher> metaMatchers;
     private List<TableMatcher> dataMatchers;
-
     private String recipe;
 
     private Model model;
@@ -81,7 +80,6 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
 
         this.metaMatchers = this.metaLayexes.stream().map(Layex::compile).collect(Collectors.toCollection(ArrayList::new));
         this.dataMatchers = this.dataLayexes.stream().map(Layex::compile).collect(Collectors.toCollection(ArrayList::new));
-
         this.recipe = recipe;
 
         this.buildModel();
@@ -100,12 +98,9 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         this.model.fromJSON(json.getJSONArray("model"));
     }
 
+    @Override
     public int getSampleCount() {
         return DocumentFactory.DEFAULT_SAMPLE_COUNT;
-    }
-
-    public List<String> getStopWordList() {
-        return Arrays.asList(this.stopwords.values());
     }
 
     @Override
@@ -114,8 +109,48 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
     }
 
     @Override
-    public List<String> getWordList() {
-        return this.ngrams.values();
+    public List<String> getPivotEntityList() {
+        return this.pivotEntityList;
+    }
+
+    @Override
+    public List<TableMatcher> getMetaMatcherList() {
+        return this.metaMatchers;
+    }
+
+    @Override
+    public void setMetaMatcherList(List<TableMatcher> matchers) {
+        this.metaMatchers = matchers;
+    }
+
+    @Override
+    public List<TableMatcher> getDataMatcherList() {
+        return this.dataMatchers;
+    }
+
+    @Override
+    public void setDataMatcherList(List<TableMatcher> matchers) {
+        this.dataMatchers = matchers;
+    }
+
+    @Override
+    public String getRecipe() {
+        return this.recipe;
+    }
+
+    @Override
+    public String toEntityName(String value) {
+        return this.entities.anonymize(value);
+    }
+
+    @Override
+    public Optional<String> toEntityValue(String value) {
+        return Optional.ofNullable(this.entities.find(value));
+    }
+
+    @Override
+    public Tensor toEntityVector(String value) {
+        return Tensor.create(this.entities.word2vec(value).data);
     }
 
     @Override
@@ -129,42 +164,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
     }
 
     @Override
-    public List<TableMatcher> getMetaMatcherList() {
-        return this.metaMatchers;
-    }
-
-    @Override
-    public List<TableMatcher> getDataMatcherList() {
-        return this.dataMatchers;
-    }
-
-    @Override
-    public List<String> getPivotEntityList() {
-        return this.pivotEntityList;
-    }
-
-    @Override
-    public String getRecipe() {
-        return this.recipe;
-    }
-
-    @Override
-    public void setRecipe(final String recipe) {
-        this.recipe = recipe;
-    }
-
-    @Override
-    public float getMean() {
-        return this.mean;
-    }
-
-    @Override
-    public float getAccuracy() {
-        return this.accuracy;
-    }
-
-    @Override
-    public DataRow buildPredictRow(final String name, final Iterable<String> entities, final Iterable<String> context) {
+    public DataRow buildPredictRow(final String name, final List<String> entities, final List<String> context) {
         final Tensor1D entityVector = new Tensor1D(this.entities.getVectorSize());
         entities.forEach(entity -> {
             final int i = this.entities.ordinal(entity);
@@ -184,18 +184,13 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
     }
 
     @Override
-    public DataRow buildTrainingRow(final String name, final Iterable<String> entities, final Iterable<String> context,
-            final String tag, final boolean ensureWordsExists) {
-        if (ensureWordsExists) {
-            context.forEach(this.getWordList()::add);
-        }
-        final Tensor1D label = this.tags.word2vec(tag);
-        return this.buildPredictRow(name, entities, context).setLabel(label);
+    public String predict(final String name, final List<String> entities, final List<String> context) {
+        return this.predict(this.buildPredictRow(name, entities, context));
     }
 
     @Override
-    public void fit(final DataSet trainingSet, final DataSet validationSet) {
-        final float n = trainingSet.rows().size();
+    public void fit(final List<DataRow> trainingSet, final List<DataRow> validationSet) {
+        final float n = trainingSet.size();
         if (n == 0.0f) {
             return;
         }
@@ -205,13 +200,13 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
 
         // Train
 
-        for (int i = 0; i < trainingSet.rows().size();) {
+        for (int i = 0; i < trainingSet.size();) {
 
             this.optimizer.zeroGradients();
 
-            final int batchSize = Math.min(trainingSet.rows().size() - i, BATCH_SIZE);
+            final int batchSize = Math.min(trainingSet.size() - i, BATCH_SIZE);
             for (int j = 0; j < batchSize; j++) {
-                final DataRow row = trainingSet.rows().get(i++);
+                final DataRow row = trainingSet.get(i++);
 
                 final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), true);
                 final Tensor2D target = new Tensor2D(row.label(), true);
@@ -227,7 +222,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
 
         // Validate
 
-        for (final DataRow row : validationSet.rows()) {
+        for (final DataRow row : validationSet) {
             final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), true);
             final Tensor2D target = new Tensor2D(row.label(), true);
 
@@ -239,12 +234,34 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
             this.mean += loss.getValue().flatten(0, 0);
         }
 
-        final float total = validationSet.rows().size();
+        final float total = validationSet.size();
         this.accuracy /= total;
         this.mean /= total;
     }
 
     @Override
+    public float getAccuracy() {
+        return this.accuracy;
+    }
+
+    public void setRecipe(final String recipe) {
+        this.recipe = recipe;
+    }
+
+    public float getMean() {
+        return this.mean;
+    }
+
+    
+
+    public DataRow buildTrainingRow(final String name, final List<String> entities, final List<String> context, final String tag, final boolean ensureVocabulary) {
+        if (ensureVocabulary) {
+            context.forEach(this.ngrams::add);
+        }
+        final Tensor1D label = this.tags.word2vec(tag);
+        return this.buildPredictRow(name, entities, context).setLabel(label);
+    }
+
     public String predict(final DataRow row) {
         final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), true);
         final Tensor2D output = this.model.model(input).detach();
@@ -255,14 +272,6 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         }
 
         return this.tags.get(tagIndex);
-    }
-
-    public List<Layex> getMetaLayexList() {
-        return this.metaLayexes;
-    }
-    
-    public List<Layex> getDataLayexList() {
-        return this.dataLayexes;
     }
 
     public Model getModel() {
@@ -339,7 +348,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         firstPass = true;
         for (int i = 0; i < v.shape[0]; i++) {
             if (v.get(i) == 1.0f) {
-                final String w = this.getWordList().get(i);
+                final String w = this.ngrams.get(i);
                 if (w != null) {
                     if (firstPass) {
                         firstPass = false;
@@ -357,7 +366,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         firstPass = true;
         for (int i = 0; i < v.shape[0]; i++) {
             if (v.get(i) == 1.0f) {
-                final String w = this.getWordList().get(i);
+                final String w = this.ngrams.get(i);
                 if (w != null) {
                     if (firstPass) {
                         firstPass = false;
@@ -377,10 +386,10 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
         for (int i = 0; i < 16; i++) {
             if (l.get(i) == 1.0f) {
                 if (firstPass) {
-                    result.append(this.getTagList().get(i));
+                    result.append(this.tags.get(i));
                     firstPass = false;
                 } else {
-                    result.append(":").append(this.getTagList().get(i));
+                    result.append(":").append(this.tags.get(i));
                 }
             }
         }
@@ -435,30 +444,5 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier 
             }
         }
         return list;
-    }
-
-    @Override
-    public void setMetaMatcherList(List<TableMatcher> matchers) {
-        this.metaMatchers = matchers;
-    }
-
-    @Override
-    public void setDataMatcherList(List<TableMatcher> matchers) {
-        this.dataMatchers = matchers;
-    }
-
-    @Override
-    public String toEntityName(String value) {
-        return this.entities.anonymize(value);
-    }
-
-    @Override
-    public Optional<String> toEntityValue(String value) {
-        return Optional.ofNullable(this.entities.find(value));
-    }
-
-    @Override
-    public Tensor toEntityVector(String value) {
-        return Tensor.create(this.entities.word2vec(value).data);
     }
 }

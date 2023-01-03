@@ -2,26 +2,21 @@ package com.github.romualdrousseau.any2json;
 
 import java.util.List;
 
-import com.github.romualdrousseau.shuju.DataRow;
-import com.github.romualdrousseau.shuju.DataSet;
-
-public interface ITagClassifier {
-
-    List<String> getWordList();
+public interface ITagClassifier<T> {
 
     List<String> getTagList();
 
     List<String> getRequiredTagList();
 
-    float getMean();
+    T buildPredictRow(final String name, final List<String> entities, final List<String> context);
+
+    void fit(List<T> trainingSet, List<T> validationSet);
+
+    String predict(final String name, final List<String> entities, final List<String> context);
 
     float getAccuracy();
 
-    DataRow buildTrainingRow(final String name, final Iterable<String> entities, final Iterable<String> context, final String tag, final boolean ensureWordsExists);
+    float getMean();
 
-    DataRow buildPredictRow(final String name, final Iterable<String> entities, final Iterable<String> context);
-
-    void fit(DataSet trainingSet, DataSet validationSet);
-
-    String predict(DataRow input);
+    
 }

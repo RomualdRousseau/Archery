@@ -31,7 +31,7 @@ public class AppTest {
         Row firstRow = null;
         int fileNo = 0;
 
-        ClassifierFactory classifierFactor = new SimpleClassifierBuilder()
+        ClassifierFactory<?> classifierFactor = new SimpleClassifierBuilder()
             .build();
 
         for (String[] expectedValues : scenarios1) {
@@ -87,7 +87,7 @@ public class AppTest {
         Row firstRow = null;
         int fileNo = 0;
 
-        ClassifierFactory classifierFactor = new LayexAndNetClassifierBuilder()
+        ClassifierFactory<?> classifierFactory = new LayexAndNetClassifierBuilder()
             .setModel(JSON.loadJSONObject(getResourcePath("/data/model.json").toString()))
             .build();
 
@@ -98,7 +98,7 @@ public class AppTest {
                     case 0:
                         document = loadDocument(expectedValue, "CP949");
                         sheet = document.getSheetAt(0);
-                        sheet.setClassifierFactory(classifierFactor);
+                        sheet.setClassifierFactory(classifierFactory);
                         table = sheet.getTable();
                         assert table != null;
                         firstRow = table.rows().iterator().next();

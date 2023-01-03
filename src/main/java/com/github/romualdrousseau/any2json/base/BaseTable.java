@@ -59,7 +59,7 @@ public abstract class BaseTable implements Table, Visitable {
     }
 
     @Override
-    public Iterable<String> getHeaderNames() {
+    public List<String> getHeaderNames() {
         List<String> result = new ArrayList<String>();
         for(Header header: this.headers()) {
             result.add(header.getName());

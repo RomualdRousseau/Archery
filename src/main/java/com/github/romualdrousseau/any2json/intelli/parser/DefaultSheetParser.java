@@ -20,7 +20,7 @@ public abstract class DefaultSheetParser implements SheetParser {
     @Override
     public void transformSheet(TransformableSheet sheet) {
         sheet.stichRows();
-
+        
         final String recipe = sheet.getClassifierFactory().getLayoutClassifier().get().getRecipe();
         if (recipe != null) {
             try(PythonInterpreter pyInterp = new PythonInterpreter()) {
