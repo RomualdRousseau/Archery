@@ -1,11 +1,9 @@
 package com.github.romualdrousseau.any2json.classifier;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.github.romualdrousseau.any2json.DocumentFactory;
@@ -14,6 +12,7 @@ import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.layex.Layex;
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
 import com.github.romualdrousseau.shuju.json.JSON;
+import com.github.romualdrousseau.shuju.json.JSONArray;
 import com.github.romualdrousseau.shuju.json.JSONObject;
 import com.github.romualdrousseau.shuju.math.Tensor;
 
@@ -52,10 +51,8 @@ public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifi
         this.requiredTags = requiredTags;
         this.pivotEntityList = pivotEntityList;
 
-        this.metaMatchers = metaLayexes.stream().map(Layex::new).map(Layex::compile)
-                .collect(Collectors.toCollection(ArrayList::new));
-        this.dataMatchers = dataLayexes.stream().map(Layex::new).map(Layex::compile)
-                .collect(Collectors.toCollection(ArrayList::new));
+        this.metaMatchers = metaLayexes.stream().map(Layex::new).map(Layex::compile).toList();
+        this.dataMatchers = dataLayexes.stream().map(Layex::new).map(Layex::compile).toList();
         this.recipe = null;
 
         this.tokenizer = (ngrams == 0) ? new ShingleTokenizer(lexicon) : new NgramTokenizer(ngrams);
@@ -171,6 +168,18 @@ public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifi
 
     @Override
     public void fit(final List<List<Integer>> trainingSet, final List<List<Integer>> validationSet) {
+        JSONArray list1 = JSON.newJSONArray();
+        trainingSet.forEach(x -> { 
+            list1.append(JSON.parseJSONArray(x.toString()));
+        });
+        JSON.saveJSONArray(list1, "training.json");
+
+        JSONArray list2 = JSON.newJSONArray();
+        validationSet.forEach(x -> { 
+            list2.append(JSON.parseJSONArray(x.toString()));
+        });
+        JSON.saveJSONArray(list2, "validation.json");
+
         this.accuracy = 1.0f;
     }
 

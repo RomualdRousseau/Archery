@@ -34,9 +34,9 @@ public class IntelliHeader extends CompositeHeader {
 
         final String cellValue = this.getCell().getValue();
         if(StringUtils.isFastBlank(cellValue)) {
-            this.name = this.entities().stream().findFirst().orElse(DocumentFactory.PIVOT_VALUE_SUFFIX);
+            this.name = this.entities().stream().findAny().map(x -> this.getEntitiesAsString()).orElse(DocumentFactory.PIVOT_VALUE_SUFFIX);
         } else if (isMeta) {
-            this.name = this.entities().stream().findFirst().orElse(cellValue);
+            this.name = this.entities().stream().findAny().map(x -> this.getEntitiesAsString()).orElse(cellValue);
         } else {
             this.name = this.getLayoutClassifier().toEntityName(cellValue);
         }
