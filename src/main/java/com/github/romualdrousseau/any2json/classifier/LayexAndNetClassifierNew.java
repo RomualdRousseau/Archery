@@ -1,7 +1,6 @@
 package com.github.romualdrousseau.any2json.classifier;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -14,12 +13,14 @@ import com.github.romualdrousseau.any2json.ILayoutClassifier;
 import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.layex.Layex;
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
+import com.github.romualdrousseau.shuju.json.JSON;
 import com.github.romualdrousseau.shuju.json.JSONObject;
 import com.github.romualdrousseau.shuju.math.Tensor;
 
 import com.github.romualdrousseau.shuju.preprocessing.Text;
 import com.github.romualdrousseau.shuju.preprocessing.comparer.RegexComparer;
 import com.github.romualdrousseau.shuju.preprocessing.hasher.VocabularyHasher;
+import com.github.romualdrousseau.shuju.preprocessing.tokenizer.NgramTokenizer;
 import com.github.romualdrousseau.shuju.preprocessing.tokenizer.ShingleTokenizer;
 
 public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifier<List<Integer>> {
@@ -41,20 +42,23 @@ public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifi
     private final Text.IHasher hasher;
     private final RegexComparer comparer;
 
-    public LayexAndNetClassifierNew(final List<String> vocabulary, final List<String> lexicon, final List<String> entities, final Map<String, String> patterns, final List<String> filters,
+    public LayexAndNetClassifierNew(final List<String> vocabulary, final int ngrams, final List<String> lexicon,
+            final List<String> entities, final Map<String, String> patterns, final List<String> filters,
             final List<String> tags, final List<String> requiredTags, final List<String> pivotEntityList,
-            final List<String> metaLayexes, final List<String> dataLayexes) {
+            final List<String> metaLayexes, final List<String> dataLayexes, final JSONObject parameters) {
         this.entities = entities;
         this.filters = filters;
         this.tags = tags;
         this.requiredTags = requiredTags;
         this.pivotEntityList = pivotEntityList;
 
-        this.metaMatchers = metaLayexes.stream().map(Layex::new).map(Layex::compile).collect(Collectors.toCollection(ArrayList::new));
-        this.dataMatchers = dataLayexes.stream().map(Layex::new).map(Layex::compile).collect(Collectors.toCollection(ArrayList::new));
+        this.metaMatchers = metaLayexes.stream().map(Layex::new).map(Layex::compile)
+                .collect(Collectors.toCollection(ArrayList::new));
+        this.dataMatchers = dataLayexes.stream().map(Layex::new).map(Layex::compile)
+                .collect(Collectors.toCollection(ArrayList::new));
         this.recipe = null;
 
-        this.tokenizer = new ShingleTokenizer(lexicon);
+        this.tokenizer = (ngrams == 0) ? new ShingleTokenizer(lexicon) : new NgramTokenizer(ngrams);
         this.hasher = new VocabularyHasher(vocabulary);
         this.comparer = new RegexComparer(patterns);
     }
@@ -96,7 +100,7 @@ public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifi
     }
 
     @Override
-    public void setMetaMatcherList(List<TableMatcher> matchers) {
+    public void setMetaMatcherList(final List<TableMatcher> matchers) {
         this.metaMatchers = matchers;
     }
 
@@ -106,7 +110,7 @@ public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifi
     }
 
     @Override
-    public void setDataMatcherList(List<TableMatcher> matchers) {
+    public void setDataMatcherList(final List<TableMatcher> matchers) {
         this.dataMatchers = matchers;
     }
 
@@ -121,18 +125,19 @@ public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifi
     }
 
     @Override
-    public String toEntityName(String value) {
+    public String toEntityName(final String value) {
         return this.comparer.anonymize(value);
     }
 
     @Override
-    public Optional<String> toEntityValue(String value) {
+    public Optional<String> toEntityValue(final String value) {
         return this.comparer.find(value);
     }
 
     @Override
-    public Tensor toEntityVector(String value) {
-        return Tensor.create(Text.to_categorical(Arrays.asList(value), this.entities, this.comparer).stream().mapToDouble(x -> (double) x).toArray());
+    public Tensor toEntityVector(final String value) {
+        return Tensor.create(Text.to_categorical(value, this.entities, this.comparer).stream()
+                .mapToDouble(x -> (double) x).toArray());
     }
 
     @Override
@@ -146,7 +151,7 @@ public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifi
     }
 
     @Override
-    public List<Integer> buildPredictRow(String name, List<String> entities, List<String> context) {
+    public List<Integer> buildPredictSet(final String name, final List<String> entities, final List<String> context) {
         final List<Integer> part1 = Text.to_categorical(entities, this.entities);
         final List<Integer> part2 = Text.one_hot(name, this.filters, this.tokenizer, this.hasher);
         final List<Integer> part3 = context.stream()
@@ -154,21 +159,19 @@ public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifi
                 .flatMap(x -> Text.one_hot(x, this.filters, this.tokenizer, this.hasher).stream())
                 .distinct().sorted().toList();
         return Stream.concat(Stream.concat(
-            Text.pad_sequence(part1, 10).stream(),
-            Text.pad_sequence(part2, 5).stream()),
-            Text.pad_sequence(part3, 20).stream()).toList();
+                Text.pad_sequence(part1, 10).stream(),
+                Text.pad_sequence(part2, 5).stream()),
+                Text.pad_sequence(part3, 20).stream()).toList();
     }
 
     @Override
-    public String predict(final String name, final List<String> entities, final List<String> context) {
-        this.buildPredictRow(name, entities, context);
+    public String predict(final List<Integer> predictSet) {
         return "none";
     }
 
     @Override
-    public void fit(List<List<Integer>> trainingSet, List<List<Integer>> validationSet) {
-        // TODO Auto-generated method stub
-        
+    public void fit(final List<List<Integer>> trainingSet, final List<List<Integer>> validationSet) {
+        this.accuracy = 1.0f;
     }
 
     @Override
@@ -179,5 +182,10 @@ public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifi
     @Override
     public float getMean() {
         return this.mean;
+    }
+
+    @Override
+    public JSONObject toJSON() {
+        return JSON.newJSONObject();
     }
 }

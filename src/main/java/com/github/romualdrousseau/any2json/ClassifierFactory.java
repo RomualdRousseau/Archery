@@ -2,14 +2,14 @@ package com.github.romualdrousseau.any2json;
 
 import java.util.Optional;
 
-public class ClassifierFactory<T> {
+public class ClassifierFactory {
 
-    public ClassifierFactory<T> setLayoutClassifier(ILayoutClassifier layoutClassifier) {
+    public ClassifierFactory setLayoutClassifier(ILayoutClassifier layoutClassifier) {
         this.layoutClassifier = layoutClassifier;
         return this;
     }
 
-    public ClassifierFactory<T> setTagClassifier(ITagClassifier<T> tagClassifier) {
+    public <T> ClassifierFactory setTagClassifier(ITagClassifier<T> tagClassifier) {
         this.tagClassifier = tagClassifier;
         return this;
     }
@@ -18,10 +18,11 @@ public class ClassifierFactory<T> {
         return Optional.ofNullable(this.layoutClassifier);
     }
 
-    public Optional<ITagClassifier<T>> getTagClassifier() {
-        return Optional.ofNullable(this.tagClassifier);
+    @SuppressWarnings("unchecked") // In god we trust :)
+    public <T> Optional<ITagClassifier<T>> getTagClassifier() {
+        return Optional.ofNullable((ITagClassifier<T>) this.tagClassifier);
     }
 
     private ILayoutClassifier layoutClassifier;
-    private ITagClassifier<T> tagClassifier;
+    private ITagClassifier<?> tagClassifier;
 }

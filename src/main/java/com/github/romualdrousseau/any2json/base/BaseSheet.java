@@ -47,7 +47,7 @@ public abstract class BaseSheet implements Sheet {
     }
 
     @Override
-    public void setClassifierFactory(final ClassifierFactory<?> classifierFactory) {
+    public void setClassifierFactory(final ClassifierFactory classifierFactory) {
         if (classifierFactory == null) {
             this.classifierFactory = new SimpleClassifierBuilder().build();
         }
@@ -65,7 +65,7 @@ public abstract class BaseSheet implements Sheet {
         return this.sheetStore;
     }
 
-    public ClassifierFactory<?> getClassifierFactory() {
+    public ClassifierFactory getClassifierFactory() {
         return this.classifierFactory;
     }
 
@@ -215,5 +215,5 @@ public abstract class BaseSheet implements Sheet {
     private final List<Integer> rowMask;
     private final List<Integer> columnMask;
     private final int storeLastColumnNum;
-    private ClassifierFactory<?> classifierFactory;
+    private ClassifierFactory classifierFactory;
 }

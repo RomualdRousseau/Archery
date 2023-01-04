@@ -31,7 +31,7 @@ public class AppTest {
         Row firstRow = null;
         int fileNo = 0;
 
-        ClassifierFactory<?> classifierFactor = new SimpleClassifierBuilder()
+        ClassifierFactory classifierFactor = new SimpleClassifierBuilder()
             .build();
 
         for (String[] expectedValues : scenarios1) {
@@ -87,7 +87,7 @@ public class AppTest {
         Row firstRow = null;
         int fileNo = 0;
 
-        ClassifierFactory<?> classifierFactory = new LayexAndNetClassifierBuilder()
+        ClassifierFactory classifierFactory = new LayexAndNetClassifierBuilder()
             .setModel(JSON.loadJSONObject(getResourcePath("/data/model.json").toString()))
             .build();
 

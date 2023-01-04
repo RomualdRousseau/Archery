@@ -1,6 +1,7 @@
 package com.github.romualdrousseau.any2json;
 
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
+import com.github.romualdrousseau.shuju.json.JSONObject;
 import com.github.romualdrousseau.shuju.math.Tensor;
 
 import java.util.List;
@@ -31,4 +32,6 @@ public interface ILayoutClassifier {
     Optional<String> toEntityValue(String value);
 
     Tensor toEntityVector(String value);
+
+    JSONObject toJSON();
 }

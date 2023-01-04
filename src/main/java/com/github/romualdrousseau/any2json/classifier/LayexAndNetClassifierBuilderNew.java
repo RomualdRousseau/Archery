@@ -1,6 +1,5 @@
 package com.github.romualdrousseau.any2json.classifier;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -11,10 +10,6 @@ import com.github.romualdrousseau.shuju.json.JSONObject;
 public class LayexAndNetClassifierBuilderNew implements IClassifierBuilder {
 
     public LayexAndNetClassifierBuilderNew() {
-        this.requiredTagList = Collections.emptyList();
-        this.pivotEntityList = Collections.emptyList();
-        this.metaLayexes = Collections.emptyList();
-        this.dataLayexes = Collections.emptyList();
     }
 
     public LayexAndNetClassifierBuilderNew setModel(final JSONObject model) {
@@ -24,66 +19,78 @@ public class LayexAndNetClassifierBuilderNew implements IClassifierBuilder {
 
     public LayexAndNetClassifierBuilderNew setVocabulary(final List<String> vocabulary) {
         this.vocabulary = vocabulary;
-		return this;
+        return this;
+    }
+
+    public LayexAndNetClassifierBuilderNew setNGrams(final int ngrams) {
+        this.ngrams = ngrams;
+        return this;
     }
 
     public LayexAndNetClassifierBuilderNew setLexicon(final List<String> lexicon) {
         this.lexicon = lexicon;
-		return this;
+        return this;
     }
 
     public LayexAndNetClassifierBuilderNew setEntityList(final List<String> entityList) {
         this.entityList = entityList;
-		return this;
+        return this;
     }
 
     public LayexAndNetClassifierBuilderNew setPatternList(final Map<String, String> patternList) {
         this.patternList = patternList;
-		return this;
+        return this;
     }
 
     public LayexAndNetClassifierBuilderNew setFilters(final List<String> filters) {
         this.filters = filters;
-		return this;
+        return this;
     }
 
     public LayexAndNetClassifierBuilderNew setTagList(final List<String> tagList) {
         this.tagList = tagList;
-		return this;
+        return this;
     }
 
     public LayexAndNetClassifierBuilderNew setRequiredTagList(final List<String> requiredTagList) {
         this.requiredTagList = requiredTagList;
-		return this;
+        return this;
     }
 
     public LayexAndNetClassifierBuilderNew setPivotEntityList(final List<String> pivotEntityList) {
         this.pivotEntityList = pivotEntityList;
-		return this;
-	}
+        return this;
+    }
 
     public LayexAndNetClassifierBuilderNew setMetaLayexes(final List<String> metaLayexes) {
         this.metaLayexes = metaLayexes;
-		return this;
+        return this;
     }
 
     public LayexAndNetClassifierBuilderNew setDataLayexes(final List<String> dataLayexes) {
         this.dataLayexes = dataLayexes;
-		return this;
-	}
+        return this;
+    }
 
-    public ClassifierFactory<List<Integer>> build() {
+    public LayexAndNetClassifierBuilderNew setParameters(JSONObject parameters) {
+        this.parameters = parameters;
+        return this;
+    }
+
+    public ClassifierFactory build() {
         final LayexAndNetClassifierNew classifier;
         if (model == null) {
-            classifier = new LayexAndNetClassifierNew(vocabulary, lexicon, entityList, patternList, filters, tagList, requiredTagList, pivotEntityList, metaLayexes, dataLayexes);
+            classifier = new LayexAndNetClassifierNew(vocabulary, ngrams, lexicon, entityList, patternList, filters, tagList,
+                    requiredTagList, pivotEntityList, metaLayexes, dataLayexes, parameters);
         } else {
             classifier = new LayexAndNetClassifierNew(model);
         }
-        return new ClassifierFactory<List<Integer>>().setLayoutClassifier(classifier).setTagClassifier(classifier);
+        return new ClassifierFactory().setLayoutClassifier(classifier).setTagClassifier(classifier);
     }
 
     private JSONObject model;
     private List<String> vocabulary;
+    private int ngrams;
     private List<String> lexicon;
     private List<String> entityList;
     private Map<String, String> patternList;
@@ -93,4 +100,5 @@ public class LayexAndNetClassifierBuilderNew implements IClassifierBuilder {
     private List<String> pivotEntityList;
     private List<String> metaLayexes;
     private List<String> dataLayexes;
+    private JSONObject parameters;
 }

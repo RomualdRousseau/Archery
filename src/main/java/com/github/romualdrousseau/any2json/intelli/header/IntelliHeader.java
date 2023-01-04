@@ -24,7 +24,7 @@ public class IntelliHeader extends CompositeHeader {
     }
 
     private IntelliHeader(final IntelliHeader parent) {
-        this(parent.getTable(), parent.getCell(), false); // TODO: isMeta maybe false
+        this(parent.getTable(), parent.getCell(), parent.isMeta); // TODO: isMeta maybe false
     }
 
     private IntelliHeader(final CompositeTable table, final BaseCell cell, boolean isMeta) {
@@ -108,7 +108,7 @@ public class IntelliHeader extends CompositeHeader {
             this.tag = HeaderTag.None;
         } else {
             this.getClassifierFactory().getTagClassifier().ifPresent(classifier -> { 
-                final String tagValue = classifier.predict(this.getName(), this.entities(), this.getTable().getHeaderNames());
+                final String tagValue = classifier.predict(classifier.buildPredictSet(this.getName(), this.entities(), this.getTable().getHeaderNames()));
                 this.tag = new HeaderTag(tagValue);
             });
         }

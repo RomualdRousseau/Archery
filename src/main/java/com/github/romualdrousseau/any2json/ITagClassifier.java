@@ -2,21 +2,23 @@ package com.github.romualdrousseau.any2json;
 
 import java.util.List;
 
+import com.github.romualdrousseau.shuju.json.JSONObject;
+
 public interface ITagClassifier<T> {
 
     List<String> getTagList();
 
     List<String> getRequiredTagList();
 
-    T buildPredictRow(final String name, final List<String> entities, final List<String> context);
+    T buildPredictSet(final String name, final List<String> entities, final List<String> context);
+
+    String predict(final T predictSet);
 
     void fit(List<T> trainingSet, List<T> validationSet);
-
-    String predict(final String name, final List<String> entities, final List<String> context);
 
     float getAccuracy();
 
     float getMean();
 
-    
+    JSONObject toJSON();
 }

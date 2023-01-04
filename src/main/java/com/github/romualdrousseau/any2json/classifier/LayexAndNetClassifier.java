@@ -3,7 +3,6 @@ package com.github.romualdrousseau.any2json.classifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -13,7 +12,6 @@ import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.layex.Layex;
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
 import com.github.romualdrousseau.shuju.DataRow;
-import com.github.romualdrousseau.shuju.DataSet;
 import com.github.romualdrousseau.shuju.json.JSON;
 import com.github.romualdrousseau.shuju.json.JSONArray;
 import com.github.romualdrousseau.shuju.json.JSONObject;
@@ -38,14 +36,6 @@ import com.github.romualdrousseau.shuju.nlp.StringList;
 
 public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<DataRow> {
     public static final int BATCH_SIZE = 64;
-
-    // public final static String[] MetaLayexesDefault = { "(v.$)+" };
-    // public final static String[] DataLayexesDefault = {
-    // "((e.*$)(vS.+$))(()(.{3,}$)())+(.{2}$)?",
-    // "((v.*$)(vS.+$))((.{2}$)(.{3,}$)+())+(.{2}$)?",
-    // "(()(ES.+$))((sS.+$)(S.{2,}$)+())+(.{2}$)?",
-    // "(()(ES.+$))(()(.{3,}$)())+(.{2}$)?"
-    // };
 
     private final NgramList ngrams;
     private final RegexList entities;
@@ -139,6 +129,11 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
     }
 
     @Override
+    public void setRecipe(final String recipe) {
+        this.recipe = recipe;
+    }
+
+    @Override
     public String toEntityName(String value) {
         return this.entities.anonymize(value);
     }
@@ -164,7 +159,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
     }
 
     @Override
-    public DataRow buildPredictRow(final String name, final List<String> entities, final List<String> context) {
+    public DataRow buildPredictSet(final String name, final List<String> entities, final List<String> context) {
         final Tensor1D entityVector = new Tensor1D(this.entities.getVectorSize());
         entities.forEach(entity -> {
             final int i = this.entities.ordinal(entity);
@@ -184,8 +179,16 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
     }
 
     @Override
-    public String predict(final String name, final List<String> entities, final List<String> context) {
-        return this.predict(this.buildPredictRow(name, entities, context));
+    public String predict(final DataRow predictSet) {
+        final Tensor2D input = new Tensor2D(predictSet.featuresAsOneVector(), true);
+        final Tensor2D output = this.model.model(input).detach();
+
+        int tagIndex = output.argmax(0, 0);
+        if (tagIndex >= this.tags.size()) {
+            tagIndex = 0;
+        }
+
+        return this.tags.get(tagIndex);
     }
 
     @Override
@@ -244,40 +247,12 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
         return this.accuracy;
     }
 
-    public void setRecipe(final String recipe) {
-        this.recipe = recipe;
-    }
-
+    @Override
     public float getMean() {
         return this.mean;
     }
 
-    
-
-    public DataRow buildTrainingRow(final String name, final List<String> entities, final List<String> context, final String tag, final boolean ensureVocabulary) {
-        if (ensureVocabulary) {
-            context.forEach(this.ngrams::add);
-        }
-        final Tensor1D label = this.tags.word2vec(tag);
-        return this.buildPredictRow(name, entities, context).setLabel(label);
-    }
-
-    public String predict(final DataRow row) {
-        final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), true);
-        final Tensor2D output = this.model.model(input).detach();
-
-        int tagIndex = output.argmax(0, 0);
-        if (tagIndex >= this.tags.size()) {
-            tagIndex = 0;
-        }
-
-        return this.tags.get(tagIndex);
-    }
-
-    public Model getModel() {
-        return this.model;
-    }
-
+    @Override
     public JSONObject toJSON() {
         final JSONArray jsonRequiredTags = JSON.newJSONArray();
         this.requiredTags.forEach(x -> jsonRequiredTags.append(x));
@@ -311,92 +286,6 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
         json.setJSONArray("layexes", jsonLayexes);
         json.setJSONArray("model", this.model.toJSON());
         return json;
-    }
-
-    public String dumpDataSet(final DataSet dataset) {
-        final StringBuilder result = new StringBuilder();
-        result.append("============================ DUMP TRAININSET ============================\n");
-        for (final DataRow row : dataset.rows()) {
-            result.append(this.dumpDataRow(dataset, row));
-        }
-        result.append("================================== END ==================================\n");
-        return result.toString();
-    }
-
-    public String dumpDataRow(final DataSet dataset, final DataRow row) {
-        final StringBuilder result = new StringBuilder();
-
-        Tensor1D v = row.features().get(0);
-        boolean firstPass = true;
-        for (int i = 0; i < v.shape[0]; i++) {
-            if (v.get(i) == 1.0f) {
-                final String e = this.getEntityList().get(i);
-                if (e != null) {
-                    if (firstPass) {
-                        firstPass = false;
-                    } else {
-                        result.append(":");
-                    }
-                    result.append(e);
-                }
-            }
-        }
-
-        result.append(",");
-
-        v = row.features().get(1);
-        firstPass = true;
-        for (int i = 0; i < v.shape[0]; i++) {
-            if (v.get(i) == 1.0f) {
-                final String w = this.ngrams.get(i);
-                if (w != null) {
-                    if (firstPass) {
-                        firstPass = false;
-                    } else {
-                        result.append(":");
-                    }
-                    result.append(w);
-                }
-            }
-        }
-
-        result.append(",");
-
-        v = row.features().get(2);
-        firstPass = true;
-        for (int i = 0; i < v.shape[0]; i++) {
-            if (v.get(i) == 1.0f) {
-                final String w = this.ngrams.get(i);
-                if (w != null) {
-                    if (firstPass) {
-                        firstPass = false;
-                    } else {
-                        result.append(":");
-                    }
-                    result.append(w);
-                }
-            }
-        }
-
-        result.append(",");
-
-        final Tensor1D l = row.label();
-
-        firstPass = true;
-        for (int i = 0; i < 16; i++) {
-            if (l.get(i) == 1.0f) {
-                if (firstPass) {
-                    result.append(this.tags.get(i));
-                    firstPass = false;
-                } else {
-                    result.append(":").append(this.tags.get(i));
-                }
-            }
-        }
-
-        result.append("\n");
-
-        return result.toString();
     }
 
     private void buildModel() {
