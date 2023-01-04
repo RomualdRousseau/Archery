@@ -1,10 +1,18 @@
 package com.github.romualdrousseau.any2json.classifier;
 
+import java.nio.file.Path;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import org.tensorflow.SavedModelBundle;
+import org.tensorflow.SessionFunction;
+import org.tensorflow.Signature;
+import org.tensorflow.ndarray.StdArrays;
+import org.tensorflow.types.TFloat32;
 
 import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.ILayoutClassifier;
@@ -15,7 +23,6 @@ import com.github.romualdrousseau.shuju.json.JSON;
 import com.github.romualdrousseau.shuju.json.JSONArray;
 import com.github.romualdrousseau.shuju.json.JSONObject;
 import com.github.romualdrousseau.shuju.math.Tensor;
-
 import com.github.romualdrousseau.shuju.preprocessing.Text;
 import com.github.romualdrousseau.shuju.preprocessing.comparer.RegexComparer;
 import com.github.romualdrousseau.shuju.preprocessing.hasher.VocabularyHasher;
@@ -40,6 +47,7 @@ public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifi
     private final Text.ITokenizer tokenizer;
     private final Text.IHasher hasher;
     private final RegexComparer comparer;
+    private final SessionFunction tagClassifierFunc;
 
     public LayexAndNetClassifierNew(final List<String> vocabulary, final int ngrams, final List<String> lexicon,
             final List<String> entities, final Map<String, String> patterns, final List<String> filters,
@@ -58,6 +66,13 @@ public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifi
         this.tokenizer = (ngrams == 0) ? new ShingleTokenizer(lexicon) : new NgramTokenizer(ngrams);
         this.hasher = new VocabularyHasher(vocabulary);
         this.comparer = new RegexComparer(patterns);
+
+        if (Path.of(parameters.getString("model")).toFile().exists()) {
+            SavedModelBundle model = SavedModelBundle.load(parameters.getString("model"), "serve");
+            this.tagClassifierFunc = model.function(Signature.DEFAULT_KEY);
+        } else {
+            this.tagClassifierFunc = null;
+        }
     }
 
     public LayexAndNetClassifierNew(final JSONObject json) {
@@ -74,6 +89,8 @@ public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifi
         this.tokenizer = new ShingleTokenizer(Collections.emptyList());
         this.hasher = new VocabularyHasher(Collections.emptyList());
         this.comparer = new RegexComparer(Collections.emptyMap());
+
+        this.tagClassifierFunc = null;
     }
 
     @Override
@@ -158,12 +175,20 @@ public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifi
         return Stream.concat(Stream.concat(
                 Text.pad_sequence(part1, 10).stream(),
                 Text.pad_sequence(part2, 5).stream()),
-                Text.pad_sequence(part3, 20).stream()).toList();
+                Text.pad_sequence(part3, 100).stream()).toList();
     }
 
     @Override
     public String predict(final List<Integer> predictSet) {
-        return "none";
+        if (this.tagClassifierFunc == null) {
+            return this.tags.get(0);
+        }
+        Map<String, org.tensorflow.Tensor> result = this.tagClassifierFunc.call(new HashMap<String, org.tensorflow.Tensor>() {{
+            put("input_1", ListIntegertoTFloat32(predictSet, 0, 10));
+            put("embedding_input", ListIntegertoTFloat32(predictSet, 10, 15));
+            put("embedding_1_input", ListIntegertoTFloat32(predictSet, 15, 115));
+        }});
+        return this.tags.get((int) TFloat32ToTensor((TFloat32) result.get("dense_2")).argmax(0).item(0)); 
     }
 
     @Override
@@ -183,6 +208,22 @@ public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifi
         this.accuracy = 1.0f;
     }
 
+    private TFloat32 ListIntegertoTFloat32(List<Integer> l, int a, int b) {
+        float[][] result = new float[1][b - a];
+        for(int i = a, j = 0; i < b; i++, j++) {
+            result[0][j] = (float) l.get(i);
+        }
+        return TFloat32.tensorOf(StdArrays.ndCopyOf(result));
+    }
+
+    private Tensor TFloat32ToTensor(TFloat32 t) {
+        float[] result = new float[(int) t.shape().size(1)];
+        for(int i = 0; i < result.length; i++) {
+            result[i] = t.getFloat(0, i);
+        }
+        return Tensor.create(result);
+    }
+
     @Override
     public float getAccuracy() {
         return this.accuracy;
@@ -195,6 +236,8 @@ public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifi
 
     @Override
     public JSONObject toJSON() {
-        return JSON.newJSONObject();
+        JSONObject result = JSON.newJSONObject();
+        result.set("model", "/home/romuald/DataLoaderStudio/sales-spanish/target/model");
+        return result;
     }
 }
