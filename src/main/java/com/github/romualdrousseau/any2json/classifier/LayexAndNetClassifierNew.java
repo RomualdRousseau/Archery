@@ -1,6 +1,9 @@
 package com.github.romualdrousseau.any2json.classifier;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +50,8 @@ public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifi
     private final Text.ITokenizer tokenizer;
     private final Text.IHasher hasher;
     private final RegexComparer comparer;
+
+    private final JSONObject parameters;
     private final SessionFunction tagClassifierFunc;
 
     public LayexAndNetClassifierNew(final List<String> vocabulary, final int ngrams, final List<String> lexicon,
@@ -66,7 +71,8 @@ public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifi
         this.tokenizer = (ngrams == 0) ? new ShingleTokenizer(lexicon) : new NgramTokenizer(ngrams);
         this.hasher = new VocabularyHasher(vocabulary);
         this.comparer = new RegexComparer(patterns);
-
+        
+        this.parameters = parameters;
         if (Path.of(parameters.getString("model")).toFile().exists()) {
             SavedModelBundle model = SavedModelBundle.load(parameters.getString("model"), "serve");
             this.tagClassifierFunc = model.function(Signature.DEFAULT_KEY);
@@ -90,6 +96,7 @@ public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifi
         this.hasher = new VocabularyHasher(Collections.emptyList());
         this.comparer = new RegexComparer(Collections.emptyMap());
 
+        this.parameters = JSON.newJSONObject();
         this.tagClassifierFunc = null;
     }
 
@@ -183,29 +190,49 @@ public class LayexAndNetClassifierNew implements ILayoutClassifier, ITagClassifi
         if (this.tagClassifierFunc == null) {
             return this.tags.get(0);
         }
-        Map<String, org.tensorflow.Tensor> result = this.tagClassifierFunc.call(new HashMap<String, org.tensorflow.Tensor>() {{
-            put("input_1", ListIntegertoTFloat32(predictSet, 0, 10));
-            put("embedding_input", ListIntegertoTFloat32(predictSet, 10, 15));
-            put("embedding_1_input", ListIntegertoTFloat32(predictSet, 15, 115));
-        }});
-        return this.tags.get((int) TFloat32ToTensor((TFloat32) result.get("dense_2")).argmax(0).item(0)); 
+        final HashMap<String, org.tensorflow.Tensor> inputs = new HashMap<>() {{
+            put("entity_input", ListIntegertoTFloat32(predictSet, 0, 10));
+            put("name_input", ListIntegertoTFloat32(predictSet, 10, 15));
+            put("context_input", ListIntegertoTFloat32(predictSet, 15, 115));
+        }};
+        final Map<String, org.tensorflow.Tensor> result = this.tagClassifierFunc.call(inputs);
+        return this.tags.get((int) TFloat32ToTensor((TFloat32) result.get("tag_output")).argmax(0).item(0)); 
     }
 
     @Override
-    public void fit(final List<List<Integer>> trainingSet, final List<List<Integer>> validationSet) {
-        JSONArray list1 = JSON.newJSONArray();
-        trainingSet.forEach(x -> { 
-            list1.append(JSON.parseJSONArray(x.toString()));
-        });
-        JSON.saveJSONArray(list1, "training.json");
+    public boolean fit(final List<List<Integer>> trainingSet, final List<List<Integer>> validationSet) {
+        try {
+            final Path kernelPath = Paths.get(System.getProperty("user.home") + "/.local/any2json/kernels");
+            if (!kernelPath.toFile().exists()) {
+                return false;
+            }
+            
+            final Path trainPath = Files.createTempDirectory("any2json").toAbsolutePath();
+            final JSONArray list1 = JSON.newJSONArray();
+            trainingSet.forEach(x -> { 
+                list1.append(JSON.parseJSONArray(x.toString()));
+            });
+            JSON.saveJSONArray(list1, trainPath.resolve("training.json").toString());
+            final JSONArray list2 = JSON.newJSONArray();
+            validationSet.forEach(x -> { 
+                list2.append(JSON.parseJSONArray(x.toString()));
+            });
+            JSON.saveJSONArray(list2, trainPath.resolve("validation.json").toString());
+    
+            final Path modelPath = Path.of(this.parameters.getString("model"));
 
-        JSONArray list2 = JSON.newJSONArray();
-        validationSet.forEach(x -> { 
-            list2.append(JSON.parseJSONArray(x.toString()));
-        });
-        JSON.saveJSONArray(list2, "validation.json");
+            final ProcessBuilder processBuilder = new ProcessBuilder(kernelPath.resolve("run.sh").toString(), "-s 10,5,100,32", "-t " + trainPath, "-m " + modelPath);
+            processBuilder.directory(kernelPath.toFile());
+            processBuilder.inheritIO();
+            processBuilder.redirectErrorStream(true);
 
-        this.accuracy = 1.0f;
+            final Process process = processBuilder.start();
+            final int exitcode = process.waitFor();
+            return exitcode == 0;
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     private TFloat32 ListIntegertoTFloat32(List<Integer> l, int a, int b) {

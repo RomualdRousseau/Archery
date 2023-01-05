@@ -192,10 +192,10 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
     }
 
     @Override
-    public void fit(final List<DataRow> trainingSet, final List<DataRow> validationSet) {
+    public boolean fit(final List<DataRow> trainingSet, final List<DataRow> validationSet) {
         final float n = trainingSet.size();
         if (n == 0.0f) {
-            return;
+            return false;
         }
 
         this.accuracy = 0.0f;
@@ -240,6 +240,8 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
         final float total = validationSet.size();
         this.accuracy /= total;
         this.mean /= total;
+
+        return true;
     }
 
     @Override

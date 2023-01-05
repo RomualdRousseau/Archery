@@ -14,7 +14,7 @@ public interface ITagClassifier<T> {
 
     String predict(final T predictSet);
 
-    void fit(List<T> trainingSet, List<T> validationSet);
+    boolean fit(List<T> trainingSet, List<T> validationSet);
 
     float getAccuracy();
 
