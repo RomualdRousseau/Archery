@@ -1,9 +1,11 @@
 package com.github.romualdrousseau.any2json.classifier;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -213,11 +215,13 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
     @Override
     public boolean fit(final List<List<Integer>> trainingSet, final List<List<Integer>> validationSet) {
         try {
-            final Path kernelPath = Paths.get(System.getProperty("user.home") + "/.local/any2json/kernels");
+            this.installKernels(Paths.get(System.getProperty("user.home") + "/.local/any2json/kernels"));
+
+            final Path kernelPath = Paths.get(System.getProperty("user.home") + "/.local/any2json/kernels/tf");
             if (!kernelPath.toFile().exists()) {
                 return false;
             }
-            
+
             final Path trainPath = Files.createTempDirectory("any2json").toAbsolutePath();
             final JSONArray list1 = JSON.newJSONArray();
             trainingSet.forEach(x -> { 
@@ -273,7 +277,32 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
     @Override
     public JSONObject toJSON() {
         JSONObject result = JSON.newJSONObject();
-        result.set("model", "/home/romuald/DataLoaderStudio/sales-spanish/target/model");
         return result;
+    }
+
+    private void installKernels(final Path destPath) {
+        try {
+            if(destPath.toFile().exists()) {
+                return;
+            }
+            Path sourcePath = Paths.get(LayexAndNetClassifier.class.getResource("/kernels").toURI());
+            if (!sourcePath.toFile().isDirectory()) {
+                return;
+            }
+            Arrays.asList(sourcePath.toFile().listFiles()).stream().forEach(k -> {
+                Arrays.asList(k.listFiles()).stream().forEach(f -> {
+                    final Path src = f.toPath();
+                    final Path dst = destPath.resolve(sourcePath.relativize(f.toPath()));
+                    try {
+                        dst.getParent().toFile().mkdirs();
+                        Files.copy(src, dst);
+                    } catch (IOException x) {
+                        throw new RuntimeException(x);
+                    }
+                });
+            });
+        } catch (URISyntaxException x) {
+            throw new RuntimeException(x);
+        }
     }
 }
