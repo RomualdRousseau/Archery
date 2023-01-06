@@ -1,24 +1,16 @@
 package com.github.romualdrousseau.any2json.classifier;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import com.github.romualdrousseau.any2json.ClassifierFactory;
 import com.github.romualdrousseau.any2json.IClassifierBuilder;
 import com.github.romualdrousseau.shuju.json.JSONObject;
-import com.github.romualdrousseau.shuju.nlp.NgramList;
-import com.github.romualdrousseau.shuju.nlp.RegexList;
-import com.github.romualdrousseau.shuju.nlp.StopWordList;
-import com.github.romualdrousseau.shuju.nlp.StringList;
 
 public class LayexAndNetClassifierBuilder implements IClassifierBuilder {
 
     public LayexAndNetClassifierBuilder() {
-        this.requiredTagList = Collections.emptyList();
-        this.pivotEntityList = Collections.emptyList();
-        this.metaLayexes = Collections.emptyList();
-        this.dataLayexes = Collections.emptyList();
     }
 
     public LayexAndNetClassifierBuilder setModel(final JSONObject model) {
@@ -26,55 +18,71 @@ public class LayexAndNetClassifierBuilder implements IClassifierBuilder {
         return this;
     }
 
-    public LayexAndNetClassifierBuilder setNgramList(final NgramList ngramList) {
-        this.ngramList = ngramList;
-		return this;
+    public LayexAndNetClassifierBuilder setVocabulary(final List<String> vocabulary) {
+        this.vocabulary = vocabulary;
+        return this;
     }
 
-    public LayexAndNetClassifierBuilder setEntityList(final RegexList entityList) {
+    public LayexAndNetClassifierBuilder setNGrams(final int ngrams) {
+        this.ngrams = ngrams;
+        return this;
+    }
+
+    public LayexAndNetClassifierBuilder setLexicon(final List<String> lexicon) {
+        this.lexicon = lexicon;
+        return this;
+    }
+
+    public LayexAndNetClassifierBuilder setEntityList(final List<String> entityList) {
         this.entityList = entityList;
-		return this;
+        return this;
     }
 
-    public LayexAndNetClassifierBuilder setStopWordList(final StopWordList stopWordList) {
-        this.stopWordList = stopWordList;
-		return this;
+    public LayexAndNetClassifierBuilder setPatternList(final Map<String, String> patternList) {
+        this.patternList = patternList;
+        return this;
     }
 
-    public LayexAndNetClassifierBuilder setTagList(final StringList tagList) {
+    public LayexAndNetClassifierBuilder setFilters(final List<String> filters) {
+        this.filters = filters;
+        return this;
+    }
+
+    public LayexAndNetClassifierBuilder setTagList(final List<String> tagList) {
         this.tagList = tagList;
-		return this;
+        return this;
     }
 
-    public LayexAndNetClassifierBuilder setRequiredTagList(final String[] requiredTagList) {
-        this.requiredTagList = Arrays.asList(requiredTagList);
-		return this;
+    public LayexAndNetClassifierBuilder setRequiredTagList(final List<String> requiredTagList) {
+        this.requiredTagList = requiredTagList;
+        return this;
     }
 
-    public LayexAndNetClassifierBuilder setPivotEntityList(final String[] pivotEntityList) {
-        this.pivotEntityList = Arrays.asList(pivotEntityList);
-		return this;
-	}
-
-    public LayexAndNetClassifierBuilder setMetaLayexes(final String[] metaLayexes) {
-        this.metaLayexes = Arrays.asList(metaLayexes);
-		return this;
+    public LayexAndNetClassifierBuilder setPivotEntityList(final List<String> pivotEntityList) {
+        this.pivotEntityList = pivotEntityList;
+        return this;
     }
 
-    public LayexAndNetClassifierBuilder setDataLayexes(final String[] dataLayexes) {
-        this.dataLayexes = Arrays.asList(dataLayexes);
-		return this;
-	}
+    public LayexAndNetClassifierBuilder setMetaLayexes(final List<String> metaLayexes) {
+        this.metaLayexes = metaLayexes;
+        return this;
+    }
 
-    public LayexAndNetClassifierBuilder setRecipe(final String recipe) {
-        this.recipe = recipe;
-		return this;
-	}
+    public LayexAndNetClassifierBuilder setDataLayexes(final List<String> dataLayexes) {
+        this.dataLayexes = dataLayexes;
+        return this;
+    }
+
+    public LayexAndNetClassifierBuilder setModelPath(Path modelPath) {
+        this.modelPath = modelPath;
+        return this;
+    }
 
     public ClassifierFactory build() {
         final LayexAndNetClassifier classifier;
         if (model == null) {
-            classifier = new LayexAndNetClassifier(ngramList, entityList, stopWordList, tagList, requiredTagList, pivotEntityList, metaLayexes, dataLayexes, recipe);
+            classifier = new LayexAndNetClassifier(vocabulary, ngrams, lexicon, entityList, patternList, filters, tagList,
+                    requiredTagList, pivotEntityList, metaLayexes, dataLayexes, modelPath);
         } else {
             classifier = new LayexAndNetClassifier(model);
         }
@@ -82,13 +90,16 @@ public class LayexAndNetClassifierBuilder implements IClassifierBuilder {
     }
 
     private JSONObject model;
-    private NgramList ngramList;
-    private RegexList entityList;
-    private StopWordList stopWordList;
-    private StringList tagList;
+    private List<String> vocabulary;
+    private int ngrams;
+    private List<String> lexicon;
+    private List<String> entityList;
+    private Map<String, String> patternList;
+    private List<String> filters;
+    private List<String> tagList;
     private List<String> requiredTagList;
     private List<String> pivotEntityList;
     private List<String> metaLayexes;
     private List<String> dataLayexes;
-    private String recipe;
+    private Path modelPath;
 }

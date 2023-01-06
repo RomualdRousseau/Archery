@@ -116,8 +116,6 @@
             <groupId>org.tensorflow</groupId>
             <artifactId>tensorflow-core-platform</artifactId>
             <version>0.4.2</version>
-            <!--<artifactId>tensorflow</artifactId>
-            <version>1.15.0</version>-->
         </dependency>
         <!-- ShuJu Framework -->
         <dependency>

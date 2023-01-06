@@ -1,91 +1,114 @@
 package com.github.romualdrousseau.any2json.classifier;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.tensorflow.SavedModelBundle;
+import org.tensorflow.SessionFunction;
+import org.tensorflow.Signature;
+import org.tensorflow.ndarray.StdArrays;
+import org.tensorflow.types.TFloat32;
 
 import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.ILayoutClassifier;
 import com.github.romualdrousseau.any2json.ITagClassifier;
 import com.github.romualdrousseau.any2json.layex.Layex;
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
-import com.github.romualdrousseau.shuju.DataRow;
 import com.github.romualdrousseau.shuju.json.JSON;
 import com.github.romualdrousseau.shuju.json.JSONArray;
 import com.github.romualdrousseau.shuju.json.JSONObject;
 import com.github.romualdrousseau.shuju.math.Tensor;
-import com.github.romualdrousseau.shuju.math.deprecated.Tensor1D;
-import com.github.romualdrousseau.shuju.math.deprecated.Tensor2D;
-import com.github.romualdrousseau.shuju.ml.nn.Layer;
-import com.github.romualdrousseau.shuju.ml.nn.Loss;
-import com.github.romualdrousseau.shuju.ml.nn.Model;
-import com.github.romualdrousseau.shuju.ml.nn.Optimizer;
-import com.github.romualdrousseau.shuju.ml.nn.activation.LeakyRelu;
-import com.github.romualdrousseau.shuju.ml.nn.activation.Softmax;
-import com.github.romualdrousseau.shuju.ml.nn.layer.builder.ActivationBuilder;
-import com.github.romualdrousseau.shuju.ml.nn.layer.builder.BatchNormalizerBuilder;
-import com.github.romualdrousseau.shuju.ml.nn.layer.builder.DenseBuilder;
-import com.github.romualdrousseau.shuju.ml.nn.loss.SoftmaxCrossEntropy;
-import com.github.romualdrousseau.shuju.ml.nn.optimizer.builder.OptimizerAdamBuilder;
-import com.github.romualdrousseau.shuju.nlp.NgramList;
-import com.github.romualdrousseau.shuju.nlp.RegexList;
-import com.github.romualdrousseau.shuju.nlp.StopWordList;
-import com.github.romualdrousseau.shuju.nlp.StringList;
+import com.github.romualdrousseau.shuju.preprocessing.Text;
+import com.github.romualdrousseau.shuju.preprocessing.comparer.RegexComparer;
+import com.github.romualdrousseau.shuju.preprocessing.hasher.VocabularyHasher;
+import com.github.romualdrousseau.shuju.preprocessing.tokenizer.NgramTokenizer;
+import com.github.romualdrousseau.shuju.preprocessing.tokenizer.ShingleTokenizer;
 
-public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<DataRow> {
-    public static final int BATCH_SIZE = 64;
+public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<List<Integer>>, AutoCloseable {
 
-    private final NgramList ngrams;
-    private final RegexList entities;
-    private final StringList tags;
-    private final StopWordList stopwords;
+    private final List<String> entities;
+    private final List<String> filters;
+    private final List<String> tags;
     private final List<String> requiredTags;
     private final List<String> pivotEntityList;
-    private final List<Layex> metaLayexes;
-    private final List<Layex> dataLayexes;
+    private final Path modelPath;
 
     private List<TableMatcher> metaMatchers;
     private List<TableMatcher> dataMatchers;
     private String recipe;
 
-    private Model model;
-    private Optimizer optimizer;
-    private Loss loss;
     private float accuracy;
     private float mean;
 
-    public LayexAndNetClassifier(final NgramList ngrams, final RegexList entities, final StopWordList stopwords,
-            final StringList tags, final List<String> requiredTags, final List<String> pivotEntityList,
-            final List<String> metaLayexes, final List<String> dataLayexes, final String recipe) {
-        this.ngrams = ngrams;
+    private final Text.ITokenizer tokenizer;
+    private final Text.IHasher hasher;
+    private final RegexComparer comparer;
+
+    private SavedModelBundle tagClassifierModel;
+    private SessionFunction tagClassifierFunc;
+
+    public LayexAndNetClassifier(final List<String> vocabulary, final int ngrams, final List<String> lexicon,
+            final List<String> entities, final Map<String, String> patterns, final List<String> filters,
+            final List<String> tags, final List<String> requiredTags, final List<String> pivotEntityList,
+            final List<String> metaLayexes, final List<String> dataLayexes, final Path modelPath) {
         this.entities = entities;
-        this.stopwords = stopwords;
+        this.filters = filters;
         this.tags = tags;
         this.requiredTags = requiredTags;
         this.pivotEntityList = pivotEntityList;
-        this.metaLayexes = metaLayexes.stream().map(Layex::new).collect(Collectors.toCollection(ArrayList::new));
-        this.dataLayexes = dataLayexes.stream().map(Layex::new).collect(Collectors.toCollection(ArrayList::new));
 
-        this.metaMatchers = this.metaLayexes.stream().map(Layex::compile).collect(Collectors.toCollection(ArrayList::new));
-        this.dataMatchers = this.dataLayexes.stream().map(Layex::compile).collect(Collectors.toCollection(ArrayList::new));
-        this.recipe = recipe;
+        this.metaMatchers = metaLayexes.stream().map(Layex::new).map(Layex::compile).toList();
+        this.dataMatchers = dataLayexes.stream().map(Layex::new).map(Layex::compile).toList();
+        this.recipe = null;
 
-        this.buildModel();
+        this.tokenizer = (ngrams == 0) ? new ShingleTokenizer(lexicon) : new NgramTokenizer(ngrams);
+        this.hasher = new VocabularyHasher(vocabulary);
+        this.comparer = new RegexComparer(patterns);
+
+        this.modelPath = modelPath;
+        if (modelPath.toFile().exists()) {
+            this.tagClassifierModel = SavedModelBundle.load(modelPath.toString(), "serve");
+            this.tagClassifierFunc = this.tagClassifierModel.function(Signature.DEFAULT_KEY);
+        } else {
+            this.tagClassifierModel = null;
+            this.tagClassifierFunc = null;
+        }
     }
 
     public LayexAndNetClassifier(final JSONObject json) {
-        this(new NgramList(json.getJSONObject("ngrams")),
-                new RegexList(json.getJSONObject("entities")),
-                new StopWordList(json.getJSONArray("stopwords")),
-                new StringList(json.getJSONObject("tags")),
-                unmarshallStringList(json.getJSONObject("tags").getJSONArray("requiredTags")),
-                unmarshallStringList(json.getJSONObject("entities").getJSONArray("pivotEntities")),
-                unmarshallStringList(json.getJSONArray("layexes"), "META"),
-                unmarshallStringList(json.getJSONArray("layexes"), "DATA"),
-                null);
-        this.model.fromJSON(json.getJSONArray("model"));
+        this.entities = Collections.emptyList();
+        this.filters = Collections.emptyList();
+        this.tags = Collections.emptyList();
+        this.requiredTags = Collections.emptyList();
+        this.pivotEntityList = Collections.emptyList();
+
+        this.metaMatchers = Collections.emptyList();
+        this.dataMatchers = Collections.emptyList();
+        this.recipe = null;
+
+        this.tokenizer = new ShingleTokenizer(Collections.emptyList());
+        this.hasher = new VocabularyHasher(Collections.emptyList());
+        this.comparer = new RegexComparer(Collections.emptyMap());
+
+        this.modelPath = null;
+        this.tagClassifierModel = null;
+        this.tagClassifierFunc = null;
+    }
+
+    @Override
+    public void close() {
+        if (this.tagClassifierModel != null) {
+            this.tagClassifierModel.close();
+            this.tagClassifierModel = null;
+        }
     }
 
     @Override
@@ -95,7 +118,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
 
     @Override
     public List<String> getEntityList() {
-        return this.entities.values();
+        return this.entities;
     }
 
     @Override
@@ -109,7 +132,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
     }
 
     @Override
-    public void setMetaMatcherList(List<TableMatcher> matchers) {
+    public void setMetaMatcherList(final List<TableMatcher> matchers) {
         this.metaMatchers = matchers;
     }
 
@@ -119,7 +142,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
     }
 
     @Override
-    public void setDataMatcherList(List<TableMatcher> matchers) {
+    public void setDataMatcherList(final List<TableMatcher> matchers) {
         this.dataMatchers = matchers;
     }
 
@@ -134,23 +157,24 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
     }
 
     @Override
-    public String toEntityName(String value) {
-        return this.entities.anonymize(value);
+    public String toEntityName(final String value) {
+        return this.comparer.anonymize(value);
     }
 
     @Override
-    public Optional<String> toEntityValue(String value) {
-        return Optional.ofNullable(this.entities.find(value));
+    public Optional<String> toEntityValue(final String value) {
+        return this.comparer.find(value);
     }
 
     @Override
-    public Tensor toEntityVector(String value) {
-        return Tensor.create(this.entities.word2vec(value).data);
+    public Tensor toEntityVector(final String value) {
+        return Tensor.create(Text.to_categorical(value, this.entities, this.comparer).stream()
+                .mapToDouble(x -> (double) x).toArray());
     }
 
     @Override
     public List<String> getTagList() {
-        return this.tags.values();
+        return this.tags;
     }
 
     @Override
@@ -159,89 +183,81 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
     }
 
     @Override
-    public DataRow buildPredictSet(final String name, final List<String> entities, final List<String> context) {
-        final Tensor1D entityVector = new Tensor1D(this.entities.getVectorSize());
-        entities.forEach(entity -> {
-            final int i = this.entities.ordinal(entity);
-            if (i != -1) {
-                entityVector.set(i, 1);
-            }
-        });
-
-        final Tensor1D wordVector = this.ngrams.word2vec(name);
-
-        final Tensor1D contextVector = wordVector.copy().zero();
-        context.forEach(other -> contextVector.add(this.ngrams.word2vec(other)));
-        final Tensor1D word_mask = wordVector.copy().ones().sub(wordVector);
-        contextVector.mul(word_mask).constrain(0, 1);
-
-        return new DataRow().addFeature(entityVector).addFeature(wordVector).addFeature(contextVector);
+    public List<Integer> buildPredictSet(final String name, final List<String> entities, final List<String> context) {
+        final List<Integer> part1 = Text.to_categorical(entities, this.entities);
+        final List<Integer> part2 = Text.one_hot(name, this.filters, this.tokenizer, this.hasher);
+        final List<Integer> part3 = context.stream()
+                .filter(x -> !x.equals(name))
+                .flatMap(x -> Text.one_hot(x, this.filters, this.tokenizer, this.hasher).stream())
+                .distinct().sorted().toList();
+        return Stream.concat(Stream.concat(
+                Text.pad_sequence(part1, 10).stream(),
+                Text.pad_sequence(part2, 5).stream()),
+                Text.pad_sequence(part3, 100).stream()).toList();
     }
 
     @Override
-    public String predict(final DataRow predictSet) {
-        final Tensor2D input = new Tensor2D(predictSet.featuresAsOneVector(), true);
-        final Tensor2D output = this.model.model(input).detach();
-
-        int tagIndex = output.argmax(0, 0);
-        if (tagIndex >= this.tags.size()) {
-            tagIndex = 0;
+    public String predict(final List<Integer> predictSet) {
+        if (this.tagClassifierFunc == null) {
+            return this.tags.get(0);
         }
-
-        return this.tags.get(tagIndex);
+        final HashMap<String, org.tensorflow.Tensor> inputs = new HashMap<>() {{
+            put("entity_input", ListIntegertoTFloat32(predictSet, 0, 10));
+            put("name_input", ListIntegertoTFloat32(predictSet, 10, 15));
+            put("context_input", ListIntegertoTFloat32(predictSet, 15, 115));
+        }};
+        final Map<String, org.tensorflow.Tensor> result = this.tagClassifierFunc.call(inputs);
+        return this.tags.get((int) TFloat32ToTensor((TFloat32) result.get("tag_output")).argmax(0).item(0)); 
     }
 
     @Override
-    public boolean fit(final List<DataRow> trainingSet, final List<DataRow> validationSet) {
-        final float n = trainingSet.size();
-        if (n == 0.0f) {
+    public boolean fit(final List<List<Integer>> trainingSet, final List<List<Integer>> validationSet) {
+        try {
+            final Path kernelPath = Paths.get(System.getProperty("user.home") + "/.local/any2json/kernels");
+            if (!kernelPath.toFile().exists()) {
+                return false;
+            }
+            
+            final Path trainPath = Files.createTempDirectory("any2json").toAbsolutePath();
+            final JSONArray list1 = JSON.newJSONArray();
+            trainingSet.forEach(x -> { 
+                list1.append(JSON.parseJSONArray(x.toString()));
+            });
+            JSON.saveJSONArray(list1, trainPath.resolve("training.json").toString());
+            final JSONArray list2 = JSON.newJSONArray();
+            validationSet.forEach(x -> { 
+                list2.append(JSON.parseJSONArray(x.toString()));
+            });
+            JSON.saveJSONArray(list2, trainPath.resolve("validation.json").toString());
+
+            final ProcessBuilder processBuilder = new ProcessBuilder(kernelPath.resolve("run.sh").toString(), "-s 10,5,100,32", "-t " + trainPath, "-m " + this.modelPath);
+            processBuilder.directory(kernelPath.toFile());
+            processBuilder.inheritIO();
+            processBuilder.redirectErrorStream(true);
+
+            final Process process = processBuilder.start();
+            final int exitcode = process.waitFor();
+            return exitcode == 0;
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
             return false;
         }
+    }
 
-        this.accuracy = 0.0f;
-        this.mean = 0.0f;
-
-        // Train
-
-        for (int i = 0; i < trainingSet.size();) {
-
-            this.optimizer.zeroGradients();
-
-            final int batchSize = Math.min(trainingSet.size() - i, BATCH_SIZE);
-            for (int j = 0; j < batchSize; j++) {
-                final DataRow row = trainingSet.get(i++);
-
-                final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), true);
-                final Tensor2D target = new Tensor2D(row.label(), true);
-
-                final Layer output = this.model.model(input, true);
-                final Loss loss = this.loss.loss(output, target);
-
-                this.optimizer.minimize(loss);
-            }
-
-            this.optimizer.step();
+    private TFloat32 ListIntegertoTFloat32(List<Integer> l, int a, int b) {
+        float[][] result = new float[1][b - a];
+        for(int i = a, j = 0; i < b; i++, j++) {
+            result[0][j] = (float) l.get(i);
         }
+        return TFloat32.tensorOf(StdArrays.ndCopyOf(result));
+    }
 
-        // Validate
-
-        for (final DataRow row : validationSet) {
-            final Tensor2D input = new Tensor2D(row.featuresAsOneVector(), true);
-            final Tensor2D target = new Tensor2D(row.label(), true);
-
-            final Layer output = this.model.model(input);
-            final Loss loss = this.loss.loss(output, target);
-
-            final boolean isCorrect = output.detach().argmax(0, 0) == target.argmax(0, 0);
-            this.accuracy += isCorrect ? 1 : 0;
-            this.mean += loss.getValue().flatten(0, 0);
+    private Tensor TFloat32ToTensor(TFloat32 t) {
+        float[] result = new float[(int) t.shape().size(1)];
+        for(int i = 0; i < result.length; i++) {
+            result[i] = t.getFloat(0, i);
         }
-
-        final float total = validationSet.size();
-        this.accuracy /= total;
-        this.mean /= total;
-
-        return true;
+        return Tensor.create(result);
     }
 
     @Override
@@ -256,84 +272,8 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
 
     @Override
     public JSONObject toJSON() {
-        final JSONArray jsonRequiredTags = JSON.newJSONArray();
-        this.requiredTags.forEach(x -> jsonRequiredTags.append(x));
-        final JSONObject jsonTags = this.tags.toJSON();
-        jsonTags.setJSONArray("requiredTags", jsonRequiredTags);
-
-        final JSONArray jsonPivotEntities = JSON.newJSONArray();
-        this.pivotEntityList.forEach(x -> jsonPivotEntities.append(x));
-        final JSONObject jsonEntities = this.entities.toJSON();
-        jsonEntities.setJSONArray("pivotEntities", jsonPivotEntities);
-
-        final JSONArray jsonLayexes = JSON.newJSONArray();
-        this.metaLayexes.forEach(x -> {
-            final JSONObject jsonMeta = JSON.newJSONObject();
-            jsonMeta.setString("type", "META");
-            jsonMeta.setString("layex", x.toString());
-            jsonLayexes.append(jsonMeta);
-        });
-        this.dataLayexes.forEach(x -> {
-            final JSONObject jsonData = JSON.newJSONObject();
-            jsonData.setString("type", "DATA");
-            jsonData.setString("layex", x.toString());
-            jsonLayexes.append(jsonData);
-        });
-
-        final JSONObject json = JSON.newJSONObject();
-        json.setJSONObject("ngrams", this.ngrams.toJSON());
-        json.setJSONObject("entities", jsonEntities);
-        json.setJSONArray("stopwords", this.stopwords.toJSON());
-        json.setJSONObject("tags", jsonTags);
-        json.setJSONArray("layexes", jsonLayexes);
-        json.setJSONArray("model", this.model.toJSON());
-        return json;
-    }
-
-    private void buildModel() {
-        final int inputCount = this.entities.getVectorSize() + 2 * this.ngrams.getVectorSize();
-        final int hiddenCount1 = inputCount * 3 / 4;
-        final int hiddenCount2 = inputCount / 4;
-        final int outputCount = this.tags.getVectorSize();
-
-        this.model = new Model()
-                .add(new DenseBuilder().setInputUnits(inputCount).setUnits(hiddenCount1))
-                .add(new ActivationBuilder().setActivation(new LeakyRelu()))
-                .add(new DenseBuilder().setUnits(hiddenCount2))
-                .add(new ActivationBuilder().setActivation(new LeakyRelu()))
-                .add(new BatchNormalizerBuilder())
-                .add(new DenseBuilder().setUnits(outputCount))
-                .add(new ActivationBuilder().setActivation(new Softmax()));
-
-        this.optimizer = new OptimizerAdamBuilder().build(this.model);
-
-        this.loss = new Loss(new SoftmaxCrossEntropy());
-        this.accuracy = 0.0f;
-        this.mean = 1.0f;
-    }
-
-    private static List<String> unmarshallStringList(final JSONArray jsonArray) {
-        if (jsonArray == null || jsonArray.size() == 0) {
-            return Collections.emptyList();
-        }
-        final ArrayList<String> list = new ArrayList<String>();
-        for (int i = 0; i < jsonArray.size(); i++) {
-            list.add(jsonArray.getString(i));
-        }
-        return list;
-    }
-
-    private static List<String> unmarshallStringList(final JSONArray jsonArray, final String query) {
-        if (jsonArray == null || jsonArray.size() == 0) {
-            return Collections.emptyList();
-        }
-        final ArrayList<String> list = new ArrayList<String>();
-        for (int i = 0; i < jsonArray.size(); i++) {
-            final JSONObject jsonObject = jsonArray.getJSONObject(i);
-            if (jsonObject.getString("type").equals(query)) {
-                list.add(jsonObject.getString("layex"));
-            }
-        }
-        return list;
+        JSONObject result = JSON.newJSONObject();
+        result.set("model", "/home/romuald/DataLoaderStudio/sales-spanish/target/model");
+        return result;
     }
 }
