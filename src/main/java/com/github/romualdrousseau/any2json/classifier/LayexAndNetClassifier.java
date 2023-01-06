@@ -107,7 +107,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
         this.ngrams = json.getInt("ngrams");
         this.lexicon = JSON.<String>Stream(json.getJSONArray("lexicon")).toList();
         this.entities = JSON.<String>Stream(json.getJSONArray("entities")).toList();
-        this.patterns = JSON.<JSONObject>Stream(json.getJSONArray("patterns")).collect(Collectors.toMap(x -> x.getString("pattern"), x -> x.getString("type")));
+        this.patterns = JSON.<JSONObject>Stream(json.getJSONArray("patterns")).collect(Collectors.toMap(x -> x.getString("key"), x -> x.getString("value")));
         this.filters = JSON.<String>Stream(json.getJSONArray("filters")).toList();
         this.tags = JSON.<String>Stream(json.getJSONArray("tags")).toList();
         this.requiredTags = JSON.<String>Stream(json.getJSONArray("requiredTags")).toList();
@@ -295,17 +295,17 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
     @Override
     public JSONObject toJSON() {
         final JSONObject result = JSON.newJSONObject();
-        result.setJSONArray("vocabulary", JSON.<String>parseJSONArray(this.vocabulary));
+        result.setJSONArray("vocabulary", JSON.<String>toJSONArray(this.vocabulary));
         result.setInt("ngram", this.ngrams);
-        result.setJSONArray("lexicon", JSON.<String>parseJSONArray(this.lexicon));
-        result.setJSONArray("entities", JSON.<String>parseJSONArray(this.entities));
-        result.setJSONObject("patterns", JSON.<String>parseJSONObject(this.patterns));
-        result.setJSONArray("filters", JSON.<String>parseJSONArray(this.filters));
-        result.setJSONArray("tags", JSON.<String>parseJSONArray(this.tags));
-        result.setJSONArray("requiredTags", JSON.<String>parseJSONArray(this.requiredTags));
-        result.setJSONArray("pivotEntityList", JSON.<String>parseJSONArray(this.pivotEntityList));
-        result.setJSONArray("metaLayexes", JSON.<String>parseJSONArray(this.metaLayexes));
-        result.setJSONArray("dataLayexes", JSON.<String>parseJSONArray(this.dataLayexes));
+        result.setJSONArray("lexicon", JSON.<String>toJSONArray(this.lexicon));
+        result.setJSONArray("entities", JSON.<String>toJSONArray(this.entities));
+        result.setJSONArray("patterns", JSON.<String>toJSONArray(this.patterns));
+        result.setJSONArray("filters", JSON.<String>toJSONArray(this.filters));
+        result.setJSONArray("tags", JSON.<String>toJSONArray(this.tags));
+        result.setJSONArray("requiredTags", JSON.<String>toJSONArray(this.requiredTags));
+        result.setJSONArray("pivotEntityList", JSON.<String>toJSONArray(this.pivotEntityList));
+        result.setJSONArray("metaLayexes", JSON.<String>toJSONArray(this.metaLayexes));
+        result.setJSONArray("dataLayexes", JSON.<String>toJSONArray(this.dataLayexes));
         result.setString("model", this.modelToJSONString(this.modelPath));
         return result;
     }

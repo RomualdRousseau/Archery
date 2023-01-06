@@ -88,7 +88,7 @@ public class AppTest {
         int fileNo = 0;
 
         ClassifierFactory classifierFactory = new LayexAndNetClassifierBuilder()
-            .setModel(JSON.loadJSONObject(getResourcePath("/data/model.json").toString()))
+            .setModel(JSON.loadJSONObject(getResourcePath("/data/classifier.json").toString()))
             .build();
 
         for (String[] expectedValues : scenarios2) {
