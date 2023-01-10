@@ -249,9 +249,10 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
     @Override
     public boolean fit(final List<List<Integer>> trainingSet, final List<List<Integer>> validationSet) {
         try {
-            this.installKernels(Paths.get(System.getProperty("user.home") + "/.local/any2json/kernels"));
+            final Path kernelsPath = Paths.get(System.getProperty("user.home") + "/.local/share/any2json/kernels");
+            this.installKernels(kernelsPath);
 
-            final Path kernelPath = Paths.get(System.getProperty("user.home") + "/.local/any2json/kernels/tf");
+            final Path kernelPath = kernelsPath.resolve("tf");
             if (!kernelPath.toFile().exists()) {
                 return false;
             }
@@ -262,6 +263,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
                 list1.append(JSON.parseJSONArray(x.toString()));
             });
             JSON.saveJSONArray(list1, trainPath.resolve("training.json").toString());
+
             final JSONArray list2 = JSON.newJSONArray();
             validationSet.forEach(x -> { 
                 list2.append(JSON.parseJSONArray(x.toString()));
@@ -343,8 +345,14 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
             }
             Arrays.asList(sourcePath.toFile().listFiles()).stream().forEach(k -> {
                 try {
-                    Disk.copyDir(k.toPath(), destPath.resolve(sourcePath.relativize(k.toPath())));
-                } catch (IOException x) {
+                    final Path kernelPath = destPath.resolve(sourcePath.relativize(k.toPath()));
+                    Disk.copyDir(k.toPath(), kernelPath);
+                    final ProcessBuilder processBuilder = new ProcessBuilder(kernelPath.resolve("init.sh").toString());
+                    processBuilder.directory(kernelPath.toFile());
+                    processBuilder.inheritIO();
+                    processBuilder.redirectErrorStream(true);
+                    processBuilder.start().waitFor();
+                } catch (IOException | InterruptedException x) {
                     throw new RuntimeException(x);
                 }
             });
