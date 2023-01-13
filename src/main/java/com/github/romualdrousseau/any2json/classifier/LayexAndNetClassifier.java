@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
@@ -37,7 +38,7 @@ import com.github.romualdrousseau.shuju.preprocessing.hasher.VocabularyHasher;
 import com.github.romualdrousseau.shuju.preprocessing.tokenizer.NgramTokenizer;
 import com.github.romualdrousseau.shuju.preprocessing.tokenizer.ShingleTokenizer;
 
-public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<List<Integer>>, AutoCloseable {
+public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<List<Integer>> {
 
     private final List<String> vocabulary;
     private final int ngrams;
@@ -52,13 +53,6 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
     private final List<String> dataLayexes;
     private final Path modelPath;
 
-    private List<TableMatcher> metaMatchers;
-    private List<TableMatcher> dataMatchers;
-    private String recipe;
-
-    private float accuracy;
-    private float mean;
-
     private final Text.ITokenizer tokenizer;
     private final Text.IHasher hasher;
     private final RegexComparer comparer;
@@ -66,6 +60,10 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
     private final SavedModelBundle tagClassifierModel;
     private final SessionFunction tagClassifierFunc;
     private final boolean modelIsTemp;
+
+    private List<TableMatcher> metaMatchers;
+    private List<TableMatcher> dataMatchers;
+    private String recipe;
 
     public LayexAndNetClassifier(final List<String> vocabulary, final int ngrams, final List<String> lexicon,
             final List<String> entities, final Map<String, String> patterns, final List<String> filters,
@@ -107,7 +105,8 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
         this.ngrams = json.getInt("ngrams");
         this.lexicon = JSON.<String>Stream(json.getJSONArray("lexicon")).toList();
         this.entities = JSON.<String>Stream(json.getJSONArray("entities")).toList();
-        this.patterns = JSON.<JSONObject>Stream(json.getJSONArray("patterns")).collect(Collectors.toMap(x -> x.getString("key"), x -> x.getString("value")));
+        this.patterns = JSON.<JSONObject>Stream(json.getJSONArray("patterns"))
+                .collect(Collectors.toMap(x -> x.getString("key"), x -> x.getString("value")));
         this.filters = JSON.<String>Stream(json.getJSONArray("filters")).toList();
         this.tags = JSON.<String>Stream(json.getJSONArray("tags")).toList();
         this.requiredTags = JSON.<String>Stream(json.getJSONArray("requiredTags")).toList();
@@ -135,12 +134,9 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
     }
 
     @Override
-    public void close() {
+    public void close() throws Exception {
         if (this.modelIsTemp) {
-            try {
-                Disk.deleteDir(this.modelPath);
-            } catch (IOException ignore) {
-            }
+            Disk.deleteDir(this.modelPath);
         }
         if (this.tagClassifierModel != null) {
             this.tagClassifierModel.close();
@@ -227,9 +223,9 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
                 .flatMap(x -> Text.one_hot(x, this.filters, this.tokenizer, this.hasher).stream())
                 .distinct().sorted().toList();
         return Stream.concat(Stream.concat(
-                Text.pad_sequence(part1, 10).stream(),
-                Text.pad_sequence(part2, 5).stream()),
-                Text.pad_sequence(part3, 100).stream()).toList();
+                Text.pad_sequence(part1, 10).stream().limit(10),
+                Text.pad_sequence(part2, 10).stream().limit(10)),
+                Text.pad_sequence(part3, 100).stream().limit(100)).toList();
     }
 
     @Override
@@ -237,61 +233,54 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
         if (this.tagClassifierFunc == null) {
             return this.tags.get(0);
         }
-        final HashMap<String, org.tensorflow.Tensor> inputs = new HashMap<>() {{
-            put("entity_input", ListIntegertoTFloat32(predictSet, 0, 10));
-            put("name_input", ListIntegertoTFloat32(predictSet, 10, 15));
-            put("context_input", ListIntegertoTFloat32(predictSet, 15, 115));
-        }};
-        final Map<String, org.tensorflow.Tensor> result = this.tagClassifierFunc.call(inputs);
-        return this.tags.get((int) TFloat32ToShujuTensor((TFloat32) result.get("tag_output")).argmax(0).item(0)); 
-    }
-
-    @Override
-    public boolean fit(final List<List<Integer>> trainingSet, final List<List<Integer>> validationSet) {
-        try {
-            final Path kernelsPath = Paths.get(System.getProperty("user.home") + "/.local/share/any2json/kernels");
-            this.installKernels(kernelsPath);
-
-            final Path kernelPath = kernelsPath.resolve("tf");
-            if (!kernelPath.toFile().exists()) {
-                return false;
+        final HashMap<String, org.tensorflow.Tensor> inputs = new HashMap<>() {
+            {
+                put("entity_input", ListIntegertoTFloat32(predictSet, 0, 10));
+                put("name_input", ListIntegertoTFloat32(predictSet, 10, 20));
+                put("context_input", ListIntegertoTFloat32(predictSet, 20, 120));
             }
+        };
+        final Map<String, org.tensorflow.Tensor> result = this.tagClassifierFunc.call(inputs);
+        return this.tags.get((int) TFloat32ToShujuTensor((TFloat32) result.get("tag_output")).argmax(0).item(0));
+    }
 
-            final Path trainPath = Files.createTempDirectory("any2json").toAbsolutePath();
-            final JSONArray list1 = JSON.newJSONArray();
-            trainingSet.forEach(x -> { 
-                list1.append(JSON.parseJSONArray(x.toString()));
-            });
-            JSON.saveJSONArray(list1, trainPath.resolve("training.json").toString());
+    @Override
+    public AbstractMap.SimpleImmutableEntry<List<Integer>, List<Integer>> buildTrainingSet(
+            final String name, final List<String> entities, final List<String> context, final String label) {
+        final List<Integer> key = Text.to_categorical(label, this.tags);
+        final List<Integer> value = this.buildPredictSet(name, entities, context);
+        return new AbstractMap.SimpleImmutableEntry<>(Text.pad_sequence(key, 32), value);
+    }
 
-            final JSONArray list2 = JSON.newJSONArray();
-            validationSet.forEach(x -> { 
-                list2.append(JSON.parseJSONArray(x.toString()));
-            });
-            JSON.saveJSONArray(list2, trainPath.resolve("validation.json").toString());
+    @Override
+    public Process fit(final List<List<Integer>> trainingSet, final List<List<Integer>> validationSet) throws IOException {
+        final Path kernelsPath = Paths.get(System.getProperty("user.home") + "/.local/share/any2json/kernels");
+        this.installKernels(kernelsPath);
 
-            final ProcessBuilder processBuilder = new ProcessBuilder(kernelPath.resolve("run.sh").toString(), "-s 10,5,100,32", "-t " + trainPath, "-m " + this.modelPath);
-            processBuilder.directory(kernelPath.toFile());
-            processBuilder.inheritIO();
-            processBuilder.redirectErrorStream(true);
-
-            final Process process = processBuilder.start();
-            final int exitcode = process.waitFor();
-            return exitcode == 0;
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-            return false;
+        final Path kernelPath = kernelsPath.resolve("tf");
+        if (!kernelPath.toFile().exists()) {
+            throw new IOException("Kernel doesn'ty exist.");
         }
-    }
 
-    @Override
-    public float getAccuracy() {
-        return this.accuracy;
-    }
+        final Path trainPath = Files.createTempDirectory("any2json").toAbsolutePath();
+        final JSONArray list1 = JSON.newJSONArray();
+        trainingSet.forEach(x -> {
+            list1.append(JSON.parseJSONArray(x.toString()));
+        });
+        JSON.saveJSONArray(list1, trainPath.resolve("training.json").toString());
 
-    @Override
-    public float getMean() {
-        return this.mean;
+        final JSONArray list2 = JSON.newJSONArray();
+        validationSet.forEach(x -> {
+            list2.append(JSON.parseJSONArray(x.toString()));
+        });
+        JSON.saveJSONArray(list2, trainPath.resolve("validation.json").toString());
+
+        final ProcessBuilder processBuilder = new ProcessBuilder(kernelPath.resolve("run.sh").toString(),
+                "-V " + vocabulary.size(), "-s 10,10,100,32", "-t " + trainPath, "-m " + this.modelPath);
+        processBuilder.directory(kernelPath.toFile());
+        processBuilder.redirectErrorStream(true);
+
+        return processBuilder.start();
     }
 
     @Override
@@ -336,7 +325,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
 
     private void installKernels(final Path destPath) {
         try {
-            if(destPath.toFile().exists()) {
+            if (destPath.toFile().exists()) {
                 return;
             }
             final Path sourcePath = Paths.get(LayexAndNetClassifier.class.getResource("/kernels").toURI());
@@ -363,7 +352,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
 
     private TFloat32 ListIntegertoTFloat32(final List<Integer> l, final int a, final int b) {
         final float[][] result = new float[1][b - a];
-        for(int i = a, j = 0; i < b; i++, j++) {
+        for (int i = a, j = 0; i < b; i++, j++) {
             result[0][j] = (float) l.get(i);
         }
         return TFloat32.tensorOf(StdArrays.ndCopyOf(result));
@@ -371,7 +360,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
 
     private Tensor TFloat32ToShujuTensor(final TFloat32 t) {
         final float[] result = new float[(int) t.shape().size(1)];
-        for(int i = 0; i < result.length; i++) {
+        for (int i = 0; i < result.length; i++) {
             result[i] = t.getFloat(0, i);
         }
         return Tensor.create(result);

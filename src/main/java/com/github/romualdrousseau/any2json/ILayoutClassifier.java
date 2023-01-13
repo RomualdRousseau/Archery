@@ -7,7 +7,7 @@ import com.github.romualdrousseau.shuju.math.Tensor;
 import java.util.List;
 import java.util.Optional;
 
-public interface ILayoutClassifier {
+public interface ILayoutClassifier extends AutoCloseable {
 
     int getSampleCount();
 

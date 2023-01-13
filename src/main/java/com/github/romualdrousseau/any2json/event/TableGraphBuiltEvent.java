@@ -1,5 +1,7 @@
 package com.github.romualdrousseau.any2json.event;
 
+import java.io.PrintStream;
+
 import com.github.romualdrousseau.any2json.Header;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.SheetEvent;
@@ -17,14 +19,14 @@ public class TableGraphBuiltEvent extends SheetEvent {
         return this.tableGraph;
     }
 
-    public void dumpTableGraph() {
-        System.out.println("============================ DUMP TABLEGRAPH ============================");
-        System.out.println(this.getSource().getName());
-        this.walkThroughTableGraph(this.tableGraph, 0, 0);
-        System.out.println("================================== END ==================================");
+    public void dumpTableGraph(final PrintStream con) {
+        con.println("============================ DUMP TABLEGRAPH ============================");
+        con.println(this.getSource().getName());
+        this.walkThroughTableGraph(con, this.tableGraph, 0, 0);
+        con.println("================================== END ==================================");
     }
 
-    private int walkThroughTableGraph(final CompositeTableGraph graph, final int indent, int counter) {
+    private int walkThroughTableGraph(final PrintStream con, final CompositeTableGraph graph, final int indent, int counter) {
         if (!graph.isRoot()) {
             final StringBuffer out = new StringBuffer();
 
@@ -54,11 +56,11 @@ public class TableGraphBuiltEvent extends SheetEvent {
                 counter++;
             }
 
-            System.out.println(out.toString());
+            con.println(out.toString());
         }
 
         for (final CompositeTableGraph child : graph.children()) {
-            counter = walkThroughTableGraph(child, indent + 1, counter);
+            counter = walkThroughTableGraph(con, child, indent + 1, counter);
         }
 
         return counter;

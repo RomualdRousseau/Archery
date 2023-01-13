@@ -9,8 +9,7 @@ import tensorflow as tf
 from tensorflow.keras import Sequential, Model
 from tensorflow.keras.layers import Input, Dense, Embedding, Flatten, Concatenate
 
-EPOCHS = 50
-VOCAB_SIZE = 1000
+EPOCHS = 10
 
 def init_argparse():
     """ Parse arguments.
@@ -22,6 +21,10 @@ def init_argparse():
     parser.add_argument(
         "-v", "--version", action="version",
         version = f"{parser.prog} version 1.0.0"
+    )
+    parser.add_argument(
+        "-V", "--vocabulary", dest="vocabulary_size",
+        required=True, help="size fo vocabulary"
     )
     parser.add_argument(
         "-s", "--shape", dest="input_shape",
@@ -68,7 +71,7 @@ def prepare_data(train_path, input_shape):
     return (train_inputs, train_labels, valid_inputs, valid_labels)
 
 
-def build_model(input_shape):
+def build_model(input_shape, vocabulary_size):
     """ Build a tensorflow model from 3 inputs (entities, name, context).
     """
 
@@ -85,11 +88,11 @@ def build_model(input_shape):
         Input(shape=(entity,), name="entity_input")
         ])
     input2 = Sequential([
-        Embedding(VOCAB_SIZE, 8, input_length=name, name="name"),
+        Embedding(vocabulary_size, 8, input_length=name, name="name"),
         Flatten()
         ])
     input3 = Sequential([
-        Embedding(VOCAB_SIZE, 32, input_length=context, name="context"),
+        Embedding(vocabulary_size, 32, input_length=context, name="context"),
         Flatten()
         ])
     x = Concatenate()([input1.output, input2.output, input3.output])
@@ -110,11 +113,11 @@ def train_model(model, train_inputs, train_labels, val_inputs, val_labels):
     while True:
         # fit the model
 
-        model.fit(x=train_inputs, y=train_labels, epochs=EPOCHS)
+        model.fit(x=train_inputs, y=train_labels, validation_data=(val_inputs, val_labels), epochs=EPOCHS, verbose=2)
 
         # evaluate the model
 
-        loss, accuracy = model.evaluate(x=val_inputs, y=val_labels, verbose=1)
+        loss, accuracy = model.evaluate(x=val_inputs, y=val_labels, verbose=2)
         if accuracy == 1:
             break
 
@@ -123,6 +126,6 @@ if __name__ == "__main__":
     parser = init_argparse()
     args = parser.parse_args()
     data = prepare_data(args.train_path, args.input_shape)
-    model = build_model(args.input_shape)
+    model = build_model(args.input_shape, int(args.vocabulary_size) + 1)
     train_model(model, *data)
     model.save(args.model_path)
