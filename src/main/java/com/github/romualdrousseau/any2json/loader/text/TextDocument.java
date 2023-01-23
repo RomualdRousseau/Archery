@@ -34,7 +34,6 @@ public class TextDocument implements Document {
             try {
                 this.reader.close();
             } catch (final IOException ignore) {
-                ignore.printStackTrace();
             }
             this.reader = null;
         }

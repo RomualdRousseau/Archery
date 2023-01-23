@@ -49,13 +49,11 @@ public class XlsxSheet implements SheetStore {
             parser.setContentHandler(new ContentHandler());
             parser.parse(new InputSource(this.sheetData));
         } catch (SAXException | IOException | ParserConfigurationException ignore) {
-            ignore.printStackTrace();
         } finally {
             try {
                 this.dataLoaded = true;
                 this.sheetData.close();
             } catch (final IOException ignore) {
-                ignore.printStackTrace();
             }
         }
         return this;
