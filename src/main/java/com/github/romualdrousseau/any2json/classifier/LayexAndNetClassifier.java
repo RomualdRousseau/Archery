@@ -275,7 +275,10 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
         });
         JSON.saveJSONArray(list2, trainPath.resolve("validation.json").toString());
 
-        final ProcessBuilder processBuilder = new ProcessBuilder(kernelPath.resolve("run.sh").toString(),
+        final boolean isOsWindows = System.getProperty("os.name").contains("Windows");
+        final String run_script = isOsWindows ? "run.bat" : "run.sh";
+
+        final ProcessBuilder processBuilder = new ProcessBuilder(kernelPath.resolve(run_script).toString(),
                 "-V " + vocabulary.size(), "-s 10,10,100,32", "-t " + trainPath, "-m " + this.modelPath);
         processBuilder.directory(kernelPath.toFile());
         processBuilder.redirectErrorStream(true);
@@ -334,9 +337,11 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
             }
             Arrays.asList(sourcePath.toFile().listFiles()).stream().forEach(k -> {
                 try {
+                    final boolean isOsWindows = System.getProperty("os.name").contains("Windows");
+                    final String init_script = isOsWindows ? "init.bat" : "init.sh";
                     final Path kernelPath = destPath.resolve(sourcePath.relativize(k.toPath()));
                     Disk.copyDir(k.toPath(), kernelPath);
-                    final ProcessBuilder processBuilder = new ProcessBuilder(kernelPath.resolve("init.sh").toString());
+                    final ProcessBuilder processBuilder = new ProcessBuilder(kernelPath.resolve(init_script).toString());
                     processBuilder.directory(kernelPath.toFile());
                     processBuilder.inheritIO();
                     processBuilder.redirectErrorStream(true);

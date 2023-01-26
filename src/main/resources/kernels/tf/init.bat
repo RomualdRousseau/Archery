@@ -1,6 +1,7 @@
-#!/bin/sh
+@echo off
 
 python -m venv .venv
 
-. .venv/bin/activate
+call ".venv\Scripts\activate.bat"
+
 pip install -r requirements.txt

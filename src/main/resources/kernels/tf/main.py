@@ -1,5 +1,6 @@
 """ Kernel
 """
+import os
 import sys
 import json
 import argparse
@@ -49,7 +50,7 @@ def prepare_data(train_path, input_shape):
     entity, name, context, label = np.cumsum([int(t) for t in input_shape.split(',')])
 
     print("Loading training set ...")
-    with open(f"{train_path}/training.json", encoding="UTF-8") as user_file:
+    with open(os.path.join(train_path.strip(), "training.json"), encoding="UTF-8") as user_file:
         training = json.load(user_file)
     train_inputs = [
         np.array([t[0:entity] for t in training]),
@@ -59,7 +60,7 @@ def prepare_data(train_path, input_shape):
     train_labels = np.array([t[context:label] for t in training])
 
     print("Loading validation set ...")
-    with open(f"{train_path}/validation.json", encoding="UTF-8") as user_file:
+    with open(os.path.join(train_path.strip(), "validation.json"), encoding="UTF-8") as user_file:
         validation = json.load(user_file)
     valid_inputs = [
         np.array([t[0:+entity] for t in validation]),
@@ -128,4 +129,4 @@ if __name__ == "__main__":
     data = prepare_data(args.train_path, args.input_shape)
     model = build_model(args.input_shape, int(args.vocabulary_size) + 1)
     train_model(model, *data)
-    model.save(args.model_path)
+    model.save(args.model_path.strip())
