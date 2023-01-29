@@ -9,7 +9,8 @@ import com.github.romualdrousseau.any2json.base.RowGroup;
 import com.github.romualdrousseau.any2json.intelli.header.DataTableHeader;
 import com.github.romualdrousseau.any2json.intelli.header.MetaTableHeader;
 import com.github.romualdrousseau.any2json.intelli.header.PivotKeyHeader;
-import com.github.romualdrousseau.any2json.intelli.parser.DataTableGroupSubHeaderParser;
+import com.github.romualdrousseau.any2json.intelli.parser.DataTableParser;
+import com.github.romualdrousseau.any2json.intelli.parser.DataTableParserFactory;
 import com.github.romualdrousseau.any2json.layex.TableLexer;
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
 
@@ -17,20 +18,21 @@ public class DataTable extends CompositeTable {
 
     public DataTable(CompositeTable table) {
         super(table);
+        this.dataTableParser = null;
         this.buildIntelliTable();
     }
 
-    public DataTable(CompositeTable table, TableMatcher layex, int rowOffset) {
+    public DataTable(CompositeTable table, TableMatcher layex, int rowOffset, DataTableParserFactory dataTableParserFactory) {
         super(table);
-        this.dataTableContext = new DataTableGroupSubHeaderParser(this);
-        layex.match(new TableLexer(table, rowOffset), this.dataTableContext);
-        if (this.dataTableContext.getSplitRows().size() > 0) {
-            this.adjustLastRow(table.getFirstRow() + this.dataTableContext.getSplitRows().get(0) - 1, true);
+        this.dataTableParser = dataTableParserFactory.getInstance(this);
+        layex.match(new TableLexer(table, rowOffset), this.dataTableParser);
+        if (this.dataTableParser.getSplitRows().size() > 0) {
+            this.adjustLastRow(table.getFirstRow() + this.dataTableParser.getSplitRows().get(0) - 1, true);
         }
         if (rowOffset > 0) {
             this.setFirstRowOffset(this.getFirstRowOffset() + rowOffset);
         }
-        this.ignoreRows.addAll(this.dataTableContext.getIgnoreRows());
+        this.ignoreRows.addAll(this.dataTableParser.getIgnoreRows());
         this.setLoadCompleted(true);
     }
 
@@ -72,8 +74,8 @@ public class DataTable extends CompositeTable {
 		return result;
 	}
 
-    public DataTableGroupSubHeaderParser getContext() {
-		return this.dataTableContext;
+    public DataTableParser getDataTableParser() {
+		return this.dataTableParser;
     }
 
     private void buildIntelliTable() {
@@ -95,5 +97,5 @@ public class DataTable extends CompositeTable {
 
     private final LinkedList<RowGroup> rowGroups = new LinkedList<RowGroup>();
     private final LinkedList<Integer> ignoreRows = new LinkedList<Integer>();
-    private DataTableGroupSubHeaderParser dataTableContext;
+    private final DataTableParser dataTableParser;
 }

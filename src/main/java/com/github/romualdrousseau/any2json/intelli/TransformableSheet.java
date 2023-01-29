@@ -3,12 +3,31 @@ package com.github.romualdrousseau.any2json.intelli;
 import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.base.SheetStore;
+import com.github.romualdrousseau.any2json.intelli.parser.DataTableGroupSubFooterParserFactory;
+import com.github.romualdrousseau.any2json.intelli.parser.DataTableGroupSubHeaderParserFactory;
+import com.github.romualdrousseau.any2json.intelli.parser.DataTableParserFactory;
 import com.github.romualdrousseau.shuju.util.StringFuzzy;
 
 public abstract class TransformableSheet extends BaseSheet {
 
     public TransformableSheet(final SheetStore store) {
         super(store);
+    }
+
+    public DataTableParserFactory getDataTableParserFactory() {
+        return this.dataTableParserFactory;
+    }
+
+    public void setDataTableParserFactory(String dataTableParserFactoryAsString) {
+        if (dataTableParserFactoryAsString.equals("DataTableGroupSubHeaderParserFactory")) {
+            this.dataTableParserFactory = new DataTableGroupSubHeaderParserFactory();
+        }
+        else if (dataTableParserFactoryAsString.equals("DataTableGroupSubFooterParserFactory")) {
+            this.dataTableParserFactory = new DataTableGroupSubFooterParserFactory();
+        }
+        else { // Default to DataTableGroupSubHeaderParserFactory
+            this.dataTableParserFactory = new DataTableGroupSubHeaderParserFactory();
+        }
     }
 
     public void stichRows() {
@@ -109,4 +128,6 @@ public abstract class TransformableSheet extends BaseSheet {
         }
         return hash;
     }
+
+    private DataTableParserFactory dataTableParserFactory = new DataTableGroupSubHeaderParserFactory();
 }

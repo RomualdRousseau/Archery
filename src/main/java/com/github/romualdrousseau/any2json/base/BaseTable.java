@@ -164,6 +164,10 @@ public abstract class BaseTable implements Table, Visitable {
         this.headers.addLast(header);
     }
 
+    public BaseHeader getHeaderAt(final int i) {
+        return (i < this.headers.size()) ? (BaseHeader) this.headers.get(i) : null;
+    }
+
     public void setHeader(final int i, final BaseHeader header) {
         this.headers.set(i, header);
     }

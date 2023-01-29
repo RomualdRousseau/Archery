@@ -14,7 +14,7 @@ import com.github.romualdrousseau.shuju.cv.SearchPoint;
 import com.github.romualdrousseau.shuju.cv.Template;
 import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.RectangleExtractor;
 
-public class SemiStructuredSheetParser extends DefaultSheetParser {
+public class SemiStructuredSheetParser extends TransformableSheetParser {
 
     @Override
     public List<CompositeTable> findAllTables(final BaseSheet sheet) {

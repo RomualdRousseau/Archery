@@ -4,13 +4,13 @@ import java.util.List;
 import java.util.LinkedList;
 
 import com.github.romualdrousseau.any2json.base.BaseSheet;
-import com.github.romualdrousseau.any2json.base.SheetParser;
+import com.github.romualdrousseau.any2json.base.BaseSheetParser;
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
 import com.github.romualdrousseau.any2json.intelli.DataTable;
 import com.github.romualdrousseau.any2json.intelli.MetaTable;
 import com.github.romualdrousseau.any2json.intelli.TransformableSheet;
 
-public class StructuredSheetParser implements SheetParser {
+public class StructuredSheetParser implements BaseSheetParser {
 
     @Override
     public void transformSheet(TransformableSheet sheet) {

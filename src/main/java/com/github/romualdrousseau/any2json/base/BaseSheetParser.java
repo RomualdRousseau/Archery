@@ -7,7 +7,7 @@ import com.github.romualdrousseau.any2json.intelli.DataTable;
 import com.github.romualdrousseau.any2json.intelli.MetaTable;
 import com.github.romualdrousseau.any2json.intelli.TransformableSheet;
 
-public interface SheetParser {
+public interface BaseSheetParser {
 
     void transformSheet(TransformableSheet sheet);
 

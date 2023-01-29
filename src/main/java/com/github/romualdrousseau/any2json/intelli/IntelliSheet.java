@@ -3,7 +3,7 @@ package com.github.romualdrousseau.any2json.intelli;
 import java.util.List;
 
 import com.github.romualdrousseau.any2json.Table;
-import com.github.romualdrousseau.any2json.base.SheetParser;
+import com.github.romualdrousseau.any2json.base.BaseSheetParser;
 import com.github.romualdrousseau.any2json.base.SheetStore;
 import com.github.romualdrousseau.any2json.event.AllTablesExtractedEvent;
 import com.github.romualdrousseau.any2json.event.DataTableListBuiltEvent;
@@ -14,9 +14,13 @@ import com.github.romualdrousseau.any2json.util.Visitable;
 
 public class IntelliSheet extends TransformableSheet {
 
-    public IntelliSheet(SheetStore store, SheetParser parser) {
+    public IntelliSheet(SheetStore store, BaseSheetParser parser) {
         super(store);
         this.sheetParser = parser;
+    }
+
+    public BaseSheetParser getSheetParser() {
+        return this.sheetParser;
     }
 
     @Override
@@ -140,5 +144,5 @@ public class IntelliSheet extends TransformableSheet {
         }
     }
 
-    private final SheetParser sheetParser;
+    private final BaseSheetParser sheetParser;
 }

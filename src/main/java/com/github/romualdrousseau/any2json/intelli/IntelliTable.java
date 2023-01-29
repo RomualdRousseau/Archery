@@ -105,10 +105,10 @@ public class IntelliTable extends CompositeTable {
         } else {
             for (final RowGroup rowGroup : orgTable.rowGroups()) {
                 for (int i = 0; i < rowGroup.getNumberOfRows(); i++) {
-                    if (rowGroup.getRow() + i + 1 >= orgTable.getNumberOfRows()) {
+                    if (rowGroup.getRow() + i >= orgTable.getNumberOfRows()) {
                         break;
                     }
-                    Row orgRow = orgTable.getRowAt(rowGroup.getRow() + i + 1);
+                    Row orgRow = orgTable.getRowAt(rowGroup.getRow() + i);
                     final ArrayList<IntelliRow> newRows = buildRowsForOneRow(orgTable, (BaseRow) orgRow, pivot,
                             rowGroup);
                     this.rows.addAll(newRows);

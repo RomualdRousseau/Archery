@@ -14,11 +14,6 @@ public abstract class BaseHeader implements Header {
     }
 
     @Override
-    public String getRawName() {
-        return this.cell.getRawValue();
-    }
-
-    @Override
     public BaseCell getCellAtRow(final Row row) {
         return ((BaseRow) row).getCellAt(this.getColumnIndex());
     }

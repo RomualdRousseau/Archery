@@ -10,6 +10,8 @@ public class DataTableHeader extends CompositeHeader {
 
     public DataTableHeader(final CompositeTable table, final BaseCell cell) {
         super(table, cell);
+        
+        this.name = this.getCell().getValue();
     }
 
     private DataTableHeader(final DataTableHeader parent) {
@@ -18,9 +20,6 @@ public class DataTableHeader extends CompositeHeader {
 
     @Override
     public String getName() {
-        if (this.name == null) {
-            this.name = this.getCell().getValue();
-        }
         return this.name;
     }
 
@@ -39,5 +38,5 @@ public class DataTableHeader extends CompositeHeader {
         return new DataTableHeader(this);
     }
 
-    private String name;
+    private final String name;
 }

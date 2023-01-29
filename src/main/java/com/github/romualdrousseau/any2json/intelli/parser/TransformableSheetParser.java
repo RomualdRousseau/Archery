@@ -6,16 +6,15 @@ import java.util.List;
 import org.python.util.PythonInterpreter;
 
 import com.github.romualdrousseau.any2json.base.BaseSheet;
-import com.github.romualdrousseau.any2json.base.SheetParser;
+import com.github.romualdrousseau.any2json.base.BaseSheetParser;
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
 import com.github.romualdrousseau.any2json.intelli.DataTable;
 import com.github.romualdrousseau.any2json.intelli.MetaTable;
 import com.github.romualdrousseau.any2json.intelli.TransformableSheet;
 import com.github.romualdrousseau.any2json.layex.TableLexer;
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
-import com.github.romualdrousseau.any2json.util.Visitable;
 
-public abstract class DefaultSheetParser implements SheetParser {
+public abstract class TransformableSheetParser implements BaseSheetParser {
 
     @Override
     public void transformSheet(TransformableSheet sheet) {
@@ -28,6 +27,8 @@ public abstract class DefaultSheetParser implements SheetParser {
                 pyInterp.exec(recipe);
             }
         }
+
+        this.dataTableFactory = sheet.getDataTableParserFactory();
     }
 
     @Override
@@ -35,9 +36,7 @@ public abstract class DefaultSheetParser implements SheetParser {
         final List<TableMatcher> dataMatchers = sheet.getClassifierFactory().getLayoutClassifier().get().getDataMatcherList();
         final ArrayList<DataTable> result = new ArrayList<DataTable>();
 
-        for (final Visitable e : tables) {
-            e.setVisited(false);
-        }
+        tables.forEach(e -> { e.setVisited(false); });
 
         for (final CompositeTable table : tables) {
             boolean foundMatch = false;
@@ -45,10 +44,10 @@ public abstract class DefaultSheetParser implements SheetParser {
                 if (!foundMatch) {
                     for (final TableMatcher matcher : dataMatchers) {
                         if (!foundMatch && matcher.match(new TableLexer(table, tryCount), null)) {
-                            final DataTable dataTable = new DataTable(table, matcher, tryCount);
+                            final DataTable dataTable = new DataTable(table, matcher, tryCount, this.dataTableFactory);
                             result.add(dataTable);
-                            if (dataTable.getContext().getSplitRows().size() > 0) {
-                                this.splitAllSubTables(table, matcher, dataTable.getContext(), result);
+                            if (dataTable.getDataTableParser().getSplitRows().size() > 0) {
+                                this.splitAllSubTables(table, matcher, dataTable.getDataTableParser(), result);
                             }
                             table.setVisited(true);
                             foundMatch = true;
@@ -88,15 +87,17 @@ public abstract class DefaultSheetParser implements SheetParser {
         return result;
     }
 
-    private void splitAllSubTables(final CompositeTable table, final TableMatcher layex, final DataTableGroupSubHeaderParser context,
+    private void splitAllSubTables(final CompositeTable table, final TableMatcher layex, final DataTableParser parser,
             final List<DataTable> result) {
         int firstRow = -1;
-        for (final int splitRow : context.getSplitRows()) {
+        for (final int splitRow : parser.getSplitRows()) {
             if (firstRow >= 0) {
                 final CompositeTable subTable = new CompositeTable(table, firstRow, table.getFirstRow() + splitRow - 1);
-                result.add(new DataTable(subTable, layex, 0));
+                result.add(new DataTable(subTable, layex, 0, this.dataTableFactory));
             }
             firstRow = table.getFirstRow() + splitRow;
         }
     }
+
+    private DataTableParserFactory dataTableFactory = new DataTableGroupSubHeaderParserFactory();
 }
