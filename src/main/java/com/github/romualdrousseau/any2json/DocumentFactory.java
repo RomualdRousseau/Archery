@@ -10,7 +10,7 @@ import com.github.romualdrousseau.any2json.loader.text.TextDocument;
 
 public class DocumentFactory {
 
-    public final static int DEFAULT_SAMPLE_COUNT = 50;
+    public final static int DEFAULT_SAMPLE_COUNT = 200;
     public final static float DEFAULT_RATIO_SIMILARITY = 0.35f;
     public static final String PIVOT_KEY_SUFFIX = "#PIVOT?";
     public static final String PIVOT_VALUE_SUFFIX = "#VALUE?";
