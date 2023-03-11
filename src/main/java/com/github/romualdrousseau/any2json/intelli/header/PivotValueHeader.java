@@ -6,7 +6,7 @@ public class PivotValueHeader extends PivotKeyHeader {
 
     public PivotValueHeader(final PivotKeyHeader parent) {
         super(parent.getTable(), parent.getCell());
-        this.name = parent.getPivotEntityAsString().get();
+        this.name = parent.getValueName();
     }
 
     @Override
@@ -23,5 +23,5 @@ public class PivotValueHeader extends PivotKeyHeader {
         return new PivotValueHeader(this);
     }
 
-    private final String name;
+    private String name;
 }

@@ -15,7 +15,7 @@ import com.github.romualdrousseau.shuju.util.StringUtils;
 public class IntelliHeader extends CompositeHeader {
 
     public IntelliHeader(final CompositeHeader header) {
-        this(header.getTable(), new BaseCell(header.getName(), header.getColumnIndex(), 1, header.getCell().getRawValue(), header.getClassifierFactory()), header instanceof MetaHeader);
+        this(header.getTable(), new BaseCell(header.getName(), header.getColumnIndex(), 1, header.getCell().getRawValue(), header.getClassifierFactory()), false);
         this.setColumnIndex(header.getColumnIndex());
     }
 

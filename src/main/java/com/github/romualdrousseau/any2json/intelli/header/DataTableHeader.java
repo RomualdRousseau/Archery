@@ -9,8 +9,7 @@ import com.github.romualdrousseau.any2json.base.BaseCell;
 public class DataTableHeader extends CompositeHeader {
 
     public DataTableHeader(final CompositeTable table, final BaseCell cell) {
-        super(table, cell);
-        
+        super(table, cell);  
         this.name = this.getCell().getValue();
     }
 
@@ -38,5 +37,9 @@ public class DataTableHeader extends CompositeHeader {
         return new DataTableHeader(this);
     }
 
-    private final String name;
+    public void updateName(final String newName) {
+        this.name = newName;
+    }
+
+    private String name;
 }

@@ -36,9 +36,9 @@ public class BaseCell implements Cell, Symbol {
         this.rawValue = rawValue;
         this.classifierFactory = classifierFactory;
 
-        if(classifierFactory != null) {
-            final List<String> entityList = classifierFactory.getLayoutClassifier().map(c -> c.getEntityList()).orElse(Collections.emptyList());
-            this.entityVector = classifierFactory.getLayoutClassifier().map(c -> c.toEntityVector(this.value)).orElse(Tensor.Null);
+        if(this.classifierFactory != null) {
+            final List<String> entityList = this.classifierFactory.getLayoutClassifier().map(c -> c.getEntityList()).orElse(Collections.emptyList());
+            this.entityVector = this.classifierFactory.getLayoutClassifier().map(c -> c.toEntityVector(this.value)).orElse(Tensor.Null);
             this.entityList = IntStream.range(0, this.entityVector.size).boxed().filter(i -> this.entityVector.data[i] > 0.0f).map(i -> entityList.get(i)).toList();
         }
         else {
@@ -116,11 +116,26 @@ public class BaseCell implements Cell, Symbol {
                 .flatMap(c -> this.entityList.stream().filter(x -> c.getPivotEntityList().contains(x)).findFirst());
     }
 
+    public void setValue(final String value) {
+        this.value = value;
+
+        if(this.classifierFactory != null) {
+            final List<String> entityList = this.classifierFactory.getLayoutClassifier().map(c -> c.getEntityList()).orElse(Collections.emptyList());
+            this.entityVector = this.classifierFactory.getLayoutClassifier().map(c -> c.toEntityVector(this.value)).orElse(Tensor.Null);
+            this.entityList = IntStream.range(0, this.entityVector.size).boxed().filter(i -> this.entityVector.data[i] > 0.0f).map(i -> entityList.get(i)).toList();
+        }
+        else {
+            this.entityVector = Tensor.Null;
+            this.entityList = Collections.emptyList();
+        }
+    }
+
     private final ClassifierFactory classifierFactory;
     private final int colIndex;
     private final int mergedCount;
-    private final String value;
     private final String rawValue;
-    private final Tensor entityVector;
-    private final List<String> entityList;
+
+    private String value;
+    private Tensor entityVector;
+    private List<String> entityList;
 }

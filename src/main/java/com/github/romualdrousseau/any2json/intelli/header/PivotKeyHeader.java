@@ -13,11 +13,13 @@ public class PivotKeyHeader extends MetaHeader {
         super(table, cell);
         this.entries = new ArrayList<BaseCell>();
         this.entries.add(cell);
+        this.valueName = this.getPivotEntityAsString().get();
     }
 
     private PivotKeyHeader(final PivotKeyHeader parent) {
         super(parent.getTable(), parent.getCell());
         this.entries = parent.entries;
+        this.valueName = this.getPivotEntityAsString().get();
     }
 
     @Override
@@ -42,5 +44,14 @@ public class PivotKeyHeader extends MetaHeader {
         return new PivotValueHeader(this);
     }
 
+    public String getValueName() {
+        return this.valueName;
+    }
+
+    public void updateValueName(final String newName) {
+        this.valueName = newName;
+    }
+
     private final ArrayList<BaseCell> entries;
+    private String valueName;
 }

@@ -8,11 +8,9 @@ public class MetaKeyValueHeader extends MetaHeader {
 
     public MetaKeyValueHeader(final CompositeTable table, final BaseCell key, final BaseCell value) {
         super(table, key);
+        this.name = this.getCell().getValue();
         this.value = value;
-
-        final String cellValue = this.getCell().getValue();
-        this.name = cellValue;
-        this.valueOfValue = this.getLayoutClassifier().toEntityValue(cellValue).orElse(cellValue);
+        this.valueOfValue = this.getLayoutClassifier().toEntityValue(value.getValue()).orElse(value.getValue());
     }
 
     private MetaKeyValueHeader(final MetaKeyValueHeader parent) {
