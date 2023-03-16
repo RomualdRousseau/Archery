@@ -108,19 +108,27 @@ public class DataTableGroupSubFooterParser extends DataTableParser {
                     foundPivot.addEntry(cell);
                 }
             } else {
-                if (cell.hasValue()) {
-                    this.dataTable.addHeader(new DataTableHeader(this.dataTable, cell));
+                this.dataTable.addHeader(new DataTableHeader(this.dataTable, cell));
+                for (int i = 0; i < cell.getMergedCount() - 1; i++) {
+                    final BaseCell clonedCell = new BaseCell(cell.getValue(), cell.getColumnIndex() + i + 1, 1, cell.getClassifierFactory());
+                    this.dataTable.addHeader(new DataTableHeader(this.dataTable, clonedCell));
                 }
             }
         } else {
-            final BaseHeader header = this.dataTable.getHeaderAt(cell.getColumnIndex() - this.dataTable.getFirstColumn());
+            BaseHeader header = this.dataTable.getHeaderAt(cell.getColumnIndex() - this.dataTable.getFirstColumn());
+            if (header == null) {
+                header = new DataTableHeader(this.dataTable, cell);
+                this.dataTable.addHeader(header);
+            }
             if (cell.hasValue() && !header.getName().contains(cell.getValue())) {
                 if (header instanceof PivotKeyHeader) {
                     final PivotKeyHeader pivotHeader = (PivotKeyHeader) header;
-                    pivotHeader.updateValueName(pivotHeader.getValueName() + " " + cell.getValue());
+                    final String newValueName = (pivotHeader.getValueName() + " " + cell.getValue()).trim();
+                    pivotHeader.updateValueName(newValueName);
                 } else if (header instanceof DataTableHeader) {
                     final DataTableHeader dataHeader = (DataTableHeader) header;
-                    dataHeader.updateName(dataHeader.getName() + " " + cell.getValue());
+                    final String newName = (dataHeader.getName() + " " + cell.getValue()).trim();
+                    dataHeader.updateName(newName);
                 }
             }
         }

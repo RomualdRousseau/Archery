@@ -118,7 +118,6 @@ public class BaseCell implements Cell, Symbol {
 
     public void setValue(final String value) {
         this.value = value;
-
         if(this.classifierFactory != null) {
             final List<String> entityList = this.classifierFactory.getLayoutClassifier().map(c -> c.getEntityList()).orElse(Collections.emptyList());
             this.entityVector = this.classifierFactory.getLayoutClassifier().map(c -> c.toEntityVector(this.value)).orElse(Tensor.Null);

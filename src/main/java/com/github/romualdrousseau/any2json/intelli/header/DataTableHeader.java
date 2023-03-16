@@ -39,6 +39,7 @@ public class DataTableHeader extends CompositeHeader {
 
     public void updateName(final String newName) {
         this.name = newName;
+        this.getCell().setValue(newName);
     }
 
     private String name;
