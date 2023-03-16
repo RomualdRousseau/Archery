@@ -102,12 +102,14 @@ public class XlsSheet implements SheetStore {
 
     @Override
     public void patchCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2, final String value) {
-        final Row row1 = this.sheet.getRow(rowIndex1);
+        final int n1 = this.getInternalMergeDown(colIndex1, rowIndex1);
+        final Row row1 = this.sheet.getRow(n1);
         if (row1 == null) {
             return;
         }
         final Cell cell1 = row1.getCell(colIndex1);
-        final Row row2 = this.sheet.getRow(rowIndex2);
+        final int n2 = this.getInternalMergeDown(colIndex2, rowIndex2);
+        final Row row2 = this.sheet.getRow(n2);
         if (row2 == null) {
             return;
         }

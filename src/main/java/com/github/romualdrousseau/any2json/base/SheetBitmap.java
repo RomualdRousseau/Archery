@@ -59,7 +59,7 @@ public class SheetBitmap implements ISearchBitmap
             for (int x = 0; x < this.width;) {
                 final int n = sheet.getNumberOfMergedCellsAt(x, y);
                 if (sheet.hasCellDataAt(x, y)) {
-                    for (int k = 0; k < n; k++) {
+                    for (int k = 0; k < n && (x + k < this.width); k++) {
                         int off = (x + k) / 8;
                         int mod = (x + k) % 8;
                         this.data[y][off] |= (1 << mod);

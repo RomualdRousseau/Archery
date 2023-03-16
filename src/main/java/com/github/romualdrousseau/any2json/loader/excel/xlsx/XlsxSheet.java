@@ -112,15 +112,17 @@ public class XlsxSheet implements SheetStore {
 
     @Override
     public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2, final String value) {
+        final int n1 = this.getInternalMergeDown(colIndex1, rowIndex1);
         final XlsxCell newCell;
         if (value == null) {
-            newCell = this.rows.get(rowIndex1).cells().get(colIndex1);
+            newCell = this.rows.get(n1).cells().get(colIndex1);
         }
         else {
-            newCell = this.rows.get(rowIndex1).cells().get(colIndex1).copy();
+            newCell = this.rows.get(n1).cells().get(colIndex1).copy();
             newCell.setValue(value);
         }
-        final List<XlsxCell> cells = this.rows.get(rowIndex2).cells();
+        final int n2 = this.getInternalMergeDown(colIndex2, rowIndex2);
+        final List<XlsxCell> cells = this.rows.get(n2).cells();
         if (cells != null && colIndex2 < cells.size()) {
             cells.set(colIndex2, newCell);
         }

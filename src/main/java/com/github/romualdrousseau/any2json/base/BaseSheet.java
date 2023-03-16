@@ -122,6 +122,9 @@ public abstract class BaseSheet implements Sheet {
     }
 
     public int getNumberOfMergedCellsAt(final int colIndex, final int rowIndex) {
+        if (this.unmergedAll) {
+            return 1;
+        }
         final int translatedColumn = this.translateColumn(colIndex);
         if (translatedColumn < 0) {
             return 1;
@@ -152,6 +155,10 @@ public abstract class BaseSheet implements Sheet {
             return;
         }
         this.sheetStore.patchCell(translatedColumn1, translatedRow1, translatedColumn2, translatedRow2, value);
+    }
+
+    public void unmergeAll() {
+        this.unmergedAll = true;
     }
 
     public boolean notifyStepCompleted(final SheetEvent e) {
@@ -216,4 +223,5 @@ public abstract class BaseSheet implements Sheet {
     private final List<Integer> columnMask;
     private final int storeLastColumnNum;
     private ClassifierFactory classifierFactory;
+    private boolean unmergedAll = false;
 }

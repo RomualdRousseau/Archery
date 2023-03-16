@@ -56,11 +56,13 @@ class XmlSheet implements SheetStore {
 
     @Override
     public void patchCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2, final String value) {
+        final int n1 = this.getInternalMergeDown(colIndex1, rowIndex1);
+        final int n2 = this.getInternalMergeDown(colIndex2, rowIndex2);
         if(value == null) {
-            this.sheet.addCellAt(rowIndex2 + 1, colIndex2 + 1, this.sheet.getCellAt(rowIndex1 + 1, colIndex1 + 1));
+            this.sheet.addCellAt(n2 + 1, colIndex2 + 1, this.sheet.getCellAt(n1 + 1, colIndex1 + 1));
         }
         else {
-            this.sheet.addCellAt(rowIndex2 + 1, colIndex2 + 1).setData(value);
+            this.sheet.addCellAt(n2 + 1, colIndex2 + 1).setData(value);
         }
     }
 
