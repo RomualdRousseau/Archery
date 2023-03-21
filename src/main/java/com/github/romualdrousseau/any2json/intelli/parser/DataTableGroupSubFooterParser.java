@@ -155,7 +155,7 @@ public class DataTableGroupSubFooterParser extends DataTableParser {
     }
 
     private void processSubFooter(final BaseCell cell, final String symbol) {
-        if (symbol.equals("$")) {
+        if (symbol.equals("$") && this.currRowGroup != null) {
             if (this.firstRowCell != null) {
                 this.currRowGroup.setCell(this.firstRowCell);
                 this.dataTable.addRowGroup(this.currRowGroup);
