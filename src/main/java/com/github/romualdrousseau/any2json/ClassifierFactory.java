@@ -2,7 +2,17 @@ package com.github.romualdrousseau.any2json;
 
 import java.util.Optional;
 
-public class ClassifierFactory {
+public class ClassifierFactory implements AutoCloseable {
+
+    @Override
+    public void close() throws Exception {
+        if (this.layoutClassifier != null) {
+            this.layoutClassifier.close();
+        }
+        if (this.tagClassifier != null) {
+            this.tagClassifier.close();
+        }
+    }
 
     public ClassifierFactory setLayoutClassifier(ILayoutClassifier layoutClassifier) {
         this.layoutClassifier = layoutClassifier;
@@ -25,4 +35,5 @@ public class ClassifierFactory {
 
     private ILayoutClassifier layoutClassifier;
     private ITagClassifier<?> tagClassifier;
+    
 }
