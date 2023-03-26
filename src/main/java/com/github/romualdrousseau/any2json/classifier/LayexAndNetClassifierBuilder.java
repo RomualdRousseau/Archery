@@ -86,7 +86,9 @@ public class LayexAndNetClassifierBuilder implements IClassifierBuilder {
         } else {
             classifier = new LayexAndNetClassifier(model);
         }
-        return new ClassifierFactory().setLayoutClassifier(classifier).setTagClassifier(classifier);
+        final ClassifierFactory classifierFactory = new ClassifierFactory();
+        classifierFactory.setLayoutClassifier(classifier).setTagClassifier(classifier);
+        return classifierFactory;
     }
 
     private JSONObject model;
