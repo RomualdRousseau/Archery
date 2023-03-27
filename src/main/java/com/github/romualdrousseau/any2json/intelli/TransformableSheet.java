@@ -7,6 +7,7 @@ import com.github.romualdrousseau.any2json.intelli.parser.DataTableGroupSubFoote
 import com.github.romualdrousseau.any2json.intelli.parser.DataTableGroupSubHeaderParserFactory;
 import com.github.romualdrousseau.any2json.intelli.parser.DataTableParserFactory;
 import com.github.romualdrousseau.shuju.util.StringFuzzy;
+import com.github.romualdrousseau.shuju.util.StringUtils;
 
 public abstract class TransformableSheet extends BaseSheet {
 
@@ -46,13 +47,13 @@ public abstract class TransformableSheet extends BaseSheet {
 
     public void dropNullColumns(final float fillRatio) {
         for(int j = 0; j <= this.getLastColumnNum(); j++) {
-            int emptyCount = this.getLastRowNum();
+            int emptyCount = this.getLastRowNum() + 1;
             for(int i = 0; i <= this.getLastRowNum(); i++) {
-                if(this.hasCellDataAt(j, i)) {
+                if(this.hasCellDataAt(j, i) && !StringUtils.isFastBlank(this.getCellDataAt(j, i))) {
                     emptyCount--;
                 }
             }
-            final float m = 1.0f - (float) emptyCount / (float) this.getLastRowNum();
+            final float m = 1.0f - (float) emptyCount / (float) (this.getLastRowNum() + 1);
             if (m <= fillRatio) {
                 this.markColumnAsNull(j);
             }
@@ -67,13 +68,13 @@ public abstract class TransformableSheet extends BaseSheet {
 
     public void dropNullRows(final float fillRatio) {
         for(int i = 0; i <= this.getLastRowNum(); i++) {
-            int emptyCount = this.getLastColumnNum();
+            int emptyCount = this.getLastColumnNum() + 1;
             for(int j = 0; j <= this.getLastColumnNum(i); j++) {
-                if(this.hasCellDataAt(j, i)) {
+                if(this.hasCellDataAt(j, i) && !StringUtils.isFastBlank(this.getCellDataAt(j, i))) {
                     emptyCount--;
                 }
             }
-            final float m = 1.0f - (float) emptyCount / (float) this.getLastColumnNum();
+            final float m = 1.0f - (float) emptyCount / (float) (this.getLastColumnNum() + 1);
             if (m <= fillRatio) {
                 this.markRowAsNull(i);
             }
