@@ -125,6 +125,9 @@ public class XlsxSheet implements SheetStore {
         final List<XlsxCell> cells = this.rows.get(n2).cells();
         if (cells != null && colIndex2 < cells.size()) {
             cells.set(colIndex2, newCell);
+        } else {
+            this.rows.get(n2).addCell(newCell);
+            this.rows.get(n2).setLastColumnNum(this.rows.get(n2).getLastColumnNum() + 1);
         }
     }
 
