@@ -40,6 +40,11 @@ import com.github.romualdrousseau.shuju.preprocessing.tokenizer.ShingleTokenizer
 
 public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<List<Integer>> {
 
+    private static final int IN_ENTITY_SIZE = 10;
+    private static final int IN_NAME_SIZE = 10;
+    private static final int IN_CONTEXT_SIZE = 100;
+    private static final int OUT_TAG_SIZE = 64;
+
     private final List<String> vocabulary;
     private final int ngrams;
     private final List<String> lexicon;
@@ -223,9 +228,9 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
                 .flatMap(x -> Text.one_hot(x, this.filters, this.tokenizer, this.hasher).stream())
                 .distinct().sorted().toList();
         return Stream.concat(Stream.concat(
-                Text.pad_sequence(part1, 10).stream().limit(10),
-                Text.pad_sequence(part2, 10).stream().limit(10)),
-                Text.pad_sequence(part3, 100).stream().limit(100)).toList();
+                Text.pad_sequence(part1, IN_ENTITY_SIZE).stream().limit(IN_ENTITY_SIZE),
+                Text.pad_sequence(part2, IN_NAME_SIZE).stream().limit(IN_NAME_SIZE)),
+                Text.pad_sequence(part3, IN_CONTEXT_SIZE).stream().limit(IN_CONTEXT_SIZE)).toList();
     }
 
     @Override
@@ -235,9 +240,10 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
         }
         final HashMap<String, org.tensorflow.Tensor> inputs = new HashMap<>() {
             {
-                put("entity_input", ListIntegertoTFloat32(predictSet, 0, 10));
-                put("name_input", ListIntegertoTFloat32(predictSet, 10, 20));
-                put("context_input", ListIntegertoTFloat32(predictSet, 20, 120));
+                put("entity_input", ListIntegertoTFloat32(predictSet, 0, IN_ENTITY_SIZE));
+                put("name_input", ListIntegertoTFloat32(predictSet, IN_ENTITY_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE));
+                put("context_input", ListIntegertoTFloat32(predictSet, IN_ENTITY_SIZE + IN_NAME_SIZE,
+                        IN_ENTITY_SIZE + IN_NAME_SIZE + IN_CONTEXT_SIZE));
             }
         };
         final Map<String, org.tensorflow.Tensor> result = this.tagClassifierFunc.call(inputs);
@@ -249,11 +255,12 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
             final String name, final List<String> entities, final List<String> context, final String label) {
         final List<Integer> key = Text.to_categorical(label, this.tags);
         final List<Integer> value = this.buildPredictSet(name, entities, context);
-        return new AbstractMap.SimpleImmutableEntry<>(Text.pad_sequence(key, 32), value);
+        return new AbstractMap.SimpleImmutableEntry<>(Text.pad_sequence(key, OUT_TAG_SIZE), value);
     }
 
     @Override
-    public Process fit(final List<List<Integer>> trainingSet, final List<List<Integer>> validationSet) throws IOException {
+    public Process fit(final List<List<Integer>> trainingSet, final List<List<Integer>> validationSet)
+            throws IOException {
         final Path kernelsPath = Paths.get(System.getProperty("user.home") + "/.local/share/any2json/kernels");
         this.installKernels(kernelsPath);
 
@@ -278,8 +285,11 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
         final boolean isOsWindows = System.getProperty("os.name").contains("Windows");
         final String run_script = isOsWindows ? "run.bat" : "run.sh";
 
+        final String dimensions = String.format("%d,%d,%d,%d", IN_ENTITY_SIZE, IN_NAME_SIZE, IN_CONTEXT_SIZE,
+                OUT_TAG_SIZE);
+
         final ProcessBuilder processBuilder = new ProcessBuilder(kernelPath.resolve(run_script).toString(),
-                "-V " + vocabulary.size(), "-s 10,10,100,32", "-t " + trainPath, "-m " + this.modelPath);
+                "-V " + vocabulary.size(), "-s " + dimensions, "-t " + trainPath, "-m " + this.modelPath);
         processBuilder.directory(kernelPath.toFile());
         processBuilder.redirectErrorStream(true);
 
@@ -341,7 +351,8 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
                     final String init_script = isOsWindows ? "init.bat" : "init.sh";
                     final Path kernelPath = destPath.resolve(sourcePath.relativize(k.toPath()));
                     Disk.copyDir(k.toPath(), kernelPath);
-                    final ProcessBuilder processBuilder = new ProcessBuilder(kernelPath.resolve(init_script).toString());
+                    final ProcessBuilder processBuilder = new ProcessBuilder(
+                            kernelPath.resolve(init_script).toString());
                     processBuilder.directory(kernelPath.toFile());
                     processBuilder.inheritIO();
                     processBuilder.redirectErrorStream(true);
