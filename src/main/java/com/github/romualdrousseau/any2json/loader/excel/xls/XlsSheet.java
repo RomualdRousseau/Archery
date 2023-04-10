@@ -113,7 +113,12 @@ public class XlsSheet implements SheetStore {
         if (row2 == null) {
             return;
         }
-        final Cell cell2 = row2.getCell(colIndex2);
+        final Cell cell2;
+        if (row2.getCell(colIndex2) == null) {
+            cell2 = row2.createCell(colIndex2);
+        } else {
+            cell2 = row2.getCell(colIndex2);
+        }
         cell2.setCellStyle(cell1.getCellStyle());
         if(value == null) {
             cell2.setCellValue(this.getData(cell2));
