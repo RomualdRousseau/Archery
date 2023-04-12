@@ -31,6 +31,10 @@ public abstract class TransformableSheet extends BaseSheet {
         }
     }
 
+    public void disablePivot() {
+        this.dataTableParserFactory.disablePivot();
+    }
+
     public void stichRows() {
         for(int i = 0; i <= this.getLastRowNum(); i++) {
             if (this.isStichedRow(i)) {

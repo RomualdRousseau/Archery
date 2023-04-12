@@ -20,8 +20,9 @@ public class DataTableGroupSubFooterParser extends DataTableParser {
     public static final int TABLE_SUB_FOOTER = 6;
     public static final int TABLE_FOOTER = 7;
 
-    public DataTableGroupSubFooterParser(final DataTable dataTable) {
+    public DataTableGroupSubFooterParser(final DataTable dataTable, final boolean disablePivot) {
         this.dataTable = dataTable;
+        this.disablePivot = disablePivot;
         this.splitRows = new ArrayList<Integer>();
         this.ignoreRows = new ArrayList<Integer>();
 
@@ -100,7 +101,7 @@ public class DataTableGroupSubFooterParser extends DataTableParser {
                 this.firstRowHeader = true;
             }
         } else if (!this.firstRowHeader) {
-            if (symbol.equals("e") && cell.isPivotHeader()) {
+            if (!this.disablePivot && symbol.equals("e") && cell.isPivotHeader()) {
                 final PivotKeyHeader foundPivot = this.dataTable.findFirstPivotHeader();
                 if (foundPivot == null) {
                     this.dataTable.addHeader(new PivotKeyHeader(this.dataTable, cell));
@@ -194,6 +195,7 @@ public class DataTableGroupSubFooterParser extends DataTableParser {
     }
 
     private final DataTable dataTable;
+    private final boolean disablePivot;
     private final ArrayList<Integer> splitRows;
     private final ArrayList<Integer> ignoreRows;
 

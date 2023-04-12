@@ -4,8 +4,15 @@ import com.github.romualdrousseau.any2json.intelli.DataTable;
 
 public class DataTableGroupSubHeaderParserFactory implements DataTableParserFactory {
 
+    private boolean disablePivot = false;
+    
+    @Override
+    public void disablePivot() {
+        this.disablePivot = true;
+    }
+
     @Override
     public DataTableParser getInstance(DataTable dataTable) {
-        return new DataTableGroupSubHeaderParser(dataTable);
+        return new DataTableGroupSubHeaderParser(dataTable, this.disablePivot);
     }
 }
