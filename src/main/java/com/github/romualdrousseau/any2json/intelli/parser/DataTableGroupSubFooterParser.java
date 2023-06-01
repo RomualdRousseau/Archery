@@ -156,24 +156,26 @@ public class DataTableGroupSubFooterParser extends DataTableParser {
     }
 
     private void processSubFooter(final BaseCell cell, final String symbol) {
-        if (symbol.equals("$") && this.currRowGroup != null) {
-            if (this.firstRowCell != null) {
-                this.currRowGroup.setCell(this.firstRowCell);
-                this.dataTable.addRowGroup(this.currRowGroup);
-            }
-
-            if (!this.firstRowGroupProcessed) {
-                MetaTableHeader meta = this.dataTable.findFirstMetaTableHeader();
-                if (meta == null) {
-                    meta = new MetaTableHeader(this.dataTable,
-                            new BaseCell("#GROUP?", 0, 1, this.firstRowCell.getRawValue(), this.dataTable.getSheet().getClassifierFactory()));
-                    this.dataTable.addHeader(meta);
+        if (symbol.equals("$")) {
+            if (this.currRowGroup != null) {
+                if (this.firstRowCell != null) {
+                    this.currRowGroup.setCell(this.firstRowCell);
+                    this.dataTable.addRowGroup(this.currRowGroup);
                 }
-                meta.assignRowGroup(this.currRowGroup);
-                this.firstRowGroupProcessed = true;
-            }
 
-            this.currRowGroup = null;
+                if (!this.firstRowGroupProcessed) {
+                    MetaTableHeader meta = this.dataTable.findFirstMetaTableHeader();
+                    if (meta == null) {
+                        meta = new MetaTableHeader(this.dataTable,
+                                new BaseCell("#GROUP?", 0, 1, this.firstRowCell.getRawValue(), this.dataTable.getSheet().getClassifierFactory()));
+                        this.dataTable.addHeader(meta);
+                    }
+                    meta.assignRowGroup(this.currRowGroup);
+                    this.firstRowGroupProcessed = true;
+                }
+
+                this.currRowGroup = null;
+            }
             this.ignoreRows.add(this.getRow() - this.dataTable.getFirstRowOffset());
             this.dataTable.getRowAt(this.getRow() - this.dataTable.getFirstRowOffset()).setIgnored(true);
         }
@@ -196,8 +198,8 @@ public class DataTableGroupSubFooterParser extends DataTableParser {
 
     private final DataTable dataTable;
     private final boolean disablePivot;
-    private final ArrayList<Integer> splitRows;
-    private final ArrayList<Integer> ignoreRows;
+    private final List<Integer> splitRows;
+    private final List<Integer> ignoreRows;
 
     private BaseCell firstRowCell;
     private RowGroup currRowGroup;
