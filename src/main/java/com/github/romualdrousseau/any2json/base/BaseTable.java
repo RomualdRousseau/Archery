@@ -13,7 +13,7 @@ public abstract class BaseTable implements Table, Visitable {
 
     public BaseTable(final BaseSheet sheet, final int firstColumn, final int firstRow, final int lastColumn,
             final int lastRow) {
-        assert (firstColumn <= lastColumn) : "fisrt column must be before last column";
+        assert (firstColumn <= lastColumn) : "first column must be before last column";
         assert (firstRow <= lastRow) : "first row must be before last row";
         this.visited = false;
         this.sheet = sheet;
@@ -31,11 +31,13 @@ public abstract class BaseTable implements Table, Visitable {
     public BaseTable(final BaseTable parent) {
         this(parent.sheet, parent.firstColumn, parent.firstRow, parent.lastColumn, parent.lastRow);
         this.cachedRows = parent.cachedRows;
+        this.ignoreRows.addAll(parent.ignoreRows);
     }
 
     public BaseTable(final BaseTable parent, final int firstRow, final int lastRow) {
         this(parent.sheet, parent.firstColumn, firstRow, parent.lastColumn, lastRow);
         this.cachedRows = parent.cachedRows;
+        this.ignoreRows.addAll(parent.ignoreRows);
     }
 
     @Override
@@ -140,6 +142,10 @@ public abstract class BaseTable implements Table, Visitable {
         this.loadCompleted = flag;
     }
 
+    public List<Integer> ignoreRows() {
+        return this.ignoreRows;
+    }
+
     public BaseRow getRowAt(final int rowIndex) {
         if (rowIndex < 0 || rowIndex >= getNumberOfRows()) {
             throw new ArrayIndexOutOfBoundsException(rowIndex);
@@ -154,6 +160,14 @@ public abstract class BaseTable implements Table, Visitable {
         BaseRow result = cachedRows.get(this.firstRow + relRowIndex);
         if (result == null) {
             result = new BaseRow(this, relRowIndex);
+            
+            // Retrieve ignore status possibly lost in cache removal
+            for(Integer i: this.ignoreRows()) {
+                if (i == rowIndex) {
+                    result.setIgnored(true);
+                }
+            }
+
             cachedRows.put(this.firstRow + relRowIndex, result);
         }
 
@@ -183,7 +197,7 @@ public abstract class BaseTable implements Table, Visitable {
     }
 
     protected void adjustLastRow(int lastRow, boolean withFooter) {
-        this.lastRowOffset = withFooter ? -1 : 0;
+        this.lastRowOffset = withFooter ? -1 : 0; // TODO
         this.lastRow = lastRow;
     }
 
@@ -199,4 +213,5 @@ public abstract class BaseTable implements Table, Visitable {
     private RowStore cachedRows;
     private boolean loadCompleted;
     private boolean visited;
+    private final LinkedList<Integer> ignoreRows = new LinkedList<Integer>();
 }

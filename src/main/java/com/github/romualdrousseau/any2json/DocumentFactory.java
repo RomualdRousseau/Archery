@@ -15,7 +15,7 @@ public class DocumentFactory {
     public static final String PIVOT_KEY_SUFFIX = "#PIVOT?";
     public static final String PIVOT_VALUE_SUFFIX = "#VALUE?";
     public static final float DEFAULT_ENTITY_PROBABILITY = 0.6f;
-    public static final int MAX_STORE_ROWS = 1000;
+    public static final int MAX_STORE_ROWS = 10000;
 
 	public static Document createInstance(String filePath, String encoding, String password) {
 		if(filePath == null) {
