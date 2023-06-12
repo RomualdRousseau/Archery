@@ -1,5 +1,8 @@
 package com.github.romualdrousseau.any2json.intelli;
 
+import java.util.HashMap;
+import java.util.Map.Entry;
+
 import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.base.SheetStore;
@@ -80,6 +83,62 @@ public abstract class TransformableSheet extends BaseSheet {
             }
             final float m = 1.0f - (float) emptyCount / (float) (this.getLastColumnNum() + 1);
             if (m <= fillRatio) {
+                this.markRowAsNull(i);
+            }
+        }
+        this.removeAllNullRows();
+    }
+
+    public void dropRowsWhenEntropyBetween(final float min, final float max) {
+        for(int i = 0; i <= this.getLastRowNum(); i++) {
+            final HashMap<String, Double> counts = new HashMap<>();
+            double count = 0;
+            for(int j = 0; j <= this.getLastColumnNum(i); j++) {
+                if(this.hasCellDataAt(j, i)) {
+                    final String value = this.getCellDataAt(j, i);
+                    if (!StringUtils.isFastBlank(this.getCellDataAt(j, i))) {
+                        counts.put(value, counts.getOrDefault(value, 0.0) + 1.0);
+                        count++;
+                    }
+                }
+            }
+
+            double entropy = 0.0f;
+            for (final Entry<String, Double> e: counts.entrySet()) {
+                double p = e.getValue() / count;
+                entropy += p * Math.log(p) / Math.log(2);
+            }
+            entropy = -entropy;
+
+            if (min <= entropy && entropy <= max) {
+                this.markRowAsNull(i);
+            }
+        }
+        this.removeAllNullRows();
+    }
+
+    public void dropRowsWhenEntropyLessThan(final float max) {
+        for(int i = 0; i <= this.getLastRowNum(); i++) {
+            final HashMap<String, Double> counts = new HashMap<>();
+            double count = 0;
+            for(int j = 0; j <= this.getLastColumnNum(i); j++) {
+                if(this.hasCellDataAt(j, i)) {
+                    final String value = this.getCellDataAt(j, i);
+                    if (!StringUtils.isFastBlank(this.getCellDataAt(j, i))) {
+                        counts.put(value, counts.getOrDefault(value, 0.0) + 1.0);
+                        count++;
+                    }
+                }
+            }
+
+            double entropy = 0.0f;
+            for (final Entry<String, Double> e: counts.entrySet()) {
+                double p = e.getValue() / count;
+                entropy += p * Math.log(p) / Math.log(2);
+            }
+            entropy = -entropy;
+
+            if (entropy <= max) {
                 this.markRowAsNull(i);
             }
         }

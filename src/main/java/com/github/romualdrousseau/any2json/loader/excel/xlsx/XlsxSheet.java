@@ -101,7 +101,7 @@ public class XlsxSheet implements SheetStore {
             return 1;
         }
         int numberOfCells = 0;
-        for (final CellRangeAddress region : mergedRegions) {
+        for (final CellRangeAddress region : this.mergedRegions) {
             if (region.isInRange(rowIndex, colIndex)) {
                 numberOfCells = region.getLastColumn() - region.getFirstColumn();
                 break;
@@ -121,6 +121,7 @@ public class XlsxSheet implements SheetStore {
             newCell = this.rows.get(n1).cells().get(colIndex1).copy();
             newCell.setValue(value);
         }
+
         final int n2 = this.getInternalMergeDown(colIndex2, rowIndex2);
         final List<XlsxCell> cells = this.rows.get(n2).cells();
         if (cells != null && colIndex2 < cells.size()) {
@@ -128,6 +129,21 @@ public class XlsxSheet implements SheetStore {
         } else {
             this.rows.get(n2).addCell(newCell);
             this.rows.get(n2).setLastColumnNum(this.rows.get(n2).getLastColumnNum() + 1);
+        }
+
+        this.unmergeCell(colIndex2, rowIndex2);
+    }
+
+    private void unmergeCell(final int colIndex, final int rowIndex) {
+        final List<CellRangeAddress> regionsToRemove = new ArrayList<CellRangeAddress>();
+        for (final CellRangeAddress region : this.mergedRegions) {
+            if (region.isInRange(rowIndex, colIndex)) {
+                regionsToRemove.add(region);
+            }
+        }
+
+        for (final CellRangeAddress region : regionsToRemove) {
+            this.mergedRegions.remove(region);
         }
     }
 
