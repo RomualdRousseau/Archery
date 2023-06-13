@@ -34,10 +34,6 @@ public abstract class TransformableSheet extends BaseSheet {
         }
     }
 
-    public void disablePivot() {
-        this.dataTableParserFactory.disablePivot();
-    }
-
     public void stichRows() {
         for(int i = 0; i <= this.getLastRowNum(); i++) {
             if (this.isStichedRow(i)) {
@@ -47,12 +43,20 @@ public abstract class TransformableSheet extends BaseSheet {
         this.removeAllNullRows();
     }
 
+    public void disablePivot() {
+        this.dataTableParserFactory.disablePivot();
+    }
+
     public void dropColumn(final int colIndex) {
         this.markColumnAsNull(colIndex);
         this.removeAllNullColumns();
     }
 
     public void dropNullColumns(final float fillRatio) {
+        this.dropColumnsWhenFillRatioLessThan(fillRatio);
+    }
+
+    public void dropColumnsWhenFillRatioLessThan(final float max) {
         for(int j = 0; j <= this.getLastColumnNum(); j++) {
             int emptyCount = this.getLastRowNum() + 1;
             for(int i = 0; i <= this.getLastRowNum(); i++) {
@@ -61,7 +65,28 @@ public abstract class TransformableSheet extends BaseSheet {
                 }
             }
             final float m = 1.0f - (float) emptyCount / (float) (this.getLastRowNum() + 1);
-            if (m <= fillRatio) {
+            if (m <= max) {
+                this.markColumnAsNull(j);
+            }
+        }
+        this.removeAllNullColumns();
+    }
+
+    public void dropColumnsWhenEntropyLessThan(final float max) {
+        for(int j = 0; j <= this.getLastColumnNum(); j++) {
+            final HashMap<String, Double> x = new HashMap<>();
+            int n = 0;
+            for(int i = 0; i <= this.getLastRowNum(); i++) {
+                if(this.hasCellDataAt(j, i)) {
+                    final String value = this.getCellDataAt(j, i);
+                    if (!StringUtils.isFastBlank(value)) {
+                        x.put(value, x.getOrDefault(value, 0.0) + 1.0);
+                        n++;
+                    }
+                }
+            }
+            final float e = (float) this.computeEntropy(x, n);
+            if (e <= max) {
                 this.markColumnAsNull(j);
             }
         }
@@ -74,6 +99,10 @@ public abstract class TransformableSheet extends BaseSheet {
     }
 
     public void dropNullRows(final float fillRatio) {
+        this.dropRowsWhenFillRatioLessThan(fillRatio);
+    }
+
+    public void dropRowsWhenFillRatioLessThan(final float max) {
         for(int i = 0; i <= this.getLastRowNum(); i++) {
             int emptyCount = this.getLastColumnNum() + 1;
             for(int j = 0; j <= this.getLastColumnNum(i); j++) {
@@ -82,35 +111,7 @@ public abstract class TransformableSheet extends BaseSheet {
                 }
             }
             final float m = 1.0f - (float) emptyCount / (float) (this.getLastColumnNum() + 1);
-            if (m <= fillRatio) {
-                this.markRowAsNull(i);
-            }
-        }
-        this.removeAllNullRows();
-    }
-
-    public void dropRowsWhenEntropyBetween(final float min, final float max) {
-        for(int i = 0; i <= this.getLastRowNum(); i++) {
-            final HashMap<String, Double> counts = new HashMap<>();
-            double count = 0;
-            for(int j = 0; j <= this.getLastColumnNum(i); j++) {
-                if(this.hasCellDataAt(j, i)) {
-                    final String value = this.getCellDataAt(j, i);
-                    if (!StringUtils.isFastBlank(this.getCellDataAt(j, i))) {
-                        counts.put(value, counts.getOrDefault(value, 0.0) + 1.0);
-                        count++;
-                    }
-                }
-            }
-
-            double entropy = 0.0f;
-            for (final Entry<String, Double> e: counts.entrySet()) {
-                double p = e.getValue() / count;
-                entropy += p * Math.log(p) / Math.log(2);
-            }
-            entropy = -entropy;
-
-            if (min <= entropy && entropy <= max) {
+            if (m <= max) {
                 this.markRowAsNull(i);
             }
         }
@@ -119,26 +120,19 @@ public abstract class TransformableSheet extends BaseSheet {
 
     public void dropRowsWhenEntropyLessThan(final float max) {
         for(int i = 0; i <= this.getLastRowNum(); i++) {
-            final HashMap<String, Double> counts = new HashMap<>();
-            double count = 0;
+            final HashMap<String, Double> x = new HashMap<>();
+            int n = 0;
             for(int j = 0; j <= this.getLastColumnNum(i); j++) {
                 if(this.hasCellDataAt(j, i)) {
                     final String value = this.getCellDataAt(j, i);
                     if (!StringUtils.isFastBlank(this.getCellDataAt(j, i))) {
-                        counts.put(value, counts.getOrDefault(value, 0.0) + 1.0);
-                        count++;
+                        x.put(value, x.getOrDefault(value, 0.0) + 1.0);
+                        n++;
                     }
                 }
             }
-
-            double entropy = 0.0f;
-            for (final Entry<String, Double> e: counts.entrySet()) {
-                double p = e.getValue() / count;
-                entropy += p * Math.log(p) / Math.log(2);
-            }
-            entropy = -entropy;
-
-            if (entropy <= max) {
+            final float e = (float) this.computeEntropy(x, n);
+            if (e <= max) {
                 this.markRowAsNull(i);
             }
         }
@@ -191,6 +185,15 @@ public abstract class TransformableSheet extends BaseSheet {
             hash = "";
         }
         return hash;
+    }
+
+    private double computeEntropy(HashMap<String, Double> x, double n) {
+        double result = 0.0f;
+        for (final Entry<String, Double> e: x.entrySet()) {
+            double p = e.getValue() / n;
+            result += p * Math.log(p) / Math.log(2);
+        }
+        return -result;
     }
 
     private DataTableParserFactory dataTableParserFactory = new DataTableGroupSubHeaderParserFactory();
