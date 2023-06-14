@@ -87,13 +87,13 @@ public abstract class TransformableSheetParser implements BaseSheetParser {
         return result;
     }
 
-    private void splitAllSubTables(final CompositeTable table, final TableMatcher layex, final DataTableParser parser,
+    private void splitAllSubTables(final CompositeTable table, final TableMatcher matcher, final DataTableParser parser,
             final List<DataTable> result) {
         int firstRow = -1;
         for (final int splitRow : parser.getSplitRows()) {
             if (firstRow >= 0) {
                 final CompositeTable subTable = new CompositeTable(table, firstRow, table.getFirstRow() + splitRow - 1);
-                result.add(new DataTable(subTable, layex, 0, this.dataTableFactory));
+                result.add(new DataTable(subTable, matcher, 0, this.dataTableFactory));
             }
             firstRow = table.getFirstRow() + splitRow;
         }

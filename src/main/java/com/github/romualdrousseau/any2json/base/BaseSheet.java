@@ -168,6 +168,14 @@ public abstract class BaseSheet implements Sheet {
         return !e.isCanceled();
     }
 
+    public float getBitmapThreshold() {
+        return this.bitmapThreshold;
+    }
+
+    public void setBitmapThreshold(final float bitmapThreshold) {
+        this.bitmapThreshold = bitmapThreshold;
+    }
+
     protected void markColumnAsNull(final int colIndex) {
         if (colIndex < this.columnMask.size()) {
             this.columnMask.set(colIndex, null);
@@ -224,4 +232,5 @@ public abstract class BaseSheet implements Sheet {
     private final int storeLastColumnNum;
     private ClassifierFactory classifierFactory;
     private boolean unmergedAll = false;
+    private float bitmapThreshold = 0.5f;
 }

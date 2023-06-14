@@ -69,7 +69,7 @@ public class IntelliTable extends CompositeTable {
         }
 
         for (final CompositeTableGraph child : graph.children()) {
-            buildHeaders(child);
+            this.buildHeaders(child);
         }
     }
 
@@ -87,7 +87,7 @@ public class IntelliTable extends CompositeTable {
     private void buildTable(final CompositeTableGraph graph, final PivotKeyHeader pivot) {
         for (final CompositeTableGraph child : graph.children()) {
             if (child.getTable() instanceof DataTable) {
-                this.buildRowsForOneTable((DataTable) child.getTable(), pivot);
+                this.buildRowsForOneTable(child, (DataTable) child.getTable(), pivot);
             }
         }
 
@@ -96,10 +96,10 @@ public class IntelliTable extends CompositeTable {
         }
     }
 
-    private void buildRowsForOneTable(final DataTable orgTable, final PivotKeyHeader pivot) {
+    private void buildRowsForOneTable(final CompositeTableGraph graph, final DataTable orgTable, final PivotKeyHeader pivot) {
         if (orgTable.getNumberOfRowGroups() == 0) {
             for (final Row orgRow : orgTable.rows()) {
-                final ArrayList<IntelliRow> newRows = buildRowsForOneRow(orgTable, (BaseRow) orgRow, pivot, null);
+                final ArrayList<IntelliRow> newRows = buildRowsForOneRow(graph, orgTable, (BaseRow) orgRow, pivot, null);
                 this.rows.addAll(newRows);
             }
         } else {
@@ -109,7 +109,7 @@ public class IntelliTable extends CompositeTable {
                         break;
                     }
                     Row orgRow = orgTable.getRowAt(rowGroup.getRow() + i);
-                    final ArrayList<IntelliRow> newRows = buildRowsForOneRow(orgTable, (BaseRow) orgRow, pivot,
+                    final ArrayList<IntelliRow> newRows = buildRowsForOneRow(graph, orgTable, (BaseRow) orgRow, pivot,
                             rowGroup);
                     this.rows.addAll(newRows);
                 }
@@ -117,7 +117,7 @@ public class IntelliTable extends CompositeTable {
         }
     }
 
-    private ArrayList<IntelliRow> buildRowsForOneRow(final DataTable orgTable, final BaseRow orgRow,
+    private ArrayList<IntelliRow> buildRowsForOneRow(final CompositeTableGraph graph, final DataTable orgTable, final BaseRow orgRow,
             final PivotKeyHeader pivot, final RowGroup rowGroup) {
         final ArrayList<IntelliRow> newRows = new ArrayList<IntelliRow>();
 
@@ -126,11 +126,11 @@ public class IntelliTable extends CompositeTable {
         }
 
         if (pivot == null) {
-            newRows.add(buildOneRow(orgTable, orgRow, null, rowGroup));
+            newRows.add(buildOneRow(graph, orgTable, orgRow, null, rowGroup));
         } else {
             for (final BaseCell pivotCell : pivot.getEntries()) {
                 if (!StringUtils.isFastBlank(orgRow.getCellAt(pivotCell.getColumnIndex()).getValue())) {
-                    newRows.add(buildOneRow(orgTable, orgRow, pivotCell, rowGroup));
+                    newRows.add(buildOneRow(graph, orgTable, orgRow, pivotCell, rowGroup));
                 }
             }
         }
@@ -138,7 +138,7 @@ public class IntelliTable extends CompositeTable {
         return newRows;
     }
 
-    private IntelliRow buildOneRow(final DataTable orgTable, final BaseRow orgRow, final BaseCell pivotCell,
+    private IntelliRow buildOneRow(final CompositeTableGraph graph, final DataTable orgTable, final BaseRow orgRow, final BaseCell pivotCell,
             final RowGroup rowGroup) {
         final IntelliRow newRow = new IntelliRow(this, this.tmpHeaders.size());
 
@@ -162,7 +162,8 @@ public class IntelliTable extends CompositeTable {
                         }
                     }
                 } else {
-                    newRow.setCellValue(abstractHeader.getColumnIndex(), abstractHeader.getValue(), abstractHeader.getCell().getRawValue());
+                    final BaseHeader header = this.findClosestHeaderInGraph(graph.getParent(), abstractHeader);
+                    newRow.setCellValue(abstractHeader.getColumnIndex(), header.getValue(), header.getCell().getRawValue());
                 }
             }
         }
@@ -189,6 +190,26 @@ public class IntelliTable extends CompositeTable {
             }
         }
         this.setLoadCompleted(false);
+    }
+
+    private BaseHeader findClosestHeaderInGraph(final CompositeTableGraph graph, BaseHeader abstractHeader) {
+        if (graph == null || graph.getTable() == null) {
+            return abstractHeader;
+        }
+
+        BaseHeader result = null;
+        for(final Header header : graph.getTable().headers()) {
+            if (header.equals(abstractHeader)) {
+                result = (BaseHeader) header;
+            }
+        }
+
+        if (result != null) {
+            return result;
+        }
+        else {
+            return this.findClosestHeaderInGraph(graph.getParent(), abstractHeader);
+        }
     }
 
     private final ArrayList<CompositeHeader> tmpHeaders = new ArrayList<CompositeHeader>();

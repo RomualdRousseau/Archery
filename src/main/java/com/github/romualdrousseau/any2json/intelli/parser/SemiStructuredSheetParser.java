@@ -36,7 +36,7 @@ public class SemiStructuredSheetParser extends TransformableSheetParser {
     protected List<CompositeTable> findAllTables(final BaseSheet sheet, final SheetBitmap image) {
         final ArrayList<CompositeTable> result = new ArrayList<CompositeTable>();
 
-        final List<SearchPoint[]> rectangles = findAllRectangles(image);
+        final List<SearchPoint[]> rectangles = this.findAllRectangles(image, sheet.getBitmapThreshold());
         for (final SearchPoint[] rectangle : rectangles) {
             final int firstColumnNum = rectangle[0].getX();
             int firstRowNum = rectangle[0].getY();
@@ -74,10 +74,12 @@ public class SemiStructuredSheetParser extends TransformableSheetParser {
         return result;
     }
 
-    private List<SearchPoint[]> findAllRectangles(final SheetBitmap original) {
+    private List<SearchPoint[]> findAllRectangles(final SheetBitmap original, final float threshold) {
         final ISearchBitmap filtered = original.clone();
-        final Filter filter = new Filter(new Template(new float[][] { { 0, 0, 0 }, { 1, 1, 0 }, { 0, 0, 0 } }));
-        filter.apply(original, filtered, 0.5);
+        if(threshold > 0.0f) {
+            final Filter filter = new Filter(new Template(new float[][] { { 0, 0, 0 }, { 1, 1, 0 }, { 0, 0, 0 } }));
+            filter.apply(original, filtered, threshold);
+        }
 
         List<SearchPoint[]> rectangles = new RectangleExtractor().extractAll(filtered);
 

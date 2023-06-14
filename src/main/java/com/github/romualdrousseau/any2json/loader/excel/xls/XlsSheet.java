@@ -58,7 +58,7 @@ public class XlsSheet implements SheetStore {
             return false;
         }
         final Cell cell = row.getCell(colIndex);
-        return this.hasData(cell) || this.hasDecoration(cell);
+        return this.hasData(cell);
     }
 
     @Override
@@ -80,7 +80,7 @@ public class XlsSheet implements SheetStore {
             return null;
         }
         final Cell cell = row.getCell(colIndex);
-        return this.hasData(cell) || this.hasDecoration(cell) ? StringUtils.cleanToken(this.getData(cell)) : null;
+        return this.hasData(cell) ? StringUtils.cleanToken(this.getData(cell)) : null;
     }
 
     @Override
