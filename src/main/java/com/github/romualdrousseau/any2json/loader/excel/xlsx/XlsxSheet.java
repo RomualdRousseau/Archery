@@ -111,7 +111,7 @@ public class XlsxSheet implements SheetStore {
     }
 
     @Override
-    public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2, final String value) {
+    public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2, final String value, final boolean unmergeAll) {
         final int n1 = this.getInternalMergeDown(colIndex1, rowIndex1);
         final XlsxCell newCell;
         if (value == null) {
@@ -131,7 +131,9 @@ public class XlsxSheet implements SheetStore {
             this.rows.get(n2).setLastColumnNum(this.rows.get(n2).getLastColumnNum() + 1);
         }
 
-        this.unmergeCell(colIndex2, rowIndex2);
+        if (!unmergeAll) {
+            this.unmergeCell(colIndex2, rowIndex2);
+        }
     }
 
     private void unmergeCell(final int colIndex, final int rowIndex) {

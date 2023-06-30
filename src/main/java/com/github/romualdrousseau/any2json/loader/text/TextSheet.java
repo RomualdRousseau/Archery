@@ -54,7 +54,7 @@ class TextSheet implements SheetStore {
     }
 
     @Override
-    public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2, final String value) {
+    public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2, final String value, final boolean unmergeAll) {
         throw new NotImplementedException("This format doesn't allow sheet edition.");
     }
 

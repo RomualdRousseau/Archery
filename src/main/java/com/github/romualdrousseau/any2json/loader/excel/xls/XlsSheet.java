@@ -101,7 +101,7 @@ public class XlsSheet implements SheetStore {
     }
 
     @Override
-    public void patchCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2, final String value) {
+    public void patchCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2, final String value, final boolean unmergeAll) {
         final int n1 = this.getInternalMergeDown(colIndex1, rowIndex1);
         final Row row1 = this.sheet.getRow(n1);
         if (row1 == null) {

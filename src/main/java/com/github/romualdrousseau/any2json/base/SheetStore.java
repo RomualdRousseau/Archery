@@ -16,5 +16,5 @@ public interface SheetStore {
 
     int getNumberOfMergedCellsAt(int colIndex, int rowIndex);
 
-    void patchCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2, String value);
+    void patchCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2, String value, boolean unmergeAll);
 }

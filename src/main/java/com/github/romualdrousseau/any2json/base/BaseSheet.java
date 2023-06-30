@@ -154,7 +154,7 @@ public abstract class BaseSheet implements Sheet {
         if (translatedRow2 < 0) {
             return;
         }
-        this.sheetStore.patchCell(translatedColumn1, translatedRow1, translatedColumn2, translatedRow2, value);
+        this.sheetStore.patchCell(translatedColumn1, translatedRow1, translatedColumn2, translatedRow2, value, this.unmergedAll);
     }
 
     public void unmergeAll() {
