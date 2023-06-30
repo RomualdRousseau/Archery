@@ -122,6 +122,10 @@ public class XlsxSheet implements SheetStore {
             newCell.setValue(value);
         }
 
+        if (!unmergeAll) {
+            this.unmergeCell(colIndex2, rowIndex2);
+        }
+
         final int n2 = this.getInternalMergeDown(colIndex2, rowIndex2);
         final List<XlsxCell> cells = this.rows.get(n2).cells();
         if (cells != null && colIndex2 < cells.size()) {
@@ -129,10 +133,6 @@ public class XlsxSheet implements SheetStore {
         } else {
             this.rows.get(n2).addCell(newCell);
             this.rows.get(n2).setLastColumnNum(this.rows.get(n2).getLastColumnNum() + 1);
-        }
-
-        if (!unmergeAll) {
-            this.unmergeCell(colIndex2, rowIndex2);
         }
     }
 
