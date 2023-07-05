@@ -246,8 +246,8 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
                         IN_ENTITY_SIZE + IN_NAME_SIZE + IN_CONTEXT_SIZE));
             }
         };
-        final Map<String, org.tensorflow.Tensor> result = this.tagClassifierFunc.call(inputs);
-        return this.tags.get((int) TFloat32ToShujuTensor((TFloat32) result.get("tag_output")).argmax(0).item(0));
+        final org.tensorflow.Result result = this.tagClassifierFunc.call(inputs);
+        return this.tags.get((int) TFloat32ToShujuTensor((TFloat32) result.get("tag_output").get()).argmax(0).item(0));
     }
 
     @Override
@@ -375,7 +375,7 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
     }
 
     private Tensor TFloat32ToShujuTensor(final TFloat32 t) {
-        final float[] result = new float[(int) t.shape().size(1)];
+        final float[] result = new float[(int) t.shape().size()];
         for (int i = 0; i < result.length; i++) {
             result[i] = t.getFloat(0, i);
         }
