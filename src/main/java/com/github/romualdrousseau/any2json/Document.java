@@ -4,11 +4,11 @@ import java.io.File;
 
 public interface Document extends AutoCloseable {
 
-	public boolean open(File excelFile, String encoding, final String password);
+	boolean open(File file, String encoding, final String password, final boolean wellFormed);
 
-	public void close();
+	void close();
 
-	public int getNumberOfSheets();
+	int getNumberOfSheets();
 
-	public Sheet getSheetAt(int i);
+	Sheet getSheetAt(int i);
 }

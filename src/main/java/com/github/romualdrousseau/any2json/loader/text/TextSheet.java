@@ -2,7 +2,7 @@ package com.github.romualdrousseau.any2json.loader.text;
 
 import java.util.List;
 
-import org.apache.poi.ss.formula.eval.NotImplementedException;
+//import org.apache.poi.ss.formula.eval.NotImplementedException;
 
 import com.github.romualdrousseau.any2json.base.SheetStore;
 
@@ -55,7 +55,24 @@ class TextSheet implements SheetStore {
 
     @Override
     public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2, final String value, final boolean unmergeAll) {
-        throw new NotImplementedException("This format doesn't allow sheet edition.");
+        final String newValue;
+        if (value == null) {
+            newValue = this.getCellAt(colIndex1, rowIndex1);
+        } else {
+            newValue = value;
+        }
+
+        if(rowIndex2 >= this.rows.size()) {
+            return;
+        }
+
+        final String[] row = this.rows.get(rowIndex2);
+
+        if(colIndex2 >= row.length) {
+            return;
+        }
+
+        row[colIndex2] = newValue;
     }
 
     private String getCellAt(final int colIndex, final int rowIndex) {

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
+import com.github.romualdrousseau.any2json.intelli.parser.SemiStructuredSheetParser;
 import com.github.romualdrousseau.any2json.intelli.parser.StructuredSheetParser;
 import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.shuju.math.Tensor;
@@ -18,11 +19,13 @@ import com.github.romualdrousseau.shuju.util.StringUtils;
 public class TextDocument implements Document {
 
     @Override
-    public boolean open(final File txtFile, final String encoding, final String password) {
-        if (openWithEncoding(txtFile, "UTF-8")) {
+    public boolean open(final File txtFile, final String encoding, final String password, final boolean wellFormed) {
+        this.wellFormed = wellFormed;
+
+        if (this.openWithEncoding(txtFile, "UTF-8")) {
             return true;
         } else if (encoding != null) {
-            return openWithEncoding(txtFile, encoding);
+            return this.openWithEncoding(txtFile, encoding);
         } else {
             return false;
         }
@@ -48,7 +51,11 @@ public class TextDocument implements Document {
 
     @Override
     public Sheet getSheetAt(final int i) {
-        return new IntelliSheet(this.sheet, new StructuredSheetParser());
+        if (this.wellFormed) {
+            return new IntelliSheet(this.sheet, new StructuredSheetParser());
+        } else {
+            return new IntelliSheet(this.sheet, new SemiStructuredSheetParser());
+        }
     }
 
     private boolean openWithEncoding(final File txtFile, final String encoding) {
@@ -176,11 +183,12 @@ public class TextDocument implements Document {
         // find the separator generating the more of columns
         final float[] v = new float[separators.length];
         for (int i = 0; i < separators.length; i++) {
-            v[i] = sample.split(separators[i]).length;
+            v[i] = sample.split(separators[i], -1).length;
         }
         return separators[(int) Tensor.create(v).argmax(0).item(0)];
     }
 
+    private boolean wellFormed = true;
     private TextSheet sheet;
     private BufferedReader reader;
     private ArrayList<String[]> rows;

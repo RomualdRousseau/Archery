@@ -26,7 +26,7 @@ import org.apache.poi.xssf.model.StylesTable;
 public class XlsxDocument implements Document {
 
     @Override
-    public boolean open(final File excelFile, final String encoding, final String password) {
+    public boolean open(final File excelFile, final String encoding, final String password, final boolean wellFormed) {
         if (excelFile == null) {
             throw new IllegalArgumentException();
         }

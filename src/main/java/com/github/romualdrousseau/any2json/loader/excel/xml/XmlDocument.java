@@ -24,11 +24,11 @@ import nl.fountain.xelem.lex.ExcelReader;
 public class XmlDocument implements Document {
 
     @Override
-    public boolean open(final File excelFile, final String encoding, final String password) {
-        if (openWithEncoding(excelFile, "UTF-8")) {
+    public boolean open(final File excelFile, final String encoding, final String password, final boolean wellFormed) {
+        if (this.openWithEncoding(excelFile, "UTF-8")) {
             return true;
         } else if (encoding != null) {
-            return openWithEncoding(excelFile, encoding);
+            return this.openWithEncoding(excelFile, encoding);
         } else {
             return false;
         }
