@@ -107,7 +107,11 @@ public class IntelliHeader extends CompositeHeader {
     }
 
     public void mergeTo(final IntelliHeader other) {
-        this.nextSibbling = other;
+        IntelliHeader e = this;
+        while(e.nextSibbling != null) {
+            e = e.nextSibbling;
+        }
+        e.nextSibbling = other;
     }
 
     private List<String> sampleEntities() {
