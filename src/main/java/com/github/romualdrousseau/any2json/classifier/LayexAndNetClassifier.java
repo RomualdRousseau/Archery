@@ -12,8 +12,6 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.tensorflow.SavedModelBundle;
@@ -22,77 +20,46 @@ import org.tensorflow.Signature;
 import org.tensorflow.ndarray.StdArrays;
 import org.tensorflow.types.TFloat32;
 
-import com.github.romualdrousseau.any2json.DocumentFactory;
-import com.github.romualdrousseau.any2json.ILayoutClassifier;
 import com.github.romualdrousseau.any2json.ITagClassifier;
-import com.github.romualdrousseau.any2json.layex.Layex;
-import com.github.romualdrousseau.any2json.layex.TableMatcher;
 import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.shuju.json.JSON;
 import com.github.romualdrousseau.shuju.json.JSONArray;
 import com.github.romualdrousseau.shuju.json.JSONObject;
 import com.github.romualdrousseau.shuju.math.Tensor;
 import com.github.romualdrousseau.shuju.preprocessing.Text;
-import com.github.romualdrousseau.shuju.preprocessing.comparer.RegexComparer;
 import com.github.romualdrousseau.shuju.preprocessing.hasher.VocabularyHasher;
 import com.github.romualdrousseau.shuju.preprocessing.tokenizer.NgramTokenizer;
 import com.github.romualdrousseau.shuju.preprocessing.tokenizer.ShingleTokenizer;
 
-public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<List<Integer>> {
+public class LayexAndNetClassifier extends LayexClassifier implements ITagClassifier<List<Integer>> {
 
     private static final int IN_ENTITY_SIZE = 10;
     private static final int IN_NAME_SIZE = 10;
     private static final int IN_CONTEXT_SIZE = 100;
     private static final int OUT_TAG_SIZE = 64;
 
-    private final List<String> vocabulary;
-    private final int ngrams;
-    private final List<String> lexicon;
-    private final List<String> entities;
-    private final Map<String, String> patterns;
-    private final List<String> filters;
     private final List<String> tags;
     private final List<String> requiredTags;
-    private final List<String> pivotEntityList;
-    private final List<String> metaLayexes;
-    private final List<String> dataLayexes;
     private final Path modelPath;
 
     private final Text.ITokenizer tokenizer;
     private final Text.IHasher hasher;
-    private final RegexComparer comparer;
 
     private final SavedModelBundle tagClassifierModel;
     private final SessionFunction tagClassifierFunc;
     private final boolean modelIsTemp;
 
-    private List<TableMatcher> metaMatchers;
-    private List<TableMatcher> dataMatchers;
-    private String recipe;
-
     public LayexAndNetClassifier(final List<String> vocabulary, final int ngrams, final List<String> lexicon,
             final List<String> entities, final Map<String, String> patterns, final List<String> filters,
             final List<String> tags, final List<String> requiredTags, final List<String> pivotEntityList,
             final List<String> metaLayexes, final List<String> dataLayexes, final Path modelPath) {
-        this.vocabulary = vocabulary;
-        this.ngrams = ngrams;
-        this.lexicon = lexicon;
-        this.entities = entities;
-        this.patterns = patterns;
-        this.filters = filters;
+        super(vocabulary, ngrams, lexicon, entities, patterns, filters, pivotEntityList, metaLayexes, dataLayexes);
+
         this.tags = tags;
         this.requiredTags = requiredTags;
-        this.pivotEntityList = pivotEntityList;
-        this.metaLayexes = metaLayexes;
-        this.dataLayexes = dataLayexes;
-
-        this.metaMatchers = metaLayexes.stream().map(Layex::new).map(Layex::compile).toList();
-        this.dataMatchers = dataLayexes.stream().map(Layex::new).map(Layex::compile).toList();
-        this.recipe = null;
 
         this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon) : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
-        this.comparer = new RegexComparer(this.patterns);
 
         this.modelPath = modelPath;
         if (modelPath.toFile().exists()) {
@@ -106,26 +73,13 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
     }
 
     public LayexAndNetClassifier(final JSONObject json) {
-        this.vocabulary = JSON.<String>Stream(json.getJSONArray("vocabulary")).toList();
-        this.ngrams = json.getInt("ngrams");
-        this.lexicon = JSON.<String>Stream(json.getJSONArray("lexicon")).toList();
-        this.entities = JSON.<String>Stream(json.getJSONArray("entities")).toList();
-        this.patterns = JSON.<JSONObject>Stream(json.getJSONArray("patterns"))
-                .collect(Collectors.toMap(x -> x.getString("key"), x -> x.getString("value")));
-        this.filters = JSON.<String>Stream(json.getJSONArray("filters")).toList();
+        super(json);
+
         this.tags = JSON.<String>Stream(json.getJSONArray("tags")).toList();
         this.requiredTags = JSON.<String>Stream(json.getJSONArray("requiredTags")).toList();
-        this.pivotEntityList = JSON.<String>Stream(json.getJSONArray("pivotEntityList")).toList();
-        this.metaLayexes = JSON.<String>Stream(json.getJSONArray("metaLayexes")).toList();
-        this.dataLayexes = JSON.<String>Stream(json.getJSONArray("dataLayexes")).toList();
-
-        this.metaMatchers = metaLayexes.stream().map(Layex::new).map(Layex::compile).toList();
-        this.dataMatchers = dataLayexes.stream().map(Layex::new).map(Layex::compile).toList();
-        this.recipe = null;
 
         this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon) : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
-        this.comparer = new RegexComparer(this.patterns);
 
         this.modelPath = this.JSONStringToModel(json.getString("model"));
         if (modelPath.toFile().exists()) {
@@ -146,67 +100,6 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
         if (this.tagClassifierModel != null) {
             this.tagClassifierModel.close();
         }
-    }
-
-    @Override
-    public int getSampleCount() {
-        return DocumentFactory.DEFAULT_SAMPLE_COUNT;
-    }
-
-    @Override
-    public List<String> getEntityList() {
-        return this.entities;
-    }
-
-    @Override
-    public List<String> getPivotEntityList() {
-        return this.pivotEntityList;
-    }
-
-    @Override
-    public List<TableMatcher> getMetaMatcherList() {
-        return this.metaMatchers;
-    }
-
-    @Override
-    public void setMetaMatcherList(final List<TableMatcher> matchers) {
-        this.metaMatchers = matchers;
-    }
-
-    @Override
-    public List<TableMatcher> getDataMatcherList() {
-        return this.dataMatchers;
-    }
-
-    @Override
-    public void setDataMatcherList(final List<TableMatcher> matchers) {
-        this.dataMatchers = matchers;
-    }
-
-    @Override
-    public String getRecipe() {
-        return this.recipe;
-    }
-
-    @Override
-    public void setRecipe(final String recipe) {
-        this.recipe = recipe;
-    }
-
-    @Override
-    public String toEntityName(final String value) {
-        return this.comparer.anonymize(value);
-    }
-
-    @Override
-    public Optional<String> toEntityValue(final String value) {
-        return this.comparer.find(value);
-    }
-
-    @Override
-    public Tensor toEntityVector(final String value) {
-        return Tensor.create(Text.to_categorical(value, this.entities, this.comparer).stream()
-                .mapToDouble(x -> (double) x).toArray());
     }
 
     @Override
@@ -298,18 +191,9 @@ public class LayexAndNetClassifier implements ILayoutClassifier, ITagClassifier<
 
     @Override
     public JSONObject toJSON() {
-        final JSONObject result = JSON.newJSONObject();
-        result.setJSONArray("vocabulary", JSON.<String>toJSONArray(this.vocabulary));
-        result.setInt("ngram", this.ngrams);
-        result.setJSONArray("lexicon", JSON.<String>toJSONArray(this.lexicon));
-        result.setJSONArray("entities", JSON.<String>toJSONArray(this.entities));
-        result.setJSONArray("patterns", JSON.<String>toJSONArray(this.patterns));
-        result.setJSONArray("filters", JSON.<String>toJSONArray(this.filters));
+        final JSONObject result =super.toJSON();
         result.setJSONArray("tags", JSON.<String>toJSONArray(this.tags));
         result.setJSONArray("requiredTags", JSON.<String>toJSONArray(this.requiredTags));
-        result.setJSONArray("pivotEntityList", JSON.<String>toJSONArray(this.pivotEntityList));
-        result.setJSONArray("metaLayexes", JSON.<String>toJSONArray(this.metaLayexes));
-        result.setJSONArray("dataLayexes", JSON.<String>toJSONArray(this.dataLayexes));
         result.setString("model", this.modelToJSONString(this.modelPath));
         return result;
     }
