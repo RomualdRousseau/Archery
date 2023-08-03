@@ -32,7 +32,7 @@ public class AppTest {
         ClassifierFactory classifierFactor = new SimpleClassifierBuilder()
             .build();
 
-        for (String[] expectedValues : scenarios1) {
+        for (String[] expectedValues : scenarios) {
             int state = 0;
             Iterator<Header> itHeader = null;
             for (String expectedValue : expectedValues) {
@@ -88,11 +88,7 @@ public class AppTest {
         }
     }
 
-    private String[][] scenarios1 = {
+    private String[][] scenarios = {
         //{ "/data/Singapore - ZUELLIG - Sales - 202101", "Aggregated", "6", ""}
-    };
-
-    private String[][] scenarios2 = {
-        //{ "/data/HongKong - ZUELLIG - Sales - 20220305.xlsx", "Aggregated", "6", ""}
     };
 }
