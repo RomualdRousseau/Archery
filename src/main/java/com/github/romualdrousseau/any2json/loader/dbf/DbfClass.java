@@ -1,8 +1,5 @@
 package com.github.romualdrousseau.any2json.loader.dbf;
 
-import java.io.File;
-import java.util.Optional;
-
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.IDocumentClass;
 
