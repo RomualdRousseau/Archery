@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
-import com.github.romualdrousseau.any2json.intelli.parser.SemiStructuredSheetParser;
-import com.github.romualdrousseau.any2json.intelli.parser.StructuredSheetParser;
+import com.github.romualdrousseau.any2json.intelli.parser.sheet.SemiStructuredSheetBitmapParser;
+import com.github.romualdrousseau.any2json.intelli.parser.sheet.StructuredSheetParser;
 import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.shuju.math.Tensor;
 import com.github.romualdrousseau.shuju.util.StringUtils;
@@ -54,7 +54,7 @@ public class CsvDocument implements Document {
         if (this.wellFormed) {
             return new IntelliSheet(this.sheet, new StructuredSheetParser());
         } else {
-            return new IntelliSheet(this.sheet, new SemiStructuredSheetParser());
+            return new IntelliSheet(this.sheet, new SemiStructuredSheetBitmapParser());
         }
     }
 
