@@ -3,8 +3,11 @@ package com.github.romualdrousseau.any2json.loader.dbf;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import com.github.romualdrousseau.any2json.Document;
@@ -13,11 +16,13 @@ import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
 import com.github.romualdrousseau.any2json.intelli.parser.sheet.StructuredSheetParser;
 import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.shuju.util.StringUtils;
+import com.linuxense.javadbf.DBFField;
 import com.linuxense.javadbf.DBFReader;
 
 public class DbfDocument implements Document {
 
-    public static List<String> EXTENSIONS = List.of(".dbf");
+    public static final List<String> EXTENSIONS = List.of(".dbf");
+    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
     public boolean open(final File dbfFile, final String encoding, final String password, final boolean wellFormed) {
@@ -72,16 +77,37 @@ public class DbfDocument implements Document {
     private List<String[]> processRows(final DBFReader reader) throws IOException {
         final List<String[]> rows = new ArrayList<String[]>();
 
-        for (Object[] rowObjects; (rowObjects = reader.nextRecord()) != null;) {
+        final int numberOfFields = reader.getFieldCount();
+        final String[] headers = new String[numberOfFields];
+        for (int i = 0; i < numberOfFields; i++) {
+            DBFField field = reader.getField(i);
+            headers[i] = StringUtils.cleanToken(field.getName());
+        }
+        rows.add(headers);
 
+        for (Object[] rowObjects; (rowObjects = reader.nextRecord()) != null;) {
             final String[] cells = new String[rowObjects.length];
             for (int j = 0; j < rowObjects.length; j++) {
-                cells[j] = StringUtils.cleanToken(rowObjects[j].toString());
+                cells[j] = StringUtils.cleanToken(this.convertToString(rowObjects[j]));
             }
-
             rows.add(cells);
         }
+
         return rows;
+    }
+
+    private String convertToString(Object v) {
+        if (v instanceof BigDecimal) {
+            try {
+                return String.valueOf(((BigDecimal) v).longValueExact());
+            } catch(ArithmeticException x) {
+                return v.toString();
+            }
+        } else if (v instanceof Date) {
+            return DbfDocument.dateFormatter.format((Date) v);
+        } else {
+            return v.toString();
+        }
     }
 
     private DbfSheet sheet;
