@@ -7,16 +7,15 @@ import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
 import com.github.romualdrousseau.any2json.intelli.DataTable;
 import com.github.romualdrousseau.any2json.intelli.DataTableParser;
-import com.github.romualdrousseau.any2json.intelli.DataTableParserFactory;
 import com.github.romualdrousseau.any2json.intelli.MetaTable;
+import com.github.romualdrousseau.any2json.intelli.TransformableSheet;
 import com.github.romualdrousseau.any2json.intelli.IntelliSheetParser;
-import com.github.romualdrousseau.any2json.intelli.parser.table.DataTableGroupSubHeaderParserFactory;
 import com.github.romualdrousseau.any2json.layex.TableLexer;
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
 
 public abstract class LayexSheetParser extends IntelliSheetParser {
 
-    public List<DataTable> getDataTables(final BaseSheet sheet, final List<CompositeTable> tables) {
+    public List<DataTable> getDataTables(final TransformableSheet sheet, final List<CompositeTable> tables) {
         final List<TableMatcher> dataMatchers = sheet.getClassifierFactory().getLayoutClassifier().get().getDataMatcherList();
         final ArrayList<DataTable> result = new ArrayList<DataTable>();
 
@@ -28,10 +27,10 @@ public abstract class LayexSheetParser extends IntelliSheetParser {
                 if (!foundMatch) {
                     for (final TableMatcher matcher : dataMatchers) {
                         if (!foundMatch && matcher.match(new TableLexer(table, tryCount), null)) {
-                            final DataTable dataTable = new DataTable(table, matcher, tryCount, this.dataTableFactory);
+                            final DataTable dataTable = new DataTable(table, matcher, tryCount, sheet.getDataTableParserFactory());
                             result.add(dataTable);
                             if (dataTable.getDataTableParser().getSplitRows().size() > 0) {
-                                this.splitAllSubTables(table, matcher, dataTable.getDataTableParser(), result);
+                                this.splitAllSubTables(sheet, table, matcher, dataTable.getDataTableParser(), result);
                             }
                             table.setVisited(true);
                             foundMatch = true;
@@ -70,17 +69,15 @@ public abstract class LayexSheetParser extends IntelliSheetParser {
         return result;
     }
 
-    private void splitAllSubTables(final CompositeTable table, final TableMatcher matcher, final DataTableParser parser,
-            final List<DataTable> result) {
+    private void splitAllSubTables(final TransformableSheet sheet, final CompositeTable table, final TableMatcher matcher,
+            final DataTableParser parser, final List<DataTable> result) {
         int firstRow = -1;
         for (final int splitRow : parser.getSplitRows()) {
             if (firstRow >= 0) {
                 final CompositeTable subTable = new CompositeTable(table, firstRow, table.getFirstRow() + splitRow - 1);
-                result.add(new DataTable(subTable, matcher, 0, this.dataTableFactory));
+                result.add(new DataTable(subTable, matcher, 0, sheet.getDataTableParserFactory()));
             }
             firstRow = table.getFirstRow() + splitRow;
         }
     }
-
-    private DataTableParserFactory dataTableFactory = new DataTableGroupSubHeaderParserFactory();
 }
