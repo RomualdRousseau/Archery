@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
@@ -33,15 +34,7 @@ public class CsvDocument implements Document {
 
     @Override
     public void close() {
-        if (this.reader != null) {
-            try {
-                this.reader.close();
-            } catch (final IOException ignore) {
-            }
-            this.reader = null;
-        }
         this.sheet = null;
-        this.rows = null;
     }
 
     @Override
@@ -63,27 +56,23 @@ public class CsvDocument implements Document {
             throw new IllegalArgumentException();
         }
 
-        try {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(txtFile), encoding))) {
             this.sheet = null;
-            this.rows = null;
-
-            this.reader = new BufferedReader(new InputStreamReader(new FileInputStream(txtFile), encoding));
 
             if (encoding.equals("UTF-8")) {
                 this.processBOM(reader);
             }
 
-            this.processRows(reader);
+            final List<String[]> rows = this.processRows(reader);
 
-            if (checkIfGoodEncoding(this.rows.get(0))) {
+            if (checkIfGoodEncoding(rows.get(0))) {
                 final String sheetName = Disk.removeExtension(txtFile.getName());
-                this.sheet = new CsvSheet(sheetName, this.rows);
+                this.sheet = new CsvSheet(sheetName, rows);
             }
 
             return this.sheet != null;
 
         } catch (final IOException x) {
-            close();
             return false;
         }
     }
@@ -98,14 +87,14 @@ public class CsvDocument implements Document {
 
     private void processBOM(final BufferedReader reader) throws IOException {
         // skip BOM if present
-        this.reader.mark(1);
-        if (this.reader.read() != StringUtils.BOM_CHAR) {
-            this.reader.reset();
+        reader.mark(1);
+        if (reader.read() != StringUtils.BOM_CHAR) {
+            reader.reset();
         }
     }
 
-    private void processRows(final BufferedReader reader) throws IOException {
-        this.rows = new ArrayList<String[]>();
+    private List<String[]> processRows(final BufferedReader reader) throws IOException {
+        List<String[]> rows = new ArrayList<String[]>();
 
         boolean firstPass = true;
         for (String textRow; (textRow = reader.readLine()) != null;) {
@@ -122,8 +111,9 @@ public class CsvDocument implements Document {
                 cells[j] = StringUtils.cleanToken(tokens[j]);
             }
 
-            this.rows.add(cells);
+            rows.add(cells);
         }
+        return rows;
     }
 
     private String[] parseOneRow(final String data) {
@@ -190,7 +180,5 @@ public class CsvDocument implements Document {
 
     private boolean wellFormed = true;
     private CsvSheet sheet;
-    private BufferedReader reader;
-    private ArrayList<String[]> rows;
     private String separator;
 }
