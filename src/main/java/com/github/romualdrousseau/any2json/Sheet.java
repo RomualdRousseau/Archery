@@ -4,6 +4,10 @@ public interface Sheet
 {
     String getName();
 
+    int getLastRowNum();
+
+    int getLastColumnNum();
+
     Table getTable();
 
     void setClassifierFactory(final ClassifierFactory classifierFactory);

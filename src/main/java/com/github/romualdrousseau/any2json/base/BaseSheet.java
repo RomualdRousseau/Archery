@@ -32,6 +32,16 @@ public abstract class BaseSheet implements Sheet {
     }
 
     @Override
+    public int getLastRowNum() {
+        return this.rowMask.size() - 1;
+    }
+
+    @Override
+    public int getLastColumnNum() {
+        return this.columnMask.size() - 1;
+    }
+
+    @Override
     public Table getTable() {
         if (this.sheetStore.getLastRowNum() <= 0 || this.getLastColumnNum() <= 0) {
             return null;
@@ -69,20 +79,12 @@ public abstract class BaseSheet implements Sheet {
         return this.classifierFactory;
     }
 
-    public int getLastColumnNum() {
-        return this.columnMask.size() - 1;
-    }
-
     public int getLastColumnNum(final int rowIndex) {
         final int translatedRow = this.translateRow(rowIndex);
         if (translatedRow < 0) {
             return -1;
         }
         return this.sheetStore.getLastColumnNum(translatedRow) - (this.storeLastColumnNum - this.columnMask.size() + 1);
-    }
-
-    public int getLastRowNum() {
-        return this.rowMask.size() - 1;
     }
 
     public boolean hasCellDataAt(final int colIndex, final int rowIndex) {
