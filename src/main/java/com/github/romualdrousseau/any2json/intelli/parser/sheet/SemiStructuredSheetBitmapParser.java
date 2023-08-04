@@ -1,11 +1,10 @@
-package com.github.romualdrousseau.any2json.intelli.parser;
+package com.github.romualdrousseau.any2json.intelli.parser.sheet;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
-import com.github.romualdrousseau.any2json.base.SheetBitmap;
 import com.github.romualdrousseau.any2json.event.BitmapGeneratedEvent;
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
 import com.github.romualdrousseau.shuju.cv.Filter;
@@ -14,26 +13,24 @@ import com.github.romualdrousseau.shuju.cv.SearchPoint;
 import com.github.romualdrousseau.shuju.cv.Template;
 import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.RectangleExtractor;
 
-public class SemiStructuredSheetParser extends TransformableSheetParser {
+public class SemiStructuredSheetBitmapParser extends LayexSheetParser {
 
-    @Override
     public List<CompositeTable> findAllTables(final BaseSheet sheet) {
         final SheetBitmap image = this.getSheetBitmap(sheet);
         if (!sheet.notifyStepCompleted(new BitmapGeneratedEvent(sheet, image))) {
             return null;
         }
         return this.findAllTables(sheet, image);
-
     }
-    
-    protected SheetBitmap getSheetBitmap(final BaseSheet sheet) {
+
+    private SheetBitmap getSheetBitmap(final BaseSheet sheet) {
         return new SheetBitmap(sheet,
                 Math.min(sheet.getLastColumnNum(),
-                sheet.getClassifierFactory().getLayoutClassifier().get().getSampleCount()),
+                        sheet.getClassifierFactory().getLayoutClassifier().get().getSampleCount()),
                 sheet.getLastRowNum());
     }
 
-    protected List<CompositeTable> findAllTables(final BaseSheet sheet, final SheetBitmap image) {
+    private List<CompositeTable> findAllTables(final BaseSheet sheet, final SheetBitmap image) {
         final ArrayList<CompositeTable> result = new ArrayList<CompositeTable>();
 
         final List<SearchPoint[]> rectangles = this.findAllRectangles(image, sheet.getBitmapThreshold());
@@ -76,7 +73,7 @@ public class SemiStructuredSheetParser extends TransformableSheetParser {
 
     private List<SearchPoint[]> findAllRectangles(final SheetBitmap original, final float threshold) {
         final ISearchBitmap filtered = original.clone();
-        if(threshold > 0.0f) {
+        if (threshold > 0.0f) {
             final Filter filter = new Filter(new Template(new float[][] { { 0, 0, 0 }, { 1, 1, 0 }, { 0, 0, 0 } }));
             filter.apply(original, filtered, threshold);
         }
@@ -105,7 +102,8 @@ public class SemiStructuredSheetParser extends TransformableSheetParser {
         return rectangles;
     }
 
-    private List<SearchPoint> extractAllSearchPoints(final ISearchBitmap filtered, final List<SearchPoint[]> rectangles) {
+    private List<SearchPoint> extractAllSearchPoints(final ISearchBitmap filtered,
+            final List<SearchPoint[]> rectangles) {
         final ArrayList<SearchPoint> result = new ArrayList<SearchPoint>();
         for (int i = 0; i < filtered.getHeight(); i++) {
             for (int j = 0; j < filtered.getWidth(); j++) {

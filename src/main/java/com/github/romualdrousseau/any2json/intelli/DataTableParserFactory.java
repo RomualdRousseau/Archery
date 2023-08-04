@@ -1,6 +1,4 @@
-package com.github.romualdrousseau.any2json.intelli.parser;
-
-import com.github.romualdrousseau.any2json.intelli.DataTable;
+package com.github.romualdrousseau.any2json.intelli;
 
 public interface DataTableParserFactory {
 

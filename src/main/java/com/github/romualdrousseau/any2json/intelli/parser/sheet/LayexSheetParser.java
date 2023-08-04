@@ -1,35 +1,20 @@
-package com.github.romualdrousseau.any2json.intelli.parser;
+package com.github.romualdrousseau.any2json.intelli.parser.sheet;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.python.util.PythonInterpreter;
-
 import com.github.romualdrousseau.any2json.base.BaseSheet;
-import com.github.romualdrousseau.any2json.base.BaseSheetParser;
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
 import com.github.romualdrousseau.any2json.intelli.DataTable;
+import com.github.romualdrousseau.any2json.intelli.DataTableParser;
+import com.github.romualdrousseau.any2json.intelli.DataTableParserFactory;
 import com.github.romualdrousseau.any2json.intelli.MetaTable;
-import com.github.romualdrousseau.any2json.intelli.TransformableSheet;
+import com.github.romualdrousseau.any2json.intelli.TransformableSheetParser;
+import com.github.romualdrousseau.any2json.intelli.parser.table.DataTableGroupSubHeaderParserFactory;
 import com.github.romualdrousseau.any2json.layex.TableLexer;
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
 
-public abstract class TransformableSheetParser implements BaseSheetParser {
-
-    @Override
-    public void transformSheet(TransformableSheet sheet) {
-        sheet.stichRows();
-        
-        final String recipe = sheet.getClassifierFactory().getLayoutClassifier().get().getRecipe();
-        if (recipe != null) {
-            try(PythonInterpreter pyInterp = new PythonInterpreter()) {
-                pyInterp.set("sheet", sheet);
-                pyInterp.exec(recipe);
-            }
-        }
-
-        this.dataTableFactory = sheet.getDataTableParserFactory();
-    }
+public abstract class LayexSheetParser extends TransformableSheetParser {
 
     @Override
     public List<DataTable> getDataTables(final BaseSheet sheet, final List<CompositeTable> tables) {

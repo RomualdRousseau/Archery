@@ -19,6 +19,6 @@ public abstract class SheetEvent {
         this.canceled = flag;
     }
 
-    private Sheet source;
+    private final Sheet source;
     private boolean canceled;
 }

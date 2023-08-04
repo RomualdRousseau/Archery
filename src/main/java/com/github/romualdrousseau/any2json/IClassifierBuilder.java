@@ -1,6 +1,6 @@
 package com.github.romualdrousseau.any2json;
 
-public interface IClassifierBuilder {
-
+public interface IClassifierBuilder
+{
     ClassifierFactory build();
 }

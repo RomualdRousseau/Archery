@@ -6,9 +6,8 @@ import java.util.Map.Entry;
 import com.github.romualdrousseau.any2json.DocumentFactory;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.base.SheetStore;
-import com.github.romualdrousseau.any2json.intelli.parser.DataTableGroupSubFooterParserFactory;
-import com.github.romualdrousseau.any2json.intelli.parser.DataTableGroupSubHeaderParserFactory;
-import com.github.romualdrousseau.any2json.intelli.parser.DataTableParserFactory;
+import com.github.romualdrousseau.any2json.intelli.parser.table.DataTableGroupSubFooterParserFactory;
+import com.github.romualdrousseau.any2json.intelli.parser.table.DataTableGroupSubHeaderParserFactory;
 import com.github.romualdrousseau.shuju.util.StringFuzzy;
 import com.github.romualdrousseau.shuju.util.StringUtils;
 

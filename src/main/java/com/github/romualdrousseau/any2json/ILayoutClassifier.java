@@ -1,14 +1,14 @@
 package com.github.romualdrousseau.any2json;
 
+import java.util.List;
+import java.util.Optional;
+
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
 import com.github.romualdrousseau.shuju.json.JSONObject;
 import com.github.romualdrousseau.shuju.math.Tensor;
 
-import java.util.List;
-import java.util.Optional;
-
-public interface ILayoutClassifier extends AutoCloseable {
-
+public interface ILayoutClassifier extends AutoCloseable
+{
     int getSampleCount();
 
     List<String> getEntityList();

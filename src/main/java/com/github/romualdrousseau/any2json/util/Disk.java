@@ -11,7 +11,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-public class Disk {
+public class Disk
+{
     public static void copyDir(Path src, Path dest) throws IOException {
         Files.walk(src).forEach(source -> copyFile(source, dest.resolve(src.relativize(source))));
     }
@@ -78,7 +79,7 @@ public class Disk {
         final File file2 = filename2.toFile();
         file1.renameTo(file2);
     }
-    
+
     public static String changeExtension(final String filename, final String newExtentsion) {
         final int index = filename.lastIndexOf(".");
         if (index < 0) {

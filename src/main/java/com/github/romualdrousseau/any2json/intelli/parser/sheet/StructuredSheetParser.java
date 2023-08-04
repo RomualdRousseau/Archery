@@ -1,20 +1,15 @@
-package com.github.romualdrousseau.any2json.intelli.parser;
+package com.github.romualdrousseau.any2json.intelli.parser.sheet;
 
 import java.util.List;
 import java.util.LinkedList;
 
 import com.github.romualdrousseau.any2json.base.BaseSheet;
-import com.github.romualdrousseau.any2json.base.BaseSheetParser;
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
 import com.github.romualdrousseau.any2json.intelli.DataTable;
 import com.github.romualdrousseau.any2json.intelli.MetaTable;
-import com.github.romualdrousseau.any2json.intelli.TransformableSheet;
+import com.github.romualdrousseau.any2json.intelli.TransformableSheetParser;
 
-public class StructuredSheetParser implements BaseSheetParser {
-
-    @Override
-    public void transformSheet(TransformableSheet sheet) {
-    }
+public class StructuredSheetParser extends TransformableSheetParser {
 
     @Override
     public List<CompositeTable> findAllTables(BaseSheet sheet) {

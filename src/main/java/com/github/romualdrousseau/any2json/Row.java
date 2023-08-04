@@ -6,9 +6,9 @@ public interface Row {
 
     int getRowNum();
 
-    Iterable<Cell> cells();
-
     int getNumberOfCells();
 
     Cell getCellAt(int colIndex);
+
+    Iterable<Cell> cells();
 }

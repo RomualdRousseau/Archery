@@ -1,7 +1,7 @@
 package com.github.romualdrousseau.any2json;
 
-public interface Sheet {
-
+public interface Sheet
+{
     String getName();
 
     Table getTable();

@@ -4,7 +4,7 @@ import com.github.romualdrousseau.any2json.Cell;
 import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.intelli.header.MetaHeader;
-import com.github.romualdrousseau.any2json.intelli.parser.MetaTableParser;
+import com.github.romualdrousseau.any2json.intelli.parser.table.MetaTableParser;
 import com.github.romualdrousseau.any2json.layex.TableLexer;
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
 

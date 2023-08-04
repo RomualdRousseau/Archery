@@ -3,7 +3,6 @@ package com.github.romualdrousseau.any2json.intelli;
 import java.util.List;
 
 import com.github.romualdrousseau.any2json.Table;
-import com.github.romualdrousseau.any2json.base.BaseSheetParser;
 import com.github.romualdrousseau.any2json.base.SheetStore;
 import com.github.romualdrousseau.any2json.event.AllTablesExtractedEvent;
 import com.github.romualdrousseau.any2json.event.DataTableListBuiltEvent;
@@ -14,17 +13,13 @@ import com.github.romualdrousseau.any2json.util.Visitable;
 
 public class IntelliSheet extends TransformableSheet {
 
-    public IntelliSheet(SheetStore store, BaseSheetParser parser) {
+    public IntelliSheet(SheetStore store, TransformableSheetParser parser) {
         super(store);
         this.sheetParser = parser;
     }
 
-    public BaseSheetParser getSheetParser() {
-        return this.sheetParser;
-    }
-
     @Override
-    public Table parseTables() {
+    public Table parseAllTables() {
         this.sheetParser.transformSheet(this);
         if (!this.notifyStepCompleted(new SheetPreparedEvent(this))) {
             return null;
@@ -65,7 +60,7 @@ public class IntelliSheet extends TransformableSheet {
 
         // First attach all not snapped metaTables to the root nodes
         for (final MetaTable metaTable : metaTables) {
-            if (!isJoint(metaTable, dataTables)) {
+            if (!this.isJoint(metaTable, dataTables)) {
                 root.addChild(new CompositeTableGraph(metaTable));
                 metaTable.setVisited(true);
             }
@@ -144,5 +139,5 @@ public class IntelliSheet extends TransformableSheet {
         }
     }
 
-    private final BaseSheetParser sheetParser;
+    private final TransformableSheetParser sheetParser;
 }

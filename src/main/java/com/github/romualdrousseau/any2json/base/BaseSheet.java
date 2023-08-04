@@ -16,7 +16,7 @@ import com.github.romualdrousseau.shuju.util.CollectionUtils;
 
 public abstract class BaseSheet implements Sheet {
 
-    public abstract Table parseTables();
+    public abstract Table parseAllTables();
 
     public BaseSheet(final SheetStore store) {
         this.sheetStore = store;
@@ -38,9 +38,9 @@ public abstract class BaseSheet implements Sheet {
         }
         final Table table;
         if (this.classifierFactory.getLayoutClassifier().isPresent()) {
-            table = this.parseTables();
+            table = this.parseAllTables();
         } else {
-            table = this.parseSimpleTable();
+            table = this.parseOneTable();
         }
         this.notifyStepCompleted(new TableReadyEvent(this, table));
         return table;
@@ -221,7 +221,7 @@ public abstract class BaseSheet implements Sheet {
         return result;
     }
 
-    private Table parseSimpleTable() {
+    private Table parseOneTable() {
         return new SimpleTable(this, 0, 0, this.getLastColumnNum(), this.getLastRowNum());
     }
 

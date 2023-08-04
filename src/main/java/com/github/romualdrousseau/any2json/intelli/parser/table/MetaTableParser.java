@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.any2json.intelli.parser;
+package com.github.romualdrousseau.any2json.intelli.parser.table;
 
 import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.intelli.MetaTable;

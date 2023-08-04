@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.any2json.intelli.parser;
+package com.github.romualdrousseau.any2json.intelli.parser.table;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +9,7 @@ import com.github.romualdrousseau.any2json.base.RowGroup;
 import com.github.romualdrousseau.any2json.intelli.header.MetaTableHeader;
 import com.github.romualdrousseau.any2json.intelli.header.PivotKeyHeader;
 import com.github.romualdrousseau.any2json.intelli.DataTable;
+import com.github.romualdrousseau.any2json.intelli.DataTableParser;
 import com.github.romualdrousseau.any2json.intelli.header.DataTableHeader;
 
 public class DataTableGroupSubHeaderParser extends DataTableParser {
@@ -43,10 +44,10 @@ public class DataTableGroupSubHeaderParser extends DataTableParser {
         if (this.firstRowCell == null && cell.hasValue()) {
             this.firstRowCell = cell;
         }
-        
-        if (!this.footerProcessed) { 
+
+        if (!this.footerProcessed) {
             switch (this.getGroup()) {
-            case TABLE_META:   
+            case TABLE_META:
                 this.processMeta(cell, symbol);
                 break;
 

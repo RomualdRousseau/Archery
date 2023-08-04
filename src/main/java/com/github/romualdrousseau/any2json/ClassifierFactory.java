@@ -2,8 +2,8 @@ package com.github.romualdrousseau.any2json;
 
 import java.util.Optional;
 
-public class ClassifierFactory implements AutoCloseable {
-
+public class ClassifierFactory implements AutoCloseable
+{
     @Override
     public void close() throws Exception {
         if (this.layoutClassifier != null) {
@@ -35,5 +35,4 @@ public class ClassifierFactory implements AutoCloseable {
 
     private ILayoutClassifier layoutClassifier;
     private ITagClassifier<?> tagClassifier;
-    
 }

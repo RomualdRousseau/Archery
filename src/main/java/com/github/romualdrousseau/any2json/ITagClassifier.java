@@ -6,8 +6,8 @@ import java.util.List;
 
 import com.github.romualdrousseau.shuju.json.JSONObject;
 
-public interface ITagClassifier<T> extends AutoCloseable {
-
+public interface ITagClassifier<T> extends AutoCloseable
+{
     List<String> getTagList();
 
     List<String> getRequiredTagList();
