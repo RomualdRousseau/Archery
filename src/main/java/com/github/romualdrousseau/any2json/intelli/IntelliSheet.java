@@ -16,9 +16,11 @@ public class IntelliSheet extends TransformableSheet {
     @Override
     public Table parseAllTables() {
         final CompositeTable table = this.sheetParser.parseAllTables(this);
-        table.prepareHeaders();
-        table.updateHeaderTags();
-        table.setLoadCompleted(true);
+        if (table != null) {
+            table.prepareHeaders();
+            table.updateHeaderTags();
+            table.setLoadCompleted(true);
+        }
         return table;
     }
 
