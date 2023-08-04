@@ -4,54 +4,25 @@ import java.util.List;
 
 import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.base.SheetStore;
-import com.github.romualdrousseau.any2json.event.AllTablesExtractedEvent;
-import com.github.romualdrousseau.any2json.event.DataTableListBuiltEvent;
-import com.github.romualdrousseau.any2json.event.MetaTableListBuiltEvent;
-import com.github.romualdrousseau.any2json.event.SheetPreparedEvent;
-import com.github.romualdrousseau.any2json.event.TableGraphBuiltEvent;
 import com.github.romualdrousseau.any2json.util.Visitable;
 
 public class IntelliSheet extends TransformableSheet {
 
-    public IntelliSheet(SheetStore store, TransformableSheetParser parser) {
+    public IntelliSheet(SheetStore store, IntelliSheetParser parser) {
         super(store);
         this.sheetParser = parser;
     }
 
     @Override
     public Table parseAllTables() {
-        this.sheetParser.transformSheet(this);
-        if (!this.notifyStepCompleted(new SheetPreparedEvent(this))) {
-            return null;
-        }
-
-        final List<CompositeTable> tables = this.sheetParser.findAllTables(this);
-        if (!this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables))) {
-            return null;
-        }
-
-        final List<DataTable> dataTables = this.sheetParser.getDataTables(this, tables);
-        if (!this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables))) {
-            return null;
-        }
-        if (dataTables.size() == 0) {
-            return null;
-        }
-
-        final List<MetaTable> metaTables = this.sheetParser.getMetaTables(this, tables);
-        if (!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
-            return null;
-        }
-
-        final CompositeTableGraph root = this.buildTableGraph(metaTables, dataTables);
-        if (!this.notifyStepCompleted(new TableGraphBuiltEvent(this, root))) {
-            return null;
-        }
-
-        return new IntelliTable(this, root);
+        final CompositeTable table = this.sheetParser.parseAllTables(this);
+        table.prepareHeaders();
+        table.updateHeaderTags();
+        table.setLoadCompleted(true);
+        return table;
     }
 
-    private CompositeTableGraph buildTableGraph(final List<MetaTable> metaTables, final List<DataTable> dataTables) {
+    public CompositeTableGraph buildTableGraph(final List<MetaTable> metaTables, final List<DataTable> dataTables) {
         final CompositeTableGraph root = new CompositeTableGraph();
 
         for (final Visitable e : metaTables) {
@@ -139,5 +110,5 @@ public class IntelliSheet extends TransformableSheet {
         }
     }
 
-    private final TransformableSheetParser sheetParser;
+    private final IntelliSheetParser sheetParser;
 }

@@ -6,11 +6,15 @@ public interface Table
 
     int getNumberOfRows();
 
+    Row getRowAt(final int rowIndex);
+
     Iterable<Row> rows();
 
     int getNumberOfHeaders();
 
     Iterable<String> getHeaderNames();
+
+    Header getHeaderAt(final int i);
 
     Iterable<Header> headers();
 

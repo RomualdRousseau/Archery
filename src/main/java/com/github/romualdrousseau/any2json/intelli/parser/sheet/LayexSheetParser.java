@@ -9,14 +9,13 @@ import com.github.romualdrousseau.any2json.intelli.DataTable;
 import com.github.romualdrousseau.any2json.intelli.DataTableParser;
 import com.github.romualdrousseau.any2json.intelli.DataTableParserFactory;
 import com.github.romualdrousseau.any2json.intelli.MetaTable;
-import com.github.romualdrousseau.any2json.intelli.TransformableSheetParser;
+import com.github.romualdrousseau.any2json.intelli.IntelliSheetParser;
 import com.github.romualdrousseau.any2json.intelli.parser.table.DataTableGroupSubHeaderParserFactory;
 import com.github.romualdrousseau.any2json.layex.TableLexer;
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
 
-public abstract class LayexSheetParser extends TransformableSheetParser {
+public abstract class LayexSheetParser extends IntelliSheetParser {
 
-    @Override
     public List<DataTable> getDataTables(final BaseSheet sheet, final List<CompositeTable> tables) {
         final List<TableMatcher> dataMatchers = sheet.getClassifierFactory().getLayoutClassifier().get().getDataMatcherList();
         final ArrayList<DataTable> result = new ArrayList<DataTable>();
@@ -45,7 +44,6 @@ public abstract class LayexSheetParser extends TransformableSheetParser {
         return result;
     }
 
-    @Override
     public List<MetaTable> getMetaTables(final BaseSheet sheet, final List<CompositeTable> tables) {
         final List<TableMatcher> metaMatchers = sheet.getClassifierFactory().getLayoutClassifier().get().getMetaMatcherList();
         final ArrayList<MetaTable> result = new ArrayList<MetaTable>();

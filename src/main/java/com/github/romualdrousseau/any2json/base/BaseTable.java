@@ -51,6 +51,35 @@ public abstract class BaseTable implements Table, Visitable {
     }
 
     @Override
+    public BaseRow getRowAt(final int rowIndex) {
+        if (rowIndex < 0 || rowIndex >= getNumberOfRows()) {
+            throw new ArrayIndexOutOfBoundsException(rowIndex);
+        }
+
+        if (this.cachedRows == null) {
+            this.cachedRows = new RowStore();
+        }
+
+        final int relRowIndex = this.firstRowOffset + rowIndex;
+
+        BaseRow result = cachedRows.get(this.firstRow + relRowIndex);
+        if (result == null) {
+            result = new BaseRow(this, relRowIndex);
+
+            // Retrieve ignore status possibly lost in cache removal
+            for(Integer i: this.ignoreRows()) {
+                if (i == rowIndex) {
+                    result.setIgnored(true);
+                }
+            }
+
+            cachedRows.put(this.firstRow + relRowIndex, result);
+        }
+
+        return result;
+    }
+
+    @Override
     public Iterable<Row> rows() {
         return new RowIterable(this);
     }
@@ -67,6 +96,11 @@ public abstract class BaseTable implements Table, Visitable {
             result.add(header.getName());
         }
         return result;
+    }
+
+    @Override
+    public BaseHeader getHeaderAt(final int i) {
+        return (i < this.headers.size()) ? (BaseHeader) this.headers.get(i) : null;
     }
 
     @Override
@@ -146,40 +180,8 @@ public abstract class BaseTable implements Table, Visitable {
         return this.ignoreRows;
     }
 
-    public BaseRow getRowAt(final int rowIndex) {
-        if (rowIndex < 0 || rowIndex >= getNumberOfRows()) {
-            throw new ArrayIndexOutOfBoundsException(rowIndex);
-        }
-
-        if (this.cachedRows == null) {
-            this.cachedRows = new RowStore();
-        }
-
-        final int relRowIndex = this.firstRowOffset + rowIndex;
-
-        BaseRow result = cachedRows.get(this.firstRow + relRowIndex);
-        if (result == null) {
-            result = new BaseRow(this, relRowIndex);
-            
-            // Retrieve ignore status possibly lost in cache removal
-            for(Integer i: this.ignoreRows()) {
-                if (i == rowIndex) {
-                    result.setIgnored(true);
-                }
-            }
-
-            cachedRows.put(this.firstRow + relRowIndex, result);
-        }
-
-        return result;
-    }
-
     public void addHeader(final BaseHeader header) {
         this.headers.addLast(header);
-    }
-
-    public BaseHeader getHeaderAt(final int i) {
-        return (i < this.headers.size()) ? (BaseHeader) this.headers.get(i) : null;
     }
 
     public void setHeader(final int i, final BaseHeader header) {

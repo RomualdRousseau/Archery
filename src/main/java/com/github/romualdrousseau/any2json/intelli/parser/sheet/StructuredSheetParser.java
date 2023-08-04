@@ -1,32 +1,33 @@
 package com.github.romualdrousseau.any2json.intelli.parser.sheet;
 
 import java.util.List;
-import java.util.LinkedList;
 
-import com.github.romualdrousseau.any2json.base.BaseSheet;
+import com.github.romualdrousseau.any2json.event.AllTablesExtractedEvent;
+import com.github.romualdrousseau.any2json.event.DataTableListBuiltEvent;
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
 import com.github.romualdrousseau.any2json.intelli.DataTable;
-import com.github.romualdrousseau.any2json.intelli.MetaTable;
-import com.github.romualdrousseau.any2json.intelli.TransformableSheetParser;
+import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
+import com.github.romualdrousseau.any2json.intelli.IntelliSheetParser;
 
-public class StructuredSheetParser extends TransformableSheetParser {
-
-    @Override
-    public List<CompositeTable> findAllTables(BaseSheet sheet) {
-        final List<CompositeTable> tables = new LinkedList<CompositeTable>();
-        tables.add(new CompositeTable(sheet, 0, 0, sheet.getLastColumnNum(), sheet.getLastRowNum()));
-        return tables;
-    }
+public class StructuredSheetParser extends IntelliSheetParser {
 
     @Override
-    public List<DataTable> getDataTables(BaseSheet sheet, List<CompositeTable> tables) {
-        final List<DataTable> dataTables = new LinkedList<DataTable>();
-        dataTables.add(new DataTable(tables.get(0)));
-        return dataTables;
-    }
+    public CompositeTable parseAllTables(final IntelliSheet sheet) {
+        if (!this.transformSheet(sheet)) {
+            return null;
+        }
 
-    @Override
-    public List<MetaTable> getMetaTables(BaseSheet sheet, List<CompositeTable> tables) {
-        return new LinkedList<MetaTable>();
+        final List<CompositeTable> tables = List
+                .of(new CompositeTable(sheet, 0, 0, sheet.getLastColumnNum(), sheet.getLastRowNum()));
+        if (!sheet.notifyStepCompleted(new AllTablesExtractedEvent(sheet, tables))) {
+            return null;
+        }
+
+        final List<DataTable> dataTables = List.of(new DataTable(tables.get(0)));
+        if (!sheet.notifyStepCompleted(new DataTableListBuiltEvent(sheet, dataTables))) {
+            return null;
+        }
+
+        return dataTables.get(0);
     }
 }

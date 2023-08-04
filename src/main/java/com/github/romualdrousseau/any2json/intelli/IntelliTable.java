@@ -11,9 +11,7 @@ import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.base.RowGroup;
 import com.github.romualdrousseau.any2json.intelli.header.CompositeHeader;
-import com.github.romualdrousseau.any2json.intelli.header.IntelliHeader;
 import com.github.romualdrousseau.any2json.intelli.header.PivotKeyHeader;
-import com.github.romualdrousseau.any2json.simple.header.SimpleHeader;
 import com.github.romualdrousseau.shuju.util.StringUtils;
 
 public class IntelliTable extends CompositeTable {
@@ -22,9 +20,6 @@ public class IntelliTable extends CompositeTable {
         super(sheet);
         this.buildHeaders(root);
         this.buildTable(root, this.findPivotHeader());
-        this.setHeaders();
-        this.updateHeaderTags();
-        this.setLoadCompleted(true);
     }
 
     @Override
@@ -44,6 +39,14 @@ public class IntelliTable extends CompositeTable {
         }
 
         return this.rows.get(rowIndex);
+    }
+
+    @Override
+    public void prepareHeaders() {
+        for (int i = 0; i < this.tmpHeaders.size(); i++) {
+            this.addHeader(this.tmpHeaders.get(i));
+        }
+        super.prepareHeaders();
     }
 
     private void buildHeaders(final CompositeTableGraph graph) {
@@ -173,23 +176,6 @@ public class IntelliTable extends CompositeTable {
 
     private boolean checkIfHeaderExists(final BaseHeader header) {
         return this.tmpHeaders.contains(header);
-    }
-
-    private void setHeaders() {
-        for (int i = 0; i < this.tmpHeaders.size(); i++) {
-            this.addHeader(this.tmpHeaders.get(i));
-        }
-        this.setLoadCompleted(true); // Give chance to pivot header value to update their name
-        if (this.getSheet().getClassifierFactory().getTagClassifier().isPresent()) {
-            for (int i = 0; i < this.tmpHeaders.size(); i++) {
-                this.setHeader(i, new IntelliHeader(this.tmpHeaders.get(i)));
-            }
-        } else {
-            for (int i = 0; i < this.tmpHeaders.size(); i++) {
-                this.setHeader(i, new SimpleHeader(this.tmpHeaders.get(i)));
-            }
-        }
-        this.setLoadCompleted(false);
     }
 
     private BaseHeader findClosestHeaderInGraph(final CompositeTableGraph graph, BaseHeader abstractHeader) {

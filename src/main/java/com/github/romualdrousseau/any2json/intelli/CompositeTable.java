@@ -3,7 +3,9 @@ package com.github.romualdrousseau.any2json.intelli;
 import com.github.romualdrousseau.any2json.Header;
 import com.github.romualdrousseau.any2json.base.BaseTable;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
+import com.github.romualdrousseau.any2json.intelli.header.CompositeHeader;
 import com.github.romualdrousseau.any2json.intelli.header.IntelliHeader;
+import com.github.romualdrousseau.any2json.simple.header.SimpleHeader;
 
 import java.util.HashMap;
 
@@ -53,6 +55,19 @@ public class CompositeTable extends BaseTable {
     @Override
     public Iterable<Header> headerTags() {
         return this.headersByTag.values();
+    }
+
+    public void prepareHeaders() {
+        this.setLoadCompleted(true); // Give chance to pivot header value to update their name
+        if (this.getSheet().getClassifierFactory().getTagClassifier().isPresent()) {
+            for (int i = 0; i < this.getNumberOfHeaders(); i++) {
+                this.setHeader(i, new IntelliHeader((CompositeHeader) this.getHeaderAt(i)));
+            }
+        } else {
+            for (int i = 0; i < this.getNumberOfHeaders(); i++) {
+                this.setHeader(i, new SimpleHeader(this.getHeaderAt(i)));
+            }
+        }
     }
 
     private final HashMap<String, Header> headersByTag = new HashMap<String, Header>();

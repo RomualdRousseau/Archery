@@ -5,8 +5,17 @@ import java.util.List;
 
 import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
+import com.github.romualdrousseau.any2json.event.AllTablesExtractedEvent;
 import com.github.romualdrousseau.any2json.event.BitmapGeneratedEvent;
+import com.github.romualdrousseau.any2json.event.DataTableListBuiltEvent;
+import com.github.romualdrousseau.any2json.event.MetaTableListBuiltEvent;
+import com.github.romualdrousseau.any2json.event.TableGraphBuiltEvent;
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
+import com.github.romualdrousseau.any2json.intelli.CompositeTableGraph;
+import com.github.romualdrousseau.any2json.intelli.DataTable;
+import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
+import com.github.romualdrousseau.any2json.intelli.IntelliTable;
+import com.github.romualdrousseau.any2json.intelli.MetaTable;
 import com.github.romualdrousseau.shuju.cv.Filter;
 import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
 import com.github.romualdrousseau.shuju.cv.SearchPoint;
@@ -15,7 +24,39 @@ import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.Recta
 
 public class SemiStructuredSheetBitmapParser extends LayexSheetParser {
 
-    public List<CompositeTable> findAllTables(final BaseSheet sheet) {
+    @Override
+    public CompositeTable parseAllTables(final IntelliSheet sheet) {
+        if(!this.transformSheet(sheet)) {
+            return null;
+        }
+
+        final List<CompositeTable> tables = this.findAllTables(sheet);
+        if (!sheet.notifyStepCompleted(new AllTablesExtractedEvent(sheet, tables))) {
+            return null;
+        }
+
+        final List<DataTable> dataTables = this.getDataTables(sheet, tables);
+        if (!sheet.notifyStepCompleted(new DataTableListBuiltEvent(sheet, dataTables))) {
+            return null;
+        }
+        if (dataTables.size() == 0) {
+            return null;
+        }
+
+        final List<MetaTable> metaTables = this.getMetaTables(sheet, tables);
+        if (!sheet.notifyStepCompleted(new MetaTableListBuiltEvent(sheet, metaTables))) {
+            return null;
+        }
+
+        final CompositeTableGraph root = sheet.buildTableGraph(metaTables, dataTables);
+        if (!sheet.notifyStepCompleted(new TableGraphBuiltEvent(sheet, root))) {
+            return null;
+        }
+
+        return new IntelliTable(sheet, root);
+    }
+
+    private List<CompositeTable> findAllTables(final BaseSheet sheet) {
         final SheetBitmap image = this.getSheetBitmap(sheet);
         if (!sheet.notifyStepCompleted(new BitmapGeneratedEvent(sheet, image))) {
             return null;
