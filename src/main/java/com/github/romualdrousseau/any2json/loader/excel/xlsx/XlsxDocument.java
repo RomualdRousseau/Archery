@@ -10,7 +10,7 @@ import java.util.List;
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
-import com.github.romualdrousseau.any2json.intelli.parser.SemiStructuredSheetParser;
+import com.github.romualdrousseau.any2json.intelli.parser.sheet.SemiStructuredSheetBitmapParser;
 import com.github.romualdrousseau.shuju.util.StringUtils;
 
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
@@ -88,7 +88,7 @@ public class XlsxDocument implements Document {
 
     @Override
     public Sheet getSheetAt(final int i) {
-        return new IntelliSheet(sheets.get(i).ensureDataLoaded(), new SemiStructuredSheetParser());
+        return new IntelliSheet(sheets.get(i).ensureDataLoaded(), new SemiStructuredSheetBitmapParser());
     }
 
     private OPCPackage opcPackage;

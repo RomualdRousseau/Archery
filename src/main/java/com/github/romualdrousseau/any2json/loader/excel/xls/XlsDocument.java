@@ -13,7 +13,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
-import com.github.romualdrousseau.any2json.intelli.parser.SemiStructuredSheetParser;
+import com.github.romualdrousseau.any2json.intelli.parser.sheet.SemiStructuredSheetBitmapParser;
 import com.github.romualdrousseau.shuju.util.StringUtils;
 
 public class XlsDocument implements Document {
@@ -71,7 +71,7 @@ public class XlsDocument implements Document {
     }
 
     public Sheet getSheetAt(final int i) {
-        return new IntelliSheet(this.sheets.get(i), new SemiStructuredSheetParser());
+        return new IntelliSheet(this.sheets.get(i), new SemiStructuredSheetBitmapParser());
     }
 
     private final ArrayList<XlsSheet> sheets = new ArrayList<XlsSheet>();

@@ -16,7 +16,7 @@ import org.xml.sax.SAXException;
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
-import com.github.romualdrousseau.any2json.intelli.parser.SemiStructuredSheetParser;
+import com.github.romualdrousseau.any2json.intelli.parser.sheet.SemiStructuredSheetBitmapParser;
 
 import nl.fountain.xelem.excel.Workbook;
 import nl.fountain.xelem.excel.Worksheet;
@@ -28,7 +28,7 @@ public class XmlDocument implements Document {
 
     @Override
     public boolean open(final File excelFile, final String encoding, final String password, final boolean wellFormed) {
-        
+
         if (EXTENSIONS.stream().filter(x -> excelFile.getName().toLowerCase().endsWith(x)).findAny().isEmpty()) {
             return false;
         }
@@ -51,7 +51,7 @@ public class XmlDocument implements Document {
     }
 
     public Sheet getSheetAt(final int i) {
-        return new IntelliSheet(this.sheets.get(i), new SemiStructuredSheetParser());
+        return new IntelliSheet(this.sheets.get(i), new SemiStructuredSheetBitmapParser());
     }
 
     private boolean openWithEncoding(final File excelFile, final String encoding) {
