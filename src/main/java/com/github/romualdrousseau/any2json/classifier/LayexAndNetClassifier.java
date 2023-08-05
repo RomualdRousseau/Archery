@@ -16,7 +16,6 @@ import java.util.stream.Stream;
 import org.tensorflow.SavedModelBundle;
 import org.tensorflow.SessionFunction;
 import org.tensorflow.Signature;
-import org.tensorflow.ndarray.StdArrays;
 import org.tensorflow.types.TFloat32;
 
 import com.github.romualdrousseau.any2json.ITagClassifier;
@@ -24,7 +23,8 @@ import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.shuju.json.JSON;
 import com.github.romualdrousseau.shuju.json.JSONArray;
 import com.github.romualdrousseau.shuju.json.JSONObject;
-import com.github.romualdrousseau.shuju.math.Tensor;
+import com.github.romualdrousseau.shuju.types.Tensor;
+import com.github.romualdrousseau.shuju.util.CollectionUtils;
 import com.github.romualdrousseau.shuju.preprocessing.Text;
 import com.github.romualdrousseau.shuju.preprocessing.hasher.VocabularyHasher;
 import com.github.romualdrousseau.shuju.preprocessing.tokenizer.NgramTokenizer;
@@ -122,11 +122,11 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
 
     @Override
     public List<Integer> buildPredictSet(final String name, final List<String> entities, final List<String> context) {
-        final List<Integer> part1 = Text.to_categorical(entities, this.entities);
-        final List<Integer> part2 = Text.one_hot(name, this.filters, this.tokenizer, this.hasher);
+        final List<Integer> part1 = Text.to_categorical(entities, this.getEntityList());
+        final List<Integer> part2 = Text.one_hot(name, this.getFilters(), this.tokenizer, this.hasher);
         final List<Integer> part3 = context.stream()
                 .filter(x -> !x.equals(name))
-                .flatMap(x -> Text.one_hot(x, this.filters, this.tokenizer, this.hasher).stream())
+                .flatMap(x -> Text.one_hot(x, this.getFilters(), this.tokenizer, this.hasher).stream())
                 .distinct().sorted().toList();
         return Stream.concat(Stream.concat(
                 Text.pad_sequence(part1, IN_ENTITY_SIZE).stream().limit(IN_ENTITY_SIZE),
@@ -141,14 +141,15 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
         }
         final HashMap<String, org.tensorflow.Tensor> inputs = new HashMap<>() {
             {
-                put("entity_input", ListIntegertoTFloat32(predictSet, 0, IN_ENTITY_SIZE));
-                put("name_input", ListIntegertoTFloat32(predictSet, IN_ENTITY_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE));
-                put("context_input", ListIntegertoTFloat32(predictSet, IN_ENTITY_SIZE + IN_NAME_SIZE,
-                        IN_ENTITY_SIZE + IN_NAME_SIZE + IN_CONTEXT_SIZE));
+                put("entity_input", CollectionUtils.ListOfIntegertoTFloat32(predictSet.subList(0, IN_ENTITY_SIZE)));
+                put("name_input", CollectionUtils
+                        .ListOfIntegertoTFloat32(predictSet.subList(IN_ENTITY_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE)));
+                put("context_input", CollectionUtils.ListOfIntegertoTFloat32(predictSet
+                        .subList(IN_ENTITY_SIZE + IN_NAME_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE + IN_CONTEXT_SIZE)));
             }
         };
         final org.tensorflow.Result result = this.tagClassifierFunc.call(inputs);
-        return this.tags.get((int) TFloat32ToShujuTensor((TFloat32) result.get("tag_output").get()).argmax(0).item(0));
+        return this.tags.get((int) Tensor.of((TFloat32) result.get("tag_output").get()).argmax(0).item(0));
     }
 
     @Override
@@ -167,7 +168,7 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
 
         final Path kernelPath = kernelsPath.resolve("tf");
         if (!kernelPath.toFile().exists()) {
-            throw new IOException("Kernel doesn'ty exist.");
+            throw new IOException("Kernel doesn't exist.");
         }
 
         final Path trainPath = Files.createTempDirectory("any2json").toAbsolutePath();
@@ -183,8 +184,8 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
         });
         JSON.saveJSONArray(list2, trainPath.resolve("validation.json").toString());
 
-        final boolean isOsWindows = System.getProperty("os.name").contains("Windows");
-        final String run_script = isOsWindows ? "run.bat" : "run.sh";
+        final boolean isOsLinux = System.getProperty("os.name").contains("Linux");
+        final String run_script = isOsLinux ? "run.sh" : "run.bat";
 
         final String dimensions = String.format("%d,%d,%d,%d", IN_ENTITY_SIZE, IN_NAME_SIZE, IN_CONTEXT_SIZE,
                 OUT_TAG_SIZE);
@@ -271,21 +272,5 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
         } catch (IOException | InterruptedException x) {
             throw new RuntimeException(x);
         }
-    }
-
-    private TFloat32 ListIntegertoTFloat32(final List<Integer> l, final int a, final int b) {
-        final float[][] result = new float[1][b - a];
-        for (int i = a, j = 0; i < b; i++, j++) {
-            result[0][j] = (float) l.get(i);
-        }
-        return TFloat32.tensorOf(StdArrays.ndCopyOf(result));
-    }
-
-    private Tensor TFloat32ToShujuTensor(final TFloat32 t) {
-        final float[] result = new float[(int) t.shape().size()];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = t.getFloat(0, i);
-        }
-        return Tensor.create(result);
     }
 }
