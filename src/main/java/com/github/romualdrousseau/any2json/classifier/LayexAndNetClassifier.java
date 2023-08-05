@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.AbstractMap;
 import java.util.Arrays;
@@ -38,6 +37,9 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
     private static final int IN_CONTEXT_SIZE = 100;
     private static final int OUT_TAG_SIZE = 64;
 
+    private final List<String> vocabulary;
+    private final int ngrams;
+    private final List<String> lexicon;
     private final List<String> tags;
     private final List<String> requiredTags;
     private final Path modelPath;
@@ -53,8 +55,11 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
             final List<String> entities, final Map<String, String> patterns, final List<String> filters,
             final List<String> tags, final List<String> requiredTags, final List<String> pivotEntityList,
             final List<String> metaLayexes, final List<String> dataLayexes, final Path modelPath) {
-        super(vocabulary, ngrams, lexicon, entities, patterns, filters, pivotEntityList, metaLayexes, dataLayexes);
+        super(entities, patterns, filters, pivotEntityList, metaLayexes, dataLayexes);
 
+        this.vocabulary = vocabulary;
+        this.ngrams = ngrams;
+        this.lexicon = lexicon;
         this.tags = tags;
         this.requiredTags = requiredTags;
 
@@ -75,6 +80,9 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
     public LayexAndNetClassifier(final JSONObject json) {
         super(json);
 
+        this.vocabulary = JSON.<String>Stream(json.getJSONArray("vocabulary")).toList();
+        this.ngrams = json.getInt("ngrams");
+        this.lexicon = JSON.<String>Stream(json.getJSONArray("lexicon")).toList();
         this.tags = JSON.<String>Stream(json.getJSONArray("tags")).toList();
         this.requiredTags = JSON.<String>Stream(json.getJSONArray("requiredTags")).toList();
 
@@ -154,7 +162,7 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
     @Override
     public Process fit(final List<List<Integer>> trainingSet, final List<List<Integer>> validationSet)
             throws IOException {
-        final Path kernelsPath = Paths.get(System.getProperty("user.home") + "/.local/share/any2json/kernels");
+        final Path kernelsPath = Path.of(System.getProperty("user.home"), "/.local/share/any2json/kernels");
         this.installKernels(kernelsPath);
 
         final Path kernelPath = kernelsPath.resolve("tf");
@@ -192,6 +200,9 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
     @Override
     public JSONObject toJSON() {
         final JSONObject result =super.toJSON();
+        result.setJSONArray("vocabulary", JSON.<String>toJSONArray(this.vocabulary));
+        result.setInt("ngram", this.ngrams);
+        result.setJSONArray("lexicon", JSON.<String>toJSONArray(this.lexicon));
         result.setJSONArray("tags", JSON.<String>toJSONArray(this.tags));
         result.setJSONArray("requiredTags", JSON.<String>toJSONArray(this.requiredTags));
         result.setString("model", this.modelToJSONString(this.modelPath));
@@ -225,27 +236,39 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
             if (destPath.toFile().exists()) {
                 return;
             }
-            final Path sourcePath = Paths.get(LayexAndNetClassifier.class.getResource("/kernels").toURI());
+            final Path sourcePath = Path.of(LayexAndNetClassifier.class.getResource("/kernels").toURI());
             if (!sourcePath.toFile().isDirectory()) {
                 return;
             }
-            Arrays.asList(sourcePath.toFile().listFiles()).stream().forEach(k -> {
-                try {
-                    final boolean isOsWindows = System.getProperty("os.name").contains("Windows");
-                    final String init_script = isOsWindows ? "init.bat" : "init.sh";
-                    final Path kernelPath = destPath.resolve(sourcePath.relativize(k.toPath()));
-                    Disk.copyDir(k.toPath(), kernelPath);
-                    final ProcessBuilder processBuilder = new ProcessBuilder(
-                            kernelPath.resolve(init_script).toString());
-                    processBuilder.directory(kernelPath.toFile());
-                    processBuilder.inheritIO();
-                    processBuilder.redirectErrorStream(true);
-                    processBuilder.start().waitFor();
-                } catch (IOException | InterruptedException x) {
-                    throw new RuntimeException(x);
-                }
-            });
+            Arrays.asList(sourcePath.toFile().listFiles()).stream()
+                    .forEach(k -> this.installOneKernel(k.toPath(), destPath.resolve(sourcePath.relativize(k.toPath()))));
         } catch (final URISyntaxException x) {
+            throw new RuntimeException(x);
+        }
+    }
+
+    private void installOneKernel(final Path srcPath, final Path destPath) {
+        try {
+            final boolean isOsLinux = System.getProperty("os.name").contains("Linux");
+
+            final Path init_script;
+            if (isOsLinux) {
+                init_script = destPath.resolve("init.sh");
+                init_script.toFile().setExecutable(true);
+                destPath.resolve("run.sh").toFile().setExecutable(true);
+            } else {
+                init_script = destPath.resolve("init.bat");
+            }
+
+            Disk.copyDir(srcPath, destPath);
+
+            final ProcessBuilder processBuilder = new ProcessBuilder(init_script.toString());
+            processBuilder.directory(destPath.toFile());
+            processBuilder.inheritIO();
+            processBuilder.redirectErrorStream(true);
+            processBuilder.start().waitFor();
+
+        } catch (IOException | InterruptedException x) {
             throw new RuntimeException(x);
         }
     }
