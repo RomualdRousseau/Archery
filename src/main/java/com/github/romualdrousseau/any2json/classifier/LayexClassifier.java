@@ -17,9 +17,7 @@ import com.github.romualdrousseau.shuju.preprocessing.comparer.RegexComparer;
 
 public class LayexClassifier implements ILayoutClassifier
 {
-    protected final List<String> vocabulary;
-    protected final int ngrams;
-    protected final List<String> lexicon;
+
     protected final List<String> entities;
     protected final Map<String, String> patterns;
     protected final List<String> filters;
@@ -33,12 +31,8 @@ public class LayexClassifier implements ILayoutClassifier
     protected List<TableMatcher> dataMatchers;
     protected String recipe;
 
-    public LayexClassifier(final List<String> vocabulary, final int ngrams, final List<String> lexicon,
-            final List<String> entities, final Map<String, String> patterns, final List<String> filters,
+    public LayexClassifier(final List<String> entities, final Map<String, String> patterns, final List<String> filters,
             final List<String> pivotEntityList, final List<String> metaLayexes, final List<String> dataLayexes) {
-        this.vocabulary = vocabulary;
-        this.ngrams = ngrams;
-        this.lexicon = lexicon;
         this.entities = entities;
         this.patterns = patterns;
         this.filters = filters;
@@ -46,17 +40,14 @@ public class LayexClassifier implements ILayoutClassifier
         this.metaLayexes = metaLayexes;
         this.dataLayexes = dataLayexes;
 
+        this.comparer = new RegexComparer(this.patterns);
+
         this.metaMatchers = metaLayexes.stream().map(Layex::new).map(Layex::compile).toList();
         this.dataMatchers = dataLayexes.stream().map(Layex::new).map(Layex::compile).toList();
         this.recipe = null;
-
-        this.comparer = new RegexComparer(this.patterns);
     }
 
     public LayexClassifier(final JSONObject json) {
-        this.vocabulary = JSON.<String>Stream(json.getJSONArray("vocabulary")).toList();
-        this.ngrams = json.getInt("ngrams");
-        this.lexicon = JSON.<String>Stream(json.getJSONArray("lexicon")).toList();
         this.entities = JSON.<String>Stream(json.getJSONArray("entities")).toList();
         this.patterns = JSON.<JSONObject>Stream(json.getJSONArray("patterns"))
                 .collect(Collectors.toMap(x -> x.getString("key"), x -> x.getString("value")));
@@ -65,11 +56,11 @@ public class LayexClassifier implements ILayoutClassifier
         this.metaLayexes = JSON.<String>Stream(json.getJSONArray("metaLayexes")).toList();
         this.dataLayexes = JSON.<String>Stream(json.getJSONArray("dataLayexes")).toList();
 
+        this.comparer = new RegexComparer(this.patterns);
+
         this.metaMatchers = metaLayexes.stream().map(Layex::new).map(Layex::compile).toList();
         this.dataMatchers = dataLayexes.stream().map(Layex::new).map(Layex::compile).toList();
         this.recipe = null;
-
-        this.comparer = new RegexComparer(this.patterns);
     }
 
     @Override
@@ -140,9 +131,6 @@ public class LayexClassifier implements ILayoutClassifier
     @Override
     public JSONObject toJSON() {
         final JSONObject result = JSON.newJSONObject();
-        result.setJSONArray("vocabulary", JSON.<String>toJSONArray(this.vocabulary));
-        result.setInt("ngram", this.ngrams);
-        result.setJSONArray("lexicon", JSON.<String>toJSONArray(this.lexicon));
         result.setJSONArray("entities", JSON.<String>toJSONArray(this.entities));
         result.setJSONArray("patterns", JSON.<String>toJSONArray(this.patterns));
         result.setJSONArray("filters", JSON.<String>toJSONArray(this.filters));

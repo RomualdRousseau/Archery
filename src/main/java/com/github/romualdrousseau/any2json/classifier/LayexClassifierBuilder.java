@@ -17,21 +17,6 @@ public class LayexClassifierBuilder implements IClassifierBuilder {
         return this;
     }
 
-    public LayexClassifierBuilder setVocabulary(final List<String> vocabulary) {
-        this.vocabulary = vocabulary;
-        return this;
-    }
-
-    public LayexClassifierBuilder setNGrams(final int ngrams) {
-        this.ngrams = ngrams;
-        return this;
-    }
-
-    public LayexClassifierBuilder setLexicon(final List<String> lexicon) {
-        this.lexicon = lexicon;
-        return this;
-    }
-
     public LayexClassifierBuilder setEntityList(final List<String> entityList) {
         this.entityList = entityList;
         return this;
@@ -65,7 +50,7 @@ public class LayexClassifierBuilder implements IClassifierBuilder {
     public ClassifierFactory build() {
         final LayexClassifier classifier;
         if (model == null) {
-            classifier = new LayexClassifier(vocabulary, ngrams, lexicon, entityList, patternList, filters, pivotEntityList, metaLayexes, dataLayexes);
+            classifier = new LayexClassifier(entityList, patternList, filters, pivotEntityList, metaLayexes, dataLayexes);
         } else {
             classifier = new LayexClassifier(model);
         }
@@ -75,9 +60,6 @@ public class LayexClassifierBuilder implements IClassifierBuilder {
     }
 
     private JSONObject model;
-    private List<String> vocabulary;
-    private int ngrams;
-    private List<String> lexicon;
     private List<String> entityList;
     private Map<String, String> patternList;
     private List<String> filters;
