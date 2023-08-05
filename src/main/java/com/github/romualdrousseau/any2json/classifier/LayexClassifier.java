@@ -11,25 +11,25 @@ import com.github.romualdrousseau.any2json.layex.Layex;
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
 import com.github.romualdrousseau.shuju.json.JSON;
 import com.github.romualdrousseau.shuju.json.JSONObject;
-import com.github.romualdrousseau.shuju.math.Tensor;
+import com.github.romualdrousseau.shuju.types.Tensor;
 import com.github.romualdrousseau.shuju.preprocessing.Text;
 import com.github.romualdrousseau.shuju.preprocessing.comparer.RegexComparer;
 
 public class LayexClassifier implements ILayoutClassifier
 {
 
-    protected final List<String> entities;
-    protected final Map<String, String> patterns;
-    protected final List<String> filters;
-    protected final List<String> pivotEntityList;
-    protected final List<String> metaLayexes;
-    protected final List<String> dataLayexes;
+    private final List<String> entities;
+    private final Map<String, String> patterns;
+    private final List<String> filters;
+    private final List<String> pivotEntityList;
+    private final List<String> metaLayexes;
+    private final List<String> dataLayexes;
 
-    protected final RegexComparer comparer;
+    private final RegexComparer comparer;
 
-    protected List<TableMatcher> metaMatchers;
-    protected List<TableMatcher> dataMatchers;
-    protected String recipe;
+    private List<TableMatcher> metaMatchers;
+    private List<TableMatcher> dataMatchers;
+    private String recipe;
 
     public LayexClassifier(final List<String> entities, final Map<String, String> patterns, final List<String> filters,
             final List<String> pivotEntityList, final List<String> metaLayexes, final List<String> dataLayexes) {
@@ -61,6 +61,10 @@ public class LayexClassifier implements ILayoutClassifier
         this.metaMatchers = metaLayexes.stream().map(Layex::new).map(Layex::compile).toList();
         this.dataMatchers = dataLayexes.stream().map(Layex::new).map(Layex::compile).toList();
         this.recipe = null;
+    }
+
+    public List<String> getFilters() {
+        return this.filters;
     }
 
     @Override
@@ -124,7 +128,7 @@ public class LayexClassifier implements ILayoutClassifier
 
     @Override
     public Tensor toEntityVector(final String value) {
-        return Tensor.create(Text.to_categorical(value, this.entities, this.comparer).stream()
+        return Tensor.of(Text.to_categorical(value, this.entities, this.comparer).stream()
                 .mapToDouble(x -> (double) x).toArray());
     }
 

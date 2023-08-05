@@ -9,7 +9,7 @@ import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.intelli.CompositeTable;
-import com.github.romualdrousseau.shuju.math.Tensor;
+import com.github.romualdrousseau.shuju.types.Tensor;
 import com.github.romualdrousseau.shuju.util.StringUtils;
 
 public class IntelliHeader extends CompositeHeader {
@@ -99,7 +99,7 @@ public class IntelliHeader extends CompositeHeader {
         if (StringUtils.isFastBlank(this.getName())) {
             this.tag = HeaderTag.None;
         } else {
-            this.getClassifierFactory().getTagClassifier().ifPresent(classifier -> { 
+            this.getClassifierFactory().getTagClassifier().ifPresent(classifier -> {
                 final String tagValue = classifier.predict(classifier.buildPredictSet(this.getName(), this.entities(), this.getTable().getHeaderNames()));
                 this.tag = new HeaderTag(tagValue);
             });
