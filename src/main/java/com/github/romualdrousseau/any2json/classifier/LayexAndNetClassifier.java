@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 import org.tensorflow.SavedModelBundle;
 import org.tensorflow.SessionFunction;
 import org.tensorflow.Signature;
+import org.tensorflow.ndarray.StdArrays;
 import org.tensorflow.types.TFloat32;
 
 import com.github.romualdrousseau.any2json.ITagClassifier;
@@ -23,8 +24,7 @@ import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.shuju.json.JSON;
 import com.github.romualdrousseau.shuju.json.JSONArray;
 import com.github.romualdrousseau.shuju.json.JSONObject;
-import com.github.romualdrousseau.shuju.types.Tensor;
-import com.github.romualdrousseau.shuju.util.CollectionUtils;
+import com.github.romualdrousseau.shuju.math.Tensor;
 import com.github.romualdrousseau.shuju.preprocessing.Text;
 import com.github.romualdrousseau.shuju.preprocessing.hasher.VocabularyHasher;
 import com.github.romualdrousseau.shuju.preprocessing.tokenizer.NgramTokenizer;
@@ -141,15 +141,13 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
         }
         final HashMap<String, org.tensorflow.Tensor> inputs = new HashMap<>() {
             {
-                put("entity_input", CollectionUtils.ListOfIntegertoTFloat32(predictSet.subList(0, IN_ENTITY_SIZE)));
-                put("name_input", CollectionUtils
-                        .ListOfIntegertoTFloat32(predictSet.subList(IN_ENTITY_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE)));
-                put("context_input", CollectionUtils.ListOfIntegertoTFloat32(predictSet
-                        .subList(IN_ENTITY_SIZE + IN_NAME_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE + IN_CONTEXT_SIZE)));
+                put("entity_input", ListIntegertoTFloat32(predictSet, 0, IN_ENTITY_SIZE));
+                put("name_input", ListIntegertoTFloat32(predictSet, IN_ENTITY_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE));
+                put("context_input", ListIntegertoTFloat32(predictSet, IN_ENTITY_SIZE + IN_NAME_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE + IN_CONTEXT_SIZE));
             }
         };
         final org.tensorflow.Result result = this.tagClassifierFunc.call(inputs);
-        return this.tags.get((int) Tensor.of((TFloat32) result.get("tag_output").get()).argmax(0).item(0));
+        return this.tags.get((int) TFloat32ToShujuTensor((TFloat32) result.get("tag_output").get()).argmax(0).item(0));
     }
 
     @Override
@@ -272,5 +270,21 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
         } catch (IOException | InterruptedException x) {
             throw new RuntimeException(x);
         }
+    }
+
+    private TFloat32 ListIntegertoTFloat32(final List<Integer> l, final int a, final int b) {
+        final float[][] result = new float[1][b - a];
+        for (int i = a, j = 0; i < b; i++, j++) {
+            result[0][j] = (float) l.get(i);
+        }
+        return TFloat32.tensorOf(StdArrays.ndCopyOf(result));
+    }
+
+    private Tensor TFloat32ToShujuTensor(final TFloat32 t) {
+        final float[] result = new float[(int) t.shape().size()];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = t.getFloat(0, i);
+        }
+        return Tensor.create(result);
     }
 }
