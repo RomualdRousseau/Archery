@@ -14,7 +14,7 @@ import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
 import com.github.romualdrousseau.any2json.intelli.parser.sheet.SemiStructuredSheetBitmapParser;
 import com.github.romualdrousseau.any2json.intelli.parser.sheet.StructuredSheetParser;
 import com.github.romualdrousseau.any2json.util.Disk;
-import com.github.romualdrousseau.shuju.types.Tensor;
+import com.github.romualdrousseau.shuju.math.Tensor;
 import com.github.romualdrousseau.shuju.util.StringUtils;
 
 public class CsvDocument implements Document {
@@ -175,7 +175,7 @@ public class CsvDocument implements Document {
         for (int i = 0; i < separators.length; i++) {
             v[i] = sample.split(separators[i], -1).length;
         }
-        return separators[(int) Tensor.of(v).argmax(0).item(0)];
+        return separators[(int) Tensor.create(v).argmax(0).item(0)];
     }
 
     private boolean wellFormed = true;
