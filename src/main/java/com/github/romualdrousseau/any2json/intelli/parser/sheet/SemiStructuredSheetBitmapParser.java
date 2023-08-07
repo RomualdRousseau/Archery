@@ -20,7 +20,7 @@ import com.github.romualdrousseau.shuju.cv.Filter;
 import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
 import com.github.romualdrousseau.shuju.cv.SearchPoint;
 import com.github.romualdrousseau.shuju.cv.Template;
-import com.github.romualdrousseau.shuju.cv.shapeextractor.RectangleExtractor;
+import com.github.romualdrousseau.shuju.cv.templatematching.shapeextractor.RectangleExtractor;
 
 public class SemiStructuredSheetBitmapParser extends LayexSheetParser {
 

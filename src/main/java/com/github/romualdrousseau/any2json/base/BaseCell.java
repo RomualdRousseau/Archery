@@ -8,7 +8,7 @@ import java.util.stream.IntStream;
 import com.github.romualdrousseau.any2json.Cell;
 import com.github.romualdrousseau.any2json.ClassifierFactory;
 import com.github.romualdrousseau.any2json.layex.Symbol;
-import com.github.romualdrousseau.shuju.types.Tensor;
+import com.github.romualdrousseau.shuju.math.Tensor;
 import com.github.romualdrousseau.shuju.util.StringUtils;
 
 public class BaseCell implements Cell, Symbol {

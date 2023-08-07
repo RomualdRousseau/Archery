@@ -11,7 +11,7 @@ import com.github.romualdrousseau.any2json.layex.Layex;
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
 import com.github.romualdrousseau.shuju.json.JSON;
 import com.github.romualdrousseau.shuju.json.JSONObject;
-import com.github.romualdrousseau.shuju.types.Tensor;
+import com.github.romualdrousseau.shuju.math.Tensor;
 import com.github.romualdrousseau.shuju.preprocessing.Text;
 import com.github.romualdrousseau.shuju.preprocessing.comparer.RegexComparer;
 
@@ -128,7 +128,7 @@ public class LayexClassifier implements ILayoutClassifier
 
     @Override
     public Tensor toEntityVector(final String value) {
-        return Tensor.of(Text.to_categorical(value, this.entities, this.comparer).stream()
+        return Tensor.create(Text.to_categorical(value, this.entities, this.comparer).stream()
                 .mapToDouble(x -> (double) x).toArray());
     }
 

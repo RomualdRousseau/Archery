@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
 import com.github.romualdrousseau.shuju.json.JSONObject;
-import com.github.romualdrousseau.shuju.types.Tensor;
+import com.github.romualdrousseau.shuju.math.Tensor;
 
 public interface ILayoutClassifier extends AutoCloseable
 {
