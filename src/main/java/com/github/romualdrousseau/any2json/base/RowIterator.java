@@ -1,6 +1,8 @@
 package com.github.romualdrousseau.any2json.base;
 
 import java.util.Iterator;
+import java.util.Spliterator;
+import java.util.Spliterators;
 
 import com.github.romualdrousseau.any2json.Row;
 
@@ -21,7 +23,10 @@ public class RowIterator implements Iterator<Row>
 		return row;
 	}
 
+    public Spliterator<Row> spliterator() {
+        return Spliterators.spliterator(this, this.table.getNumberOfRows(), Spliterator.IMMUTABLE);
+    }
+
 	private BaseTable table;
 	private int currRowIdx;
 }
-
