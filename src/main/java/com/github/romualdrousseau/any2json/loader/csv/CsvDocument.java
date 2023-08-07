@@ -23,10 +23,10 @@ public class CsvDocument implements Document {
     public boolean open(final File txtFile, final String encoding, final String password, final boolean wellFormed) {
         this.wellFormed = wellFormed;
 
-        if (this.openWithEncoding(txtFile, "UTF-8")) {
+        if (encoding != null && this.openWithEncoding(txtFile, encoding)) {
             return true;
         } else if (encoding != null) {
-            return this.openWithEncoding(txtFile, encoding);
+            return this.openWithEncoding(txtFile, "UTF-8");
         } else {
             return false;
         }
