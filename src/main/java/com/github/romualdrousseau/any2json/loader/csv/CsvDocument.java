@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.List;
 
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
@@ -19,9 +18,16 @@ import com.github.romualdrousseau.shuju.util.StringUtils;
 
 public class CsvDocument implements Document {
 
+    public static int BATCH_SIZE = 100000;
+
+    private boolean wellFormed = true;
+    private CsvSheet sheet;
+    private String separator;
+
     @Override
     public boolean open(final File txtFile, final String encoding, final String password, final boolean wellFormed) {
         this.wellFormed = wellFormed;
+        this.sheet = null;
 
         if (encoding != null && this.openWithEncoding(txtFile, encoding)) {
             return true;
@@ -34,7 +40,14 @@ public class CsvDocument implements Document {
 
     @Override
     public void close() {
-        this.sheet = null;
+        try {
+            if (this.sheet != null) {
+                this.sheet.close();
+                this.sheet = null;
+            }
+        } catch (final IOException x) {
+            throw new RuntimeException(x);
+        }
     }
 
     @Override
@@ -52,21 +65,22 @@ public class CsvDocument implements Document {
     }
 
     private boolean openWithEncoding(final File txtFile, final String encoding) {
-        if (txtFile == null) {
+        if (txtFile == null || encoding == null) {
             throw new IllegalArgumentException();
         }
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(txtFile), encoding))) {
-            this.sheet = null;
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(new FileInputStream(txtFile), encoding))) {
+
+            final String sheetName = Disk.removeExtension(txtFile.getName());
 
             if (encoding.equals("UTF-8")) {
                 this.processBOM(reader);
             }
 
-            final List<String[]> rows = this.processRows(reader);
+            final MappedRowList<String[]> rows = this.processRows(reader);
 
-            if (checkIfGoodEncoding(rows.get(0))) {
-                final String sheetName = Disk.removeExtension(txtFile.getName());
+            if (rows != null) {
                 this.sheet = new CsvSheet(sheetName, rows);
             }
 
@@ -93,26 +107,33 @@ public class CsvDocument implements Document {
         }
     }
 
-    private List<String[]> processRows(final BufferedReader reader) throws IOException {
-        List<String[]> rows = new ArrayList<>();
+    private MappedRowList<String[]> processRows(final BufferedReader reader) throws IOException {
+        try (MappedRowWriter<String[]> rows = new MappedRowWriter<>(CsvDocument.BATCH_SIZE)) {
 
-        boolean firstPass = true;
-        for (String textRow; (textRow = reader.readLine()) != null;) {
+            boolean firstPass = true;
+            for (String textRow; (textRow = reader.readLine()) != null;) {
 
-            if (firstPass) {
-                this.separator = this.guessSeparator(textRow);
-                firstPass = false;
+                if (firstPass) {
+                    this.separator = this.guessSeparator(textRow);
+                }
+
+                final String[] cells = parseOneRow(textRow);
+
+                if (firstPass) {
+                    if (!this.checkIfGoodEncoding(cells)) {
+                        return null;
+                    }
+                    firstPass = false;
+                }
+
+                for (int j = 0; j < cells.length; j++) {
+                    cells[j] = StringUtils.cleanToken(cells[j]);
+                }
+                rows.write(cells);
             }
 
-            final String[] cells = parseOneRow(textRow);
-
-            for (int j = 0; j < cells.length; j++) {
-                cells[j] = StringUtils.cleanToken(cells[j]);
-            }
-
-            rows.add(cells);
+            return rows.getMappedList();
         }
-        return rows;
     }
 
     private String[] parseOneRow(final String data) {
@@ -177,8 +198,4 @@ public class CsvDocument implements Document {
         }
         return separators[(int) Tensor.of(v).argmax(0).item(0)];
     }
-
-    private boolean wellFormed = true;
-    private CsvSheet sheet;
-    private String separator;
 }

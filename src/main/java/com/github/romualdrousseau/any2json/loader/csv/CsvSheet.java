@@ -1,14 +1,23 @@
 package com.github.romualdrousseau.any2json.loader.csv;
 
-import java.util.List;
+import java.io.Closeable;
+import java.io.IOException;
 
 import com.github.romualdrousseau.any2json.base.SheetStore;
 
-class CsvSheet implements SheetStore {
+class CsvSheet implements SheetStore, Closeable {
 
-    public CsvSheet(final String name, final List<String[]> rows) {
+    private final String name;
+    private final MappedRowList<String[]> rows;
+
+    public CsvSheet(final String name, final MappedRowList<String[]> rows) {
         this.name = name;
         this.rows = rows;
+    }
+
+    @Override
+    public void close() throws IOException {
+        this.rows.close();
     }
 
     @Override
@@ -23,7 +32,7 @@ class CsvSheet implements SheetStore {
 
     @Override
     public int getLastRowNum() {
-        return this.rows.size() - 1;
+        return this.rows.length() - 1;
     }
 
     @Override
@@ -60,7 +69,7 @@ class CsvSheet implements SheetStore {
             newValue = value;
         }
 
-        if(rowIndex2 >= this.rows.size()) {
+        if(rowIndex2 >= this.rows.length()) {
             return;
         }
 
@@ -74,7 +83,7 @@ class CsvSheet implements SheetStore {
     }
 
     private String getCellAt(final int colIndex, final int rowIndex) {
-        if(rowIndex >= this.rows.size()) {
+        if(rowIndex >= this.rows.length()) {
             return null;
         }
 
@@ -86,7 +95,4 @@ class CsvSheet implements SheetStore {
 
         return row[colIndex];
     }
-
-    private final String name;
-    private final List<String[]> rows;
 }
