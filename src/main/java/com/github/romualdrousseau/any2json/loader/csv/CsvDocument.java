@@ -14,7 +14,7 @@ import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
 import com.github.romualdrousseau.any2json.intelli.parser.sheet.SemiStructuredSheetBitmapParser;
 import com.github.romualdrousseau.any2json.intelli.parser.sheet.StructuredSheetParser;
 import com.github.romualdrousseau.any2json.util.Disk;
-import com.github.romualdrousseau.shuju.math.Tensor;
+import com.github.romualdrousseau.shuju.types.Tensor;
 import com.github.romualdrousseau.shuju.util.StringUtils;
 
 public class CsvDocument implements Document {
@@ -94,7 +94,7 @@ public class CsvDocument implements Document {
     }
 
     private List<String[]> processRows(final BufferedReader reader) throws IOException {
-        List<String[]> rows = new ArrayList<String[]>();
+        List<String[]> rows = new ArrayList<>();
 
         boolean firstPass = true;
         for (String textRow; (textRow = reader.readLine()) != null;) {
@@ -104,11 +104,10 @@ public class CsvDocument implements Document {
                 firstPass = false;
             }
 
-            final String[] tokens = parseOneRow(textRow);
+            final String[] cells = parseOneRow(textRow);
 
-            final String[] cells = new String[tokens.length];
-            for (int j = 0; j < tokens.length; j++) {
-                cells[j] = StringUtils.cleanToken(tokens[j]);
+            for (int j = 0; j < cells.length; j++) {
+                cells[j] = StringUtils.cleanToken(cells[j]);
             }
 
             rows.add(cells);
@@ -117,12 +116,13 @@ public class CsvDocument implements Document {
     }
 
     private String[] parseOneRow(final String data) {
-        final ArrayList<String> result = new ArrayList<String>();
+        final ArrayList<String> result = new ArrayList<>();
         String acc = "";
         int state = 0;
 
-        for (int i = 0; i < data.length(); i++) {
-            final char c = data.charAt(i);
+        final char[] tmp = data.toCharArray();
+        for (int i = 0; i < tmp.length; i++) {
+            final char c = tmp[i];
 
             switch (state) {
                 case 0:
@@ -165,7 +165,7 @@ public class CsvDocument implements Document {
             result.add(acc);
         }
 
-        return result.toArray(new String[result.size()]);
+        return result.toArray(String[]::new);
     }
 
     private String guessSeparator(final String sample) {
@@ -175,7 +175,7 @@ public class CsvDocument implements Document {
         for (int i = 0; i < separators.length; i++) {
             v[i] = sample.split(separators[i], -1).length;
         }
-        return separators[(int) Tensor.create(v).argmax(0).item(0)];
+        return separators[(int) Tensor.of(v).argmax(0).item(0)];
     }
 
     private boolean wellFormed = true;
