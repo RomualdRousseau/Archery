@@ -34,5 +34,4 @@ public abstract class TableParser<S extends Symbol> {
     private int group = 0;
     private int column = 0;
     private int row = 0;
-
 }

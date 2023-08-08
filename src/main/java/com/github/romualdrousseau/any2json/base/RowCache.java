@@ -5,10 +5,9 @@ import java.util.LinkedHashMap;
 
 import com.github.romualdrousseau.any2json.DocumentFactory;
 
-public class RowStore extends LinkedHashMap<Integer, BaseRow> {
-    private static final long serialVersionUID = 1L;
+public class RowCache extends LinkedHashMap<Integer, BaseRow> {
 
-    public RowStore() {
+    public RowCache() {
         super(DocumentFactory.MAX_STORE_ROWS, 0.75F, true);
     }
 

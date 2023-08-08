@@ -1,6 +1,8 @@
 package com.github.romualdrousseau.any2json.base;
 
 import java.util.Iterator;
+import java.util.Spliterator;
+import java.util.Spliterators;
 
 import com.github.romualdrousseau.any2json.Cell;
 
@@ -20,6 +22,10 @@ public class CellIterator implements Iterator<Cell>
         this.currColIdx += cell.getMergedCount();
         return cell;
 	}
+
+    public Spliterator<Cell> spliterator() {
+        return Spliterators.spliterator(this, this.row.getTable().getNumberOfColumns(), Spliterator.IMMUTABLE);
+    }
 
 	private BaseRow row;
 	private int currColIdx;

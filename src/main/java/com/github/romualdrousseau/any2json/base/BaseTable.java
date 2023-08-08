@@ -13,31 +13,36 @@ public abstract class BaseTable implements Table, Visitable {
 
     public BaseTable(final BaseSheet sheet, final int firstColumn, final int firstRow, final int lastColumn,
             final int lastRow) {
+        this(sheet, firstColumn, firstRow, lastColumn, lastRow, new RowCache(), new LinkedList<>());
+    }
+
+    public BaseTable(final BaseTable parent) {
+        this(parent.sheet, parent.firstColumn, parent.firstRow, parent.lastColumn, parent.lastRow, parent.cachedRows, parent.ignoreRows);
+    }
+
+    public BaseTable(final BaseTable parent, final int firstRow, final int lastRow) {
+        this(parent.sheet, parent.firstColumn, firstRow, parent.lastColumn, lastRow, parent.cachedRows, parent.ignoreRows);
+    }
+
+    private BaseTable(final BaseSheet sheet, final int firstColumn, final int firstRow, final int lastColumn,
+            final int lastRow, RowCache cachedRows, List<Integer> ignoreRows) {
         assert (firstColumn <= lastColumn) : "first column must be before last column";
         assert (firstRow <= lastRow) : "first row must be before last row";
-        this.visited = false;
+
         this.sheet = sheet;
         this.firstColumn = firstColumn;
         this.firstRow = firstRow;
         this.lastColumn = lastColumn;
+        this.cachedRows = cachedRows;
+        this.ignoreRows = ignoreRows;
+        this.headers = new LinkedList<>();
+
+        this.visited = false;
         this.lastRow = lastRow;
         this.firstRowOffset = 0;
         this.lastRowOffset = 0;
         this.headerRowOffset = 0;
-        this.cachedRows = null;
         this.loadCompleted = false;
-    }
-
-    public BaseTable(final BaseTable parent) {
-        this(parent.sheet, parent.firstColumn, parent.firstRow, parent.lastColumn, parent.lastRow);
-        this.cachedRows = parent.cachedRows;
-        this.ignoreRows.addAll(parent.ignoreRows);
-    }
-
-    public BaseTable(final BaseTable parent, final int firstRow, final int lastRow) {
-        this(parent.sheet, parent.firstColumn, firstRow, parent.lastColumn, lastRow);
-        this.cachedRows = parent.cachedRows;
-        this.ignoreRows.addAll(parent.ignoreRows);
     }
 
     @Override
@@ -54,10 +59,6 @@ public abstract class BaseTable implements Table, Visitable {
     public BaseRow getRowAt(final int rowIndex) {
         if (rowIndex < 0 || rowIndex >= getNumberOfRows()) {
             throw new ArrayIndexOutOfBoundsException(rowIndex);
-        }
-
-        if (this.cachedRows == null) {
-            this.cachedRows = new RowStore();
         }
 
         final int relRowIndex = this.firstRowOffset + rowIndex;
@@ -203,17 +204,17 @@ public abstract class BaseTable implements Table, Visitable {
         this.lastRow = lastRow;
     }
 
-    private final LinkedList<Header> headers = new LinkedList<Header>();
+    private final RowCache cachedRows;
+    private final List<Integer> ignoreRows;
     private final BaseSheet sheet;
     private final int firstColumn;
     private final int firstRow;
     private final int lastColumn;
+    private final LinkedList<Header> headers;
     private int lastRow;
     private int firstRowOffset;
     private int lastRowOffset;
     private int headerRowOffset;
-    private RowStore cachedRows;
     private boolean loadCompleted;
     private boolean visited;
-    private final LinkedList<Integer> ignoreRows = new LinkedList<Integer>();
 }
