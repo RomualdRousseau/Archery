@@ -24,7 +24,7 @@ import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.shuju.json.JSON;
 import com.github.romualdrousseau.shuju.json.JSONArray;
 import com.github.romualdrousseau.shuju.json.JSONObject;
-import com.github.romualdrousseau.shuju.math.Tensor;
+import com.github.romualdrousseau.shuju.types.Tensor;
 import com.github.romualdrousseau.shuju.preprocessing.Text;
 import com.github.romualdrousseau.shuju.preprocessing.hasher.VocabularyHasher;
 import com.github.romualdrousseau.shuju.preprocessing.tokenizer.NgramTokenizer;
@@ -285,6 +285,6 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
         for (int i = 0; i < result.length; i++) {
             result[i] = t.getFloat(0, i);
         }
-        return Tensor.create(result);
+        return Tensor.of(result);
     }
 }
