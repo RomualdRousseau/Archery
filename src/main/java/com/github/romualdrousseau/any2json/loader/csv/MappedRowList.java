@@ -16,24 +16,23 @@ public class MappedRowList<T> implements Closeable {
 
     private final int batchSize;
     private final Path storePath;
-    private final List<RowBatch> batches;
+    private final List<BatchOfRows> batches;
     private final int length;
-    private final FileChannel fileChannel ;
+    private final FileChannel fileChannel;
     private final MappedByteBuffer mappedByteBuffer;
 
     private List<T> currentBatch = null;
     private int currentBatchIdx = -1;
+    private boolean isClosed = false;
 
-    public MappedRowList(final int batchSize, final Path storePath, final List<RowBatch> batches, final int length)  {
+    public MappedRowList(final int batchSize, final Path storePath, final List<BatchOfRows> batches, final int length) {
         try {
             this.batchSize = batchSize;
             this.storePath = storePath;
             this.batches = batches;
             this.length = length;
-            this.fileChannel = (FileChannel) Files.newByteChannel(this.storePath, EnumSet.of(
-                    StandardOpenOption.READ,
-                    StandardOpenOption.WRITE));
-            this.mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, this.storePath.toFile().length());
+            this.fileChannel = (FileChannel) Files.newByteChannel(this.storePath, EnumSet.of(StandardOpenOption.READ));
+            this.mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, this.storePath.toFile().length());
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
@@ -41,7 +40,13 @@ public class MappedRowList<T> implements Closeable {
 
     @Override
     public void close() throws IOException {
+        if (this.isClosed) {
+            return;
+        }
+
         this.fileChannel.close();
+        this.isClosed = true;
+
         Files.deleteIfExists(this.storePath);
     }
 
@@ -53,7 +58,7 @@ public class MappedRowList<T> implements Closeable {
         try {
             final int idx = n / batchSize;
             if (this.currentBatchIdx != idx) {
-                this.currentBatch = this.loadBatch(batches.get(idx));
+                this.currentBatch = this.loadOneBatch(batches.get(idx));
                 this.currentBatchIdx = idx;
             }
             return this.currentBatch.get(n % batchSize);
@@ -62,7 +67,7 @@ public class MappedRowList<T> implements Closeable {
         }
     }
 
-    private List<T> loadBatch(final RowBatch batch) throws ClassNotFoundException, IOException {
+    private List<T> loadOneBatch(final BatchOfRows batch) throws ClassNotFoundException, IOException {
         final byte[] bytes = new byte[batch.length()];
         this.mappedByteBuffer.position(batch.position());
         this.mappedByteBuffer.get(bytes);

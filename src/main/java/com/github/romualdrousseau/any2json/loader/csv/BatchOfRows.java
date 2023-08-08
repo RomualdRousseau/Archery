@@ -1,11 +1,11 @@
 package com.github.romualdrousseau.any2json.loader.csv;
 
-public class RowBatch {
+public class BatchOfRows {
 
     private final int position;
     private final int length;
 
-    private RowBatch(int position, int length) {
+    private BatchOfRows(int position, int length) {
         this.position = position;
         this.length = length;
     }
@@ -18,7 +18,7 @@ public class RowBatch {
         return length;
     }
 
-    public static RowBatch of(int position, int length) {
-        return new RowBatch(position, length);
+    public static BatchOfRows of(int position, int length) {
+        return new BatchOfRows(position, length);
     }
 }
