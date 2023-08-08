@@ -26,7 +26,7 @@ public class MappedRowWriter<T> implements Closeable {
         this.batchSize = batchSize;
         this.storePath = Files.createTempFile("any2json-csv-", ".tmp");
         this.fileOutputStream = new FileOutputStream(this.storePath.toFile());
-        this.currentBatch = new ArrayList<>();
+        this.currentBatch = new ArrayList<>(this.batchSize);
     }
 
     @Override
