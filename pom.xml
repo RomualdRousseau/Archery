@@ -3,7 +3,7 @@
 
     <groupId>com.github.romualdrousseau</groupId>
     <artifactId>any2json-excel</artifactId>
-    <version>2.30-SNAPSHOT</version>
+    <version>2.31-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>any2json-excel</name>
@@ -61,6 +61,12 @@
     </repositories>
 
     <dependencies>
+        <!-- Any2Json Framework -->
+        <dependency>
+            <groupId>com.github.romualdrousseau</groupId>
+            <artifactId>any2json</artifactId>
+            <version>2.31-SNAPSHOT</version>
+        </dependency>
         <!-- Excel Framework -->
         <dependency>
             <groupId>nl.fountain</groupId>
@@ -81,12 +87,6 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-scratchpad</artifactId>
             <version>5.2.3</version>
-        </dependency>
-        <!-- Any2Json Framework -->
-        <dependency>
-            <groupId>com.github.romualdrousseau</groupId>
-            <artifactId>any2json</artifactId>
-            <version>2.30-SNAPSHOT</version>
         </dependency>
         <!-- Test Framework -->
         <dependency>
