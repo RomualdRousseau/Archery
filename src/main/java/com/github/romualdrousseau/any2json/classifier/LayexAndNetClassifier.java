@@ -16,7 +16,6 @@ import java.util.stream.Stream;
 import org.tensorflow.SavedModelBundle;
 import org.tensorflow.SessionFunction;
 import org.tensorflow.Signature;
-import org.tensorflow.ndarray.StdArrays;
 import org.tensorflow.types.TFloat32;
 
 import com.github.romualdrousseau.any2json.ITagClassifier;
@@ -80,11 +79,11 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
     public LayexAndNetClassifier(final JSONObject json) {
         super(json);
 
-        this.vocabulary = JSON.<String>Stream(json.getJSONArray("vocabulary")).toList();
+        this.vocabulary = JSON.<String>streamOf(json.getArray("vocabulary")).toList();
         this.ngrams = json.getInt("ngrams");
-        this.lexicon = JSON.<String>Stream(json.getJSONArray("lexicon")).toList();
-        this.tags = JSON.<String>Stream(json.getJSONArray("tags")).toList();
-        this.requiredTags = JSON.<String>Stream(json.getJSONArray("requiredTags")).toList();
+        this.lexicon = JSON.<String>streamOf(json.getArray("lexicon")).toList();
+        this.tags = JSON.<String>streamOf(json.getArray("tags")).toList();
+        this.requiredTags = JSON.<String>streamOf(json.getArray("requiredTags")).toList();
 
         this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon) : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
@@ -139,15 +138,18 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
         if (this.tagClassifierFunc == null) {
             return this.tags.get(0);
         }
+        final double[] entityInput = predictSet.subList(0, IN_ENTITY_SIZE).stream().mapToDouble(x -> x).toArray();
+        final double[] nameInput = predictSet.subList(IN_ENTITY_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE).stream().mapToDouble(x -> x).toArray();
+        final double[] contextInput = predictSet.subList(IN_ENTITY_SIZE + IN_NAME_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE + IN_CONTEXT_SIZE).stream().mapToDouble(x -> x).toArray();
         final HashMap<String, org.tensorflow.Tensor> inputs = new HashMap<>() {
             {
-                put("entity_input", ListIntegertoTFloat32(predictSet, 0, IN_ENTITY_SIZE));
-                put("name_input", ListIntegertoTFloat32(predictSet, IN_ENTITY_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE));
-                put("context_input", ListIntegertoTFloat32(predictSet, IN_ENTITY_SIZE + IN_NAME_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE + IN_CONTEXT_SIZE));
+                put("entity_input", Tensor.of(entityInput).reshape(1, -1).toTFloat32());
+                put("name_input", Tensor.of(nameInput).reshape(1, -1).toTFloat32());
+                put("context_input", Tensor.of(contextInput).reshape(1, -1).toTFloat32());
             }
         };
         final org.tensorflow.Result result = this.tagClassifierFunc.call(inputs);
-        return this.tags.get((int) TFloat32ToShujuTensor((TFloat32) result.get("tag_output").get()).argmax(0).item(0));
+        return this.tags.get((int) Tensor.of((TFloat32) result.get("tag_output").get()).argmax(1).item(0));
     }
 
     @Override
@@ -170,17 +172,17 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
         }
 
         final Path trainPath = Files.createTempDirectory("any2json").toAbsolutePath();
-        final JSONArray list1 = JSON.newJSONArray();
+        final JSONArray list1 = JSON.newArray();
         trainingSet.forEach(x -> {
-            list1.append(JSON.parseJSONArray(x.toString()));
+            list1.append(JSON.arrayOf(x.toString()));
         });
-        JSON.saveJSONArray(list1, trainPath.resolve("training.json").toString());
+        JSON.saveArray(list1, trainPath.resolve("training.json"));
 
-        final JSONArray list2 = JSON.newJSONArray();
+        final JSONArray list2 = JSON.newArray();
         validationSet.forEach(x -> {
-            list2.append(JSON.parseJSONArray(x.toString()));
+            list2.append(JSON.arrayOf(x.toString()));
         });
-        JSON.saveJSONArray(list2, trainPath.resolve("validation.json").toString());
+        JSON.saveArray(list2, trainPath.resolve("validation.json"));
 
         final boolean isOsLinux = System.getProperty("os.name").contains("Linux");
         final String run_script = isOsLinux ? "run.sh" : "run.bat";
@@ -199,11 +201,11 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
     @Override
     public JSONObject toJSON() {
         final JSONObject result =super.toJSON();
-        result.setJSONArray("vocabulary", JSON.<String>toJSONArray(this.vocabulary));
+        result.setArray("vocabulary", JSON.arrayOf(this.vocabulary));
         result.setInt("ngram", this.ngrams);
-        result.setJSONArray("lexicon", JSON.<String>toJSONArray(this.lexicon));
-        result.setJSONArray("tags", JSON.<String>toJSONArray(this.tags));
-        result.setJSONArray("requiredTags", JSON.<String>toJSONArray(this.requiredTags));
+        result.setArray("lexicon", JSON.arrayOf(this.lexicon));
+        result.setArray("tags", JSON.arrayOf(this.tags));
+        result.setArray("requiredTags", JSON.arrayOf(this.requiredTags));
         result.setString("model", this.modelToJSONString(this.modelPath));
         return result;
     }
@@ -270,21 +272,5 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
         } catch (IOException | InterruptedException x) {
             throw new RuntimeException(x);
         }
-    }
-
-    private TFloat32 ListIntegertoTFloat32(final List<Integer> l, final int a, final int b) {
-        final float[][] result = new float[1][b - a];
-        for (int i = a, j = 0; i < b; i++, j++) {
-            result[0][j] = (float) l.get(i);
-        }
-        return TFloat32.tensorOf(StdArrays.ndCopyOf(result));
-    }
-
-    private Tensor TFloat32ToShujuTensor(final TFloat32 t) {
-        final float[] result = new float[(int) t.shape().size()];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = t.getFloat(0, i);
-        }
-        return Tensor.of(result);
     }
 }
