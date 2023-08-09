@@ -48,13 +48,13 @@ public class LayexClassifier implements ILayoutClassifier
     }
 
     public LayexClassifier(final JSONObject json) {
-        this.entities = JSON.<String>Stream(json.getJSONArray("entities")).toList();
-        this.patterns = JSON.<JSONObject>Stream(json.getJSONArray("patterns"))
+        this.entities = JSON.<String>streamOf(json.getArray("entities")).toList();
+        this.patterns = JSON.<JSONObject>streamOf(json.getArray("patterns"))
                 .collect(Collectors.toMap(x -> x.getString("key"), x -> x.getString("value")));
-        this.filters = JSON.<String>Stream(json.getJSONArray("filters")).toList();
-        this.pivotEntityList = JSON.<String>Stream(json.getJSONArray("pivotEntityList")).toList();
-        this.metaLayexes = JSON.<String>Stream(json.getJSONArray("metaLayexes")).toList();
-        this.dataLayexes = JSON.<String>Stream(json.getJSONArray("dataLayexes")).toList();
+        this.filters = JSON.<String>streamOf(json.getArray("filters")).toList();
+        this.pivotEntityList = JSON.<String>streamOf(json.getArray("pivotEntityList")).toList();
+        this.metaLayexes = JSON.<String>streamOf(json.getArray("metaLayexes")).toList();
+        this.dataLayexes = JSON.<String>streamOf(json.getArray("dataLayexes")).toList();
 
         this.comparer = new RegexComparer(this.patterns);
 
@@ -134,13 +134,13 @@ public class LayexClassifier implements ILayoutClassifier
 
     @Override
     public JSONObject toJSON() {
-        final JSONObject result = JSON.newJSONObject();
-        result.setJSONArray("entities", JSON.<String>toJSONArray(this.entities));
-        result.setJSONArray("patterns", JSON.<String>toJSONArray(this.patterns));
-        result.setJSONArray("filters", JSON.<String>toJSONArray(this.filters));
-        result.setJSONArray("pivotEntityList", JSON.<String>toJSONArray(this.pivotEntityList));
-        result.setJSONArray("metaLayexes", JSON.<String>toJSONArray(this.metaLayexes));
-        result.setJSONArray("dataLayexes", JSON.<String>toJSONArray(this.dataLayexes));
+        final JSONObject result = JSON.newObject();
+        result.setArray("entities", JSON.arrayOf(this.entities));
+        result.setArray("patterns", JSON.arrayOf(this.patterns));
+        result.setArray("filters", JSON.arrayOf(this.filters));
+        result.setArray("pivotEntityList", JSON.arrayOf(this.pivotEntityList));
+        result.setArray("metaLayexes", JSON.arrayOf(this.metaLayexes));
+        result.setArray("dataLayexes", JSON.arrayOf(this.dataLayexes));
         return result;
     }
 }
