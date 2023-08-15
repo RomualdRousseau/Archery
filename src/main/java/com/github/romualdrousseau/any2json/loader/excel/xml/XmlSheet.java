@@ -21,7 +21,7 @@ class XmlSheet implements SheetStore {
     @Override
     public int getLastColumnNum(int rowIndex) {
         Row row = this.sheet.getRowAt(rowIndex + 1);
-        return row.maxCellIndex();
+        return row.maxCellIndex() - 1;
     }
 
     @Override
