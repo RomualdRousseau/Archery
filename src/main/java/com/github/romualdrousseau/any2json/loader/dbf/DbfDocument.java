@@ -51,7 +51,7 @@ public class DbfDocument extends BaseDocument {
 
     @Override
     public Sheet getSheetAt(final int i) {
-        return new BaseSheet(this.sheet.getName(), this.sheet);
+        return new BaseSheet(this, this.sheet.getName(), this.sheet);
     }
 
     private boolean openWithEncoding(final File dbfFile, final String encoding) {
