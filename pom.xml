@@ -120,6 +120,18 @@
             <version>2.20.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.romualdrousseau</groupId>
+            <artifactId>any2json-layex-parser</artifactId>
+            <version>2.32-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.romualdrousseau</groupId>
+            <artifactId>any2json-net-classifier</artifactId>
+            <version>2.32-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
