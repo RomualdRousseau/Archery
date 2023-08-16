@@ -55,7 +55,7 @@ public class NetTagClassifier implements TagClassifier {
         this.ngrams = ngrams;
         this.lexicon = lexicon;
 
-        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon) : new NgramTokenizer(this.ngrams);
+        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, 1) : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
 
         this.modelPath = modelPath;
@@ -75,7 +75,7 @@ public class NetTagClassifier implements TagClassifier {
         this.ngrams = model.toJSON().getInt("ngrams");
         this.lexicon = JSON.<String>streamOf(model.toJSON().getArray("lexicon")).toList();
 
-        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon) : new NgramTokenizer(this.ngrams);
+        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, 1) : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
 
         this.modelPath = this.JSONStringToModel(model.toJSON().getString("model"));
