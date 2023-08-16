@@ -50,7 +50,7 @@ public class XmlDocument extends BaseDocument {
     }
 
     public Sheet getSheetAt(final int i) {
-        return new BaseSheet(this.sheets.get(i).getName(), this.sheets.get(i));
+        return new BaseSheet(this, this.sheets.get(i).getName(), this.sheets.get(i));
     }
 
     private boolean openWithEncoding(final File excelFile, final String encoding) {

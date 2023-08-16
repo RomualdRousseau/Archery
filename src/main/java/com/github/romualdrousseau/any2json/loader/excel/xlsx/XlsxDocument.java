@@ -87,7 +87,7 @@ public class XlsxDocument extends BaseDocument {
 
     @Override
     public Sheet getSheetAt(final int i) {
-        return new BaseSheet(sheets.get(i).getName(), sheets.get(i).ensureDataLoaded());
+        return new BaseSheet(this, sheets.get(i).getName(), sheets.get(i).ensureDataLoaded());
     }
 
     private OPCPackage opcPackage;
