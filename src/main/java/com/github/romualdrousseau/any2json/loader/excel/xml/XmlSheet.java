@@ -13,7 +13,6 @@ class XmlSheet implements SheetStore {
         this.sheet = sheet;
     }
 
-    @Override
     public String getName() {
         return this.sheet.getName();
     }

@@ -59,7 +59,6 @@ public class XlsxSheet implements SheetStore {
         return this;
     }
 
-    @Override
     public String getName() {
         return this.name;
     }
