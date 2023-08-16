@@ -31,7 +31,6 @@ public class XlsSheet implements SheetStore {
         }
     }
 
-    @Override
     public String getName() {
         return this.sheet.getSheetName();
     }

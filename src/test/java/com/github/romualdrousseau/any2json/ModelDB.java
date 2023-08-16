@@ -5,12 +5,11 @@ import java.net.URL;
 import java.nio.file.Path;
 
 import com.github.romualdrousseau.shuju.json.JSON;
-import com.github.romualdrousseau.shuju.json.JSONObject;
 
 public class ModelDB {
 
-    public static JSONObject createConnection(final String modelName) {
-        return JSON.loadObject(ModelDB.getResourcePath(String.format("/data/%s.json", modelName)));
+    public static Model createConnection(final String modelName) {
+        return new Model(JSON.loadObject(ModelDB.getResourcePath(String.format("/data/%s.json", modelName))));
     }
 
     private static Path getResourcePath(final String resourceName) {
