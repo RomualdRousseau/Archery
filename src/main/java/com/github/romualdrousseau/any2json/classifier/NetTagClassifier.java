@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import org.tensorflow.SavedModelBundle;
@@ -18,7 +17,8 @@ import org.tensorflow.SessionFunction;
 import org.tensorflow.Signature;
 import org.tensorflow.types.TFloat32;
 
-import com.github.romualdrousseau.any2json.ITagClassifier;
+import com.github.romualdrousseau.any2json.TagClassifier;
+import com.github.romualdrousseau.any2json.Model;
 import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.shuju.json.JSON;
 import com.github.romualdrousseau.shuju.json.JSONArray;
@@ -29,19 +29,17 @@ import com.github.romualdrousseau.shuju.preprocessing.hasher.VocabularyHasher;
 import com.github.romualdrousseau.shuju.preprocessing.tokenizer.NgramTokenizer;
 import com.github.romualdrousseau.shuju.preprocessing.tokenizer.ShingleTokenizer;
 
-public class LayexAndNetClassifier extends LayexClassifier implements ITagClassifier<List<Integer>> {
+public class NetTagClassifier implements TagClassifier {
 
     private static final int IN_ENTITY_SIZE = 10;
     private static final int IN_NAME_SIZE = 10;
     private static final int IN_CONTEXT_SIZE = 100;
     private static final int OUT_TAG_SIZE = 64;
 
+    private final Model model;
     private final List<String> vocabulary;
     private final int ngrams;
-    private final int wordMinSize;
     private final List<String> lexicon;
-    private final List<String> tags;
-    private final List<String> requiredTags;
     private final Path modelPath;
 
     private final Text.ITokenizer tokenizer;
@@ -51,20 +49,13 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
     private final SessionFunction tagClassifierFunc;
     private final boolean modelIsTemp;
 
-    public LayexAndNetClassifier(final List<String> vocabulary, final int ngrams, final int wordMinSize, final List<String> lexicon,
-            final List<String> entities, final Map<String, String> patterns, final List<String> filters,
-            final List<String> tags, final List<String> requiredTags, final List<String> pivotEntityList,
-            final List<String> metaLayexes, final List<String> dataLayexes, final Path modelPath) {
-        super(entities, patterns, filters, pivotEntityList, metaLayexes, dataLayexes);
-
+    public NetTagClassifier(final Model model, final List<String> vocabulary, final int ngrams, final List<String> lexicon, final Path modelPath) {
+        this.model = model;
         this.vocabulary = vocabulary;
         this.ngrams = ngrams;
-        this.wordMinSize = wordMinSize;
         this.lexicon = lexicon;
-        this.tags = tags;
-        this.requiredTags = requiredTags;
 
-        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, this.wordMinSize) : new NgramTokenizer(this.ngrams);
+        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon) : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
 
         this.modelPath = modelPath;
@@ -78,20 +69,16 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
         this.modelIsTemp = false;
     }
 
-    public LayexAndNetClassifier(final JSONObject json) {
-        super(json);
+    public NetTagClassifier(final Model model) {
+        this.model = model;
+        this.vocabulary = JSON.<String>streamOf(model.toJSON().getArray("vocabulary")).toList();
+        this.ngrams = model.toJSON().getInt("ngrams");
+        this.lexicon = JSON.<String>streamOf(model.toJSON().getArray("lexicon")).toList();
 
-        this.vocabulary = JSON.<String>streamOf(json.getArray("vocabulary")).toList();
-        this.ngrams = json.getInt("ngrams");
-        this.wordMinSize = json.getInt("wordMinSize");
-        this.lexicon = JSON.<String>streamOf(json.getArray("lexicon")).toList();
-        this.tags = JSON.<String>streamOf(json.getArray("tags")).toList();
-        this.requiredTags = JSON.<String>streamOf(json.getArray("requiredTags")).toList();
-
-        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, this.wordMinSize) : new NgramTokenizer(this.ngrams);
+        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon) : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
 
-        this.modelPath = this.JSONStringToModel(json.getString("model"));
+        this.modelPath = this.JSONStringToModel(model.toJSON().getString("model"));
         if (modelPath.toFile().exists()) {
             this.tagClassifierModel = SavedModelBundle.load(modelPath.toString(), "serve");
             this.tagClassifierFunc = this.tagClassifierModel.function(Signature.DEFAULT_KEY);
@@ -113,22 +100,24 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
     }
 
     @Override
+    public String predict(final String name, final List<String> entities, final List<String> context) {
+        return this.predict(this.buildPredictSet(name, entities, context));
+    }
+
     public List<String> getTagList() {
-        return this.tags;
+        return this.model.getTagList();
     }
 
-    @Override
     public List<String> getRequiredTagList() {
-        return this.requiredTags;
+        return this.model.getRequiredTagList();
     }
 
-    @Override
     public List<Integer> buildPredictSet(final String name, final List<String> entities, final List<String> context) {
-        final List<Integer> part1 = Text.to_categorical(entities, this.getEntityList());
-        final List<Integer> part2 = Text.one_hot(name, this.getFilters(), this.tokenizer, this.hasher);
+        final List<Integer> part1 = Text.to_categorical(entities, this.model.getEntityList());
+        final List<Integer> part2 = Text.one_hot(name, this.model.getFilters(), this.tokenizer, this.hasher);
         final List<Integer> part3 = context.stream()
                 .filter(x -> !x.equals(name))
-                .flatMap(x -> Text.one_hot(x, this.getFilters(), this.tokenizer, this.hasher).stream())
+                .flatMap(x -> Text.one_hot(x, this.model.getFilters(), this.tokenizer, this.hasher).stream())
                 .distinct().sorted().toList();
         return Stream.concat(Stream.concat(
                 Text.pad_sequence(part1, IN_ENTITY_SIZE).stream().limit(IN_ENTITY_SIZE),
@@ -136,10 +125,9 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
                 Text.pad_sequence(part3, IN_CONTEXT_SIZE).stream().limit(IN_CONTEXT_SIZE)).toList();
     }
 
-    @Override
     public String predict(final List<Integer> predictSet) {
         if (this.tagClassifierFunc == null) {
-            return this.tags.get(0);
+            return this.model.getTagList().get(0);
         }
         final double[] entityInput = predictSet.subList(0, IN_ENTITY_SIZE).stream().mapToDouble(x -> x).toArray();
         final double[] nameInput = predictSet.subList(IN_ENTITY_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE).stream().mapToDouble(x -> x).toArray();
@@ -152,18 +140,16 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
             }
         };
         final org.tensorflow.Result result = this.tagClassifierFunc.call(inputs);
-        return this.tags.get((int) Tensor.of((TFloat32) result.get("tag_output").get()).argmax(1).item(0));
+        return this.model.getTagList().get((int) Tensor.of((TFloat32) result.get("tag_output").get()).argmax(1).item(0));
     }
 
-    @Override
     public AbstractMap.SimpleImmutableEntry<List<Integer>, List<Integer>> buildTrainingSet(
             final String name, final List<String> entities, final List<String> context, final String label) {
-        final List<Integer> key = Text.to_categorical(label, this.tags);
+        final List<Integer> key = Text.to_categorical(label, this.model.getTagList());
         final List<Integer> value = this.buildPredictSet(name, entities, context);
         return new AbstractMap.SimpleImmutableEntry<>(Text.pad_sequence(key, OUT_TAG_SIZE), value);
     }
 
-    @Override
     public Process fit(final List<List<Integer>> trainingSet, final List<List<Integer>> validationSet)
             throws IOException {
         final Path kernelsPath = Path.of(System.getProperty("user.home"), "/.local/share/any2json/kernels");
@@ -201,15 +187,11 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
         return processBuilder.start();
     }
 
-    @Override
     public JSONObject toJSON() {
-        final JSONObject result =super.toJSON();
+        final JSONObject result = this.model.toJSON();
         result.setArray("vocabulary", JSON.arrayOf(this.vocabulary));
         result.setInt("ngram", this.ngrams);
-        result.setInt("wordminSize", this.wordMinSize);
         result.setArray("lexicon", JSON.arrayOf(this.lexicon));
-        result.setArray("tags", JSON.arrayOf(this.tags));
-        result.setArray("requiredTags", JSON.arrayOf(this.requiredTags));
         result.setString("model", this.modelToJSONString(this.modelPath));
         return result;
     }
@@ -241,7 +223,7 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
             if (destPath.toFile().exists()) {
                 return;
             }
-            final Path sourcePath = Path.of(LayexAndNetClassifier.class.getResource("/kernels").toURI());
+            final Path sourcePath = Path.of(NetTagClassifier.class.getResource("/kernels").toURI());
             if (!sourcePath.toFile().isDirectory()) {
                 return;
             }
