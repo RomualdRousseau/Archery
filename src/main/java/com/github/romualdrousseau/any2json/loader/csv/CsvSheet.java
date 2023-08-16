@@ -20,7 +20,6 @@ class CsvSheet implements SheetStore, Closeable {
         this.rows.close();
     }
 
-    @Override
     public String getName() {
         return this.name;
     }

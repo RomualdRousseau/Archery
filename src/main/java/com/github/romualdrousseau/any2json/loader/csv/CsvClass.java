@@ -1,9 +1,9 @@
 package com.github.romualdrousseau.any2json.loader.csv;
 
 import com.github.romualdrousseau.any2json.Document;
-import com.github.romualdrousseau.any2json.IDocumentClass;
+import com.github.romualdrousseau.any2json.DocumentClass;
 
-public class CsvClass implements IDocumentClass
+public class CsvClass implements DocumentClass
 {
     public Priority getPriority() {
         return Priority.HIGH;
