@@ -10,22 +10,21 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
-import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
-import com.github.romualdrousseau.any2json.intelli.parser.sheet.StructuredSheetParser;
+import com.github.romualdrousseau.any2json.base.BaseDocument;
+import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.shuju.util.StringUtils;
 import com.linuxense.javadbf.DBFField;
 import com.linuxense.javadbf.DBFReader;
 
-public class DbfDocument implements Document {
+public class DbfDocument extends BaseDocument {
 
     public static final List<String> EXTENSIONS = List.of(".dbf");
     private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
-    public boolean open(final File dbfFile, final String encoding, final String password, final boolean wellFormed) {
+    public boolean open(final File dbfFile, final String encoding, final String password) {
 
         if (EXTENSIONS.stream().filter(x -> dbfFile.getName().toLowerCase().endsWith(x)).findAny().isEmpty()) {
             return false;
@@ -52,7 +51,7 @@ public class DbfDocument implements Document {
 
     @Override
     public Sheet getSheetAt(final int i) {
-        return new IntelliSheet(this.sheet, new StructuredSheetParser());
+        return new BaseSheet(this.sheet.getName(), this.sheet);
     }
 
     private boolean openWithEncoding(final File dbfFile, final String encoding) {
