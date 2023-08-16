@@ -62,7 +62,7 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
         this.tags = tags;
         this.requiredTags = requiredTags;
 
-        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon) : new NgramTokenizer(this.ngrams);
+        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, 1) : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
 
         this.modelPath = modelPath;
@@ -85,7 +85,7 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
         this.tags = JSON.<String>streamOf(json.getArray("tags")).toList();
         this.requiredTags = JSON.<String>streamOf(json.getArray("requiredTags")).toList();
 
-        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon) : new NgramTokenizer(this.ngrams);
+        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, 1) : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
 
         this.modelPath = this.JSONStringToModel(json.getString("model"));
