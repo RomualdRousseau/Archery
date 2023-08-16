@@ -70,7 +70,7 @@ public class XlsDocument extends BaseDocument {
     }
 
     public Sheet getSheetAt(final int i) {
-        return new BaseSheet(this.sheets.get(i).getName(), this.sheets.get(i));
+        return new BaseSheet(this, this.sheets.get(i).getName(), this.sheets.get(i));
     }
 
     private final ArrayList<XlsSheet> sheets = new ArrayList<XlsSheet>();
