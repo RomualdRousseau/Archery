@@ -56,6 +56,29 @@ public class AppTest {
         }
     }
 
+    /**
+     * Rigorous Test :-)
+     */
+    @Test
+    public void testReadWithIntelliLayexWithRecipe() {
+        final File file = this.getResourceFile("HongKong - ZUELLIG - Sales - 20220305.xlsx");
+
+        final Model model = ModelDB.createConnection("sales-english");
+
+        try (final Document doc = DocumentFactory.createInstance(file, "UTF-8")
+                .setModel(model)
+                .setRecipe(String.join("\n",
+                        "sheet.dropRowsWhenFillRatioLessThan(0.0002)"))
+                .setHints(EnumSet.of(Document.Hint.INTELLI_LAYOUT))) {
+            doc.sheets().forEach(s -> s.getTable().ifPresent(t -> t.headers().forEach(h -> System.out.print(h.getTag().getValue() + " "))));
+            System.out.println();
+            doc.sheets().forEach(s -> s.getTable().ifPresent(t -> StreamSupport.stream(t.rows().spliterator(), false).limit(5).forEach(r -> {
+                r.cells().forEach(c -> System.out.print(c.getValue() + " "));
+                System.out.println();
+            })));
+        }
+    }
+
     private File getResourceFile(String resourceName) {
         try {
             URL resourceUrl = this.getClass().getResource(String.format("/data/%s", resourceName));
