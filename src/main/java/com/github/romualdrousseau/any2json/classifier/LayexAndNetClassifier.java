@@ -38,6 +38,7 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
 
     private final List<String> vocabulary;
     private final int ngrams;
+    private final int wordMinSize;
     private final List<String> lexicon;
     private final List<String> tags;
     private final List<String> requiredTags;
@@ -50,7 +51,7 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
     private final SessionFunction tagClassifierFunc;
     private final boolean modelIsTemp;
 
-    public LayexAndNetClassifier(final List<String> vocabulary, final int ngrams, final List<String> lexicon,
+    public LayexAndNetClassifier(final List<String> vocabulary, final int ngrams, final int wordMinSize, final List<String> lexicon,
             final List<String> entities, final Map<String, String> patterns, final List<String> filters,
             final List<String> tags, final List<String> requiredTags, final List<String> pivotEntityList,
             final List<String> metaLayexes, final List<String> dataLayexes, final Path modelPath) {
@@ -58,11 +59,12 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
 
         this.vocabulary = vocabulary;
         this.ngrams = ngrams;
+        this.wordMinSize = wordMinSize;
         this.lexicon = lexicon;
         this.tags = tags;
         this.requiredTags = requiredTags;
 
-        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, 1) : new NgramTokenizer(this.ngrams);
+        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, this.wordMinSize) : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
 
         this.modelPath = modelPath;
@@ -81,11 +83,12 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
 
         this.vocabulary = JSON.<String>streamOf(json.getArray("vocabulary")).toList();
         this.ngrams = json.getInt("ngrams");
+        this.wordMinSize = json.getInt("wordMinSize");
         this.lexicon = JSON.<String>streamOf(json.getArray("lexicon")).toList();
         this.tags = JSON.<String>streamOf(json.getArray("tags")).toList();
         this.requiredTags = JSON.<String>streamOf(json.getArray("requiredTags")).toList();
 
-        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, 1) : new NgramTokenizer(this.ngrams);
+        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, this.wordMinSize) : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
 
         this.modelPath = this.JSONStringToModel(json.getString("model"));
@@ -203,6 +206,7 @@ public class LayexAndNetClassifier extends LayexClassifier implements ITagClassi
         final JSONObject result =super.toJSON();
         result.setArray("vocabulary", JSON.arrayOf(this.vocabulary));
         result.setInt("ngram", this.ngrams);
+        result.setInt("wordminSize", this.wordMinSize);
         result.setArray("lexicon", JSON.arrayOf(this.lexicon));
         result.setArray("tags", JSON.arrayOf(this.tags));
         result.setArray("requiredTags", JSON.arrayOf(this.requiredTags));

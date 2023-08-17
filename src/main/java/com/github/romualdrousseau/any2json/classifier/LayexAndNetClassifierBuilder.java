@@ -28,6 +28,11 @@ public class LayexAndNetClassifierBuilder implements IClassifierBuilder {
         return this;
     }
 
+    public LayexAndNetClassifierBuilder setWordMinSize(final int wordMinSize) {
+        this.wordMinSize = wordMinSize;
+        return this;
+    }
+
     public LayexAndNetClassifierBuilder setLexicon(final List<String> lexicon) {
         this.lexicon = lexicon;
         return this;
@@ -81,7 +86,7 @@ public class LayexAndNetClassifierBuilder implements IClassifierBuilder {
     public ClassifierFactory build() {
         final LayexAndNetClassifier classifier;
         if (model == null) {
-            classifier = new LayexAndNetClassifier(vocabulary, ngrams, lexicon, entityList, patternList, filters, tagList,
+            classifier = new LayexAndNetClassifier(vocabulary, ngrams, wordMinSize, lexicon, entityList, patternList, filters, tagList,
                     requiredTagList, pivotEntityList, metaLayexes, dataLayexes, modelPath);
         } else {
             classifier = new LayexAndNetClassifier(model);
@@ -94,6 +99,7 @@ public class LayexAndNetClassifierBuilder implements IClassifierBuilder {
     private JSONObject model;
     private List<String> vocabulary;
     private int ngrams;
+    private int wordMinSize;
     private List<String> lexicon;
     private List<String> entityList;
     private Map<String, String> patternList;
