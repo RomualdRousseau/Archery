@@ -29,6 +29,10 @@ public class CompositeTable extends BaseTable {
 
     @Override
     public void updateHeaderTags() {
+        if (!this.getSheet().getClassifierFactory().getTagClassifier().isPresent()) {
+            return;
+        }
+
         for (Header header : this.headers()) {
             ((IntelliHeader) header).resetTag();
         }
