@@ -163,7 +163,7 @@ public class LayexTableParser implements TableParser {
     private void parseDataTable(final DataTable table, final TableMatcher matcher, final int rowOffset, final DataTableParser parser) {
         matcher.match(new TableLexer(table, rowOffset), parser);
         if (parser.getSplitRows().size() > 0) {
-            table.adjustLastRow(table.getFirstRow() + parser.getSplitRows().get(0) - 1, true);
+            table.adjustLastRow(table.getFirstRow() + parser.getSplitRows().get(0) - 1);
         }
         if (rowOffset > 0) {
             table.setFirstRowOffset(table.getFirstRowOffset() + rowOffset);
