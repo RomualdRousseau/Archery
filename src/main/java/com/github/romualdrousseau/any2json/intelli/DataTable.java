@@ -25,7 +25,7 @@ public class DataTable extends CompositeTable {
         this.dataTableParser = dataTableParserFactory.getInstance(this);
         layex.match(new TableLexer(table, rowOffset), this.dataTableParser);
         if (this.dataTableParser.getSplitRows().size() > 0) {
-            this.adjustLastRow(table.getFirstRow() + this.dataTableParser.getSplitRows().get(0) - 1, true);
+            this.adjustLastRow(table.getFirstRow() + this.dataTableParser.getSplitRows().get(0) - 1);
         }
         if (rowOffset > 0) {
             this.setFirstRowOffset(this.getFirstRowOffset() + rowOffset);

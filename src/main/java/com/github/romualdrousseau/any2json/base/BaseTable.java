@@ -159,6 +159,11 @@ public abstract class BaseTable implements Table, Visitable {
         this.lastRowOffset = offset;
     }
 
+    public void adjustLastRow(int lastRow) {
+        this.lastRowOffset = -1;
+        this.lastRow = lastRow;
+    }
+
     public int getHeaderRowOffset() {
         return this.headerRowOffset;
     }
@@ -197,11 +202,6 @@ public abstract class BaseTable implements Table, Visitable {
             }
         }
         return result;
-    }
-
-    protected void adjustLastRow(int lastRow, boolean withFooter) {
-        this.lastRowOffset = withFooter ? -1 : 0; // TODO
-        this.lastRow = lastRow;
     }
 
     private final RowCache cachedRows;
