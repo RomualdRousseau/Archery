@@ -63,7 +63,8 @@ public class CompositeTable extends BaseTable {
 
     public void prepareHeaders() {
         this.setLoadCompleted(true); // Give chance to pivot header value to update their name
-        if (this.getSheet().getClassifierFactory().getTagClassifier().isPresent()) {
+        if (this.getSheet().getClassifierFactory().getTagClassifier().isPresent()
+                || this.getSheet().getClassifierFactory().getLayoutClassifier().isPresent()) {
             for (int i = 0; i < this.getNumberOfHeaders(); i++) {
                 this.setHeader(i, new IntelliHeader((CompositeHeader) this.getHeaderAt(i)));
             }
