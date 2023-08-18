@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.base.BaseDocument;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
+import com.github.romualdrousseau.any2json.parser.sheet.StructuredSheetParser;
 import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.shuju.types.Tensor;
 import com.github.romualdrousseau.shuju.util.StringUtils;
@@ -51,6 +52,12 @@ public class CsvDocument extends BaseDocument {
     @Override
     public Sheet getSheetAt(final int i) {
         return new BaseSheet(this, this.sheet.getName(), this.sheet);
+    }
+
+    @Override
+    protected void updateParsersAndClassifiers() {
+        super.updateParsersAndClassifiers();
+        this.setSheetParser(new StructuredSheetParser());
     }
 
     private boolean openWithEncoding(final File txtFile, final String encoding) {

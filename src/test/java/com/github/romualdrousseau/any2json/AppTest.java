@@ -37,6 +37,27 @@ public class AppTest {
      * Rigorous Test :-)
      */
     @Test
+    public void testReadWithoutIntelliTagAndWithPivot() {
+        final File file = this.getResourceFile("Bulgaria - IQVIA NATIONAL Other pharmacy - Product Sales - 202306.csv");
+
+        final Model model = ModelDB.createConnection("sales-english");
+
+        try (final Document doc = DocumentFactory.createInstance(file, "UTF-8")
+                .setModel(model)
+                .setHints(EnumSet.of(Document.Hint.INTELLI_LAYOUT))) {
+            doc.sheets().forEach(s -> s.getTable().ifPresent(t -> t.headers().forEach(h -> System.out.print(h.getTag().getValue() + " "))));
+            System.out.println();
+            doc.sheets().forEach(s -> s.getTable().ifPresent(t -> StreamSupport.stream(t.rows().spliterator(), false).limit(5).forEach(r -> {
+                r.cells().forEach(c -> System.out.print(c.getValue() + " "));
+                System.out.println();
+            })));
+        }
+    }
+
+    /**
+     * Rigorous Test :-)
+     */
+    @Test
     public void testReadWithIntelliTag() {
         final File file = this.getResourceFile("Singapore - ZUELLIG - Sales - 202101.csv");
 
