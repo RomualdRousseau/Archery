@@ -46,7 +46,7 @@ public class CsvDocument implements Document {
                 this.sheet = null;
             }
         } catch (final IOException x) {
-            throw new RuntimeException(x);
+            // throw new RuntimeException(x);
         }
     }
 
