@@ -13,6 +13,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.base.BaseDocument;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
@@ -41,16 +42,27 @@ public class XmlDocument extends BaseDocument {
         }
     }
 
+    @Override
     public void close() {
         this.sheets.clear();
     }
 
+    @Override
     public int getNumberOfSheets() {
         return this.sheets.size();
     }
 
+    @Override
     public Sheet getSheetAt(final int i) {
         return new BaseSheet(this, this.sheets.get(i).getName(), this.sheets.get(i));
+    }
+
+    @Override
+    public void updateParsersAndClassifiers() {
+        if(this.getHints().contains(Document.Hint.INTELLI_TAG)) {
+            this.getHints().add(Document.Hint.INTELLI_LAYOUT);
+        }
+        super.updateParsersAndClassifiers();
     }
 
     private boolean openWithEncoding(final File excelFile, final String encoding) {

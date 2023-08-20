@@ -7,6 +7,7 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.base.BaseDocument;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
@@ -88,6 +89,14 @@ public class XlsxDocument extends BaseDocument {
     @Override
     public Sheet getSheetAt(final int i) {
         return new BaseSheet(this, sheets.get(i).getName(), sheets.get(i).ensureDataLoaded());
+    }
+
+    @Override
+    public void updateParsersAndClassifiers() {
+        if(this.getHints().contains(Document.Hint.INTELLI_TAG)) {
+            this.getHints().add(Document.Hint.INTELLI_LAYOUT);
+        }
+        super.updateParsersAndClassifiers();
     }
 
     private OPCPackage opcPackage;

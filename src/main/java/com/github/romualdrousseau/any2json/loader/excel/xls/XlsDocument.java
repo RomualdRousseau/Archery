@@ -13,6 +13,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import com.github.romualdrousseau.any2json.base.BaseDocument;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.shuju.strings.StringUtils;
+import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 
 public class XlsDocument extends BaseDocument {
@@ -61,16 +62,27 @@ public class XlsDocument extends BaseDocument {
         }
     }
 
+    @Override
     public void close() {
         this.sheets.clear();
     }
 
+    @Override
     public int getNumberOfSheets() {
         return this.sheets.size();
     }
 
+    @Override
     public Sheet getSheetAt(final int i) {
         return new BaseSheet(this, this.sheets.get(i).getName(), this.sheets.get(i));
+    }
+
+    @Override
+    public void updateParsersAndClassifiers() {
+        if(this.getHints().contains(Document.Hint.INTELLI_TAG)) {
+            this.getHints().add(Document.Hint.INTELLI_LAYOUT);
+        }
+        super.updateParsersAndClassifiers();
     }
 
     private final ArrayList<XlsSheet> sheets = new ArrayList<XlsSheet>();
