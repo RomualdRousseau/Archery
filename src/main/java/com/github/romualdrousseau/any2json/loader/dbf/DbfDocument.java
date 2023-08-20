@@ -13,6 +13,8 @@ import java.util.List;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.base.BaseDocument;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
+import com.github.romualdrousseau.any2json.parser.sheet.StructuredSheetParser;
+import com.github.romualdrousseau.any2json.parser.table.SimpleTableParser;
 import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.shuju.util.StringUtils;
 import com.linuxense.javadbf.DBFField;
@@ -52,6 +54,13 @@ public class DbfDocument extends BaseDocument {
     @Override
     public Sheet getSheetAt(final int i) {
         return new BaseSheet(this, this.sheet.getName(), this.sheet);
+    }
+
+    @Override
+    protected void updateParsersAndClassifiers() {
+        super.updateParsersAndClassifiers();
+        this.setSheetParser(new StructuredSheetParser());
+        this.setTableParser(new SimpleTableParser());
     }
 
     private boolean openWithEncoding(final File dbfFile, final String encoding) {
