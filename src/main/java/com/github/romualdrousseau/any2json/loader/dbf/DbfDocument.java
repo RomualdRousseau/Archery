@@ -57,7 +57,11 @@ public class DbfDocument extends BaseDocument {
     }
 
     @Override
-    protected void updateParsersAndClassifiers() {
+    public void autoRecipe(final BaseSheet sheet) {
+    }
+
+    @Override
+    public void updateParsersAndClassifiers() {
         super.updateParsersAndClassifiers();
         this.setSheetParser(new StructuredSheetParser());
         this.setTableParser(new SimpleTableParser());
