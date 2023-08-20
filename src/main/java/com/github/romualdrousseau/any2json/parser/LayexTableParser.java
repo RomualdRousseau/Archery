@@ -15,14 +15,14 @@ import com.github.romualdrousseau.any2json.parser.table.DataTableParser;
 import com.github.romualdrousseau.any2json.parser.table.DataTableParserFactory;
 import com.github.romualdrousseau.any2json.parser.table.MetaTableParser;
 import com.github.romualdrousseau.shuju.json.JSON;
-import com.github.romualdrousseau.shuju.json.JSONObject;
 import com.github.romualdrousseau.any2json.layex.Layex;
 import com.github.romualdrousseau.any2json.layex.TableLexer;
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
 
 public class LayexTableParser implements TableParser {
 
-    public LayexTableParser(final List<String> metaLayexes, final List<String> dataLayexes) {
+    public LayexTableParser(final Model model, final List<String> metaLayexes, final List<String> dataLayexes) {
+        this.model = model;
         this.metaLayexes = metaLayexes;
         this.dataLayexes = dataLayexes;
 
@@ -30,9 +30,15 @@ public class LayexTableParser implements TableParser {
         this.dataTableParserFactory = new DataTableGroupSubHeaderParserFactory();
         this.metaMatchers = metaLayexes.stream().map(Layex::new).map(Layex::compile).toList();
         this.dataMatchers = dataLayexes.stream().map(Layex::new).map(Layex::compile).toList();
+
+        // Update the model with the parser parameters
+
+        this.model.toJSON().setArray("metaLayexes", JSON.arrayOf(this.metaLayexes));
+        this.model.toJSON().setArray("dataLayexes", JSON.arrayOf(this.dataLayexes));
     }
 
     public LayexTableParser(final Model model) {
+        this.model = model;
         this.metaLayexes = JSON.<String>streamOf(model.toJSON().getArray("metaLayexes")).toList();
         this.dataLayexes = JSON.<String>streamOf(model.toJSON().getArray("dataLayexes")).toList();
 
@@ -139,13 +145,6 @@ public class LayexTableParser implements TableParser {
         this.dataMatchers = matchers;
     }
 
-    public JSONObject toJSON(final JSONObject root) {
-        final JSONObject result = root;
-        result.setArray("metaLayexes", JSON.arrayOf(this.metaLayexes));
-        result.setArray("dataLayexes", JSON.arrayOf(this.dataLayexes));
-        return result;
-    }
-
     private void splitAllSubTables(final BaseSheet sheet, final BaseTable table, final TableMatcher matcher,
             final DataTableParser parser, final List<DataTable> result) {
         int firstRow = -1;
@@ -172,6 +171,7 @@ public class LayexTableParser implements TableParser {
         table.setLoadCompleted(true);
     }
 
+    private final Model model;
     private final List<String> metaLayexes;
     private final List<String> dataLayexes;
     private boolean disablePivot;
