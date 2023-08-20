@@ -7,13 +7,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.base.BaseDocument;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.parser.sheet.StructuredSheetParser;
+import com.github.romualdrousseau.any2json.transform.op.DropColumnsWhenFillRatioLessThan;
 import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.shuju.types.Tensor;
 import com.github.romualdrousseau.shuju.util.StringUtils;
+
 
 public class CsvDocument extends BaseDocument {
 
@@ -55,7 +58,15 @@ public class CsvDocument extends BaseDocument {
     }
 
     @Override
-    protected void updateParsersAndClassifiers() {
+    public void autoRecipe(final BaseSheet sheet) {
+        super.autoRecipe(sheet);
+        if (this.getHints().contains(Document.Hint.INTELLI_LAYOUT)) {
+            DropColumnsWhenFillRatioLessThan.Apply(sheet, 0);
+        }
+    }
+
+    @Override
+    public void updateParsersAndClassifiers() {
         super.updateParsersAndClassifiers();
         this.setSheetParser(new StructuredSheetParser());
     }
