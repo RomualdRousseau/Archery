@@ -16,7 +16,7 @@ import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.parser.sheet.StructuredSheetParser;
 import com.github.romualdrousseau.any2json.parser.table.SimpleTableParser;
 import com.github.romualdrousseau.any2json.util.Disk;
-import com.github.romualdrousseau.shuju.util.StringUtils;
+import com.github.romualdrousseau.shuju.strings.StringUtils;
 import com.linuxense.javadbf.DBFField;
 import com.linuxense.javadbf.DBFReader;
 
