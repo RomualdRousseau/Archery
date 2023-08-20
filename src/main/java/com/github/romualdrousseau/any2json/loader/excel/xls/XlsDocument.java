@@ -12,8 +12,8 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 import com.github.romualdrousseau.any2json.base.BaseDocument;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
+import com.github.romualdrousseau.shuju.strings.StringUtils;
 import com.github.romualdrousseau.any2json.Sheet;
-import com.github.romualdrousseau.shuju.util.StringUtils;
 
 public class XlsDocument extends BaseDocument {
 
