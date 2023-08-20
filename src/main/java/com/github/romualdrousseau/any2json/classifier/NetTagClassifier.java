@@ -1,15 +1,13 @@
 package com.github.romualdrousseau.any2json.classifier;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.AbstractMap;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import org.tensorflow.SavedModelBundle;
@@ -20,6 +18,7 @@ import org.tensorflow.types.TFloat32;
 import com.github.romualdrousseau.any2json.TagClassifier;
 import com.github.romualdrousseau.any2json.Model;
 import com.github.romualdrousseau.any2json.util.Disk;
+import com.github.romualdrousseau.shuju.commons.PythonManager;
 import com.github.romualdrousseau.shuju.json.JSON;
 import com.github.romualdrousseau.shuju.json.JSONArray;
 import com.github.romualdrousseau.shuju.types.Tensor;
@@ -120,13 +119,11 @@ public class NetTagClassifier implements TagClassifier {
         final double[] entityInput = predictSet.subList(0, IN_ENTITY_SIZE).stream().mapToDouble(x -> x).toArray();
         final double[] nameInput = predictSet.subList(IN_ENTITY_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE).stream().mapToDouble(x -> x).toArray();
         final double[] contextInput = predictSet.subList(IN_ENTITY_SIZE + IN_NAME_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE + IN_CONTEXT_SIZE).stream().mapToDouble(x -> x).toArray();
-        final HashMap<String, org.tensorflow.Tensor> inputs = new HashMap<>() {
-            {
-                put("entity_input", Tensor.of(entityInput).reshape(1, -1).toTFloat32());
-                put("name_input", Tensor.of(nameInput).reshape(1, -1).toTFloat32());
-                put("context_input", Tensor.of(contextInput).reshape(1, -1).toTFloat32());
-            }
-        };
+        final Map<String, org.tensorflow.Tensor> inputs = Map.of(
+            "entity_input", Tensor.of(entityInput).reshape(1, -1).toTFloat32(),
+            "name_input", Tensor.of(nameInput).reshape(1, -1).toTFloat32(),
+            "context_input", Tensor.of(contextInput).reshape(1, -1).toTFloat32()
+        );
         final org.tensorflow.Result result = this.tagClassifierFunc.call(inputs);
         return this.model.getTagList().get((int) Tensor.of((TFloat32) result.get("tag_output").get()).argmax(1).item(0));
     }
@@ -139,14 +136,10 @@ public class NetTagClassifier implements TagClassifier {
     }
 
     public Process fit(final List<List<Integer>> trainingSet, final List<List<Integer>> validationSet)
-            throws IOException {
-        final Path kernelsPath = Path.of(System.getProperty("user.home"), "/.local/share/any2json/kernels");
-        this.installKernels(kernelsPath);
+            throws IOException, InterruptedException {
 
-        final Path kernelPath = kernelsPath.resolve("tf");
-        if (!kernelPath.toFile().exists()) {
-            throw new IOException("Kernel doesn't exist.");
-        }
+        final String dimensions = String.format("%d,%d,%d,%d", IN_ENTITY_SIZE, IN_NAME_SIZE, IN_CONTEXT_SIZE,
+                OUT_TAG_SIZE);
 
         final Path trainPath = Files.createTempDirectory("any2json").toAbsolutePath();
         final JSONArray list1 = JSON.newArray();
@@ -161,18 +154,11 @@ public class NetTagClassifier implements TagClassifier {
         });
         JSON.saveArray(list2, trainPath.resolve("validation.json"));
 
-        final boolean isOsLinux = System.getProperty("os.name").contains("Linux");
-        final String run_script = isOsLinux ? "run.sh" : "run.bat";
-
-        final String dimensions = String.format("%d,%d,%d,%d", IN_ENTITY_SIZE, IN_NAME_SIZE, IN_CONTEXT_SIZE,
-                OUT_TAG_SIZE);
-
-        final ProcessBuilder processBuilder = new ProcessBuilder(kernelPath.resolve(run_script).toString(),
-                "-V " + vocabulary.size(), "-s " + dimensions, "-t " + trainPath, "-m " + this.modelPath);
-        processBuilder.directory(kernelPath.toFile());
-        processBuilder.redirectErrorStream(true);
-
-        return processBuilder.start();
+        return new PythonManager("kernels.tf")
+                .setEnviroment(Map.of(
+                        "TF_CPP_MIN_VLOG_LEVEL", "3",
+                        "TF_CPP_MIN_LOG_LEVEL", "3"))
+                .run("-V " + this.vocabulary.size(), "-s " + dimensions, "-t " + trainPath, "-m " + this.modelPath);
     }
 
     private String modelToJSONString(final Path modelPath) {
@@ -193,48 +179,6 @@ public class NetTagClassifier implements TagClassifier {
             Disk.unzipDir(temp1, modelPath);
             return modelPath;
         } catch (final IOException x) {
-            throw new RuntimeException(x);
-        }
-    }
-
-    private void installKernels(final Path destPath) {
-        try {
-            if (destPath.toFile().exists()) {
-                return;
-            }
-            final Path sourcePath = Path.of(NetTagClassifier.class.getResource("/kernels").toURI());
-            if (!sourcePath.toFile().isDirectory()) {
-                return;
-            }
-            Arrays.asList(sourcePath.toFile().listFiles()).stream()
-                    .forEach(k -> this.installOneKernel(k.toPath(), destPath.resolve(sourcePath.relativize(k.toPath()))));
-        } catch (final URISyntaxException x) {
-            throw new RuntimeException(x);
-        }
-    }
-
-    private void installOneKernel(final Path srcPath, final Path destPath) {
-        try {
-            final boolean isOsLinux = System.getProperty("os.name").contains("Linux");
-
-            final Path init_script;
-            if (isOsLinux) {
-                init_script = destPath.resolve("init.sh");
-                init_script.toFile().setExecutable(true);
-                destPath.resolve("run.sh").toFile().setExecutable(true);
-            } else {
-                init_script = destPath.resolve("init.bat");
-            }
-
-            Disk.copyDir(srcPath, destPath);
-
-            final ProcessBuilder processBuilder = new ProcessBuilder(init_script.toString());
-            processBuilder.directory(destPath.toFile());
-            processBuilder.inheritIO();
-            processBuilder.redirectErrorStream(true);
-            processBuilder.start().waitFor();
-
-        } catch (IOException | InterruptedException x) {
             throw new RuntimeException(x);
         }
     }
