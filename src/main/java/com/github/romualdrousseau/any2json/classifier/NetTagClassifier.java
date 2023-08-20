@@ -22,7 +22,6 @@ import com.github.romualdrousseau.any2json.Model;
 import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.shuju.json.JSON;
 import com.github.romualdrousseau.shuju.json.JSONArray;
-import com.github.romualdrousseau.shuju.json.JSONObject;
 import com.github.romualdrousseau.shuju.types.Tensor;
 import com.github.romualdrousseau.shuju.preprocessing.Text;
 import com.github.romualdrousseau.shuju.preprocessing.hasher.VocabularyHasher;
@@ -36,26 +35,14 @@ public class NetTagClassifier implements TagClassifier {
     private static final int IN_CONTEXT_SIZE = 100;
     private static final int OUT_TAG_SIZE = 64;
 
-    private final Model model;
-    private final List<String> vocabulary;
-    private final int ngrams;
-    private final List<String> lexicon;
-    private final Path modelPath;
-
-    private final Text.ITokenizer tokenizer;
-    private final Text.IHasher hasher;
-
-    private final SavedModelBundle tagClassifierModel;
-    private final SessionFunction tagClassifierFunc;
-    private final boolean modelIsTemp;
-
-    public NetTagClassifier(final Model model, final List<String> vocabulary, final int ngrams, final List<String> lexicon, final Path modelPath) {
+    public NetTagClassifier(final Model model, final List<String> vocabulary, final int ngrams, final int wordMinSize, final List<String> lexicon, final Path modelPath) {
         this.model = model;
         this.vocabulary = vocabulary;
         this.ngrams = ngrams;
+        this.wordMinSize = wordMinSize;
         this.lexicon = lexicon;
 
-        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, 1) : new NgramTokenizer(this.ngrams);
+        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, this.wordMinSize) : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
 
         this.modelPath = modelPath;
@@ -67,15 +54,24 @@ public class NetTagClassifier implements TagClassifier {
             this.tagClassifierFunc = null;
         }
         this.modelIsTemp = false;
+
+        // Update the model with the classifier parameters
+
+        this.model.toJSON().setArray("vocabulary", JSON.arrayOf(this.vocabulary));
+        this.model.toJSON().setInt("ngram", this.ngrams);
+        this.model.toJSON().setInt("wordMinSize", this.wordMinSize);
+        this.model.toJSON().setArray("lexicon", JSON.arrayOf(this.lexicon));
+        this.model.toJSON().setString("model", this.modelToJSONString(this.modelPath));
     }
 
     public NetTagClassifier(final Model model) {
         this.model = model;
         this.vocabulary = JSON.<String>streamOf(model.toJSON().getArray("vocabulary")).toList();
         this.ngrams = model.toJSON().getInt("ngrams");
+        this.wordMinSize = model.toJSON().getInt("wordMinSize");
         this.lexicon = JSON.<String>streamOf(model.toJSON().getArray("lexicon")).toList();
 
-        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, 1) : new NgramTokenizer(this.ngrams);
+        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, this.wordMinSize) : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
 
         this.modelPath = this.JSONStringToModel(model.toJSON().getString("model"));
@@ -102,14 +98,6 @@ public class NetTagClassifier implements TagClassifier {
     @Override
     public String predict(final String name, final List<String> entities, final List<String> context) {
         return this.predict(this.buildPredictSet(name, entities, context));
-    }
-
-    public List<String> getTagList() {
-        return this.model.getTagList();
-    }
-
-    public List<String> getRequiredTagList() {
-        return this.model.getRequiredTagList();
     }
 
     public List<Integer> buildPredictSet(final String name, final List<String> entities, final List<String> context) {
@@ -187,15 +175,6 @@ public class NetTagClassifier implements TagClassifier {
         return processBuilder.start();
     }
 
-    public JSONObject toJSON() {
-        final JSONObject result = this.model.toJSON();
-        result.setArray("vocabulary", JSON.arrayOf(this.vocabulary));
-        result.setInt("ngram", this.ngrams);
-        result.setArray("lexicon", JSON.arrayOf(this.lexicon));
-        result.setString("model", this.modelToJSONString(this.modelPath));
-        return result;
-    }
-
     private String modelToJSONString(final Path modelPath) {
         try {
             final Path temp = Files.createTempFile("model-", ".zip");
@@ -259,4 +238,18 @@ public class NetTagClassifier implements TagClassifier {
             throw new RuntimeException(x);
         }
     }
+
+    private final Model model;
+    private final List<String> vocabulary;
+    private final int ngrams;
+    private final int wordMinSize;
+    private final List<String> lexicon;
+    private final Path modelPath;
+
+    private final Text.ITokenizer tokenizer;
+    private final Text.IHasher hasher;
+
+    private final SavedModelBundle tagClassifierModel;
+    private final SessionFunction tagClassifierFunc;
+    private final boolean modelIsTemp;
 }
