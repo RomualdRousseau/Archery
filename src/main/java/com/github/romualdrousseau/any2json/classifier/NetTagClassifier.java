@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.AbstractMap;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -34,14 +35,16 @@ public class NetTagClassifier implements TagClassifier {
     private static final int IN_CONTEXT_SIZE = 100;
     private static final int OUT_TAG_SIZE = 64;
 
-    public NetTagClassifier(final Model model, final List<String> vocabulary, final int ngrams, final int wordMinSize, final List<String> lexicon, final Path modelPath) {
+    public NetTagClassifier(final Model model, final List<String> vocabulary, final int ngrams, final int wordMinSize,
+            final List<String> lexicon, final Path modelPath) {
         this.model = model;
         this.vocabulary = vocabulary;
         this.ngrams = ngrams;
         this.wordMinSize = wordMinSize;
         this.lexicon = lexicon;
 
-        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, this.wordMinSize) : new NgramTokenizer(this.ngrams);
+        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, this.wordMinSize)
+                : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
 
         this.modelPath = modelPath;
@@ -70,7 +73,8 @@ public class NetTagClassifier implements TagClassifier {
         this.wordMinSize = model.toJSON().getInt("wordMinSize");
         this.lexicon = JSON.<String>streamOf(model.toJSON().getArray("lexicon")).toList();
 
-        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, this.wordMinSize) : new NgramTokenizer(this.ngrams);
+        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, this.wordMinSize)
+                : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
 
         this.modelPath = this.JSONStringToModel(model.toJSON().getString("model"));
@@ -96,43 +100,14 @@ public class NetTagClassifier implements TagClassifier {
 
     @Override
     public String predict(final String name, final List<String> entities, final List<String> context) {
-        return this.predict(this.buildPredictSet(name, entities, context));
+        return this.predict(this.buildPredictEntry(name, entities, context));
     }
 
-    public List<Integer> buildPredictSet(final String name, final List<String> entities, final List<String> context) {
-        final List<Integer> part1 = Text.to_categorical(entities, this.model.getEntityList());
-        final List<Integer> part2 = Text.one_hot(name, this.model.getFilters(), this.tokenizer, this.hasher);
-        final List<Integer> part3 = context.stream()
-                .filter(x -> !x.equals(name))
-                .flatMap(x -> Text.one_hot(x, this.model.getFilters(), this.tokenizer, this.hasher).stream())
-                .distinct().sorted().toList();
-        return Stream.concat(Stream.concat(
-                Text.pad_sequence(part1, IN_ENTITY_SIZE).stream().limit(IN_ENTITY_SIZE),
-                Text.pad_sequence(part2, IN_NAME_SIZE).stream().limit(IN_NAME_SIZE)),
-                Text.pad_sequence(part3, IN_CONTEXT_SIZE).stream().limit(IN_CONTEXT_SIZE)).toList();
-    }
-
-    public String predict(final List<Integer> predictSet) {
-        if (this.tagClassifierFunc == null) {
-            return this.model.getTagList().get(0);
-        }
-        final double[] entityInput = predictSet.subList(0, IN_ENTITY_SIZE).stream().mapToDouble(x -> x).toArray();
-        final double[] nameInput = predictSet.subList(IN_ENTITY_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE).stream().mapToDouble(x -> x).toArray();
-        final double[] contextInput = predictSet.subList(IN_ENTITY_SIZE + IN_NAME_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE + IN_CONTEXT_SIZE).stream().mapToDouble(x -> x).toArray();
-        final Map<String, org.tensorflow.Tensor> inputs = Map.of(
-            "entity_input", Tensor.of(entityInput).reshape(1, -1).toTFloat32(),
-            "name_input", Tensor.of(nameInput).reshape(1, -1).toTFloat32(),
-            "context_input", Tensor.of(contextInput).reshape(1, -1).toTFloat32()
-        );
-        final org.tensorflow.Result result = this.tagClassifierFunc.call(inputs);
-        return this.model.getTagList().get((int) Tensor.of((TFloat32) result.get("tag_output").get()).argmax(1).item(0));
-    }
-
-    public AbstractMap.SimpleImmutableEntry<List<Integer>, List<Integer>> buildTrainingSet(
+    public AbstractMap.SimpleImmutableEntry<List<Integer>, List<Integer>> buildTrainingEntry(
             final String name, final List<String> entities, final List<String> context, final String label) {
-        final List<Integer> key = Text.to_categorical(label, this.model.getTagList());
-        final List<Integer> value = this.buildPredictSet(name, entities, context);
-        return new AbstractMap.SimpleImmutableEntry<>(Text.pad_sequence(key, OUT_TAG_SIZE), value);
+        final List<Integer> value = this.buildPredictEntry(name, entities, context);
+        final List<Integer> key = Text.pad_sequence(Text.to_categorical(label, this.model.getTagList()), OUT_TAG_SIZE);
+        return new AbstractMap.SimpleImmutableEntry<>(key, value);
     }
 
     public Process fit(final List<List<Integer>> trainingSet, final List<List<Integer>> validationSet)
@@ -154,11 +129,52 @@ public class NetTagClassifier implements TagClassifier {
         });
         JSON.saveArray(list2, trainPath.resolve("validation.json"));
 
+        final Map<String, String> disableTFLog = Map.of(
+                "TF_CPP_MIN_VLOG_LEVEL", "3",
+                "TF_CPP_MIN_LOG_LEVEL", "3");
+
         return new PythonManager("kernels.tf")
-                .setEnviroment(Map.of(
-                        "TF_CPP_MIN_VLOG_LEVEL", "3",
-                        "TF_CPP_MIN_LOG_LEVEL", "3"))
+                .setEnviroment(disableTFLog)
                 .run("-V " + this.vocabulary.size(), "-s " + dimensions, "-t " + trainPath, "-m " + this.modelPath);
+    }
+
+    private List<Integer> buildPredictEntry(final String name, final List<String> entities,
+            final List<String> context) {
+        final List<Integer> part1 = Text.to_categorical(entities, this.model.getEntityList());
+        final List<Integer> part2 = Text.one_hot(name, this.model.getFilters(), this.tokenizer, this.hasher);
+        final List<Integer> part3 = context.stream()
+                .filter(x -> !x.equals(name))
+                .flatMap(x -> Text.one_hot(x, this.model.getFilters(), this.tokenizer, this.hasher).stream())
+                .distinct().sorted().toList();
+        return Stream.of(
+                Text.pad_sequence(part1, IN_ENTITY_SIZE).subList(0, IN_ENTITY_SIZE),
+                Text.pad_sequence(part2, IN_NAME_SIZE).subList(0, IN_NAME_SIZE),
+                Text.pad_sequence(part3, IN_CONTEXT_SIZE).subList(0, IN_CONTEXT_SIZE))
+                .flatMap(Collection::stream)
+                .toList();
+    }
+
+    private String predict(final List<Integer> predictSet) {
+        if (this.tagClassifierFunc == null) {
+            return this.model.getTagList().get(0);
+        }
+
+        final double[] entityInput = predictSet.subList(0, IN_ENTITY_SIZE).stream().mapToDouble(x -> x).toArray();
+
+        final double[] nameInput = predictSet.subList(IN_ENTITY_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE).stream()
+                .mapToDouble(x -> x).toArray();
+
+        final double[] contextInput = predictSet
+                .subList(IN_ENTITY_SIZE + IN_NAME_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE + IN_CONTEXT_SIZE).stream()
+                .mapToDouble(x -> x).toArray();
+
+        final Map<String, org.tensorflow.Tensor> inputs = Map.of(
+                "entity_input", Tensor.of(entityInput).reshape(1, -1).toTFloat32(),
+                "name_input", Tensor.of(nameInput).reshape(1, -1).toTFloat32(),
+                "context_input", Tensor.of(contextInput).reshape(1, -1).toTFloat32());
+
+        final Tensor result = Tensor.of((TFloat32) this.tagClassifierFunc.call(inputs).get("tag_output").get());
+        return this.model.getTagList().get((int) result.argmax(1).item(0));
     }
 
     private String modelToJSONString(final Path modelPath) {
@@ -189,10 +205,8 @@ public class NetTagClassifier implements TagClassifier {
     private final int wordMinSize;
     private final List<String> lexicon;
     private final Path modelPath;
-
     private final Text.ITokenizer tokenizer;
     private final Text.IHasher hasher;
-
     private final SavedModelBundle tagClassifierModel;
     private final SessionFunction tagClassifierFunc;
     private final boolean modelIsTemp;
