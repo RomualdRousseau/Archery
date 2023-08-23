@@ -8,6 +8,7 @@ import com.github.romualdrousseau.any2json.base.BaseHeader;
 import com.github.romualdrousseau.any2json.base.DataTable;
 import com.github.romualdrousseau.any2json.base.RowGroup;
 import com.github.romualdrousseau.any2json.header.DataTableHeader;
+import com.github.romualdrousseau.any2json.header.MetaGroupHeader;
 import com.github.romualdrousseau.any2json.header.MetaTableHeader;
 import com.github.romualdrousseau.any2json.header.PivotKeyHeader;
 
@@ -146,8 +147,7 @@ public class DataTableGroupSubHeaderParser extends DataTableParser {
                 if (!this.firstRowGroupProcessed) {
                     MetaTableHeader meta = this.dataTable.findFirstMetaTableHeader();
                     if (meta == null) {
-                        meta = new MetaTableHeader(this.dataTable,
-                                new BaseCell("#GROUP?", 0, 1, this.firstRowCell.getRawValue(), this.dataTable.getSheet()));
+                        meta = new MetaGroupHeader(this.dataTable, this.firstRowCell);
                         this.dataTable.addHeader(meta);
                     }
                     meta.assignRowGroup(this.currRowGroup);
