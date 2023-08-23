@@ -1,9 +1,9 @@
 package com.github.romualdrousseau.any2json.loader.dbf;
 
 import com.github.romualdrousseau.any2json.Document;
-import com.github.romualdrousseau.any2json.IDocumentClass;
+import com.github.romualdrousseau.any2json.DocumentClass;
 
-public class DbfClass implements IDocumentClass
+public class DbfClass implements DocumentClass
 {
     public Priority getPriority() {
         return Priority.LOW;

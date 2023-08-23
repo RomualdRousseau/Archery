@@ -11,7 +11,6 @@ class DbfSheet implements SheetStore {
         this.rows = rows;
     }
 
-    @Override
     public String getName() {
         return this.name;
     }
