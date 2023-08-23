@@ -7,9 +7,8 @@ import java.util.List;
 import com.github.romualdrousseau.any2json.Header;
 import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.Table;
-import com.github.romualdrousseau.any2json.util.Visitable;
 
-public abstract class BaseTable implements Table, Visitable {
+public class BaseTable implements Table, Visitable {
 
     public BaseTable(final BaseSheet sheet, final int firstColumn, final int firstRow, final int lastColumn,
             final int lastRow) {
@@ -43,6 +42,11 @@ public abstract class BaseTable implements Table, Visitable {
         this.lastRowOffset = 0;
         this.headerRowOffset = 0;
         this.loadCompleted = false;
+    }
+
+    @Override
+    public BaseSheet getSheet() {
+        return this.sheet;
     }
 
     @Override
@@ -119,8 +123,18 @@ public abstract class BaseTable implements Table, Visitable {
         this.visited = flag;
     }
 
-    public BaseSheet getSheet() {
-        return this.sheet;
+    @Override
+    public void updateHeaderTags() {
+    }
+
+    @Override
+    public int getNumberOfHeaderTags() {
+        return 0;
+    }
+
+    @Override
+    public Iterable<Header> headerTags() {
+        return null;
     }
 
     public int getFirstColumn() {

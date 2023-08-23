@@ -2,33 +2,50 @@ package com.github.romualdrousseau.any2json.base;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-import com.github.romualdrousseau.any2json.ClassifierFactory;
-import com.github.romualdrousseau.any2json.DocumentFactory;
+import com.github.romualdrousseau.any2json.Document;
+import com.github.romualdrousseau.any2json.PivotOption;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.SheetEvent;
 import com.github.romualdrousseau.any2json.SheetListener;
 import com.github.romualdrousseau.any2json.Table;
-import com.github.romualdrousseau.any2json.classifier.SimpleClassifierBuilder;
+import com.github.romualdrousseau.any2json.config.Settings;
+import com.github.romualdrousseau.any2json.event.AllTablesExtractedEvent;
+import com.github.romualdrousseau.any2json.event.DataTableListBuiltEvent;
+import com.github.romualdrousseau.any2json.event.MetaTableListBuiltEvent;
+import com.github.romualdrousseau.any2json.event.SheetPreparedEvent;
+import com.github.romualdrousseau.any2json.event.TableGraphBuiltEvent;
 import com.github.romualdrousseau.any2json.event.TableReadyEvent;
-import com.github.romualdrousseau.any2json.simple.SimpleTable;
-import com.github.romualdrousseau.shuju.util.CollectionUtils;
+import com.github.romualdrousseau.any2json.intelli.IntelliTable;
+import com.github.romualdrousseau.any2json.transform.TransformableSheet;
+import com.github.romualdrousseau.shuju.commons.CollectionUtils;
 
-public abstract class BaseSheet implements Sheet {
+public class BaseSheet implements Sheet {
 
-    public abstract Table parseAllTables();
-
-    public BaseSheet(final SheetStore store) {
+    public BaseSheet(final BaseDocument document, final String name, final SheetStore store) {
+        this.document = document;
+        this.name = name;
         this.sheetStore = store;
         this.storeLastColumnNum = this.computeLastColumnNum();
         this.columnMask = CollectionUtils.mutableRange(0, this.storeLastColumnNum + 1);
         this.rowMask = CollectionUtils.mutableRange(0, this.sheetStore.getLastRowNum() + 1);
-        this.classifierFactory = new SimpleClassifierBuilder().build();
+
+        this.pivotOption = PivotOption.NONE;
+        this.pivotKeyFormat = "%s " + Settings.PIVOT_KEY_SUFFIX;
+        this.pivotValueFormat = "%s " + Settings.PIVOT_VALUE_SUFFIX;
+        this.pivotTypeFormat = "%s " + Settings.PIVOT_TYPE_SUFFIX;
+        this.groupValueFormat = "%s " + Settings.GROUP_VALUE_SUFFIX;
+    }
+
+    @Override
+    public Document getDocument() {
+        return this.document;
     }
 
     @Override
     public String getName() {
-        return this.sheetStore.getName();
+        return this.name;
     }
 
     @Override
@@ -42,41 +59,57 @@ public abstract class BaseSheet implements Sheet {
     }
 
     @Override
-    public Table getTable() {
-        if (this.sheetStore.getLastRowNum() <= 0 || this.getLastColumnNum() <= 0) {
-            return null;
-        }
-        final Table table;
-        if (this.classifierFactory.getLayoutClassifier().isPresent()) {
-            table = this.parseAllTables();
-        } else {
-            table = this.parseOneTable();
-        }
-        this.notifyStepCompleted(new TableReadyEvent(this, table));
-        return table;
-    }
-
-    @Override
-    public void setClassifierFactory(final ClassifierFactory classifierFactory) {
-        if (classifierFactory == null) {
-            this.classifierFactory = new SimpleClassifierBuilder().build();
-        }
-        else {
-            this.classifierFactory = classifierFactory;
-        }
-    }
-
-    @Override
     public void addSheetListener(final SheetListener listener) {
         this.listeners.add(listener);
     }
 
-    public SheetStore getSheetStore() {
-        return this.sheetStore;
+    @Override
+    public Optional<Table> getTable() {
+        if (this.getLastRowNum() <= 0 || this.getLastColumnNum() <= 0) {
+            return Optional.empty();
+        }
+
+        TransformableSheet.of(this).transformSheet();
+        if (!this.notifyStepCompleted(new SheetPreparedEvent(this))) {
+            return Optional.empty();
+        }
+
+        final List<BaseTable> tables = this.getDocument().getSheetParser().findAllTables(this);
+        if (!this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables))) {
+            return Optional.empty();
+        }
+
+        final List<DataTable> dataTables = this.getDocument().getTableParser().getDataTables(this, tables);
+        if (!this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables))) {
+            return Optional.empty();
+        }
+        if (dataTables.size() == 0) {
+            return Optional.empty();
+        }
+
+        final List<MetaTable> metaTables = this.getDocument().getTableParser().getMetaTables(this, tables);
+        if (!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
+            return Optional.empty();
+        }
+
+        final DataTable table;
+        if (this.getDocument().getHints().contains(Document.Hint.INTELLI_LAYOUT)) {
+            final BaseTableGraph root = BaseTableGraphBuilder.Build(metaTables, dataTables);
+            if (!this.notifyStepCompleted(new TableGraphBuiltEvent(this, root))) {
+                return Optional.empty();
+            }
+            table = new IntelliTable(this, root);
+        } else {
+            table = dataTables.get(0);
+        }
+        table.updateHeaderTags();
+        this.notifyStepCompleted(new TableReadyEvent(this, table));
+
+        return Optional.of(table);
     }
 
-    public ClassifierFactory getClassifierFactory() {
-        return this.classifierFactory;
+    public SheetStore getSheetStore() {
+        return this.sheetStore;
     }
 
     public int getLastColumnNum(final int rowIndex) {
@@ -159,15 +192,35 @@ public abstract class BaseSheet implements Sheet {
         this.sheetStore.patchCell(translatedColumn1, translatedRow1, translatedColumn2, translatedRow2, value, this.unmergedAll);
     }
 
-    public void unmergeAll() {
-        this.unmergedAll = true;
-    }
-
     public boolean notifyStepCompleted(final SheetEvent e) {
         for (final SheetListener listener : listeners) {
             listener.stepCompleted(e);
         }
         return !e.isCanceled();
+    }
+
+    public void markColumnAsNull(final int colIndex) {
+        if (colIndex < this.columnMask.size()) {
+            this.columnMask.set(colIndex, null);
+        }
+    }
+
+    public void removeAllNullColumns() {
+        this.columnMask.removeIf(i -> i == null);
+    }
+
+    public void markRowAsNull(final int rowIndex) {
+        if (rowIndex < this.rowMask.size()) {
+            this.rowMask.set(rowIndex, null);
+        }
+    }
+
+    public void removeAllNullRows() {
+        this.rowMask.removeIf(i -> i == null);
+    }
+
+    public void unmergeAll() {
+        this.unmergedAll = true;
     }
 
     public float getBitmapThreshold() {
@@ -178,24 +231,44 @@ public abstract class BaseSheet implements Sheet {
         this.bitmapThreshold = bitmapThreshold;
     }
 
-    protected void markColumnAsNull(final int colIndex) {
-        if (colIndex < this.columnMask.size()) {
-            this.columnMask.set(colIndex, null);
-        }
+    public PivotOption getPivotOption() {
+        return this.pivotOption;
     }
 
-    protected void removeAllNullColumns() {
-        this.columnMask.removeIf(i -> i == null);
+    public void setPivotOption(final PivotOption option) {
+        this.pivotOption = option;
     }
 
-    protected void markRowAsNull(final int rowIndex) {
-        if (rowIndex < this.rowMask.size()) {
-            this.rowMask.set(rowIndex, null);
-        }
+    public String getPivotKeyFormat() {
+        return this.pivotKeyFormat;
     }
 
-    protected void removeAllNullRows() {
-        this.rowMask.removeIf(i -> i == null);
+    public void setPivotKeyFormat(final String format) {
+        this.pivotKeyFormat = format;
+    }
+
+    public String getPivotTypeFormat() {
+        return this.pivotTypeFormat;
+    }
+
+    public void setPivotTypeFormat(final String format) {
+        this.pivotTypeFormat = format;
+    }
+
+    public String getPivotValueFormat() {
+        return this.pivotValueFormat;
+    }
+
+    public void setPivotValueFormat(final String format) {
+        this.pivotValueFormat = format;
+    }
+
+    public String getGroupValueFormat() {
+        return this.groupValueFormat;
+    }
+
+    public void setGroupValueFormat(final String format) {
+        this.groupValueFormat = format;
     }
 
     private int translateColumn(final int colIndex) {
@@ -217,22 +290,26 @@ public abstract class BaseSheet implements Sheet {
             return -1;
         }
         int result = this.sheetStore.getLastColumnNum(0);
-        for (int i = 1; i <= Math.min(DocumentFactory.DEFAULT_SAMPLE_COUNT, this.sheetStore.getLastRowNum()); i++) {
+        for (int i = 1; i <= Math.min(Settings.DEFAULT_SAMPLE_COUNT, this.sheetStore.getLastRowNum()); i++) {
             result = Math.max(result, this.sheetStore.getLastColumnNum(i));
         }
         return result;
     }
 
-    private Table parseOneTable() {
-        return new SimpleTable(this, 0, 0, this.getLastColumnNum(), this.getLastRowNum());
-    }
-
-    private final ArrayList<SheetListener> listeners = new ArrayList<SheetListener>();
+    private final BaseDocument document;
+    private final String name;
     private final SheetStore sheetStore;
+    private final ArrayList<SheetListener> listeners = new ArrayList<SheetListener>();
     private final List<Integer> rowMask;
     private final List<Integer> columnMask;
     private final int storeLastColumnNum;
-    private ClassifierFactory classifierFactory;
+
     private boolean unmergedAll = false;
     private float bitmapThreshold = 0.5f;
+    private PivotOption pivotOption;
+    private String pivotKeyFormat;
+    private String pivotValueFormat;
+    private String pivotTypeFormat;
+    private String groupValueFormat;
+
 }
