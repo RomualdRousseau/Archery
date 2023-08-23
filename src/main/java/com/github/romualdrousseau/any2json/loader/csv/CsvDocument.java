@@ -11,7 +11,7 @@ import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.base.BaseDocument;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
-import com.github.romualdrousseau.any2json.parser.sheet.StructuredSheetParser;
+import com.github.romualdrousseau.any2json.parser.sheet.SimpleSheetParser;
 import com.github.romualdrousseau.any2json.transform.op.DropColumnsWhenFillRatioLessThan;
 import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.shuju.strings.StringUtils;
@@ -68,7 +68,7 @@ public class CsvDocument extends BaseDocument {
     @Override
     public void updateParsersAndClassifiers() {
         super.updateParsersAndClassifiers();
-        this.setSheetParser(new StructuredSheetParser());
+        this.setSheetParser(new SimpleSheetParser());
     }
 
     private boolean openWithEncoding(final File txtFile, final String encoding) {
