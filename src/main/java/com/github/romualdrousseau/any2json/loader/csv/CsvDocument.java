@@ -9,24 +9,21 @@ import java.util.ArrayList;
 
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
-import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
-import com.github.romualdrousseau.any2json.intelli.parser.sheet.SemiStructuredSheetBitmapParser;
-import com.github.romualdrousseau.any2json.intelli.parser.sheet.StructuredSheetParser;
+import com.github.romualdrousseau.any2json.base.BaseDocument;
+import com.github.romualdrousseau.any2json.base.BaseSheet;
+import com.github.romualdrousseau.any2json.parser.sheet.SimpleSheetParser;
+import com.github.romualdrousseau.any2json.transform.op.DropColumnsWhenFillRatioLessThan;
 import com.github.romualdrousseau.any2json.util.Disk;
+import com.github.romualdrousseau.shuju.strings.StringUtils;
 import com.github.romualdrousseau.shuju.types.Tensor;
-import com.github.romualdrousseau.shuju.util.StringUtils;
 
-public class CsvDocument implements Document {
 
-    public static int BATCH_SIZE = 100000;
+public class CsvDocument extends BaseDocument {
 
-    private boolean wellFormed = true;
-    private CsvSheet sheet;
-    private String separator;
+    private static int BATCH_SIZE = 100000;
 
     @Override
-    public boolean open(final File txtFile, final String encoding, final String password, final boolean wellFormed) {
-        this.wellFormed = wellFormed;
+    public boolean open(final File txtFile, final String encoding, final String password) {
         this.sheet = null;
 
         if (encoding != null && this.openWithEncoding(txtFile, encoding)) {
@@ -57,11 +54,21 @@ public class CsvDocument implements Document {
 
     @Override
     public Sheet getSheetAt(final int i) {
-        if (this.wellFormed) {
-            return new IntelliSheet(this.sheet, new StructuredSheetParser());
-        } else {
-            return new IntelliSheet(this.sheet, new SemiStructuredSheetBitmapParser());
+        return new BaseSheet(this, this.sheet.getName(), this.sheet);
+    }
+
+    @Override
+    public void autoRecipe(final BaseSheet sheet) {
+        super.autoRecipe(sheet);
+        if (this.getHints().contains(Document.Hint.INTELLI_LAYOUT)) {
+            DropColumnsWhenFillRatioLessThan.Apply(sheet, 0);
         }
+    }
+
+    @Override
+    public void updateParsersAndClassifiers() {
+        super.updateParsersAndClassifiers();
+        this.setSheetParser(new SimpleSheetParser());
     }
 
     private boolean openWithEncoding(final File txtFile, final String encoding) {
@@ -198,4 +205,7 @@ public class CsvDocument implements Document {
         }
         return separators[(int) Tensor.of(v).argmax(0).item(0)];
     }
+
+    private CsvSheet sheet;
+    private String separator;
 }
