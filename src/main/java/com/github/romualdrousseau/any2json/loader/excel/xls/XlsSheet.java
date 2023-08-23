@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import com.github.romualdrousseau.any2json.base.SheetStore;
-import com.github.romualdrousseau.shuju.util.StringUtils;
+import com.github.romualdrousseau.shuju.strings.StringUtils;
 
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.BorderStyle;
@@ -31,7 +31,6 @@ public class XlsSheet implements SheetStore {
         }
     }
 
-    @Override
     public String getName() {
         return this.sheet.getSheetName();
     }

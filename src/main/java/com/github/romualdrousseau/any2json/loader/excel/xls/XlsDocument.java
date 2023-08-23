@@ -10,18 +10,18 @@ import org.apache.poi.hssf.record.crypto.Biff8EncryptionKey;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 
+import com.github.romualdrousseau.any2json.base.BaseDocument;
+import com.github.romualdrousseau.any2json.base.BaseSheet;
+import com.github.romualdrousseau.shuju.strings.StringUtils;
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
-import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
-import com.github.romualdrousseau.any2json.intelli.parser.sheet.SemiStructuredSheetBitmapParser;
-import com.github.romualdrousseau.shuju.util.StringUtils;
 
-public class XlsDocument implements Document {
+public class XlsDocument extends BaseDocument {
 
     public static List<String> EXTENSIONS = List.of(".xls", ".xlsx");
 
     @Override
-    public boolean open(final File excelFile, final String encoding, final String password, final boolean wellFormed) {
+    public boolean open(final File excelFile, final String encoding, final String password) {
         if (excelFile == null) {
             throw new IllegalArgumentException();
         }
@@ -62,16 +62,27 @@ public class XlsDocument implements Document {
         }
     }
 
+    @Override
     public void close() {
         this.sheets.clear();
     }
 
+    @Override
     public int getNumberOfSheets() {
         return this.sheets.size();
     }
 
+    @Override
     public Sheet getSheetAt(final int i) {
-        return new IntelliSheet(this.sheets.get(i), new SemiStructuredSheetBitmapParser());
+        return new BaseSheet(this, this.sheets.get(i).getName(), this.sheets.get(i));
+    }
+
+    @Override
+    public void updateParsersAndClassifiers() {
+        if(this.getHints().contains(Document.Hint.INTELLI_TAG)) {
+            this.getHints().add(Document.Hint.INTELLI_LAYOUT);
+        }
+        super.updateParsersAndClassifiers();
     }
 
     private final ArrayList<XlsSheet> sheets = new ArrayList<XlsSheet>();

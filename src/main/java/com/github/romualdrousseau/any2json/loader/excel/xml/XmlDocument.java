@@ -15,19 +15,19 @@ import org.xml.sax.SAXException;
 
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
-import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
-import com.github.romualdrousseau.any2json.intelli.parser.sheet.SemiStructuredSheetBitmapParser;
+import com.github.romualdrousseau.any2json.base.BaseDocument;
+import com.github.romualdrousseau.any2json.base.BaseSheet;
 
 import nl.fountain.xelem.excel.Workbook;
 import nl.fountain.xelem.excel.Worksheet;
 import nl.fountain.xelem.lex.ExcelReader;
 
-public class XmlDocument implements Document {
+public class XmlDocument extends BaseDocument {
 
     public static List<String> EXTENSIONS = List.of(".xls", ".xlsx", ".xml");
 
     @Override
-    public boolean open(final File excelFile, final String encoding, final String password, final boolean wellFormed) {
+    public boolean open(final File excelFile, final String encoding, final String password) {
 
         if (EXTENSIONS.stream().filter(x -> excelFile.getName().toLowerCase().endsWith(x)).findAny().isEmpty()) {
             return false;
@@ -42,16 +42,27 @@ public class XmlDocument implements Document {
         }
     }
 
+    @Override
     public void close() {
         this.sheets.clear();
     }
 
+    @Override
     public int getNumberOfSheets() {
         return this.sheets.size();
     }
 
+    @Override
     public Sheet getSheetAt(final int i) {
-        return new IntelliSheet(this.sheets.get(i), new SemiStructuredSheetBitmapParser());
+        return new BaseSheet(this, this.sheets.get(i).getName(), this.sheets.get(i));
+    }
+
+    @Override
+    public void updateParsersAndClassifiers() {
+        if(this.getHints().contains(Document.Hint.INTELLI_TAG)) {
+            this.getHints().add(Document.Hint.INTELLI_LAYOUT);
+        }
+        super.updateParsersAndClassifiers();
     }
 
     private boolean openWithEncoding(final File excelFile, final String encoding) {

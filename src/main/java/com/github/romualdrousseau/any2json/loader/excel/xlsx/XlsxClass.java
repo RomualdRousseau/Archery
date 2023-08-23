@@ -1,9 +1,9 @@
 package com.github.romualdrousseau.any2json.loader.excel.xlsx;
 
 import com.github.romualdrousseau.any2json.Document;
-import com.github.romualdrousseau.any2json.IDocumentClass;
+import com.github.romualdrousseau.any2json.DocumentClass;
 
-public class XlsxClass implements IDocumentClass
+public class XlsxClass implements DocumentClass
 {
     public Priority getPriority() {
         return Priority.LOW;

@@ -9,9 +9,9 @@ import java.util.List;
 
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
-import com.github.romualdrousseau.any2json.intelli.IntelliSheet;
-import com.github.romualdrousseau.any2json.intelli.parser.sheet.SemiStructuredSheetBitmapParser;
-import com.github.romualdrousseau.shuju.util.StringUtils;
+import com.github.romualdrousseau.any2json.base.BaseDocument;
+import com.github.romualdrousseau.any2json.base.BaseSheet;
+import com.github.romualdrousseau.shuju.strings.StringUtils;
 
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
@@ -24,12 +24,12 @@ import org.apache.poi.xssf.eventusermodel.XSSFReader.SheetIterator;
 import org.apache.poi.xssf.model.SharedStrings;
 import org.apache.poi.xssf.model.StylesTable;
 
-public class XlsxDocument implements Document {
+public class XlsxDocument extends BaseDocument {
 
     public static List<String> EXTENSIONS = List.of(".xls", ".xlsx");
 
     @Override
-    public boolean open(final File excelFile, final String encoding, final String password, final boolean wellFormed) {
+    public boolean open(final File excelFile, final String encoding, final String password) {
         if (excelFile == null) {
             throw new IllegalArgumentException();
         }
@@ -88,7 +88,15 @@ public class XlsxDocument implements Document {
 
     @Override
     public Sheet getSheetAt(final int i) {
-        return new IntelliSheet(sheets.get(i).ensureDataLoaded(), new SemiStructuredSheetBitmapParser());
+        return new BaseSheet(this, sheets.get(i).getName(), sheets.get(i).ensureDataLoaded());
+    }
+
+    @Override
+    public void updateParsersAndClassifiers() {
+        if(this.getHints().contains(Document.Hint.INTELLI_TAG)) {
+            this.getHints().add(Document.Hint.INTELLI_LAYOUT);
+        }
+        super.updateParsersAndClassifiers();
     }
 
     private OPCPackage opcPackage;
