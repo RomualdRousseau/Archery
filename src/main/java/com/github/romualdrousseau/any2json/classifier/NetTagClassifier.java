@@ -1,6 +1,7 @@
 package com.github.romualdrousseau.any2json.classifier;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -111,7 +112,7 @@ public class NetTagClassifier implements TagClassifier {
     }
 
     public Process fit(final List<List<Integer>> trainingSet, final List<List<Integer>> validationSet)
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, URISyntaxException {
 
         final String dimensions = String.format("%d,%d,%d,%d", IN_ENTITY_SIZE, IN_NAME_SIZE, IN_CONTEXT_SIZE,
                 OUT_TAG_SIZE);
