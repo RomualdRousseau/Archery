@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
 
 import com.github.romualdrousseau.any2json.DocumentClass;
 import com.github.romualdrousseau.any2json.TableParserClass;
@@ -47,7 +46,7 @@ public class DynamicPackages {
     }
 
     private static <T> Stream<Class<? extends T>> FindClasses(final String prefix, final Class<T> type) {
-        final Reflections reflections = new Reflections(prefix, new SubTypesScanner(false));
+        final Reflections reflections = new Reflections(prefix);
         return reflections.getSubTypesOf(type).stream();
     }
 
