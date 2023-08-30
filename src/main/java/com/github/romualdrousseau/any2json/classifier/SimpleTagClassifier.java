@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.github.romualdrousseau.any2json.TagClassifier;
 
-public class SimpleTagClassifier implements TagClassifier{
+public class SimpleTagClassifier implements TagClassifier {
 
     @Override
     public void close() throws Exception {
@@ -12,7 +12,7 @@ public class SimpleTagClassifier implements TagClassifier{
 
     @Override
     public String predict(String name, List<String> entities, List<String> context) {
-        return this.ensureTagStyle(name);
+        return this.ensureTagStyle(name.replaceAll(" \\(\\$.*\\)", ""));
     }
 
     private String ensureTagStyle(final String text) {
