@@ -24,3 +24,6 @@ buildNumber.properties
 *.sublime-workspace
 .vscode
 .venv/
+
+# Docs
+docs/
