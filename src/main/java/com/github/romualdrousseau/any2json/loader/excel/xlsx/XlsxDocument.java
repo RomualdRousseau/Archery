@@ -26,7 +26,7 @@ import org.apache.poi.xssf.model.StylesTable;
 
 public class XlsxDocument extends BaseDocument {
 
-    public static List<String> EXTENSIONS = List.of(".xls", ".xlsx");
+    public static List<String> EXTENSIONS = List.of(".xls", ".xlsx", ".xlsm");
 
     @Override
     public boolean open(final File excelFile, final String encoding, final String password) {

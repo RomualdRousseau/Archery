@@ -24,7 +24,7 @@ import nl.fountain.xelem.lex.ExcelReader;
 
 public class XmlDocument extends BaseDocument {
 
-    public static List<String> EXTENSIONS = List.of(".xls", ".xlsx", ".xml");
+    public static List<String> EXTENSIONS = List.of(".xls", ".xlsx", ".xlsm", ".xml");
 
     @Override
     public boolean open(final File excelFile, final String encoding, final String password) {

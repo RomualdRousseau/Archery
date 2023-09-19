@@ -18,7 +18,7 @@ import com.github.romualdrousseau.any2json.Sheet;
 
 public class XlsDocument extends BaseDocument {
 
-    public static List<String> EXTENSIONS = List.of(".xls", ".xlsx");
+    public static List<String> EXTENSIONS = List.of(".xls", ".xlsx", ".xlsm");
 
     @Override
     public boolean open(final File excelFile, final String encoding, final String password) {
