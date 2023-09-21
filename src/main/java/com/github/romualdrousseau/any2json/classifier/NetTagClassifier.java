@@ -5,7 +5,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.AbstractMap;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
@@ -104,11 +103,11 @@ public class NetTagClassifier implements TagClassifier {
         return this.predict(this.buildPredictEntry(name, entities, context));
     }
 
-    public AbstractMap.SimpleImmutableEntry<List<Integer>, List<Integer>> buildTrainingEntry(
+    public TrainingEntry buildTrainingEntry(
             final String name, final List<String> entities, final List<String> context, final String label) {
-        final List<Integer> value = this.buildPredictEntry(name, entities, context);
-        final List<Integer> key = Text.pad_sequence(Text.to_categorical(label, this.model.getTagList()), OUT_TAG_SIZE);
-        return new AbstractMap.SimpleImmutableEntry<>(key, value);
+        return new TrainingEntry(
+                this.buildPredictEntry(name, entities, context),
+                Text.pad_sequence(Text.to_categorical(label, this.model.getTagList()), OUT_TAG_SIZE));
     }
 
     public Process fit(final List<List<Integer>> trainingSet, final List<List<Integer>> validationSet)
