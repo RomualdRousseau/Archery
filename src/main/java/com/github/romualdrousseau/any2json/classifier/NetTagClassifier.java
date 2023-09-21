@@ -30,10 +30,10 @@ import com.github.romualdrousseau.shuju.preprocessing.tokenizer.ShingleTokenizer
 
 public class NetTagClassifier implements TagClassifier {
 
-    private static final int IN_ENTITY_SIZE = 10;
-    private static final int IN_NAME_SIZE = 10;
-    private static final int IN_CONTEXT_SIZE = 100;
-    private static final int OUT_TAG_SIZE = 64;
+    public static final int IN_ENTITY_SIZE = 10;
+    public static final int IN_NAME_SIZE = 10;
+    public static final int IN_CONTEXT_SIZE = 100;
+    public static final int OUT_TAG_SIZE = 64;
 
     public NetTagClassifier(final Model model, final List<String> vocabulary, final int ngrams, final int wordMinSize,
             final List<String> lexicon, final Path modelPath) {
@@ -101,6 +101,14 @@ public class NetTagClassifier implements TagClassifier {
     @Override
     public String predict(final String name, final List<String> entities, final List<String> context) {
         return this.predict(this.buildPredictEntry(name, entities, context));
+    }
+
+    public List<String> getVocabulary() {
+        return this.vocabulary;
+    }
+
+    public List<String> getLexicon() {
+        return this.lexicon;
     }
 
     public TrainingEntry buildTrainingEntry(
