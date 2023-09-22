@@ -80,11 +80,6 @@
             <artifactId>shuju</artifactId>
             <version>1.21</version>
         </dependency>
-        <dependency>
-            <groupId>com.github.romualdrousseau</groupId>
-            <artifactId>shuju-jackson</artifactId>
-            <version>1.21</version>
-        </dependency>
         <!-- Test Framework -->
         <dependency>
             <groupId>junit</groupId>
