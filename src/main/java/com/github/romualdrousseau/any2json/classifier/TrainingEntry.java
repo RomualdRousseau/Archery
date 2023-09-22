@@ -10,19 +10,37 @@ public class TrainingEntry {
     }
 
     private List<Integer> value;
+
     public List<Integer> getValue() {
         return this.value;
     }
+
     public void setValue(final List<Integer> value) {
         this.value = value;
     }
 
     private List<Integer> label;
+
     public List<Integer> getLabel() {
         return this.label;
     }
+
     public void setLabel(final List<Integer> label) {
         this.label = label;
+    }
+
+    public List<Integer> getEntity() {
+        return this.value.subList(0, NetTagClassifier.IN_ENTITY_SIZE);
+    }
+
+    public List<Integer> getName() {
+        return this.value.subList(NetTagClassifier.IN_ENTITY_SIZE,
+                NetTagClassifier.IN_ENTITY_SIZE + NetTagClassifier.IN_NAME_SIZE);
+    }
+
+    public List<Integer> getContext() {
+        return this.value.subList(NetTagClassifier.IN_ENTITY_SIZE + NetTagClassifier.IN_NAME_SIZE,
+                NetTagClassifier.IN_ENTITY_SIZE + NetTagClassifier.IN_NAME_SIZE + NetTagClassifier.IN_CONTEXT_SIZE);
     }
 
     public boolean isConflict(final TrainingEntry other) {
@@ -38,6 +56,6 @@ public class TrainingEntry {
     }
 
     public String toString() {
-       return "[" + this.getValue().toString() + ", " + this.getLabel().toString() + "]";
+        return "[" + this.getValue().toString() + ", " + this.getLabel().toString() + "]";
     }
 }

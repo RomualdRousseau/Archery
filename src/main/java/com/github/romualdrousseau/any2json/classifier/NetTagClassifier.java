@@ -48,7 +48,7 @@ public class NetTagClassifier implements TagClassifier {
         this.hasher = new VocabularyHasher(this.vocabulary);
 
         this.modelPath = modelPath;
-        if (modelPath.toFile().exists()) {
+        if (this.modelPath.toFile().exists()) {
             this.tagClassifierModel = SavedModelBundle.load(modelPath.toString(), "serve");
             this.tagClassifierFunc = this.tagClassifierModel.function(Signature.DEFAULT_KEY);
         } else {
@@ -186,6 +186,9 @@ public class NetTagClassifier implements TagClassifier {
     }
 
     private String modelToJSONString(final Path modelPath) {
+        if (!modelPath.toFile().exists()) {
+            return "";
+        }
         try {
             final Path temp = Files.createTempFile("model-", ".zip");
             Disk.zipDir(modelPath, temp.toFile());
