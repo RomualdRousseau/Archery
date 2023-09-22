@@ -103,21 +103,6 @@ public class NetTagClassifier implements TagClassifier {
         return this.predict(this.buildPredictEntry(name, entities, context));
     }
 
-    public List<String> getVocabulary() {
-        return this.vocabulary;
-    }
-
-    public List<String> getLexicon() {
-        return this.lexicon;
-    }
-
-    public TrainingEntry buildTrainingEntry(
-            final String name, final List<String> entities, final List<String> context, final String label) {
-        return new TrainingEntry(
-                this.buildPredictEntry(name, entities, context),
-                Text.pad_sequence(Text.to_categorical(label, this.model.getTagList()), OUT_TAG_SIZE));
-    }
-
     public Process fit(final List<List<Integer>> trainingSet, final List<List<Integer>> validationSet)
             throws IOException, InterruptedException, URISyntaxException {
 
@@ -146,7 +131,22 @@ public class NetTagClassifier implements TagClassifier {
                 .run("-V " + this.vocabulary.size(), "-s " + dimensions, "-t " + trainPath, "-m " + this.modelPath);
     }
 
-    private List<Integer> buildPredictEntry(final String name, final List<String> entities,
+    public List<String> getVocabulary() {
+        return this.vocabulary;
+    }
+
+    public List<String> getLexicon() {
+        return this.lexicon;
+    }
+
+    public TrainingEntry buildTrainingEntry(
+            final String name, final List<String> entities, final List<String> context, final String label) {
+        return new TrainingEntry(
+                this.buildPredictEntry(name, entities, context),
+                Text.pad_sequence(Text.to_categorical(label, this.model.getTagList()), OUT_TAG_SIZE));
+    }
+
+    public List<Integer> buildPredictEntry(final String name, final List<String> entities,
             final List<String> context) {
         final List<Integer> part1 = Text.to_categorical(entities, this.model.getEntityList());
         final List<Integer> part2 = Text.one_hot(name, this.model.getFilters(), this.tokenizer, this.hasher);
