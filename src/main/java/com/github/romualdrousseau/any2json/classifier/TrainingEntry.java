@@ -1,6 +1,8 @@
 package com.github.romualdrousseau.any2json.classifier;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class TrainingEntry {
 
@@ -10,21 +12,17 @@ public class TrainingEntry {
     }
 
     private List<Integer> value;
-
     public List<Integer> getValue() {
         return this.value;
     }
-
     public void setValue(final List<Integer> value) {
         this.value = value;
     }
 
     private List<Integer> label;
-
     public List<Integer> getLabel() {
         return this.label;
     }
-
     public void setLabel(final List<Integer> label) {
         this.label = label;
     }
@@ -41,6 +39,10 @@ public class TrainingEntry {
     public List<Integer> getContext() {
         return this.value.subList(NetTagClassifier.IN_ENTITY_SIZE + NetTagClassifier.IN_NAME_SIZE,
                 NetTagClassifier.IN_ENTITY_SIZE + NetTagClassifier.IN_NAME_SIZE + NetTagClassifier.IN_CONTEXT_SIZE);
+    }
+
+    public List<Integer> getVector() {
+        return Stream.of(this.value, this.label).flatMap(Collection::stream).toList();
     }
 
     public boolean isConflict(final TrainingEntry other) {
