@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
@@ -48,7 +49,7 @@ public class NetTagClassifier implements TagClassifier {
         this.hasher = new VocabularyHasher(this.vocabulary);
 
         this.modelPath = modelPath;
-        if (modelPath.toFile().exists()) {
+        if (this.modelPath.toFile().exists()) {
             this.tagClassifierModel = SavedModelBundle.load(modelPath.toString(), "serve");
             this.tagClassifierFunc = this.tagClassifierModel.function(Signature.DEFAULT_KEY);
         } else {
@@ -100,41 +101,39 @@ public class NetTagClassifier implements TagClassifier {
 
     @Override
     public String predict(final String name, final List<String> entities, final List<String> context) {
-        return this.predict(this.buildPredictEntry(name, entities, context));
+        if (this.tagClassifierFunc == null) {
+            return this.model.getTagList().get(0);
+        }
+
+        final var vector = this.createTrainingVector(name, entities, context).stream().mapToDouble(x -> x).toArray();
+        final var entityInput = Arrays.stream(vector, 0, IN_ENTITY_SIZE).toArray();
+        final var nameInput = Arrays.stream(vector, IN_ENTITY_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE).toArray();
+        final var contextInput = Arrays
+                .stream(vector, IN_ENTITY_SIZE + IN_NAME_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE + IN_CONTEXT_SIZE)
+                .toArray();
+        final Map<String, org.tensorflow.Tensor> inputs = Map.of(
+                "entity_input", Tensor.of(entityInput).reshape(1, -1).toTFloat32(),
+                "name_input", Tensor.of(nameInput).reshape(1, -1).toTFloat32(),
+                "context_input", Tensor.of(contextInput).reshape(1, -1).toTFloat32());
+
+        final var result = Tensor.of((TFloat32) this.tagClassifierFunc.call(inputs).get("tag_output").get());
+        return this.model.getTagList().get((int) result.argmax(1).item(0));
     }
 
-    public List<String> getVocabulary() {
-        return this.vocabulary;
-    }
-
-    public List<String> getLexicon() {
-        return this.lexicon;
-    }
-
-    public TrainingEntry buildTrainingEntry(
-            final String name, final List<String> entities, final List<String> context, final String label) {
-        return new TrainingEntry(
-                this.buildPredictEntry(name, entities, context),
-                Text.pad_sequence(Text.to_categorical(label, this.model.getTagList()), OUT_TAG_SIZE));
-    }
-
-    public Process fit(final List<List<Integer>> trainingSet, final List<List<Integer>> validationSet)
+    public Process fit(final List<TrainingEntry> trainingSet, final List<TrainingEntry> validationSet)
             throws IOException, InterruptedException, URISyntaxException {
 
         final String dimensions = String.format("%d,%d,%d,%d", IN_ENTITY_SIZE, IN_NAME_SIZE, IN_CONTEXT_SIZE,
                 OUT_TAG_SIZE);
 
         final Path trainPath = Files.createTempDirectory("any2json").toAbsolutePath();
+
         final JSONArray list1 = JSON.newArray();
-        trainingSet.forEach(x -> {
-            list1.append(JSON.arrayOf(x.toString()));
-        });
+        trainingSet.forEach(x -> list1.append(JSON.arrayOf(x.getVector().toString())));
         JSON.saveArray(list1, trainPath.resolve("training.json"));
 
         final JSONArray list2 = JSON.newArray();
-        validationSet.forEach(x -> {
-            list2.append(JSON.arrayOf(x.toString()));
-        });
+        validationSet.forEach(x -> list2.append(JSON.arrayOf(x.getVector().toString())));
         JSON.saveArray(list2, trainPath.resolve("validation.json"));
 
         final Map<String, String> disableTFLog = Map.of(
@@ -146,7 +145,22 @@ public class NetTagClassifier implements TagClassifier {
                 .run("-V " + this.vocabulary.size(), "-s " + dimensions, "-t " + trainPath, "-m " + this.modelPath);
     }
 
-    private List<Integer> buildPredictEntry(final String name, final List<String> entities,
+    public List<String> getVocabulary() {
+        return this.vocabulary;
+    }
+
+    public List<String> getLexicon() {
+        return this.lexicon;
+    }
+
+    public TrainingEntry createTrainingEntry(
+            final String name, final List<String> entities, final List<String> context, final String label) {
+        return new TrainingEntry(
+                this.createTrainingVector(name, entities, context),
+                Text.pad_sequence(Text.to_categorical(label, this.model.getTagList()), OUT_TAG_SIZE));
+    }
+
+    private List<Integer> createTrainingVector(final String name, final List<String> entities,
             final List<String> context) {
         final List<Integer> part1 = Text.to_categorical(entities, this.model.getEntityList());
         final List<Integer> part2 = Text.one_hot(name, this.model.getFilters(), this.tokenizer, this.hasher);
@@ -162,30 +176,10 @@ public class NetTagClassifier implements TagClassifier {
                 .toList();
     }
 
-    private String predict(final List<Integer> predictSet) {
-        if (this.tagClassifierFunc == null) {
-            return this.model.getTagList().get(0);
-        }
-
-        final double[] entityInput = predictSet.subList(0, IN_ENTITY_SIZE).stream().mapToDouble(x -> x).toArray();
-
-        final double[] nameInput = predictSet.subList(IN_ENTITY_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE).stream()
-                .mapToDouble(x -> x).toArray();
-
-        final double[] contextInput = predictSet
-                .subList(IN_ENTITY_SIZE + IN_NAME_SIZE, IN_ENTITY_SIZE + IN_NAME_SIZE + IN_CONTEXT_SIZE).stream()
-                .mapToDouble(x -> x).toArray();
-
-        final Map<String, org.tensorflow.Tensor> inputs = Map.of(
-                "entity_input", Tensor.of(entityInput).reshape(1, -1).toTFloat32(),
-                "name_input", Tensor.of(nameInput).reshape(1, -1).toTFloat32(),
-                "context_input", Tensor.of(contextInput).reshape(1, -1).toTFloat32());
-
-        final Tensor result = Tensor.of((TFloat32) this.tagClassifierFunc.call(inputs).get("tag_output").get());
-        return this.model.getTagList().get((int) result.argmax(1).item(0));
-    }
-
     private String modelToJSONString(final Path modelPath) {
+        if (!modelPath.toFile().exists()) {
+            return "";
+        }
         try {
             final Path temp = Files.createTempFile("model-", ".zip");
             Disk.zipDir(modelPath, temp.toFile());
