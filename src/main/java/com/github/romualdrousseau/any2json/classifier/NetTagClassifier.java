@@ -49,7 +49,7 @@ public class NetTagClassifier implements TagClassifier {
         this.hasher = new VocabularyHasher(this.vocabulary);
 
         this.modelPath = modelPath;
-        if (this.modelPath.toFile().exists()) {
+        if (this.modelPath != null && this.modelPath.toFile().exists()) {
             this.tagClassifierModel = SavedModelBundle.load(modelPath.toString(), "serve");
             this.tagClassifierFunc = this.tagClassifierModel.function(Signature.DEFAULT_KEY);
         } else {
@@ -78,8 +78,8 @@ public class NetTagClassifier implements TagClassifier {
                 : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
 
-        this.modelPath = this.JSONStringToModel(model.toJSON().getString("model"));
-        if (modelPath.toFile().exists()) {
+        this.modelPath = this.JSONStringToModelPath(model.toJSON().getString("model"));
+        if (this.modelPath != null && modelPath.toFile().exists()) {
             this.tagClassifierModel = SavedModelBundle.load(modelPath.toString(), "serve");
             this.tagClassifierFunc = this.tagClassifierModel.function(Signature.DEFAULT_KEY);
         } else {
@@ -91,7 +91,7 @@ public class NetTagClassifier implements TagClassifier {
 
     @Override
     public void close() throws Exception {
-        if (this.modelIsTemp) {
+        if (this.modelIsTemp && this.modelPath != null) {
             Disk.deleteDir(this.modelPath);
         }
         if (this.tagClassifierModel != null) {
@@ -177,7 +177,7 @@ public class NetTagClassifier implements TagClassifier {
     }
 
     private String modelToJSONString(final Path modelPath) {
-        if (!modelPath.toFile().exists()) {
+        if (modelPath == null || !modelPath.toFile().exists()) {
             return "";
         }
         try {
@@ -189,7 +189,10 @@ public class NetTagClassifier implements TagClassifier {
         }
     }
 
-    private Path JSONStringToModel(final String modelString) {
+    private Path JSONStringToModelPath(final String modelString) {
+        if (modelString == null) {
+            return null;
+        }
         try {
             final Path temp1 = Files.createTempFile("model-", ".zip");
             final Path modelPath = Files.createTempDirectory("model-");
