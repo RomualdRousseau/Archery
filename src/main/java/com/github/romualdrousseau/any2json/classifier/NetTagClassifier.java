@@ -1,6 +1,7 @@
 package com.github.romualdrousseau.any2json.classifier;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,6 +21,7 @@ import org.tensorflow.types.TFloat32;
 import com.github.romualdrousseau.any2json.TagClassifier;
 import com.github.romualdrousseau.any2json.Model;
 import com.github.romualdrousseau.any2json.util.Disk;
+import com.github.romualdrousseau.any2json.util.TempFile;
 import com.github.romualdrousseau.shuju.commons.PythonManager;
 import com.github.romualdrousseau.shuju.json.JSON;
 import com.github.romualdrousseau.shuju.json.JSONArray;
@@ -36,6 +38,18 @@ public class NetTagClassifier implements TagClassifier {
     public static final int IN_CONTEXT_SIZE = 100;
     public static final int OUT_TAG_SIZE = 64;
 
+    private final Model model;
+    private final List<String> vocabulary;
+    private final int ngrams;
+    private final int wordMinSize;
+    private final List<String> lexicon;
+    private final Text.ITokenizer tokenizer;
+    private final Text.IHasher hasher;
+
+    private Path modelPath;
+    private SavedModelBundle tagClassifierModel;
+    private SessionFunction tagClassifierFunc;
+
     public NetTagClassifier(final Model model, final List<String> vocabulary, final int ngrams, final int wordMinSize,
             final List<String> lexicon, final Path modelPath) {
         this.model = model;
@@ -43,20 +57,9 @@ public class NetTagClassifier implements TagClassifier {
         this.ngrams = ngrams;
         this.wordMinSize = wordMinSize;
         this.lexicon = lexicon;
-
         this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, this.wordMinSize)
                 : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
-
-        this.modelPath = modelPath;
-        if (this.modelPath != null && this.modelPath.toFile().exists()) {
-            this.tagClassifierModel = SavedModelBundle.load(modelPath.toString(), "serve");
-            this.tagClassifierFunc = this.tagClassifierModel.function(Signature.DEFAULT_KEY);
-        } else {
-            this.tagClassifierModel = null;
-            this.tagClassifierFunc = null;
-        }
-        this.modelIsTemp = false;
 
         // Update the model with the classifier parameters
 
@@ -64,7 +67,7 @@ public class NetTagClassifier implements TagClassifier {
         this.model.toJSON().setInt("ngram", this.ngrams);
         this.model.toJSON().setInt("wordMinSize", this.wordMinSize);
         this.model.toJSON().setArray("lexicon", JSON.arrayOf(this.lexicon));
-        this.model.toJSON().setString("model", this.modelToJSONString(this.modelPath));
+        this.model.toJSON().setString("model", this.modelToJSONString(modelPath));
     }
 
     public NetTagClassifier(final Model model) {
@@ -73,37 +76,24 @@ public class NetTagClassifier implements TagClassifier {
         this.ngrams = model.toJSON().getInt("ngrams");
         this.wordMinSize = model.toJSON().getInt("wordMinSize");
         this.lexicon = JSON.<String>streamOf(model.toJSON().getArray("lexicon")).toList();
-
         this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, this.wordMinSize)
                 : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
-
-        this.modelPath = this.JSONStringToModelPath(model.toJSON().getString("model"));
-        if (this.modelPath != null && modelPath.toFile().exists()) {
-            this.tagClassifierModel = SavedModelBundle.load(modelPath.toString(), "serve");
-            this.tagClassifierFunc = this.tagClassifierModel.function(Signature.DEFAULT_KEY);
-        } else {
-            this.tagClassifierModel = null;
-            this.tagClassifierFunc = null;
-        }
-        this.modelIsTemp = true;
     }
 
     @Override
     public void close() throws Exception {
-        if (this.modelIsTemp && this.modelPath != null) {
-            Disk.deleteDir(this.modelPath);
+        if (tagClassifierModel != null) {
+            tagClassifierModel.close();
         }
-        if (this.tagClassifierModel != null) {
-            this.tagClassifierModel.close();
+        if (this.modelPath != null) {
+            Disk.deleteDir(modelPath);
         }
     }
 
     @Override
     public String predict(final String name, final List<String> entities, final List<String> context) {
-        if (this.tagClassifierFunc == null) {
-            return this.model.getTagList().get(0);
-        }
+        this.ensureClassifierLoaded();
 
         final var vector = this.createTrainingVector(name, entities, context).stream().mapToDouble(x -> x).toArray();
         final var entityInput = Arrays.stream(vector, 0, IN_ENTITY_SIZE).toArray();
@@ -116,7 +106,7 @@ public class NetTagClassifier implements TagClassifier {
                 "name_input", Tensor.of(nameInput).reshape(1, -1).toTFloat32(),
                 "context_input", Tensor.of(contextInput).reshape(1, -1).toTFloat32());
 
-        final var result = Tensor.of((TFloat32) this.tagClassifierFunc.call(inputs).get("tag_output").get());
+        final var result = Tensor.of((TFloat32) tagClassifierFunc.call(inputs).get("tag_output").get());
         return this.model.getTagList().get((int) result.argmax(1).item(0));
     }
 
@@ -176,16 +166,23 @@ public class NetTagClassifier implements TagClassifier {
                 .toList();
     }
 
+    private void ensureClassifierLoaded() {
+        if (this.tagClassifierModel == null) {
+            this.modelPath = this.JSONStringToModelPath(model.toJSON().getString("model"));
+            this.tagClassifierModel = SavedModelBundle.load(modelPath.toString(), "serve");
+            this.tagClassifierFunc = this.tagClassifierModel.function(Signature.DEFAULT_KEY);
+        }
+    }
+
     private String modelToJSONString(final Path modelPath) {
         if (modelPath == null || !modelPath.toFile().exists()) {
             return "";
         }
-        try {
-            final Path temp = Files.createTempFile("model-", ".zip");
-            Disk.zipDir(modelPath, temp.toFile());
-            return Base64.getEncoder().encodeToString(Files.readAllBytes(temp));
+        try (final var temp = new TempFile("model-", ".zip")) {
+            Disk.zipDir(modelPath, temp.getPath().toFile());
+            return Base64.getEncoder().encodeToString(Files.readAllBytes(temp.getPath()));
         } catch (final IOException x) {
-            throw new RuntimeException(x);
+            throw new UncheckedIOException(x);
         }
     }
 
@@ -193,26 +190,14 @@ public class NetTagClassifier implements TagClassifier {
         if (modelString == null) {
             return null;
         }
-        try {
-            final Path temp1 = Files.createTempFile("model-", ".zip");
-            final Path modelPath = Files.createTempDirectory("model-");
-            Files.write(temp1, Base64.getDecoder().decode(modelString), StandardOpenOption.CREATE);
-            Disk.unzipDir(temp1, modelPath);
+        try (final var temp = new TempFile("model-", ".zip")) {
+            Files.write(temp.getPath(), Base64.getDecoder().decode(modelString), StandardOpenOption.CREATE);
+            final var modelPath = Files.createTempDirectory("model-");
+            Disk.unzipDir(temp.getPath(), modelPath);
+            modelPath.toFile().deleteOnExit();
             return modelPath;
         } catch (final IOException x) {
-            throw new RuntimeException(x);
+            throw new UncheckedIOException(x);
         }
     }
-
-    private final Model model;
-    private final List<String> vocabulary;
-    private final int ngrams;
-    private final int wordMinSize;
-    private final List<String> lexicon;
-    private final Path modelPath;
-    private final Text.ITokenizer tokenizer;
-    private final Text.IHasher hasher;
-    private final SavedModelBundle tagClassifierModel;
-    private final SessionFunction tagClassifierFunc;
-    private final boolean modelIsTemp;
 }
