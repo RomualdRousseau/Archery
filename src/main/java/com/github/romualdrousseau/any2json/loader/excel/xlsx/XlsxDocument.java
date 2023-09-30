@@ -64,21 +64,21 @@ public class XlsxDocument extends BaseDocument {
             return this.sheets.size() > 0;
 
         } catch (IllegalArgumentException | IOException | OpenXML4JException | GeneralSecurityException e) {
-            close();
+            this.close();
             return false;
         }
     }
 
     @Override
     public void close() {
-        this.sheets.clear();
-        if (this.opcPackage != null) {
-            try {
-                this.opcPackage.close();
-                this.opcPackage = null;
-            } catch (final IOException ignore) {
-            }
+        if (this.sheets != null) {
+            this.sheets.clear();
         }
+        if (this.opcPackage != null) {
+            this.opcPackage.revert();
+            this.opcPackage = null;
+        }
+        super.close();
     }
 
     @Override

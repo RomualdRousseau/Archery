@@ -44,7 +44,9 @@ public class XmlDocument extends BaseDocument {
 
     @Override
     public void close() {
-        this.sheets.clear();
+        if (this.sheets != null) {
+            this.sheets.clear();
+        }
     }
 
     @Override

@@ -47,7 +47,7 @@ public class XlsDocument extends BaseDocument {
             return this.sheets.size() > 0;
 
         } catch (EncryptedDocumentException | IOException e) {
-            close();
+            this.close();
             return false;
 
         } finally {
@@ -64,7 +64,9 @@ public class XlsDocument extends BaseDocument {
 
     @Override
     public void close() {
-        this.sheets.clear();
+        if (this.sheets != null) {
+            this.sheets.clear();
+        }
     }
 
     @Override
