@@ -43,7 +43,7 @@ public class CsvDocument extends BaseDocument {
                 this.sheet = null;
             }
         } catch (final IOException x) {
-            // throw new RuntimeException(x);
+            // throw new UncheckedIOException(x);
         }
     }
 
