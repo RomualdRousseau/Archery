@@ -10,6 +10,7 @@ import com.github.romualdrousseau.any2json.base.RowGroup;
 import com.github.romualdrousseau.any2json.header.DataTableHeader;
 import com.github.romualdrousseau.any2json.header.MetaGroupHeader;
 import com.github.romualdrousseau.any2json.header.MetaTableHeader;
+import com.github.romualdrousseau.any2json.header.PivotEntry;
 import com.github.romualdrousseau.any2json.header.PivotKeyHeader;
 
 public class DataTableGroupSubFooterParser extends DataTableParser {
@@ -29,7 +30,7 @@ public class DataTableGroupSubFooterParser extends DataTableParser {
 
         this.firstRowCell = null;
         this.currRowGroup = null;
-        this.firstRowHeader = false;
+        this.firstRowHeader = true;
         this.firstRowGroupProcessed = false;
         this.footerProcessed = false;
     }
@@ -97,40 +98,56 @@ public class DataTableGroupSubFooterParser extends DataTableParser {
     private void processHeader(final BaseCell cell, final String symbol) {
         if (symbol.equals("$")) {
             this.dataTable.setFirstRowOffset(this.getRow() + 1);
-            if (!this.firstRowHeader) {
+            if (this.firstRowHeader) {
                 this.dataTable.setHeaderRowOffset(this.getRow());
-                this.firstRowHeader = true;
+                this.firstRowHeader = false;
             }
-        } else if (!this.firstRowHeader) {
-            if (!this.disablePivot && symbol.equals("e") && cell.isPivotHeader()) {
+        } else if (this.firstRowHeader) {
+            if (!this.disablePivot && symbol.equals("e") && cell.isPivotHeader() && cell.getColumnIndex() > 0) {
                 final PivotKeyHeader foundPivot = this.dataTable.findFirstPivotHeader();
                 if (foundPivot == null) {
                     this.dataTable.addHeader(new PivotKeyHeader(this.dataTable, cell));
-                } else {
+                } else{
                     foundPivot.addEntry(cell);
                 }
             } else {
                 this.dataTable.addHeader(new DataTableHeader(this.dataTable, cell));
-                for (int i = 0; i < cell.getMergedCount() - 1; i++) {
-                    final BaseCell clonedCell = new BaseCell(cell.getValue(), cell.getColumnIndex() + i + 1, 1, cell.getSheet());
+                for (int i = 1; i < cell.getMergedCount(); i++) {
+                    final BaseCell clonedCell = new BaseCell(cell.getValue(), cell.getColumnIndex() + i, 1,
+                            cell.getSheet());
                     this.dataTable.addHeader(new DataTableHeader(this.dataTable, clonedCell));
                 }
             }
         } else {
-            BaseHeader header = this.dataTable.getHeaderAt(cell.getColumnIndex() - this.dataTable.getFirstColumn());
+            BaseHeader header = this.dataTable.findHeaderByIndex(cell.getColumnIndex());
+            PivotEntry pivotEntry = null;
             if (header == null) {
-                header = new DataTableHeader(this.dataTable, cell);
-                this.dataTable.addHeader(header);
+                final PivotKeyHeader foundPivot = this.dataTable.findFirstPivotHeader();
+                if (foundPivot == null) {
+                    header = new DataTableHeader(this.dataTable, cell);
+                    this.dataTable.addHeader(header);
+                } else {
+                    pivotEntry = foundPivot.getEntries().stream()
+                            .filter(x -> x.getCell().getColumnIndex() == cell.getColumnIndex())
+                            .findFirst()
+                            .orElse(null);
+                }
             }
-            if (cell.hasValue() && !header.getName().contains(cell.getValue())) {
-                if (header instanceof PivotKeyHeader) {
-                    final PivotKeyHeader pivotHeader = (PivotKeyHeader) header;
-                    final String newValueName = (pivotHeader.getValueName() + " " + cell.getValue()).trim();
-                    pivotHeader.updateValueName(newValueName);
-                } else if (header instanceof DataTableHeader) {
-                    final DataTableHeader dataHeader = (DataTableHeader) header;
-                    final String newName = (dataHeader.getName() + " " + cell.getValue()).trim();
-                    dataHeader.setName(newName);
+            if (header != null) {
+                if (cell.hasValue() && !header.getName().contains(cell.getValue())) {
+                    if (header instanceof PivotKeyHeader) {
+                        final PivotKeyHeader foundPivot = (PivotKeyHeader) header;
+                        pivotEntry = foundPivot.getEntries().get(0);
+                    } else if (header instanceof DataTableHeader) {
+                        final DataTableHeader dataHeader = (DataTableHeader) header;
+                        final String newName = (dataHeader.getName() + " " + cell.getValue()).trim();
+                        dataHeader.setName(newName);
+                    }
+                }
+            }
+            if (pivotEntry != null) {
+                if (cell.hasValue() && !pivotEntry.getTypeValue().contains(cell.getValue())) {
+                    pivotEntry.setTypeValue((pivotEntry.getTypeValue() + " " + cell.getValue()).trim());
                 }
             }
         }
