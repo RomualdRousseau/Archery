@@ -22,6 +22,22 @@ public abstract class BaseDocument implements Document {
     }
 
     @Override
+    public void close() {
+        try {
+            if (this.tableParser != null) {
+                this.tableParser.close();
+                this.tableParser = null;
+            }
+            if (this.tagClassifier != null) {
+                this.tagClassifier.close();
+                this.tagClassifier = null;
+            }
+        } catch (Exception x) {
+            throw new RuntimeException(x);
+        }
+    }
+
+    @Override
     public SheetParser getSheetParser() {
         return this.sheetParser;
     }
@@ -43,7 +59,7 @@ public abstract class BaseDocument implements Document {
 
     @Override
     public Document setModel(Model model) {
-        this.model =model;
+        this.model = model;
         return this;
     }
 
@@ -97,19 +113,19 @@ public abstract class BaseDocument implements Document {
     }
 
     public void updateParsersAndClassifiers() {
-        if(this.hints.contains(Document.Hint.INTELLI_LAYOUT)) {
+        if (this.hints.contains(Document.Hint.INTELLI_LAYOUT)) {
             this.sheetParser = new SheetBitmapParser();
             this.tableParser = DynamicPackages.GetElementParserFactory()
-                .map(x -> x.newInstance(this.model))
-                .orElseGet(SimpleTableParser::new);
-        }else {
+                    .map(x -> x.newInstance(this.model))
+                    .orElseGet(SimpleTableParser::new);
+        } else {
             this.sheetParser = new SimpleSheetParser();
             this.tableParser = new SimpleTableParser();
         }
-        if(this.hints.contains(Document.Hint.INTELLI_TAG)) {
+        if (this.hints.contains(Document.Hint.INTELLI_TAG)) {
             this.tagClassifier = DynamicPackages.GetTagClassifierFactory()
-                .map(x -> x.newInstance(this.model))
-                .orElseGet(SimpleTagClassifier::new);
+                    .map(x -> x.newInstance(this.model))
+                    .orElseGet(SimpleTagClassifier::new);
         } else {
             this.tagClassifier = new SimpleTagClassifier();
         }
