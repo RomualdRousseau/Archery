@@ -78,7 +78,7 @@
         <dependency>
             <groupId>com.github.romualdrousseau</groupId>
             <artifactId>shuju</artifactId>
-            <version>1.21</version>
+            <version>1.22-SNAPSHOT</version>
         </dependency>
         <!-- Test Framework -->
         <dependency>
