@@ -13,7 +13,7 @@ public class DropColumnsWhenEntropyLessThan {
             final HashMap<String, Double> x = new HashMap<>();
             int n = 0;
             for(int i = 0; i <= sheet.getLastRowNum(); i++) {
-                if(sheet.hasCellDataAt(j, i)) {
+                if(sheet.hasCellDataAt(j, i) && !sheet.getCellDataAt(j, i).isBlank()) {
                     final String value = sheet.getCellDataAt(j, i);
                     if (!StringUtils.isFastBlank(value)) {
                         x.put(value, x.getOrDefault(value, 0.0) + 1.0);

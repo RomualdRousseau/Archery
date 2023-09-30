@@ -22,7 +22,11 @@ public class PivotEntry {
         return this.typeValue;
     }
 
+    public void setTypeValue(final String typeValue) {
+        this.typeValue = typeValue;
+    }
+
     private final BaseCell cell;
     private final String pivotValue;
-    private final String typeValue;
+    private String typeValue;
 }

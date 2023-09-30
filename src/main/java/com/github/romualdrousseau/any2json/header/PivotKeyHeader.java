@@ -2,6 +2,8 @@ package com.github.romualdrousseau.any2json.header;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.base.BaseHeader;
@@ -36,8 +38,12 @@ public class PivotKeyHeader extends MetaHeader {
         return this.entries;
     }
 
-    public void addEntry(final BaseCell entry) {
-        this.entries.add(new PivotEntry(entry));
+    public Set<String> getEntryTypes() {
+        return this.entries.stream().map(x -> x.getTypeValue()).collect(Collectors.toSet());
+    }
+
+    public Set<String> getEntryValues() {
+        return this.entries.stream().map(x -> x.getValue()).collect(Collectors.toSet());
     }
 
     public String getValueName() {
@@ -54,6 +60,10 @@ public class PivotKeyHeader extends MetaHeader {
 
     public PivotTypeHeader getPivotType() {
         return new PivotTypeHeader(this, this.valueName);
+    }
+
+    public void addEntry(final BaseCell entry) {
+        this.entries.add(new PivotEntry(entry));
     }
 
     private final List<PivotEntry> entries;

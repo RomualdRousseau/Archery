@@ -218,6 +218,15 @@ public class BaseTable implements Table, Visitable {
         return result;
     }
 
+    public BaseHeader findHeaderByIndex(final int index) {
+        for (final Header header : this.headers()) {
+            if (((BaseHeader) header).getColumnIndex() == index) {
+                return (BaseHeader) header;
+            }
+        }
+        return null;
+    }
+
     private final RowCache cachedRows;
     private final List<Integer> ignoreRows;
     private final BaseSheet sheet;

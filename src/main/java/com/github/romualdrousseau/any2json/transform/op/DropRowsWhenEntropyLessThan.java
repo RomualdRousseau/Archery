@@ -13,7 +13,7 @@ public class DropRowsWhenEntropyLessThan {
             final HashMap<String, Double> x = new HashMap<>();
             int n = 0;
             for(int j = 0; j <= sheet.getLastColumnNum(i); j++) {
-                if(sheet.hasCellDataAt(j, i)) {
+                if(sheet.hasCellDataAt(j, i) && !sheet.getCellDataAt(j, i).isBlank()) {
                     final String value = sheet.getCellDataAt(j, i);
                     if (!StringUtils.isFastBlank(sheet.getCellDataAt(j, i))) {
                         x.put(value, x.getOrDefault(value, 0.0) + 1.0);

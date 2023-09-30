@@ -11,7 +11,8 @@ import com.github.romualdrousseau.any2json.transform.op.DropColumnsWhenFillRatio
 import com.github.romualdrousseau.any2json.transform.op.DropRow;
 import com.github.romualdrousseau.any2json.transform.op.DropRowsWhenEntropyLessThan;
 import com.github.romualdrousseau.any2json.transform.op.DropRowsWhenFillRatioLessThan;
-import com.github.romualdrousseau.any2json.transform.op.RepeatCell;
+import com.github.romualdrousseau.any2json.transform.op.RepeatColumnCell;
+import com.github.romualdrousseau.any2json.transform.op.RepeatRowCell;
 import com.github.romualdrousseau.shuju.strings.StringUtils;
 
 /**
@@ -82,7 +83,7 @@ public class TransformableSheet {
      */
     @Deprecated
     public void mergeCell(final int colIndex) {
-        RepeatCell.Apply(this.sheet, colIndex);
+        RepeatColumnCell.Apply(this.sheet, colIndex);
     }
 
     /**
@@ -91,8 +92,18 @@ public class TransformableSheet {
      *
      * @param colIndex the column index
      */
-    public void repeatCell(final int colIndex) {
-        RepeatCell.Apply(this.sheet, colIndex);
+    public void repeatColumnCell(final int colIndex) {
+        RepeatColumnCell.Apply(this.sheet, colIndex);
+    }
+
+    /**
+     * This method repeat the value for all the cells in the row specified by the given row index.
+     * The value of a given cell is copied to all blank cells on the right of it.
+     *
+     * @param rowIndex the row index
+     */
+    public void repeatRowCell(final int rowIndex) {
+        RepeatRowCell.Apply(this.sheet, rowIndex);
     }
 
     /**

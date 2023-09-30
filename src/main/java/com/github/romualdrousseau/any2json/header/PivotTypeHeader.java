@@ -16,9 +16,14 @@ public class PivotTypeHeader extends PivotKeyHeader {
         }
     }
 
+    public PivotTypeHeader setName(final String name) {
+        this.name = name;
+        return this;
+    }
+
     @Override
-    public PivotValueHeader clone() {
-        return new PivotValueHeader(this, this.name);
+    public PivotTypeHeader clone() {
+        return new PivotTypeHeader(this, this.name);
     }
 
     private String name;
