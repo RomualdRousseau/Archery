@@ -79,7 +79,7 @@ public class TransformableSheet {
      *
      * @param colIndex the column index
      *
-     * @deprecated use {@link TransformableSheet#repeatCell(int)}
+     * @deprecated use {@link TransformableSheet#repeatRowCell(int)}
      */
     @Deprecated
     public void mergeCell(final int colIndex) {
