@@ -34,7 +34,6 @@
         <maven.compiler.target>17</maven.compiler.target>
 
         <slf4j.version>2.0.9</slf4j.version>
-        <shuju.version>1.22-SNAPSHOT</shuju.version>
         <any2json.version>2.34-SNAPSHOT</any2json.version>
 
         <junit.version>4.13.2</junit.version>
