@@ -45,6 +45,7 @@ public class NetTagClassifier implements TagClassifier {
     private final List<String> lexicon;
     private final Text.ITokenizer tokenizer;
     private final Text.IHasher hasher;
+    private final boolean isModelTemp;
 
     private Path modelPath;
     private SavedModelBundle tagClassifierModel;
@@ -60,6 +61,8 @@ public class NetTagClassifier implements TagClassifier {
         this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, this.wordMinSize)
                 : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
+        this.modelPath = modelPath;
+        this.isModelTemp = false;
 
         // Update the model with the classifier parameters
 
@@ -79,14 +82,18 @@ public class NetTagClassifier implements TagClassifier {
         this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, this.wordMinSize)
                 : new NgramTokenizer(this.ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
+        this.modelPath = null;
+        this.isModelTemp = true;
     }
 
     @Override
     public void close() throws Exception {
         if (tagClassifierModel != null) {
             tagClassifierModel.close();
+            tagClassifierModel = null;
+            tagClassifierFunc = null;
         }
-        if (this.modelPath != null) {
+        if (this.modelPath != null && this.isModelTemp) {
             Disk.deleteDir(modelPath);
         }
     }
@@ -112,6 +119,15 @@ public class NetTagClassifier implements TagClassifier {
 
     public Process fit(final List<TrainingEntry> trainingSet, final List<TrainingEntry> validationSet)
             throws IOException, InterruptedException, URISyntaxException {
+
+        if (this.modelPath == null) {
+            this.modelPath = this.JSONStringToModelPath(model.toJSON().getString("model"));
+        }
+        if (tagClassifierModel != null) {
+            tagClassifierModel.close();
+            tagClassifierModel = null;
+            tagClassifierFunc = null;
+        }
 
         final String dimensions = String.format("%d,%d,%d,%d", IN_ENTITY_SIZE, IN_NAME_SIZE, IN_CONTEXT_SIZE,
                 OUT_TAG_SIZE);
@@ -150,6 +166,10 @@ public class NetTagClassifier implements TagClassifier {
                 Text.pad_sequence(Text.to_categorical(label, this.model.getTagList()), OUT_TAG_SIZE));
     }
 
+    public void updateModel() {
+        this.model.toJSON().setString("model", this.modelToJSONString(modelPath));
+    }
+
     private List<Integer> createTrainingVector(final String name, final List<String> entities,
             final List<String> context) {
         final List<Integer> part1 = Text.to_categorical(entities, this.model.getEntityList());
@@ -167,8 +187,10 @@ public class NetTagClassifier implements TagClassifier {
     }
 
     private void ensureClassifierLoaded() {
-        if (this.tagClassifierModel == null) {
+        if (this.modelPath == null) {
             this.modelPath = this.JSONStringToModelPath(model.toJSON().getString("model"));
+        }
+        if (this.tagClassifierModel == null) {
             this.tagClassifierModel = SavedModelBundle.load(modelPath.toString(), "serve");
             this.tagClassifierFunc = this.tagClassifierModel.function(Signature.DEFAULT_KEY);
         }
