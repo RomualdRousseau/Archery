@@ -63,14 +63,7 @@ public class NetTagClassifier implements TagClassifier {
         this.hasher = new VocabularyHasher(this.vocabulary);
         this.modelPath = modelPath;
         this.isModelTemp = false;
-
-        // Update the model with the classifier parameters
-
-        this.model.toJSON().setArray("vocabulary", JSON.arrayOf(this.vocabulary));
-        this.model.toJSON().setInt("ngram", this.ngrams);
-        this.model.toJSON().setInt("wordMinSize", this.wordMinSize);
-        this.model.toJSON().setArray("lexicon", JSON.arrayOf(this.lexicon));
-        this.model.toJSON().setString("model", this.modelToJSONString(modelPath));
+        this.updateModel();
     }
 
     public NetTagClassifier(final Model model) {
@@ -167,7 +160,11 @@ public class NetTagClassifier implements TagClassifier {
     }
 
     public void updateModel() {
-        this.model.toJSON().setString("model", this.modelToJSONString(modelPath));
+        this.model.toJSON().setArray("vocabulary", JSON.arrayOf(this.vocabulary));
+        this.model.toJSON().setInt("ngram", this.ngrams);
+        this.model.toJSON().setInt("wordMinSize", this.wordMinSize);
+        this.model.toJSON().setArray("lexicon", JSON.arrayOf(this.lexicon));
+        this.model.toJSON().setString("model", this.modelToJSONString(this.modelPath));
     }
 
     private List<Integer> createTrainingVector(final String name, final List<String> entities,
