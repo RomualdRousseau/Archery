@@ -17,7 +17,10 @@ public class SimpleTagClassifier implements TagClassifier {
 
     private String ensureTagStyle(final String text) {
         if (text.indexOf(" ") > 0) {
-            return text.replaceAll("\\W+", " ").trim().replaceAll(" ", "_").toLowerCase();
+            return text
+                    .replaceAll("%", "percent")
+                    .replaceAll("$", "dollar")
+                    .replaceAll("\\W+", " ").trim().replaceAll(" ", "_").toLowerCase();
         } else {
             return text.replaceAll("\\W+", "");
         }
