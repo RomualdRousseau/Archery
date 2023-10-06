@@ -18,11 +18,20 @@ public class SimpleTagClassifier implements TagClassifier {
     private String ensureTagStyle(final String text) {
         if (text.indexOf(" ") > 0) {
             return text
-                    .replaceAll("%", "percent")
-                    .replaceAll("$", "dollar")
-                    .replaceAll("\\W+", " ").trim().replaceAll(" ", "_").toLowerCase();
+                    .replaceAll("%+", "percent")
+                    .replaceAll("\\$+", "dollar")
+                    .replaceAll("\\W+", " ")
+                    .trim()
+                    .replaceAll("\\s+", "_")
+                    .replaceAll("_+", "_")
+                    .toLowerCase();
         } else {
-            return text.replaceAll("\\W+", "");
+            return text
+                    .replaceAll("%+", "percent")
+                    .replaceAll("\\$+", "dollar")
+                    .replaceAll("\\W+", "")
+                    .trim()
+                    .toLowerCase();
         }
     }
 }
