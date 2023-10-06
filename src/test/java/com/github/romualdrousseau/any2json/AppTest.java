@@ -18,6 +18,26 @@ public class AppTest {
      * Rigorous Test :-)
      */
     @Test
+    public void testReadWithoutIntelliLayexAndTag() {
+        final File file = this.getResourceFile("Results_Gidy_FY2324.xlsx");
+
+        final Model model = ModelDB.createConnection("sales-english");
+
+        try (final Document doc = DocumentFactory.createInstance(file, "UTF-8")
+                .setModel(model)) {
+            doc.sheets().forEach(s -> s.getTable().ifPresent(t -> t.headers().forEach(h -> System.out.print(h.getTag().getValue() + " "))));
+            System.out.println();
+            doc.sheets().forEach(s -> s.getTable().ifPresent(t -> StreamSupport.stream(t.rows().spliterator(), false).limit(5).forEach(r -> {
+                r.cells().forEach(c -> System.out.print(c.getValue() + " "));
+                System.out.println();
+            })));
+        }
+    }
+
+    /**
+     * Rigorous Test :-)
+     */
+    @Test
     public void testReadWithIntelliLayexAndTag() {
         final File file = this.getResourceFile("HongKong - ZUELLIG - Sales - 20220305.xlsx");
 
