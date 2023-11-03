@@ -36,6 +36,7 @@
         <slf4j.version>2.0.9</slf4j.version>
         <shuju.version>1.22-SNAPSHOT</shuju.version>
         <any2json.version>2.34-SNAPSHOT</any2json.version>
+        <jackson.version>2.15.2</jackson.version>
 
         <junit.version>4.13.2</junit.version>
         <hamcrest.version>2.2</hamcrest.version>
@@ -80,6 +81,36 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-buffer</artifactId>
+                <version>4.1.96.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-common</artifactId>
+                <version>4.1.96.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
+                <version>${jackson.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -147,7 +178,7 @@
                     <argLine>--add-opens=java.base/java.nio=ALL-UNNAMED</argLine>
                     <reportFormat>plain</reportFormat>
                     <consoleOutputReporter>
-                    <disable>true</disable>
+                        <disable>true</disable>
                     </consoleOutputReporter>
                     <statelessTestsetInfoReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfoTreeReporterUnicode"/>
                 </configuration>

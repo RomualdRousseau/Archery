@@ -14,13 +14,16 @@ import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.parser.sheet.SimpleSheetParser;
 import com.github.romualdrousseau.any2json.transform.op.DropColumnsWhenFillRatioLessThan;
 import com.github.romualdrousseau.any2json.util.Disk;
+import com.github.romualdrousseau.shuju.bigdata.DataFrame;
+import com.github.romualdrousseau.shuju.bigdata.DataFrameWriter;
+import com.github.romualdrousseau.shuju.bigdata.Row;
 import com.github.romualdrousseau.shuju.strings.StringUtils;
 import com.github.romualdrousseau.shuju.types.Tensor;
 
 
 public class CsvDocument extends BaseDocument {
 
-    private static int BATCH_SIZE = 100000;
+    private static int BATCH_SIZE = 10000;
 
     @Override
     public boolean open(final File txtFile, final String encoding, final String password) {
@@ -41,6 +44,10 @@ public class CsvDocument extends BaseDocument {
             if (this.sheet != null) {
                 this.sheet.close();
                 this.sheet = null;
+            }
+            if (this.writer != null) {
+                this.writer.close();
+                this.writer = null;
             }
         } catch (final IOException x) {
             // throw new UncheckedIOException(x);
@@ -85,7 +92,7 @@ public class CsvDocument extends BaseDocument {
                 this.processBOM(reader);
             }
 
-            final MappedRowList<String[]> rows = this.processRows(reader);
+            final DataFrame rows = this.processRows(reader);
 
             if (rows != null) {
                 this.sheet = new CsvSheet(sheetName, rows);
@@ -114,33 +121,34 @@ public class CsvDocument extends BaseDocument {
         }
     }
 
-    private MappedRowList<String[]> processRows(final BufferedReader reader) throws IOException {
-        try (MappedRowWriter<String[]> rows = new MappedRowWriter<>(CsvDocument.BATCH_SIZE)) {
+    private DataFrame processRows(final BufferedReader reader) throws IOException {
+        boolean firstPass = true;
+        for (String textRow; (textRow = reader.readLine()) != null;) {
 
-            boolean firstPass = true;
-            for (String textRow; (textRow = reader.readLine()) != null;) {
-
-                if (firstPass) {
-                    this.separator = this.guessSeparator(textRow);
-                }
-
-                final String[] cells = parseOneRow(textRow);
-
-                if (firstPass) {
-                    if (!this.checkIfGoodEncoding(cells)) {
-                        return null;
-                    }
-                    firstPass = false;
-                }
-
-                for (int j = 0; j < cells.length; j++) {
-                    cells[j] = StringUtils.cleanToken(cells[j]);
-                }
-                rows.write(cells);
+            if (firstPass) {
+                this.separator = this.guessSeparator(textRow);
             }
 
-            return rows.getMappedList();
+            final String[] cells = parseOneRow(textRow);
+
+            if (firstPass) {
+                if (!this.checkIfGoodEncoding(cells)) {
+                    return null;
+                }
+                this.writer = new DataFrameWriter(CsvDocument.BATCH_SIZE, cells.length);
+                firstPass = false;
+            }
+
+            for (int j = 0; j < cells.length; j++) {
+                cells[j] = StringUtils.cleanToken(cells[j]);
+            }
+
+            if (this.writer != null) {
+                this.writer.write(Row.of(cells));
+            }
         }
+
+        return this.writer.getDataFrame();
     }
 
     private String[] parseOneRow(final String data) {
@@ -208,4 +216,5 @@ public class CsvDocument extends BaseDocument {
 
     private CsvSheet sheet;
     private String separator;
+    private DataFrameWriter writer;
 }
