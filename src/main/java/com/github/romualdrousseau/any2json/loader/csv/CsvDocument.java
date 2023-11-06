@@ -135,7 +135,7 @@ public class CsvDocument extends BaseDocument {
                 if (!this.checkIfGoodEncoding(cells)) {
                     return null;
                 }
-                this.writer = new DataFrameWriter(CsvDocument.BATCH_SIZE, cells.length);
+                this.writer = new DataFrameWriter(CsvDocument.BATCH_SIZE);
                 firstPass = false;
             }
 
