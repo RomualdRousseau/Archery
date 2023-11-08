@@ -4,13 +4,15 @@ import java.io.Closeable;
 import java.io.IOException;
 
 import com.github.romualdrousseau.any2json.base.SheetStore;
+import com.github.romualdrousseau.shuju.bigdata.DataFrame;
+import com.github.romualdrousseau.shuju.bigdata.Row;
 
 class CsvSheet implements SheetStore, Closeable {
 
     private final String name;
-    private final MappedRowList<String[]> rows;
+    private final DataFrame rows;
 
-    public CsvSheet(final String name, final MappedRowList<String[]> rows) {
+    public CsvSheet(final String name, final DataFrame rows) {
         this.name = name;
         this.rows = rows;
     }
@@ -26,12 +28,12 @@ class CsvSheet implements SheetStore, Closeable {
 
     @Override
     public int getLastColumnNum(final int rowIndex) {
-        return this.rows.get(rowIndex).length - 1;
+        return this.rows.getRow(rowIndex).size() - 1;
     }
 
     @Override
     public int getLastRowNum() {
-        return this.rows.length() - 1;
+        return this.rows.getRowCount() - 1;
     }
 
     @Override
@@ -68,30 +70,30 @@ class CsvSheet implements SheetStore, Closeable {
             newValue = value;
         }
 
-        if(rowIndex2 >= this.rows.length()) {
+        if(rowIndex2 >= this.rows.getRowCount()) {
             return;
         }
 
-        final String[] row = this.rows.get(rowIndex2);
+        final Row row = this.rows.getRow(rowIndex2);
 
-        if(colIndex2 >= row.length) {
+        if(colIndex2 >= row.size()) {
             return;
         }
 
-        row[colIndex2] = newValue;
+        row.set(colIndex2, newValue);
     }
 
     private String getCellAt(final int colIndex, final int rowIndex) {
-        if(rowIndex >= this.rows.length()) {
+        if(rowIndex >= this.rows.getRowCount()) {
             return null;
         }
 
-        final String[] row = this.rows.get(rowIndex);
+        final Row row = this.rows.getRow(rowIndex);
 
-        if(colIndex >= row.length) {
+        if(colIndex >= row.size()) {
             return null;
         }
 
-        return row[colIndex];
+        return row.get(colIndex);
     }
 }
