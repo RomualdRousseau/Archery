@@ -139,6 +139,7 @@
                 <configuration>
                     <argLine>-Dfile.encoding="UTF-8"</argLine>
                     <argLine>--add-opens=java.base/java.nio=ALL-UNNAMED</argLine>
+                    <argLine>-Darrow.memory.debug.allocator=true</argLine>
                     <reportFormat>plain</reportFormat>
                     <consoleOutputReporter>
                     <disable>true</disable>
