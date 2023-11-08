@@ -23,7 +23,8 @@ import com.github.romualdrousseau.shuju.types.Tensor;
 
 public class CsvDocument extends BaseDocument {
 
-    private static int BATCH_SIZE = 10000;
+    private static final int BATCH_SIZE = 10000;
+    private static final String[] SEPARATORS = { "\t", ",", ";" };
 
     @Override
     public boolean open(final File txtFile, final String encoding, final String password) {
@@ -45,9 +46,9 @@ public class CsvDocument extends BaseDocument {
                 this.sheet.close();
                 this.sheet = null;
             }
-            if (this.writer != null) {
-                this.writer.close();
-                this.writer = null;
+            if (this.rows != null) {
+                this.rows.close();
+                this.rows = null;
             }
         } catch (final IOException x) {
             // throw new UncheckedIOException(x);
@@ -83,19 +84,19 @@ public class CsvDocument extends BaseDocument {
             throw new IllegalArgumentException();
         }
 
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(new FileInputStream(txtFile), encoding))) {
-
-            final String sheetName = Disk.removeExtension(txtFile.getName());
+        try (
+            final var reader = new BufferedReader(new InputStreamReader(new FileInputStream(txtFile), encoding));
+            final var writer = new DataFrameWriter(BATCH_SIZE);
+            ) {
 
             if (encoding.equals("UTF-8")) {
                 this.processBOM(reader);
             }
 
-            final DataFrame rows = this.processRows(reader);
-
-            if (rows != null) {
-                this.sheet = new CsvSheet(sheetName, rows);
+            this.rows = this.processRows(reader, writer);
+            if (this.rows.getRowCount() > 0) {
+                final String sheetName = Disk.removeExtension(txtFile.getName());
+                this.sheet = new CsvSheet(sheetName, this.rows);
             }
 
             return this.sheet != null;
@@ -121,8 +122,8 @@ public class CsvDocument extends BaseDocument {
         }
     }
 
-    private DataFrame processRows(final BufferedReader reader) throws IOException {
-        boolean firstPass = true;
+    private DataFrame processRows(final BufferedReader reader, final DataFrameWriter writer) throws IOException {
+        var firstPass = true;
         for (String textRow; (textRow = reader.readLine()) != null;) {
 
             if (firstPass) {
@@ -135,7 +136,6 @@ public class CsvDocument extends BaseDocument {
                 if (!this.checkIfGoodEncoding(cells)) {
                     return null;
                 }
-                this.writer = new DataFrameWriter(CsvDocument.BATCH_SIZE);
                 firstPass = false;
             }
 
@@ -143,18 +143,16 @@ public class CsvDocument extends BaseDocument {
                 cells[j] = StringUtils.cleanToken(cells[j]);
             }
 
-            if (this.writer != null) {
-                this.writer.write(Row.of(cells));
-            }
+            writer.write(Row.of(cells));
         }
 
-        return this.writer.getDataFrame();
+        return writer.getDataFrame();
     }
 
     private String[] parseOneRow(final String data) {
-        final ArrayList<String> result = new ArrayList<>();
-        String acc = "";
-        int state = 0;
+        final var result = new ArrayList<String>();
+        var acc = "";
+        var state = 0;
 
         final char[] tmp = data.toCharArray();
         for (int i = 0; i < tmp.length; i++) {
@@ -205,16 +203,15 @@ public class CsvDocument extends BaseDocument {
     }
 
     private String guessSeparator(final String sample) {
-        final String[] separators = { "\t", ",", ";" };
         // find the separator generating the more of columns
-        final float[] v = new float[separators.length];
-        for (int i = 0; i < separators.length; i++) {
-            v[i] = sample.split(separators[i], -1).length;
+        final float[] v = new float[SEPARATORS.length];
+        for (int i = 0; i < SEPARATORS.length; i++) {
+            v[i] = sample.split(SEPARATORS[i], -1).length;
         }
-        return separators[(int) Tensor.of(v).argmax(0).item(0)];
+        return SEPARATORS[(int) Tensor.of(v).argmax(0).item(0)];
     }
 
     private CsvSheet sheet;
     private String separator;
-    private DataFrameWriter writer;
+    private DataFrame rows;
 }
