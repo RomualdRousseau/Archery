@@ -18,7 +18,6 @@ import org.tensorflow.SessionFunction;
 import org.tensorflow.Signature;
 import org.tensorflow.types.TFloat32;
 
-import com.github.romualdrousseau.any2json.TagClassifier;
 import com.github.romualdrousseau.any2json.Model;
 import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.any2json.util.TempFile;
@@ -31,7 +30,7 @@ import com.github.romualdrousseau.shuju.preprocessing.hasher.VocabularyHasher;
 import com.github.romualdrousseau.shuju.preprocessing.tokenizer.NgramTokenizer;
 import com.github.romualdrousseau.shuju.preprocessing.tokenizer.ShingleTokenizer;
 
-public class NetTagClassifier implements TagClassifier {
+public class NetTagClassifier extends SimpleTagClassifier {
 
     public static final int IN_ENTITY_SIZE = 10;
     public static final int IN_NAME_SIZE = 10;
@@ -53,6 +52,8 @@ public class NetTagClassifier implements TagClassifier {
 
     public NetTagClassifier(final Model model, final List<String> vocabulary, final int ngrams, final int wordMinSize,
             final List<String> lexicon, final Path modelPath) {
+        super(model);
+
         this.model = model;
         this.vocabulary = vocabulary;
         this.ngrams = ngrams;
@@ -67,6 +68,8 @@ public class NetTagClassifier implements TagClassifier {
     }
 
     public NetTagClassifier(final Model model) {
+        super(model);
+
         this.model = model;
         this.vocabulary = JSON.<String>streamOf(model.toJSON().getArray("vocabulary")).toList();
         this.ngrams = model.toJSON().getInt("ngrams");
