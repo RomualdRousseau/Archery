@@ -34,7 +34,9 @@
         <maven.compiler.target>17</maven.compiler.target>
 
         <slf4j.version>2.0.9</slf4j.version>
+        <shuju.version>1.22-SNAPSHOT</shuju.version>
         <any2json.version>2.34-SNAPSHOT</any2json.version>
+        <jackson.version>2.15.2</jackson.version>
         <javadbf.version>1.13.1</javadbf.version>
 
         <junit.version>4.13.2</junit.version>
@@ -81,6 +83,26 @@
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -110,6 +132,24 @@
             <version>${hamcrest.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.romualdrousseau</groupId>
+            <artifactId>shuju-jackson</artifactId>
+            <version>${shuju.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.romualdrousseau</groupId>
+            <artifactId>any2json-net-classifier</artifactId>
+            <version>${any2json.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.romualdrousseau</groupId>
+            <artifactId>any2json-layex-parser</artifactId>
+            <version>${any2json.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -137,8 +177,10 @@
                     </dependency>
                 </dependencies>
                 <configuration>
-                    <argLine>-Dfile.encoding="UTF-8"</argLine>
-                    <argLine>--add-opens=java.base/java.nio=ALL-UNNAMED</argLine>
+                    <argLine>
+                        -Dfile.encoding="UTF-8"
+                        --add-opens=java.base/java.nio=ALL-UNNAMED
+                    </argLine>
                     <reportFormat>plain</reportFormat>
                     <consoleOutputReporter>
                     <disable>true</disable>

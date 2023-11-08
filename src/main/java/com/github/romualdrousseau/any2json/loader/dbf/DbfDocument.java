@@ -16,12 +16,16 @@ import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.parser.sheet.SimpleSheetParser;
 import com.github.romualdrousseau.any2json.parser.table.SimpleTableParser;
 import com.github.romualdrousseau.any2json.util.Disk;
+import com.github.romualdrousseau.shuju.bigdata.DataFrame;
+import com.github.romualdrousseau.shuju.bigdata.DataFrameWriter;
+import com.github.romualdrousseau.shuju.bigdata.Row;
 import com.github.romualdrousseau.shuju.strings.StringUtils;
 import com.linuxense.javadbf.DBFField;
 import com.linuxense.javadbf.DBFReader;
 
 public class DbfDocument extends BaseDocument {
 
+    private static final int BATCH_SIZE = 10000;
     public static final List<String> EXTENSIONS = List.of(".dbf");
     private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -43,7 +47,15 @@ public class DbfDocument extends BaseDocument {
 
     @Override
     public void close() {
-        this.sheet = null;
+        try {
+            this.sheet = null;
+            if (this.rows != null) {
+                this.rows.close();
+                this.rows = null;
+            }
+        } catch (final IOException x) {
+            // throw new UncheckedIOException(x);
+        }
     }
 
     @Override
@@ -72,21 +84,25 @@ public class DbfDocument extends BaseDocument {
             throw new IllegalArgumentException();
         }
 
-        try (DBFReader reader = new DBFReader(new FileInputStream(dbfFile), Charset.forName(encoding))) {
+        try (
+            final var reader = new DBFReader(new FileInputStream(dbfFile), Charset.forName(encoding));
+            final var writer = new DataFrameWriter(BATCH_SIZE);
+            ) {
 
-            final List<String[]> rows = this.processRows(reader);
+            this.rows = this.processRows(reader, writer);
+            if (this.rows.getRowCount() > 0) {
+                final String sheetName = Disk.removeExtension(dbfFile.getName());
+                this.sheet = new DbfSheet(sheetName, this.rows);
+            }
 
-            final String sheetName = Disk.removeExtension(dbfFile.getName());
-            this.sheet = new DbfSheet(sheetName, rows);
-
-            return true;
+            return this.sheet != null;
 
         } catch (final IOException x) {
             return false;
         }
     }
 
-    private List<String[]> processRows(final DBFReader reader) throws IOException {
+    private DataFrame processRows(final DBFReader reader, final DataFrameWriter writer) throws IOException {
         final List<String[]> rows = new ArrayList<String[]>();
 
         final int numberOfFields = reader.getFieldCount();
@@ -102,10 +118,10 @@ public class DbfDocument extends BaseDocument {
             for (int j = 0; j < rowObjects.length; j++) {
                 cells[j] = StringUtils.cleanToken(this.convertToString(rowObjects[j]));
             }
-            rows.add(cells);
+            writer.write(Row.of(cells));
         }
 
-        return rows;
+        return writer.getDataFrame();
     }
 
     private String convertToString(Object v) {
@@ -123,4 +139,5 @@ public class DbfDocument extends BaseDocument {
     }
 
     private DbfSheet sheet;
+    private DataFrame rows;
 }
