@@ -257,12 +257,34 @@ public class TransformableSheet {
     }
 
     /**
+     * This method drops rows from the sheet that have a fill ratio less than the given fill ratio.
+     *
+     * @param fillRatio the fill ratio
+     * @param start the start column
+     * @param stop the stop column
+     */
+    public void dropRowsWhenFillRatioLessThan(final float fillRatio, final int start, final int stop) {
+        DropRowsWhenFillRatioLessThan.Apply(this.sheet, fillRatio, start, stop);
+    }
+
+    /**
      * This method drops rows from the sheet that have an entropy less than the given maximum entropy.
      *
      * @param max the maximum entropy
      */
     public void dropRowsWhenEntropyLessThan(final float max) {
         DropRowsWhenEntropyLessThan.Apply(this.sheet, max);
+    }
+
+    /**
+     * This method drops rows from the sheet that have an entropy less than the given maximum entropy.
+     *
+     * @param max the maximum entropy
+     * @param start the start column
+     * @param stop the stop column
+     */
+    public void dropRowsWhenEntropyLessThan(final float max, final int start, final int stop) {
+        DropRowsWhenEntropyLessThan.Apply(this.sheet, max, start, stop);
     }
 
     private final BaseSheet sheet;

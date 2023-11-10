@@ -20,4 +20,20 @@ public class DropRowsWhenFillRatioLessThan {
         }
         sheet.removeAllNullRows();
     }
+
+    public static void Apply(final BaseSheet sheet, final float max, final int start, final int stop) {
+        for(int i = 0; i <= sheet.getLastRowNum(); i++) {
+            int emptyCount = sheet.getLastColumnNum() + 1;
+            for(int j = start; j <= stop; j++) {
+                if(sheet.hasCellDataAt(j, i) && !StringUtils.isFastBlank(sheet.getCellDataAt(j, i))) {
+                    emptyCount--;
+                }
+            }
+            final float m = 1.0f - (float) emptyCount / (float) (sheet.getLastColumnNum() + 1);
+            if (m <= max) {
+                sheet.markRowAsNull(i);
+            }
+        }
+        sheet.removeAllNullRows();
+    }
 }

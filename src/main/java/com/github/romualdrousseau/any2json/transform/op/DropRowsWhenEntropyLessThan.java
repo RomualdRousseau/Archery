@@ -29,10 +29,31 @@ public class DropRowsWhenEntropyLessThan {
         sheet.removeAllNullRows();
     }
 
-    private static double computeEntropy(HashMap<String, Double> x, double n) {
+    public static void Apply(final BaseSheet sheet, final float max, final int start, final int stop) {
+        for(int i = 0; i <= sheet.getLastRowNum(); i++) {
+            final HashMap<String, Double> x = new HashMap<>();
+            int n = 0;
+            for(int j = start; j <= stop; j++) {
+                if(sheet.hasCellDataAt(j, i) && !sheet.getCellDataAt(j, i).isBlank()) {
+                    final String value = sheet.getCellDataAt(j, i);
+                    if (!StringUtils.isFastBlank(sheet.getCellDataAt(j, i))) {
+                        x.put(value, x.getOrDefault(value, 0.0) + 1.0);
+                        n++;
+                    }
+                }
+            }
+            final float e = (float) computeEntropy(x, n);
+            if (e <= max) {
+                sheet.markRowAsNull(i);
+            }
+        }
+        sheet.removeAllNullRows();
+    }
+
+    private static double computeEntropy(final HashMap<String, Double> x, final double n) {
         double result = 0.0f;
         for (final Entry<String, Double> e: x.entrySet()) {
-            double p = e.getValue() / n;
+            final double p = e.getValue() / n;
             result += p * Math.log(p) / Math.log(2);
         }
         return -result;
