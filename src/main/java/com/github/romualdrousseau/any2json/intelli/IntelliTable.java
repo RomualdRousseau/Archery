@@ -18,8 +18,11 @@ import com.github.romualdrousseau.any2json.header.PivotKeyHeader;
 import com.github.romualdrousseau.shuju.bigdata.DataFrame;
 import com.github.romualdrousseau.shuju.bigdata.DataFrameWriter;
 import com.github.romualdrousseau.shuju.bigdata.Row;
+import com.github.romualdrousseau.shuju.strings.StringUtils;
 
 public class IntelliTable extends DataTable {
+
+    private static final int BATCH_SIZE = 10000;
 
     public IntelliTable(final BaseSheet sheet, final BaseTableGraph root) {
         super(sheet);
@@ -31,7 +34,7 @@ public class IntelliTable extends DataTable {
         // Build tables
 
         try {
-            this.writer = new DataFrameWriter(10000, this.tmpHeaders.size());
+            this.writer = new DataFrameWriter(BATCH_SIZE, this.tmpHeaders.size());
             final PivotKeyHeader pivot = this.findPivotHeader();
             root.parseIf(
                     e -> this.buildRowsForOneTable(e, (DataTable) e.getTable(), pivot),
@@ -237,7 +240,7 @@ public class IntelliTable extends DataTable {
         } else {
             final var header = graph.getParent().findClosestHeader(abstractHeader);
             final var value = header.getValue();
-            abstractHeader.setColumnEmpty(abstractHeader.isColumnEmpty() & value.isBlank());
+            abstractHeader.setColumnEmpty(abstractHeader.isColumnEmpty() && StringUtils.isFastBlank(value));
             newRow.set(abstractHeader.getColumnIndex(), value);
         }
     }

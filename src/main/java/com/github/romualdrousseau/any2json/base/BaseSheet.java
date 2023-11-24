@@ -23,7 +23,7 @@ import com.github.romualdrousseau.shuju.commons.CollectionUtils;
 
 public class BaseSheet implements Sheet {
 
-    public BaseSheet(final BaseDocument document, final String name, final SheetStore store) {
+    public BaseSheet(final BaseDocument document, final String name, final PatcheableSheetStore store) {
         this.document = document;
         this.name = name;
         this.sheetStore = store;
@@ -130,18 +130,6 @@ public class BaseSheet implements Sheet {
             return false;
         }
         return this.sheetStore.hasCellDataAt(translatedColumn, translatedRow);
-    }
-
-    public boolean hasCellDecorationAt(final int colIndex, final int rowIndex) {
-        final int translatedColumn = this.translateColumn(colIndex);
-        if (translatedColumn < 0) {
-            return false;
-        }
-        final int translatedRow = this.translateRow(rowIndex);
-        if (translatedRow < 0) {
-            return false;
-        }
-        return this.sheetStore.hasCellDecorationAt(translatedColumn, translatedRow);
     }
 
     public String getCellDataAt(final int colIndex, final int rowIndex) {
@@ -298,7 +286,7 @@ public class BaseSheet implements Sheet {
 
     private final BaseDocument document;
     private final String name;
-    private final SheetStore sheetStore;
+    private final PatcheableSheetStore sheetStore;
     private final ArrayList<SheetListener> listeners = new ArrayList<SheetListener>();
     private final List<Integer> rowMask;
     private final List<Integer> columnMask;
