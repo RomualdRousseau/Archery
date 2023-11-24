@@ -1,10 +1,11 @@
 package com.github.romualdrousseau.any2json.loader.dbf;
 
-import com.github.romualdrousseau.any2json.base.SheetStore;
+import com.github.romualdrousseau.any2json.base.PatcheableSheetStore;
 import com.github.romualdrousseau.shuju.bigdata.DataFrame;
 import com.github.romualdrousseau.shuju.bigdata.Row;
+import com.github.romualdrousseau.shuju.strings.StringUtils;
 
-class DbfSheet implements SheetStore {
+class DbfSheet extends PatcheableSheetStore {
 
     public DbfSheet(final String name, final DataFrame rows) {
         this.name = name;
@@ -27,49 +28,27 @@ class DbfSheet implements SheetStore {
 
     @Override
     public boolean hasCellDataAt(final int colIndex, final int rowIndex) {
-        final String cell = this.getCellAt(colIndex, rowIndex);
-        return cell != null && !cell.isEmpty();
-    }
-
-    @Override
-    public boolean hasCellDecorationAt(final int colIndex, final int rowIndex) {
-        return false;
+        final var patchCell = this.getPatchCell(colIndex, rowIndex);
+        if (patchCell != null) {
+            return true;
+        } else {
+            return this.getCellAt(colIndex, rowIndex) != null;
+        }
     }
 
     @Override
     public String getCellDataAt(final int colIndex, final int rowIndex) {
-        final String cell = this.getCellAt(colIndex, rowIndex);
-        if(cell == null || cell.isEmpty()) {
-            return null;
+        final var patchCell = this.getPatchCell(colIndex, rowIndex);
+        if (patchCell != null) {
+            return patchCell;
+        } else {
+            return StringUtils.cleanToken(this.getCellAt(colIndex, rowIndex));
         }
-        return cell;
     }
 
     @Override
     public int getNumberOfMergedCellsAt(final int colIndex, final int rowIndex) {
         return 1;
-    }
-
-    @Override
-    public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2, final String value, final boolean unmergeAll) {
-        final String newValue;
-        if (value == null) {
-            newValue = this.getCellAt(colIndex1, rowIndex1);
-        } else {
-            newValue = value;
-        }
-
-        if(rowIndex2 >= this.rows.getRowCount()) {
-            return;
-        }
-
-        final Row row = this.rows.getRow(rowIndex2);
-
-        if(colIndex2 >= row.size()) {
-            return;
-        }
-
-        row.set(colIndex2, newValue);
     }
 
     private String getCellAt(final int colIndex, final int rowIndex) {
