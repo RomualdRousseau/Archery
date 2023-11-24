@@ -72,6 +72,7 @@ public class XlsxDocument extends BaseDocument {
     @Override
     public void close() {
         if (this.sheets != null) {
+            this.sheets.forEach(XlsxSheet::close);
             this.sheets.clear();
         }
         if (this.opcPackage != null) {

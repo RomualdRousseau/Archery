@@ -1,15 +1,15 @@
 package com.github.romualdrousseau.any2json.loader.excel.xml;
 
-import com.github.romualdrousseau.any2json.base.SheetStore;
+import com.github.romualdrousseau.any2json.base.PatcheableSheetStore;
 import com.github.romualdrousseau.shuju.strings.StringUtils;
 
 import nl.fountain.xelem.excel.Cell;
 import nl.fountain.xelem.excel.Row;
 import nl.fountain.xelem.excel.Worksheet;
 
-class XmlSheet implements SheetStore {
+class XmlSheet extends PatcheableSheetStore {
 
-    public XmlSheet(Worksheet sheet) {
+    public XmlSheet(final Worksheet sheet) {
         this.sheet = sheet;
     }
 
@@ -18,8 +18,8 @@ class XmlSheet implements SheetStore {
     }
 
     @Override
-    public int getLastColumnNum(int rowIndex) {
-        Row row = this.sheet.getRowAt(rowIndex + 1);
+    public int getLastColumnNum(final int rowIndex) {
+        final Row row = this.sheet.getRowAt(rowIndex + 1);
         return row.maxCellIndex() - 1;
     }
 
@@ -29,55 +29,67 @@ class XmlSheet implements SheetStore {
     }
 
     @Override
-    public boolean hasCellDataAt(int colIndex, int rowIndex) {
-        final int n = this.getInternalMergeDown(colIndex, rowIndex);
-        Cell cell = this.sheet.getCellAt(n + 1, colIndex + 1);
-        return cell.hasData();
+    public boolean hasCellDataAt(final int colIndex, final int rowIndex) {
+        final var n = this.getInternalMergeDown(colIndex, rowIndex);
+        if (n >= this.sheet.getRows().size()) {
+            return false;
+        }
+        final var patchCell = this.getPatchCell(colIndex, n);
+        if (patchCell != null) {
+            return true;
+        } else {
+            final var cells = this.sheet.getRowAt(n + 1);
+            return cells != null && cells.getCellAt(colIndex + 1).hasData();
+        }
     }
 
     @Override
-    public boolean hasCellDecorationAt(int colIndex, int rowIndex) {
-        return false;
+    public String getCellDataAt(final int colIndex, final int rowIndex) {
+        final var n = this.getInternalMergeDown(colIndex, rowIndex);
+        if (n >= this.sheet.getRows().size()) {
+            return null;
+        }
+        final var patchCell = this.getPatchCell(colIndex, n);
+        if (patchCell != null) {
+            return patchCell;
+        } else {
+            final var cells = this.sheet.getRowAt(n + 1);
+            return cells != null ? StringUtils.cleanToken(cells.getCellAt(colIndex + 1).getData$()) : null;
+        }
     }
 
     @Override
-    public String getCellDataAt(int colIndex, int rowIndex) {
-        final int n = this.getInternalMergeDown(colIndex, rowIndex);
-        Cell cell = this.sheet.getCellAt(n + 1, colIndex + 1);
-        return cell.hasData() ? StringUtils.cleanToken(cell.getData$()) : null;
-    }
-
-    @Override
-    public int getNumberOfMergedCellsAt(int colIndex, int rowIndex) {
-        Cell cell = this.sheet.getCellAt(rowIndex + 1, colIndex + 1);
+    public int getNumberOfMergedCellsAt(final int colIndex, final int rowIndex) {
+        final Cell cell = this.sheet.getCellAt(rowIndex + 1, colIndex + 1);
         return cell.getMergeAcross() + 1;
     }
 
     @Override
-    public void patchCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2, final String value, final boolean unmergeAll) {
-        final int n1 = this.getInternalMergeDown(colIndex1, rowIndex1);
-        final int n2 = this.getInternalMergeDown(colIndex2, rowIndex2);
-        if(value == null) {
-            this.sheet.addCellAt(n2 + 1, colIndex2 + 1, this.sheet.getCellAt(n1 + 1, colIndex1 + 1));
+    public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2, final String value, final boolean unmergeAll) {
+        final String newCell;
+        if (value == null) {
+            newCell = this.getCellDataAt(colIndex1, rowIndex1);
+        } else {
+            newCell = value;
         }
-        else {
-            this.sheet.addCellAt(n2 + 1, colIndex2 + 1).setData(value);
-        }
+
+        final var n2 = this.getInternalMergeDown(colIndex2, rowIndex2);
+        this.addPatchCell(colIndex2, n2, newCell);
     }
 
-    private int getInternalMergeDown(int colIndex, int rowIndex) {
+    private int getInternalMergeDown(final int colIndex, final int rowIndex) {
         if (rowIndex <= 0) {
             return 0;
         }
 
-        int rowToReturn = rowIndex;
-        for (int i = 1; i < 5; i++) {
-            int firstRow = rowIndex - i;
+        var rowToReturn = rowIndex;
+        for (var i = 1; i < 5; i++) {
+            final var firstRow = rowIndex - i;
             if (firstRow < 0) {
                 break;
             }
 
-            int lastRow = firstRow + this.sheet.getCellAt(firstRow + 1, colIndex + 1).getMergeDown();
+            final var lastRow = firstRow + this.sheet.getCellAt(firstRow + 1, colIndex + 1).getMergeDown();
             if (lastRow > firstRow && firstRow <= rowIndex && rowIndex <= lastRow) {
                 rowToReturn = firstRow;
                 break;
@@ -87,5 +99,5 @@ class XmlSheet implements SheetStore {
         return rowToReturn;
     }
 
-    private Worksheet sheet;
+    private final Worksheet sheet;
 }

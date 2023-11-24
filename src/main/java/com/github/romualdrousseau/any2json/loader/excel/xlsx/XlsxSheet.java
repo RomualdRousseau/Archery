@@ -1,7 +1,9 @@
 package com.github.romualdrousseau.any2json.loader.excel.xlsx;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +11,10 @@ import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
-import com.github.romualdrousseau.any2json.base.SheetStore;
+import com.github.romualdrousseau.any2json.base.PatcheableSheetStore;
+import com.github.romualdrousseau.shuju.bigdata.DataFrame;
+import com.github.romualdrousseau.shuju.bigdata.DataFrameWriter;
+import com.github.romualdrousseau.shuju.bigdata.Row;
 import com.github.romualdrousseau.shuju.strings.StringUtils;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
@@ -26,10 +31,11 @@ import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
-public class XlsxSheet implements SheetStore {
+public class XlsxSheet extends PatcheableSheetStore implements Closeable {
+
+    private static final int BATCH_SIZE = 10000;
 
     public XlsxSheet(final String name, final InputStream sheetData, final SharedStrings sharedStrings,
             final StylesTable styles) {
@@ -39,21 +45,36 @@ public class XlsxSheet implements SheetStore {
         this.styles = styles;
     }
 
+    @Override
+    public void close() {
+        try {
+            if (this.rows != null) {
+                this.rows.close();
+                this.rows = null;
+            }
+        } catch (final IOException x) {
+            // throw new UncheckedIOException(x);
+        }
+    }
+
     public XlsxSheet ensureDataLoaded() {
         if (this.dataLoaded) {
             return this;
         }
-        try {
-            final SAXParserFactory parserFactory = SAXParserFactory.newInstance();
-            final XMLReader parser = parserFactory.newSAXParser().getXMLReader();
-            parser.setContentHandler(new ContentHandler());
+        try (final var writer = new DataFrameWriter(BATCH_SIZE)) {
+            final var parserFactory = SAXParserFactory.newInstance();
+            final var parser = parserFactory.newSAXParser().getXMLReader();
+            final var contentHandler = new ContentHandler(writer);
+            parser.setContentHandler(contentHandler);
             parser.parse(new InputSource(this.sheetData));
+            this.rows = contentHandler.getRows();
         } catch (SAXException | IOException | ParserConfigurationException ignore) {
         } finally {
             try {
                 this.dataLoaded = true;
                 this.sheetData.close();
-            } catch (final IOException ignore) {
+            } catch (final IOException x) {
+                // throw new UncheckedIOException(x);
             }
         }
         return this;
@@ -65,33 +86,42 @@ public class XlsxSheet implements SheetStore {
 
     @Override
     public int getLastColumnNum(final int rowIndex) {
-        return this.rows.get(rowIndex).getLastColumnNum();
+        return this.rows.getColumnCount(rowIndex) - 1;
     }
 
     @Override
     public int getLastRowNum() {
-        return this.rows.size() - 1;
+        return this.rows.getRowCount() - 1;
     }
 
     @Override
     public boolean hasCellDataAt(final int colIndex, final int rowIndex) {
-        final int n = this.getInternalMergeDown(colIndex, rowIndex);
-        final List<XlsxCell> cells = this.rows.get(n).cells();
-        return cells != null && colIndex < cells.size() && cells.get(colIndex).getValue() != null;
-    }
-
-    @Override
-    public boolean hasCellDecorationAt(final int colIndex, final int rowIndex) {
-        final int n = this.getInternalMergeDown(colIndex, rowIndex);
-        final List<XlsxCell> cells = this.rows.get(n).cells();
-        return cells != null && colIndex < cells.size() && cells.get(colIndex).isDecorated();
+        final var n = this.getInternalMergeDown(colIndex, rowIndex);
+        if (n >= this.rows.getRowCount()) {
+            return false;
+        }
+        final var patchCell = this.getPatchCell(colIndex, n);
+        if (patchCell != null) {
+            return true;
+        } else {
+            final var cells = this.rows.getRow(n);
+            return cells != null && colIndex < cells.size() && cells.get(colIndex) != null;
+        }
     }
 
     @Override
     public String getCellDataAt(final int colIndex, final int rowIndex) {
-        final int n = this.getInternalMergeDown(colIndex, rowIndex);
-        final List<XlsxCell> cells = this.rows.get(n).cells();
-        return cells != null && colIndex < cells.size() ? cells.get(colIndex).getValue() : null;
+        final var n = this.getInternalMergeDown(colIndex, rowIndex);
+        if (n >= this.rows.getRowCount()) {
+            return null;
+        }
+        final var patchCell = this.getPatchCell(colIndex, n);
+        if (patchCell != null) {
+            return patchCell;
+        } else {
+            final var cells = this.rows.getRow(n);
+            return cells != null && colIndex < cells.size() ? StringUtils.cleanToken(cells.get(colIndex)) : null;
+        }
     }
 
     @Override
@@ -110,29 +140,21 @@ public class XlsxSheet implements SheetStore {
     }
 
     @Override
-    public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2, final String value, final boolean unmergeAll) {
-        final int n1 = this.getInternalMergeDown(colIndex1, rowIndex1);
-        final XlsxCell newCell;
+    public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2,
+            final String value, final boolean unmergeAll) {
+        final String newCell;
         if (value == null) {
-            newCell = this.rows.get(n1).cells().get(colIndex1);
-        }
-        else {
-            newCell = this.rows.get(n1).cells().get(colIndex1).copy();
-            newCell.setValue(value);
+            newCell = this.getCellDataAt(colIndex1, rowIndex1);
+        } else {
+            newCell = value;
         }
 
         if (!unmergeAll) {
             this.unmergeCell(colIndex2, rowIndex2);
         }
 
-        final int n2 = this.getInternalMergeDown(colIndex2, rowIndex2);
-        final List<XlsxCell> cells = this.rows.get(n2).cells();
-        if (cells != null && colIndex2 < cells.size()) {
-            cells.set(colIndex2, newCell);
-        } else {
-            this.rows.get(n2).addCell(newCell);
-            this.rows.get(n2).setLastColumnNum(this.rows.get(n2).getLastColumnNum() + 1);
-        }
+        final var n2 = this.getInternalMergeDown(colIndex2, rowIndex2);
+        this.addPatchCell(colIndex2, n2, newCell);
     }
 
     private void unmergeCell(final int colIndex, final int rowIndex) {
@@ -142,7 +164,6 @@ public class XlsxSheet implements SheetStore {
                 regionsToRemove.add(region);
             }
         }
-
         for (final CellRangeAddress region : regionsToRemove) {
             this.mergedRegions.remove(region);
         }
@@ -152,8 +173,8 @@ public class XlsxSheet implements SheetStore {
         if (this.mergedRegions.size() == 0) {
             return rowIndex;
         }
-        int rowToReturn = rowIndex;
-        for (final CellRangeAddress region : mergedRegions) {
+        var rowToReturn = rowIndex;
+        for (final var region : mergedRegions) {
             if (region.getLastRow() > region.getFirstRow() && rowIndex > region.getFirstRow()
                     && region.isInRange(rowIndex, colIndex)) {
                 rowToReturn = region.getFirstRow();
@@ -165,14 +186,21 @@ public class XlsxSheet implements SheetStore {
 
     private class ContentHandler extends DefaultHandler {
 
+        public ContentHandler(final DataFrameWriter dataFrameWriter) {
+            this.rows = dataFrameWriter;
+        }
+
+        public DataFrame getRows() throws IOException {
+            return this.rows.getDataFrame();
+        }
+
         @Override
         public void startElement(final String uri, final String localName, final String name,
                 final Attributes attributes) {
             if ("row".equals(name)) {
                 assert (attributes.getValue("r") != null) : "Row malformed without ref";
                 this.fillMissingRows(Integer.valueOf(attributes.getValue("r")) - 1);
-                this.row = new XlsxRow();
-                this.row.setHeight(this.getRowHeightFromString(attributes.getValue("ht")));
+                this.row = new ArrayList<String>();
                 this.prevCell = null;
                 this.currCell = null;
             } else if ("c".equals(name)) {
@@ -197,22 +225,23 @@ public class XlsxSheet implements SheetStore {
 
         @Override
         public void endElement(final String uri, final String localName, final String name) {
-            if ("row".equals(name)) {
-                rows.add(this.row);
-            } else if ("c".equals(name)) {
-                this.fillMissingCells();
-                XlsxCell cell = XlsxCell.Empty;
-                if (this.processCellData(this.currCell)) {
-                    cell = new XlsxCell();
-                    cell.setDecorated(this.currCell.decorated);
-                    cell.setValue(this.currCell.value);
+            try {
+                if ("row".equals(name)) {
+                    this.rows.write(Row.of(this.row.toArray(String[]::new)));
+                } else if ("c".equals(name)) {
+                    this.fillMissingCells();
+                    if (this.processCellData(this.currCell)) {
+                        this.row.add(this.currCell.value);
+                    } else {
+                        this.row.add(null);
+                    }
+                } else if ("v".equals(name)) {
+                    this.startValue = false;
+                } else if ("t".equals(name)) {
+                    this.startValue = false;
                 }
-                this.row.addCell(cell);
-                this.row.setLastColumnNum(Math.max(this.row.getLastColumnNum(), this.currCell.address.getColumn()));
-            } else if ("v".equals(name)) {
-                this.startValue = false;
-            } else if ("t".equals(name)) {
-                this.startValue = false;
+            } catch (final IOException x) {
+                throw new UncheckedIOException(x);
             }
         }
 
@@ -224,16 +253,12 @@ public class XlsxSheet implements SheetStore {
         }
 
         private void fillMissingRows(final int n) {
-            while (rows.size() < n) {
-                rows.add(new XlsxRow());
-            }
-        }
-
-        private float getRowHeightFromString(final String heightStr) {
-            if (heightStr != null) {
-                return Float.valueOf(heightStr) * 4.0f / 3.0f; // Conversion in pixel
-            } else {
-                return XlsxRow.DEFAULT_HEIGHT;
+            try {
+                while (rows.getRowCount() < n) {
+                    this.rows.write(Row.Empty);
+                }
+            } catch (final IOException x) {
+                throw new UncheckedIOException(x);
             }
         }
 
@@ -264,7 +289,11 @@ public class XlsxSheet implements SheetStore {
         private void fillMissingCells() {
             final int prevColumn = (this.prevCell == null) ? 0 : (this.prevCell.address.getColumn() + 1);
             for (int i = prevColumn; i < this.currCell.address.getColumn(); i++) {
-                this.row.addCell(XlsxCell.Empty);
+                if (i < this.row.size()) {
+                    this.row.set(i, null);
+                } else {
+                    this.row.add(null);
+                }
             }
         }
 
@@ -344,18 +373,19 @@ public class XlsxSheet implements SheetStore {
             boolean decorated;
         }
 
-        private XlsxRow row;
+        private ArrayList<String> row;
         private boolean startValue;
         private boolean inlineStr;
         private Cell currCell;
         private Cell prevCell;
+        private final DataFrameWriter rows;
     }
 
     private final String name;
     private final InputStream sheetData;
     private final StylesTable styles;
     private final SharedStrings sharedStrings;
-    private final ArrayList<CellRangeAddress> mergedRegions = new ArrayList<CellRangeAddress>();
-    private final ArrayList<XlsxRow> rows = new ArrayList<XlsxRow>();
+    private final List<CellRangeAddress> mergedRegions = new ArrayList<>();
+    private DataFrame rows;
     private boolean dataLoaded;
 }

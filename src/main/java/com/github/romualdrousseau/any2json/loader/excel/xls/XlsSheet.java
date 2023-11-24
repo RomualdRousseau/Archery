@@ -3,31 +3,26 @@ package com.github.romualdrousseau.any2json.loader.excel.xls;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 
-import com.github.romualdrousseau.any2json.base.SheetStore;
+import com.github.romualdrousseau.any2json.base.PatcheableSheetStore;
 import com.github.romualdrousseau.shuju.strings.StringUtils;
 
-import org.apache.poi.hssf.util.HSSFColor;
-import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.Color;
 import org.apache.poi.ss.usermodel.DateUtil;
-import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.usermodel.XSSFColor;
 
-public class XlsSheet implements SheetStore {
+public class XlsSheet extends PatcheableSheetStore {
 
-    public XlsSheet(Sheet sheet) throws IOException {
+    public XlsSheet(final Sheet sheet) throws IOException {
         this.sheet = sheet;
-        this.cachedRegion = new ArrayList<CellRangeAddress>();
+        this.mergedRegions = new ArrayList<CellRangeAddress>();
         for (int j = 0; j < this.sheet.getNumMergedRegions(); j++) {
-            CellRangeAddress region = this.sheet.getMergedRegion(j);
-            this.cachedRegion.add(region);
+            final CellRangeAddress region = this.sheet.getMergedRegion(j);
+            this.mergedRegions.add(region);
         }
     }
 
@@ -36,8 +31,8 @@ public class XlsSheet implements SheetStore {
     }
 
     @Override
-    public int getLastColumnNum(int rowIndex) {
-        Row row = this.sheet.getRow(rowIndex);
+    public int getLastColumnNum(final int rowIndex) {
+        final Row row = this.sheet.getRow(rowIndex);
         if (row == null) {
             return 0;
         }
@@ -50,46 +45,43 @@ public class XlsSheet implements SheetStore {
     }
 
     @Override
-    public boolean hasCellDataAt(int colIndex, int rowIndex) {
-        final int n = this.getInternalMergeDown(colIndex, rowIndex);
-        final Row row = this.sheet.getRow(n);
-        if (row == null) {
+    public boolean hasCellDataAt(final int colIndex, final int rowIndex) {
+        final var n = this.getInternalMergeDown(colIndex, rowIndex);
+        if (n > this.sheet.getLastRowNum()) {
             return false;
         }
-        final Cell cell = row.getCell(colIndex);
-        return this.hasData(cell);
+        final var patchCell = this.getPatchCell(colIndex, n);
+        if (patchCell != null) {
+            return true;
+        } else {
+            final var cells = this.sheet.getRow(n);
+            return cells != null && this.hasData(cells.getCell(colIndex));
+        }
     }
 
     @Override
-    public boolean hasCellDecorationAt(int colIndex, int rowIndex) {
-        final int n = this.getInternalMergeDown(colIndex, rowIndex);
-        final Row row = this.sheet.getRow(n);
-        if (row == null) {
-            return false;
-        }
-        final Cell cell = row.getCell(colIndex);
-        return this.hasDecoration(cell);
-    }
-
-    @Override
-    public String getCellDataAt(int colIndex, int rowIndex) {
-        final int n = this.getInternalMergeDown(colIndex, rowIndex);
-        final Row row = this.sheet.getRow(n);
-        if (row == null) {
+    public String getCellDataAt(final int colIndex, final int rowIndex) {
+        final var n = this.getInternalMergeDown(colIndex, rowIndex);
+        if (n > this.sheet.getLastRowNum()) {
             return null;
         }
-        final Cell cell = row.getCell(colIndex);
-        return this.hasData(cell) ? StringUtils.cleanToken(this.getData(cell)) : null;
+        final var patchCell = this.getPatchCell(colIndex, n);
+        if (patchCell != null) {
+            return patchCell;
+        } else {
+            final var cells = this.sheet.getRow(n);
+            return cells != null ? StringUtils.cleanToken(this.getData(cells.getCell(colIndex))) : null;
+        }
     }
 
     @Override
-    public int getNumberOfMergedCellsAt(int colIndex, int rowIndex) {
-        if (this.cachedRegion.size() == 0) {
+    public int getNumberOfMergedCellsAt(final int colIndex, final int rowIndex) {
+        if (this.mergedRegions.size() == 0) {
             return 1;
         }
 
         int numberOfCells = 0;
-        for (CellRangeAddress region : this.cachedRegion) {
+        for (final CellRangeAddress region : this.mergedRegions) {
             if (region.isInRange(rowIndex, colIndex)) {
                 numberOfCells = region.getLastColumn() - region.getFirstColumn();
                 break;
@@ -100,40 +92,41 @@ public class XlsSheet implements SheetStore {
     }
 
     @Override
-    public void patchCell(int colIndex1, int rowIndex1, int colIndex2, int rowIndex2, final String value, final boolean unmergeAll) {
-        final int n1 = this.getInternalMergeDown(colIndex1, rowIndex1);
-        final Row row1 = this.sheet.getRow(n1);
-        if (row1 == null) {
-            return;
-        }
-        final Cell cell1 = row1.getCell(colIndex1);
-        final int n2 = this.getInternalMergeDown(colIndex2, rowIndex2);
-        final Row row2 = this.sheet.getRow(n2);
-        if (row2 == null) {
-            return;
-        }
-        final Cell cell2;
-        if (row2.getCell(colIndex2) == null) {
-            cell2 = row2.createCell(colIndex2);
+    public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2, final String value, final boolean unmergeAll) {
+        final String newCell;
+        if (value == null) {
+            newCell = this.getCellDataAt(colIndex1, rowIndex1);
         } else {
-            cell2 = row2.getCell(colIndex2);
+            newCell = value;
         }
-        cell2.setCellStyle(cell1.getCellStyle());
-        if(value == null) {
-            cell2.setCellValue(this.getData(cell2));
+
+        if (!unmergeAll) {
+            this.unmergeCell(colIndex2, rowIndex2);
         }
-        else {
-            cell2.setCellValue(value);
+
+        final var n2 = this.getInternalMergeDown(colIndex2, rowIndex2);
+        this.addPatchCell(colIndex2, n2, newCell);
+    }
+
+    private void unmergeCell(final int colIndex, final int rowIndex) {
+        final List<CellRangeAddress> regionsToRemove = new ArrayList<CellRangeAddress>();
+        for (final CellRangeAddress region : this.mergedRegions) {
+            if (region.isInRange(rowIndex, colIndex)) {
+                regionsToRemove.add(region);
+            }
+        }
+        for (final CellRangeAddress region : regionsToRemove) {
+            this.mergedRegions.remove(region);
         }
     }
 
-    private int getInternalMergeDown(int colIndex, int rowIndex) {
-        if (this.cachedRegion.size() == 0) {
+    private int getInternalMergeDown(final int colIndex, final int rowIndex) {
+        if (this.mergedRegions.size() == 0) {
             return rowIndex;
         }
 
         int rowToReturn = rowIndex;
-        for (final CellRangeAddress region : cachedRegion) {
+        for (final CellRangeAddress region : this.mergedRegions) {
             if (region.getLastRow() > region.getFirstRow() && rowIndex > region.getFirstRow()
                     && region.isInRange(rowIndex, colIndex)) {
                 rowToReturn = region.getFirstRow();
@@ -144,76 +137,20 @@ public class XlsSheet implements SheetStore {
         return rowToReturn;
     }
 
-    private boolean hasData(Cell cell) {
+    private boolean hasData(final Cell cell) {
         if (cell == null) {
             return false;
         }
 
         final CellType type = cell.getCellType();
-
-        if (!type.equals(CellType.BLANK) && !(type.equals(CellType.STRING) && cell.getStringCellValue().isEmpty())) {
-            return true;
-        }
-
-        return false;
+        return !type.equals(CellType.BLANK);
     }
 
-    private boolean hasDecoration(Cell cell) {
+    private String getData(final Cell cell) {
         if (cell == null) {
-            return false;
+            return null;
         }
 
-        final CellStyle style = cell.getCellStyle();
-
-        // Keep cell with colored borders
-        if (!style.getBorderLeft().equals(BorderStyle.NONE) && !style.getBorderRight().equals(BorderStyle.NONE)
-                && !style.getBorderTop().equals(BorderStyle.NONE)
-                && !style.getBorderBottom().equals(BorderStyle.NONE)) {
-            return true;
-        }
-
-        // Keep cell with a colored (not automatic and not white) pattern
-        final Color bkcolor = style.getFillBackgroundColorColor();
-        if (bkcolor != null) {
-            if (bkcolor instanceof XSSFColor) {
-                if (((XSSFColor) bkcolor).getIndexed() != IndexedColors.AUTOMATIC.index
-                        && (((XSSFColor) bkcolor).getARGBHex() == null
-                                || !((XSSFColor) bkcolor).getARGBHex().equals("FFFFFFFF"))) {
-                    return true;
-                }
-            }
-            if (bkcolor instanceof HSSFColor) {
-                if (((HSSFColor) bkcolor).getIndex() != HSSFColor.HSSFColorPredefined.AUTOMATIC.getIndex()
-                        && (((HSSFColor) bkcolor).getHexString() == null
-                                || !((HSSFColor) bkcolor).getHexString().equals("FFFF:FFFF:FFFF"))) {
-                    return true;
-                }
-            }
-        }
-
-        // Keep cell with a colored (not automatic and not white) background
-        final Color fgcolor = style.getFillForegroundColorColor();
-        if (fgcolor != null) {
-            if (fgcolor instanceof XSSFColor) {
-                if (((XSSFColor) fgcolor).getIndexed() != IndexedColors.AUTOMATIC.index
-                        && (((XSSFColor) fgcolor).getARGBHex() == null
-                                || !((XSSFColor) fgcolor).getARGBHex().equals("FFFFFFFF"))) {
-                    return true;
-                }
-            }
-            if (fgcolor instanceof HSSFColor) {
-                if (((HSSFColor) fgcolor).getIndex() != HSSFColor.HSSFColorPredefined.AUTOMATIC.getIndex()
-                        && (((HSSFColor) fgcolor).getHexString() != null
-                                || !((HSSFColor) fgcolor).getHexString().equals("FFFF:FFFF:FFFF"))) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private String getData(Cell cell) {
         CellType type = cell.getCellType();
         if (type.equals(CellType.FORMULA)) {
             type = cell.getCachedFormulaResultType();
@@ -229,7 +166,7 @@ public class XlsSheet implements SheetStore {
                 if (DateUtil.isCellDateFormatted(cell)) {
                     value = new SimpleDateFormat("yyyy-MM-dd").format(cell.getDateCellValue());
                 } else {
-                    double d = cell.getNumericCellValue();
+                    final double d = cell.getNumericCellValue();
                     if (d != Math.rint(d)) {
                         value = String.valueOf(cell.getNumericCellValue());
                     } else {
@@ -247,6 +184,6 @@ public class XlsSheet implements SheetStore {
         return value;
     }
 
-    private Sheet sheet;
-    private ArrayList<CellRangeAddress> cachedRegion;
+    private final Sheet sheet;
+    private final ArrayList<CellRangeAddress> mergedRegions;
 }
