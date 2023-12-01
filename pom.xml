@@ -2,13 +2,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.romualdrousseau</groupId>
-    <artifactId>any2json-csv</artifactId>
+    <artifactId>any2json-parquet</artifactId>
     <version>2.34-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>any2json-csv</name>
+    <name>any2json-parquet</name>
     <description>Convert any text file in Json</description>
-    <url>https://github.com/romualdrousseau/any2json-csv</url>
+    <url>https://github.com/romualdrousseau/any2json-parquet</url>
 
     <licenses>
         <license>
@@ -33,19 +33,19 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
-        <slf4j.version>2.0.9</slf4j.version>
+        <hadoop.version>3.3.6</hadoop.version>
+        <parquet.version>1.13.1</parquet.version>
         <shuju.version>1.22-SNAPSHOT</shuju.version>
         <any2json.version>2.34-SNAPSHOT</any2json.version>
-        <jackson.version>2.15.2</jackson.version>
 
         <junit.version>4.13.2</junit.version>
         <hamcrest.version>2.2</hamcrest.version>
     </properties>
 
     <scm>
-        <connection>scm:git:https://github.com/romualdrousseau/any2json-csv.git</connection>
-        <developerConnection>scm:git:https://github.com/romualdrousseau/any2json-csv.git</developerConnection>
-        <url>https://github.com/romualdrousseau/any2json-csv</url>
+        <connection>scm:git:https://github.com/romualdrousseau/any2json-parquet.git</connection>
+        <developerConnection>scm:git:https://github.com/romualdrousseau/any2json-parquet.git</developerConnection>
+        <url>https://github.com/romualdrousseau/any2json-parquet</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -75,37 +75,33 @@
         </repository>
     </repositories>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.datatype</groupId>
-                <artifactId>jackson-datatype-jsr310</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
+        <!-- Parquet Framework -->
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+            <version>${hadoop.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>hadoop-shaded-protobuf_3_7</artifactId>
+                    <groupId>org.apache.hadoop.thirdparty</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-reload4j</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-hadoop</artifactId>
+            <version>${parquet.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-avro</artifactId>
+            <version>${parquet.version}</version>
+        </dependency>
         <!-- Any2Json Framework -->
         <dependency>
             <groupId>com.github.romualdrousseau</groupId>
@@ -399,4 +395,79 @@
             </reporting>
         </profile>
     </profiles>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.codehaus.woodstox</groupId>
+                <artifactId>stax2-api</artifactId>
+                <version>4.2.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.nimbusds</groupId>
+                <artifactId>nimbus-jose-jwt</artifactId>
+                <version>9.8.1</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro</artifactId>
+                <version>1.11.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>2.15.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>2.15.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.15.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-text</artifactId>
+                <version>1.10.0</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>1.15</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+                <version>1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>32.1.2-jre</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>3.19.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.xerial.snappy</groupId>
+                <artifactId>snappy-java</artifactId>
+                <version>1.1.10.5</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.7.36</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>

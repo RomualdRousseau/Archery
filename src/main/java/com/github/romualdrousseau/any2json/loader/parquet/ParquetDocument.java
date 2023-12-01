@@ -1,12 +1,14 @@
 package com.github.romualdrousseau.any2json.loader.parquet;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.avro.generic.GenericRecord;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.parquet.avro.AvroParquetReader;
+import org.apache.parquet.hadoop.ParquetReader;
+import org.apache.parquet.hadoop.util.HadoopInputFile;
 
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
@@ -19,34 +21,44 @@ import com.github.romualdrousseau.shuju.bigdata.DataFrame;
 import com.github.romualdrousseau.shuju.bigdata.DataFrameWriter;
 import com.github.romualdrousseau.shuju.bigdata.Row;
 import com.github.romualdrousseau.shuju.strings.StringUtils;
-import com.github.romualdrousseau.shuju.types.Tensor;
 
 public class ParquetDocument extends BaseDocument {
 
     private static final int BATCH_SIZE = 10000;
-    private static final String[] SEPARATORS = { "\t", ",", ";" };
 
     public static final List<String> EXTENSIONS = List.of(".parquet");
 
     private ParquetSheet sheet;
 
-    private String separator;
-
     private DataFrame rows;
 
     @Override
-    public boolean open(final File txtFile, final String encoding, final String password) {
+    public boolean open(final File parquetFile, final String encoding, final String password) {
         this.sheet = null;
 
-        if (EXTENSIONS.stream().filter(x -> dbfFile.getName().toLowerCase().endsWith(x)).findAny().isEmpty()) {
+        if (EXTENSIONS.stream().filter(x -> parquetFile.getName().toLowerCase().endsWith(x)).findAny().isEmpty()) {
             return false;
         }
 
-        if (encoding != null && this.openWithEncoding(txtFile, encoding)) {
-            return true;
-        } else if (encoding != null) {
-            return this.openWithEncoding(txtFile, "UTF-8");
-        } else {
+        try {
+            final var path = new org.apache.hadoop.fs.Path(parquetFile.toURI());
+            final var config = new Configuration();
+            final var inputFile = HadoopInputFile.fromPath(path, config);
+            try (
+                    final var reader = AvroParquetReader.<GenericRecord>builder(inputFile)
+                            .disableCompatibility()
+                            .build();
+                    final var writer = new DataFrameWriter(BATCH_SIZE)) {
+
+                this.rows = this.processRows(reader, writer);
+                if (this.rows.getRowCount() > 0) {
+                    final String sheetName = Disk.removeExtension(parquetFile.getName());
+                    this.sheet = new ParquetSheet(sheetName, this.rows);
+                }
+
+                return this.sheet != null;
+            }
+        } catch (IOException x) {
             return false;
         }
     }
@@ -91,132 +103,32 @@ public class ParquetDocument extends BaseDocument {
         this.setSheetParser(new SimpleSheetParser());
     }
 
-    private boolean openWithEncoding(final File txtFile, final String encoding) {
-        if (txtFile == null || encoding == null) {
-            throw new IllegalArgumentException();
-        }
-
-        try (
-                final var reader = new BufferedReader(new InputStreamReader(new FileInputStream(txtFile), encoding));
-                final var writer = new DataFrameWriter(BATCH_SIZE);) {
-
-            if (encoding.equals("UTF-8")) {
-                this.processBOM(reader);
-            }
-
-            this.rows = this.processRows(reader, writer);
-            if (this.rows.getRowCount() > 0) {
-                final String sheetName = Disk.removeExtension(txtFile.getName());
-                this.sheet = new CsvSheet(sheetName, this.rows);
-            }
-
-            return this.sheet != null;
-
-        } catch (final IOException x) {
-            return false;
-        }
-    }
-
-    private boolean checkIfGoodEncoding(final String[] row) {
-        boolean result = true;
-        for (int i = 0; i < row.length; i++) {
-            result &= StringUtils.checkIfGoodEncoding(row[i]);
-        }
-        return result;
-    }
-
-    private void processBOM(final BufferedReader reader) throws IOException {
-        // skip BOM if present
-        reader.mark(1);
-        if (reader.read() != StringUtils.BOM_CHAR) {
-            reader.reset();
-        }
-    }
-
-    private DataFrame processRows(final BufferedReader reader, final DataFrameWriter writer) throws IOException {
+    private DataFrame processRows(final ParquetReader<GenericRecord> reader, final DataFrameWriter writer)
+            throws IOException {
         var firstPass = true;
-        for (String textRow; (textRow = reader.readLine()) != null;) {
-
+        for (GenericRecord record; (record = reader.read()) != null;) {
             if (firstPass) {
-                this.separator = this.guessSeparator(textRow);
-            }
-
-            final String[] cells = parseOneRow(textRow);
-
-            if (firstPass) {
-                if (!this.checkIfGoodEncoding(cells)) {
-                    return null;
-                }
+                writer.write(Row.of(parseHeader(record)));
                 firstPass = false;
             }
-
-            for (int j = 0; j < cells.length; j++) {
-                cells[j] = StringUtils.cleanToken(cells[j]);
-            }
-
-            writer.write(Row.of(cells));
+            writer.write(Row.of(parseOneRecord(record)));
         }
 
         return writer.getDataFrame();
     }
-    private String[] parseOneRow(final String data) {
-        final var result = new ArrayList<String>();
-        var acc = "";
-        var state = 0;
 
-        final char[] tmp = data.toCharArray();
-        for (int i = 0; i < tmp.length; i++) {
-            final char c = tmp[i];
-
-            switch (state) {
-                case 0:
-                    if (c == separator.charAt(0)) {
-                        result.add(acc);
-                        acc = "";
-                    } else if (c == '"' && acc.trim().equals("")) {
-                        acc += c;
-                        state = 1;
-                    } else {
-                        acc += c;
-                    }
-                    break;
-
-                case 1: // Double quote context
-                    if (c == '"') {
-                        acc += c;
-                        state = 2;
-                    } else {
-                        acc += c;
-                    }
-                    break;
-
-                case 2: // Check double quote context exit
-                    if (c == '"') {
-                        state = 1;
-                    } else if (c == separator.charAt(0)) {
-                        result.add(acc);
-                        acc = "";
-                        state = 0;
-                    } else {
-                        acc += c;
-                        state = 0;
-                    }
-                    break;
-            }
-        }
-
-        if (!acc.trim().equals("")) {
-            result.add(acc);
-        }
-
-        return result.toArray(String[]::new);
+    private String[] parseHeader(final GenericRecord record) {
+        return record.getSchema().getFields().stream()
+                .map(x -> StringUtils.cleanToken(x.name()))
+                .toArray(String[]::new);
     }
-    private String guessSeparator(final String sample) {
-        // find the separator generating the more of columns
-        final float[] v = new float[SEPARATORS.length];
-        for (int i = 0; i < SEPARATORS.length; i++) {
-            v[i] = sample.split(SEPARATORS[i], -1).length;
-        }
-        return SEPARATORS[(int) Tensor.of(v).argmax(0).item(0)];
+
+    private String[] parseOneRecord(final GenericRecord record) {
+        return record.getSchema().getFields().stream()
+                .map(x -> {
+                    final var value = record.get(x.pos());
+                    return (value != null) ? StringUtils.cleanToken(value.toString()) : "";
+                })
+                .toArray(String[]::new);
     }
 }
