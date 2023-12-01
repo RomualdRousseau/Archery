@@ -376,6 +376,12 @@
                 <artifactId>slf4j-api</artifactId>
                 <version>1.7.36</version>
             </dependency>
+            <!-- Fix vunerabilities -->
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>3.25.1</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>
