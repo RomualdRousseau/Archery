@@ -134,7 +134,7 @@ public class CsvDocument extends BaseDocument {
 
             if (firstPass) {
                 if (!this.checkIfGoodEncoding(cells)) {
-                    return null;
+                    throw new IOException("CSV bad encoding");
                 }
                 firstPass = false;
             }
