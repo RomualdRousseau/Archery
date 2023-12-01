@@ -25,9 +25,14 @@ import com.linuxense.javadbf.DBFReader;
 
 public class DbfDocument extends BaseDocument {
 
-    private static final int BATCH_SIZE = 10000;
-    public static final List<String> EXTENSIONS = List.of(".dbf");
     private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+    private static final int BATCH_SIZE = 10000;
+
+    public static final List<String> EXTENSIONS = List.of(".dbf");
+
+    private DbfSheet sheet;
+
+    private DataFrame rows;
 
     @Override
     public boolean open(final File dbfFile, final String encoding, final String password) {
@@ -85,9 +90,8 @@ public class DbfDocument extends BaseDocument {
         }
 
         try (
-            final var reader = new DBFReader(new FileInputStream(dbfFile), Charset.forName(encoding));
-            final var writer = new DataFrameWriter(BATCH_SIZE);
-            ) {
+                final var reader = new DBFReader(new FileInputStream(dbfFile), Charset.forName(encoding));
+                final var writer = new DataFrameWriter(BATCH_SIZE);) {
 
             this.rows = this.processRows(reader, writer);
             if (this.rows.getRowCount() > 0) {
@@ -108,7 +112,7 @@ public class DbfDocument extends BaseDocument {
         final int numberOfFields = reader.getFieldCount();
         final String[] headers = new String[numberOfFields];
         for (int i = 0; i < numberOfFields; i++) {
-            DBFField field = reader.getField(i);
+            final DBFField field = reader.getField(i);
             headers[i] = StringUtils.cleanToken(field.getName());
         }
         rows.add(headers);
@@ -124,11 +128,11 @@ public class DbfDocument extends BaseDocument {
         return writer.getDataFrame();
     }
 
-    private String convertToString(Object v) {
+    private String convertToString(final Object v) {
         if (v instanceof BigDecimal) {
             try {
                 return String.valueOf(((BigDecimal) v).longValueExact());
-            } catch(ArithmeticException x) {
+            } catch (final ArithmeticException x) {
                 return v.toString();
             }
         } else if (v instanceof Date) {
@@ -137,7 +141,4 @@ public class DbfDocument extends BaseDocument {
             return v.toString();
         }
     }
-
-    private DbfSheet sheet;
-    private DataFrame rows;
 }
