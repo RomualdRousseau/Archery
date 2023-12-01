@@ -33,7 +33,6 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
-        <slf4j.version>2.0.9</slf4j.version>
         <any2json.version>2.34-SNAPSHOT</any2json.version>
 
         <junit.version>4.13.2</junit.version>
@@ -72,16 +71,6 @@
             <snapshots><enabled>false</enabled></snapshots>
         </repository>
     </repositories>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <!-- Any2Json Framework -->
@@ -365,4 +354,20 @@
             </reporting>
         </profile>
     </profiles>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.7.36</version>
+            </dependency>
+            <!-- Fix vunerabilities -->
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>3.25.1</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>
