@@ -34,6 +34,8 @@ public interface Document extends AutoCloseable {
 
     int getNumberOfSheets();
 
+    String getSheetNameAt(int i);
+
     Sheet getSheetAt(int i);
 
     Iterable<Sheet> sheets();
