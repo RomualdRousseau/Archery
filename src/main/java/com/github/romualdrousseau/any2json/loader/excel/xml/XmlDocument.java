@@ -3,15 +3,11 @@ package com.github.romualdrousseau.any2json.loader.excel.xml;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
@@ -26,32 +22,50 @@ public class XmlDocument extends BaseDocument {
 
     public static List<String> EXTENSIONS = List.of(".xls", ".xlsx", ".xlsm", ".xml");
 
+    private Workbook workbook = null;
+
+    private final ArrayList<XmlSheet> sheets = new ArrayList<XmlSheet>();
+
     @Override
     public boolean open(final File excelFile, final String encoding, final String password) {
+        if (excelFile == null) {
+            throw new IllegalArgumentException();
+        }
+
+        this.sheets.clear();
 
         if (EXTENSIONS.stream().filter(x -> excelFile.getName().toLowerCase().endsWith(x)).findAny().isEmpty()) {
             return false;
         }
 
-        if (this.openWithEncoding(excelFile, "UTF-8")) {
-            return true;
-        } else if (encoding != null) {
-            return this.openWithEncoding(excelFile, encoding);
-        } else {
+        try {
+            if (this.openWithEncoding(excelFile, "UTF-8")) {
+                return true;
+            } else if (encoding != null) {
+                return this.openWithEncoding(excelFile, encoding);
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
+            this.close();
             return false;
         }
     }
 
     @Override
     public void close() {
-        if (this.sheets != null) {
-            this.sheets.clear();
-        }
+        this.sheets.clear();
+        super.close();
     }
 
     @Override
     public int getNumberOfSheets() {
         return this.sheets.size();
+    }
+
+    @Override
+    public String getSheetNameAt(final int i) {
+        return this.sheets.get(i).getName();
     }
 
     @Override
@@ -61,36 +75,20 @@ public class XmlDocument extends BaseDocument {
 
     @Override
     public void updateParsersAndClassifiers() {
-        if(this.getHints().contains(Document.Hint.INTELLI_TAG)) {
+        if (this.getHints().contains(Document.Hint.INTELLI_TAG)) {
             this.getHints().add(Document.Hint.INTELLI_LAYOUT);
         }
         super.updateParsersAndClassifiers();
     }
 
-    private boolean openWithEncoding(final File excelFile, final String encoding) {
-        if (excelFile == null) {
-            throw new IllegalArgumentException();
+    private boolean openWithEncoding(final File excelFile, final String encoding) throws Exception {
+        final ExcelReader reader = new ExcelReader();
+        this.workbook = reader.getWorkbook(new InputSource(new FixBadEntityReader(
+                new BufferedReader(new InputStreamReader(new FileInputStream(excelFile), encoding)))));
+
+        for (final Worksheet sheet : this.workbook.getWorksheets()) {
+            this.sheets.add(new XmlSheet(sheet));
         }
-
-        try {
-            this.sheets.clear();
-
-            final ExcelReader reader = new ExcelReader();
-            this.workbook = reader.getWorkbook(new InputSource(new FixBadEntityReader(
-                    new BufferedReader(new InputStreamReader(new FileInputStream(excelFile), encoding)))));
-
-            for (final Worksheet sheet : this.workbook.getWorksheets()) {
-                this.sheets.add(new XmlSheet(sheet));
-            }
-
-            return this.sheets.size() > 0;
-
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            close();
-            return false;
-        }
+        return this.sheets.size() > 0;
     }
-
-    private Workbook workbook = null;
-    private final ArrayList<XmlSheet> sheets = new ArrayList<XmlSheet>();
 }

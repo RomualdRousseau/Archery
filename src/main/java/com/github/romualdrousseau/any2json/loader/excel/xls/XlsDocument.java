@@ -20,58 +20,51 @@ public class XlsDocument extends BaseDocument {
 
     public static List<String> EXTENSIONS = List.of(".xls", ".xlsx", ".xlsm");
 
+    private final ArrayList<XlsSheet> sheets = new ArrayList<XlsSheet>();
+
     @Override
     public boolean open(final File excelFile, final String encoding, final String password) {
         if (excelFile == null) {
             throw new IllegalArgumentException();
         }
 
-        if (!StringUtils.isBlank(password)) {
-            Biff8EncryptionKey.setCurrentUserPassword(password);
-        }
+        this.sheets.clear();
 
         if (EXTENSIONS.stream().filter(x -> excelFile.getName().toLowerCase().endsWith(x)).findAny().isEmpty()) {
             return false;
         }
 
-        Workbook workbook = null;
-        try {
+        if (!StringUtils.isBlank(password)) {
+            Biff8EncryptionKey.setCurrentUserPassword(password);
+        }
+        try (Workbook workbook = WorkbookFactory.create(excelFile)) {
             this.sheets.clear();
-
-            workbook = WorkbookFactory.create(excelFile);
-
             for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
                 this.sheets.add(new XlsSheet(workbook.getSheetAt(i)));
             }
-
             return this.sheets.size() > 0;
-
         } catch (EncryptedDocumentException | IOException e) {
             this.close();
             return false;
-
         } finally {
-            if(workbook != null) {
-                try {
-                    workbook.close();
-                } catch (final IOException ignore) {
-                }
-            }
-            workbook = null;
             Biff8EncryptionKey.setCurrentUserPassword(null);
         }
     }
 
     @Override
     public void close() {
-        if (this.sheets != null) {
-            this.sheets.clear();
-        }
+        this.sheets.clear();
+        super.close();
     }
 
     @Override
     public int getNumberOfSheets() {
         return this.sheets.size();
+    }
+
+    @Override
+    public String getSheetNameAt(final int i) {
+        return this.sheets.get(i).getName();
     }
 
     @Override
@@ -81,11 +74,9 @@ public class XlsDocument extends BaseDocument {
 
     @Override
     public void updateParsersAndClassifiers() {
-        if(this.getHints().contains(Document.Hint.INTELLI_TAG)) {
+        if (this.getHints().contains(Document.Hint.INTELLI_TAG)) {
             this.getHints().add(Document.Hint.INTELLI_LAYOUT);
         }
         super.updateParsersAndClassifiers();
     }
-
-    private final ArrayList<XlsSheet> sheets = new ArrayList<XlsSheet>();
 }

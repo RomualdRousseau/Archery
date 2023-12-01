@@ -21,12 +21,14 @@ import org.apache.poi.poifs.crypt.EncryptionInfo;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.eventusermodel.XSSFReader.SheetIterator;
-import org.apache.poi.xssf.model.SharedStrings;
-import org.apache.poi.xssf.model.StylesTable;
 
 public class XlsxDocument extends BaseDocument {
 
     public static List<String> EXTENSIONS = List.of(".xls", ".xlsx", ".xlsm");
+
+    private final ArrayList<XlsxSheet> sheets = new ArrayList<XlsxSheet>();
+
+    private OPCPackage opcPackage;
 
     @Override
     public boolean open(final File excelFile, final String encoding, final String password) {
@@ -34,30 +36,30 @@ public class XlsxDocument extends BaseDocument {
             throw new IllegalArgumentException();
         }
 
+        this.sheets.clear();
+
         if (EXTENSIONS.stream().filter(x -> excelFile.getName().toLowerCase().endsWith(x)).findAny().isEmpty()) {
             return false;
         }
 
         try {
-            this.sheets.clear();
-
             if (!StringUtils.isBlank(password)) {
-                POIFSFileSystem poifs = new POIFSFileSystem(excelFile);
-                EncryptionInfo info = new EncryptionInfo(poifs);
-                Decryptor d = Decryptor.getInstance(info);
-                d.verifyPassword(password);
-                this.opcPackage = OPCPackage.open(d.getDataStream(poifs));
+                final var poifs = new POIFSFileSystem(excelFile);
+                final var info = new EncryptionInfo(poifs);
+                final var decrypt = Decryptor.getInstance(info);
+                decrypt.verifyPassword(password);
+                this.opcPackage = OPCPackage.open(decrypt.getDataStream(poifs));
             } else {
                 this.opcPackage = OPCPackage.open(excelFile.getAbsolutePath(), PackageAccess.READ);
             }
 
-            final XSSFReader reader = new XSSFReader(this.opcPackage);
-            final SharedStrings sharedStrings = reader.getSharedStringsTable();
-            final StylesTable styles = reader.getStylesTable();
+            final var reader = new XSSFReader(this.opcPackage);
+            final var sharedStrings = reader.getSharedStringsTable();
+            final var styles = reader.getStylesTable();
 
-            final SheetIterator it = (SheetIterator) reader.getSheetsData();
+            final var it = (SheetIterator) reader.getSheetsData();
             while (it.hasNext()) {
-                InputStream sheetData = it.next();
+                final InputStream sheetData = it.next();
                 this.sheets.add(new XlsxSheet(it.getSheetName(), sheetData, sharedStrings, styles));
             }
 
@@ -71,10 +73,8 @@ public class XlsxDocument extends BaseDocument {
 
     @Override
     public void close() {
-        if (this.sheets != null) {
-            this.sheets.forEach(XlsxSheet::close);
-            this.sheets.clear();
-        }
+        this.sheets.forEach(XlsxSheet::close);
+        this.sheets.clear();
         if (this.opcPackage != null) {
             this.opcPackage.revert();
             this.opcPackage = null;
@@ -88,18 +88,20 @@ public class XlsxDocument extends BaseDocument {
     }
 
     @Override
+    public String getSheetNameAt(final int i) {
+        return this.sheets.get(i).getName();
+    }
+
+    @Override
     public Sheet getSheetAt(final int i) {
-        return new BaseSheet(this, sheets.get(i).getName(), sheets.get(i).ensureDataLoaded());
+        return new BaseSheet(this, this.sheets.get(i).getName(), this.sheets.get(i).ensureDataLoaded());
     }
 
     @Override
     public void updateParsersAndClassifiers() {
-        if(this.getHints().contains(Document.Hint.INTELLI_TAG)) {
+        if (this.getHints().contains(Document.Hint.INTELLI_TAG)) {
             this.getHints().add(Document.Hint.INTELLI_LAYOUT);
         }
         super.updateParsersAndClassifiers();
     }
-
-    private OPCPackage opcPackage;
-    private final ArrayList<XlsxSheet> sheets = new ArrayList<XlsxSheet>();
 }
