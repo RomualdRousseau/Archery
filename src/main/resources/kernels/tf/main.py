@@ -63,7 +63,7 @@ def prepare_data(train_path, input_shape):
     with open(os.path.join(train_path.strip(), "validation.json"), encoding="UTF-8") as user_file:
         validation = json.load(user_file)
     valid_inputs = [
-        np.array([t[0:+entity] for t in validation]),
+        np.array([t[0:entity] for t in validation]),
         np.array([t[entity:name] for t in validation]),
         np.array([t[name:context] for t in validation])
     ]
