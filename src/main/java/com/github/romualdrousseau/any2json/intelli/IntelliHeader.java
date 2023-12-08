@@ -15,14 +15,18 @@ public class IntelliHeader extends DataTableHeader {
 
         final String cellValue = this.getCell().getValue();
         if (StringUtils.isFastBlank(cellValue)) {
-            this.name = this.entities().stream().findAny().map(x -> this.getEntitiesAsString())
-                    .orElse(Settings.PIVOT_VALUE_SUFFIX);
+            if (header.isColumnEmpty()) {
+                this.name = "";
+            } else {
+                this.name = this.entities().stream().findAny().map(x -> this.getEntitiesAsString())
+                        .orElse(Settings.PIVOT_VALUE_SUFFIX);
+            }
         } else {
             this.name = this.getTable().getSheet().getDocument().getModel().toEntityName(cellValue);
         }
 
         this.setColumnIndex(header.getColumnIndex());
-        this.setColumnEmpty(header.isColumnEmpty());
+        this.setColumnEmpty(StringUtils.isFastBlank(this.name) && header.isColumnEmpty());
     }
 
     @Override

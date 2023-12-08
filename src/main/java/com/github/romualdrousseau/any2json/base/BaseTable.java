@@ -103,7 +103,9 @@ public class BaseTable implements Table, Visitable {
     public List<String> getHeaderNames() {
         List<String> result = new ArrayList<String>();
         for(Header header: this.headers()) {
-            result.add(header.getName());
+            if (!header.isColumnEmpty()) {
+                result.add(header.getName());
+            }
         }
         return result;
     }
