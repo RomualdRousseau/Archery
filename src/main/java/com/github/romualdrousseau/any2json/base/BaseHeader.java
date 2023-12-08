@@ -36,7 +36,7 @@ public abstract class BaseHeader implements Header {
 
     @Override
     public boolean isColumnEmpty() {
-        return this.columnEmpty;
+        return (this.getName() == null || this.getName().isBlank()) && this.columnEmpty;
     }
 
     public void setColumnEmpty(boolean columnEmpty) {
