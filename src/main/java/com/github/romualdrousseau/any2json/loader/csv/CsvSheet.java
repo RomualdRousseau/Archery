@@ -14,7 +14,7 @@ import com.github.romualdrousseau.shuju.types.Tensor;
 
 class CsvSheet extends PatcheableSheetStore implements Closeable {
 
-    private static final int BATCH_SIZE = 10000;
+    private static final int BATCH_SIZE = 100000;
     private static final String[] SEPARATORS = { "\t", ",", ";" };
 
     private final String name;
