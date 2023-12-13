@@ -43,12 +43,12 @@ class CsvSheet extends PatcheableSheetStore implements Closeable {
 
     @Override
     public int getLastColumnNum(final int rowIndex) {
-        return this.rows.getRow(rowIndex).size() - 1;
+        return (this.rows != null) ? this.rows.getRow(rowIndex).size() - 1 : 0;
     }
 
     @Override
     public int getLastRowNum() {
-        return this.rows.getRowCount() - 1;
+        return (this.rows != null) ? this.rows.getRowCount() - 1 : 0;
     }
 
     @Override
@@ -90,6 +90,19 @@ class CsvSheet extends PatcheableSheetStore implements Closeable {
         }
     }
 
+    public void checkDataEncoding() throws IOException {
+        this.reader.mark(0);
+        final var textRow = this.reader.readLine();
+        if (textRow != null) {
+            final var separator = this.guessSeparator(textRow);
+            final var cells = parseOneRow(textRow, separator);
+            if (!this.checkIfGoodEncoding(cells)) {
+                throw new IOException("CSV bad encoding");
+            }
+        }
+        this.reader.reset();
+    }
+
     private DataFrame processRows(final BufferedReader reader, final DataFrameWriter writer) throws IOException {
         var firstPass = true;
         var separator = ",";
@@ -100,14 +113,6 @@ class CsvSheet extends PatcheableSheetStore implements Closeable {
             }
 
             final String[] cells = parseOneRow(textRow, separator);
-
-            if (firstPass) {
-                if (!this.checkIfGoodEncoding(cells)) {
-                    throw new IOException("CSV bad encoding");
-                }
-                firstPass = false;
-            }
-
             for (int j = 0; j < cells.length; j++) {
                 cells[j] = StringUtils.cleanToken(cells[j]);
             }

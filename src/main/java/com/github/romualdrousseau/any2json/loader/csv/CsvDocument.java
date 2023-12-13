@@ -28,13 +28,11 @@ public class CsvDocument extends BaseDocument {
 
         this.sheet = null;
 
-        try {
-            if (encoding != null) {
-                return this.openWithEncoding(txtFile, encoding);
-            } else {
-                return this.openWithEncoding(txtFile, "UTF-8");
-            }
-        } catch (final IOException x) {
+        if (encoding != null && this.openWithEncoding(txtFile, encoding)) {
+            return true;
+        } else if (this.openWithEncoding(txtFile, "UTF-8")) {
+            return true;
+        } else {
             this.close();
             return false;
         }
@@ -83,14 +81,19 @@ public class CsvDocument extends BaseDocument {
         this.setSheetParser(new SimpleSheetParser());
     }
 
-    private boolean openWithEncoding(final File txtFile, final String encoding) throws IOException{
-        final var reader = new BufferedReader(new InputStreamReader(new FileInputStream(txtFile), encoding));
-        if (encoding.equals("UTF-8")) {
-            this.processBOM(reader);
+    private boolean openWithEncoding(final File txtFile, final String encoding) {
+        try {
+            final var reader = new BufferedReader(new InputStreamReader(new FileInputStream(txtFile), encoding));
+            if (encoding.equals("UTF-8")) {
+                this.processBOM(reader);
+            }
+            final var sheetName = Disk.removeExtension(txtFile.getName());
+            this.sheet = new CsvSheet(sheetName, reader);
+            this.sheet.checkDataEncoding();
+            return true;
+        } catch(IOException x) {
+            return false;
         }
-        final var sheetName = Disk.removeExtension(txtFile.getName());
-        this.sheet = new CsvSheet(sheetName, reader);
-        return true;
     }
 
     private void processBOM(final BufferedReader reader) throws IOException {
