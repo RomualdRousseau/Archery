@@ -82,13 +82,12 @@ public class LayexTableParser implements TableParser {
         });
 
         for (final BaseTable table : tables) {
-            boolean foundMatch = false;
-            for (int tryCount = 0; tryCount < 3; tryCount++) {
-                if (foundMatch) {
-                    continue;
-                }
-
+            var foundMatch = false;
+            var tryCount = 0;
+            do {
+                System.out.println(tryCount);
                 for (final TableMatcher matcher : dataMatchers) {
+                    System.out.println(matcher.toString());
                     if (!foundMatch && matcher.match(new TableLexer(table, tryCount))) {
                         final DataTable dataTable = new DataTable(table);
                         final DataTableParser parser = this.dataTableParserFactory.getInstance(dataTable,
@@ -101,9 +100,11 @@ public class LayexTableParser implements TableParser {
 
                         table.setVisited(true);
                         foundMatch = true;
+                        break;
                     }
                 }
             }
+            while(!foundMatch && ++tryCount < 3);
         }
 
         return result;
