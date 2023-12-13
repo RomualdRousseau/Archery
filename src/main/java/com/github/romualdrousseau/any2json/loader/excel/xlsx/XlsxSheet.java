@@ -302,7 +302,7 @@ public class XlsxSheet extends PatcheableSheetStore implements Closeable {
             cell.type = (cell.value != null && cell.type.equals(CellType.BLANK)) ? CellType.NUMERIC : cell.type;
 
             if (cell.type.equals(CellType.STRING)) {
-                if (!this.inlineStr) {
+                if (!this.inlineStr && cell.value != null) {
                     cell.value = sharedStrings.getItemAt(Integer.valueOf(cell.value)).toString();
                 }
                 cell.value = StringUtils.cleanToken(cell.value);
