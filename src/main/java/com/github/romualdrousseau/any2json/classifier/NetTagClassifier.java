@@ -59,8 +59,8 @@ public class NetTagClassifier extends SimpleTagClassifier {
         this.ngrams = ngrams;
         this.wordMinSize = wordMinSize;
         this.lexicon = lexicon;
-        this.tokenizer = (this.ngrams == 0) ? new ShingleTokenizer(this.lexicon, this.wordMinSize)
-                : new NgramTokenizer(this.ngrams);
+        this.tokenizer = (ngrams == 0) ? new ShingleTokenizer(this.lexicon, this.wordMinSize)
+                : new NgramTokenizer(ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
         this.modelPath = modelPath;
         this.isModelTemp = false;
@@ -164,7 +164,7 @@ public class NetTagClassifier extends SimpleTagClassifier {
 
     public void updateModel() {
         this.model.toJSON().setArray("vocabulary", JSON.arrayOf(this.vocabulary));
-        this.model.toJSON().setInt("ngram", this.ngrams);
+        this.model.toJSON().setInt("ngrams", this.ngrams);
         this.model.toJSON().setInt("wordMinSize", this.wordMinSize);
         this.model.toJSON().setArray("lexicon", JSON.arrayOf(this.lexicon));
         this.model.toJSON().setString("model", this.modelToJSONString(this.modelPath));
