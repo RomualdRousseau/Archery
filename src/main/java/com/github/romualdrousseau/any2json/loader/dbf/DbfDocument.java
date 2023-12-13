@@ -32,15 +32,11 @@ public class DbfDocument extends BaseDocument {
             return false;
         }
 
-        try {
-            if (this.openWithEncoding(dbfFile, "ISO-8859-1")) {
-                return true;
-            } else if (encoding != null) {
-                return this.openWithEncoding(dbfFile, encoding);
-            } else {
-                return false;
-            }
-        } catch (final IOException x) {
+        if (encoding != null && this.openWithEncoding(dbfFile, encoding)) {
+            return true;
+        } else if (this.openWithEncoding(dbfFile, "ISO-8859-1")) {
+            return true;
+        } else {
             this.close();
             return false;
         }
@@ -86,10 +82,14 @@ public class DbfDocument extends BaseDocument {
         this.setTableParser(new SimpleTableParser());
     }
 
-    private boolean openWithEncoding(final File dbfFile, final String encoding) throws IOException {
-        final var reader = new DBFReader(new FileInputStream(dbfFile), Charset.forName(encoding));
-        final var sheetName = Disk.removeExtension(dbfFile.getName());
-        this.sheet = new DbfSheet(sheetName, reader);
-        return true;
+    private boolean openWithEncoding(final File dbfFile, final String encoding) {
+        try {
+            final var reader = new DBFReader(new FileInputStream(dbfFile), Charset.forName(encoding));
+            final var sheetName = Disk.removeExtension(dbfFile.getName());
+            this.sheet = new DbfSheet(sheetName, reader);
+            return true;
+        } catch (final IOException x) {
+            return false;
+        }
     }
 }
