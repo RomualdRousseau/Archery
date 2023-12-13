@@ -35,7 +35,7 @@
 
         <hadoop.version>3.3.6</hadoop.version>
         <parquet.version>1.13.1</parquet.version>
-        <shuju.version>1.22</shuju.version>
+        <shuju.version>1.23-SNAPSHOT</shuju.version>
         <any2json.version>2.35-SNAPSHOT</any2json.version>
 
         <junit.version>4.13.2</junit.version>
