@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.romualdrousseau.any2json.TableParser;
-import com.github.romualdrousseau.any2json.Cell;
 import com.github.romualdrousseau.any2json.Model;
-import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.base.BaseTable;
@@ -85,9 +83,7 @@ public class LayexTableParser implements TableParser {
             var foundMatch = false;
             var tryCount = 0;
             do {
-                System.out.println(tryCount);
                 for (final TableMatcher matcher : dataMatchers) {
-                    System.out.println(matcher.toString());
                     if (!foundMatch && matcher.match(new TableLexer(table, tryCount))) {
                         final DataTable dataTable = new DataTable(table);
                         final DataTableParser parser = this.dataTableParserFactory.getInstance(dataTable,
@@ -100,7 +96,6 @@ public class LayexTableParser implements TableParser {
 
                         table.setVisited(true);
                         foundMatch = true;
-                        break;
                     }
                 }
             }
@@ -114,13 +109,13 @@ public class LayexTableParser implements TableParser {
     public List<MetaTable> getMetaTables(final BaseSheet sheet, final List<BaseTable> tables) {
         final ArrayList<MetaTable> result = new ArrayList<MetaTable>();
 
-        for (final BaseTable table : tables) {
+        for (final var table : tables) {
             if (table.isVisited()) {
                 continue;
             }
 
-            boolean foundMatch = false;
-            for (final TableMatcher matcher : this.getMetaMatcherList()) {
+            var foundMatch = false;
+            for (final var matcher : this.getMetaMatcherList()) {
                 if (!foundMatch && matcher.match(new TableLexer(table, 0))) {
                     final MetaTable metaTable = new MetaTable(table);
                     final MetaTableParser parser = new MetaTableParser(metaTable);
@@ -158,8 +153,8 @@ public class LayexTableParser implements TableParser {
 
     private void splitAllSubTables(final BaseSheet sheet, final BaseTable table, final TableMatcher matcher,
             final DataTableParser parser, final List<DataTable> result) {
-        int firstRow = -1;
-        for (final int splitRow : parser.getSplitRows()) {
+        var firstRow = -1;
+        for (final var splitRow : parser.getSplitRows()) {
             if (firstRow >= 0) {
                 final BaseTable subTable = new BaseTable(table, firstRow, table.getFirstRow() + splitRow - 1);
                 final DataTable dataTable = new DataTable(subTable);
@@ -190,8 +185,8 @@ public class LayexTableParser implements TableParser {
     }
 
     private void convertToMetaHeaders(final MetaTable metaTable, final List<MetaTable> result) {
-        for (final Row row : metaTable.rows()) {
-            for (final Cell cell : row.cells()) {
+        for (final var row : metaTable.rows()) {
+            for (final var cell : row.cells()) {
                 if (cell.hasValue()) {
                     metaTable.addHeader(new MetaHeader(metaTable, (BaseCell) cell));
                 }
