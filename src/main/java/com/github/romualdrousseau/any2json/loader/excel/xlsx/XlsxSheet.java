@@ -35,7 +35,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class XlsxSheet extends PatcheableSheetStore implements Closeable {
 
-    private static final int BATCH_SIZE = 10000;
+    private static final int BATCH_SIZE = 100000;
 
     public XlsxSheet(final String name, final InputStream sheetData, final SharedStrings sharedStrings,
             final StylesTable styles) {
