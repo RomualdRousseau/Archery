@@ -8,9 +8,9 @@ import com.github.romualdrousseau.any2json.layex.TableParser;
 import com.github.romualdrousseau.any2json.layex.Lexer;
 import com.github.romualdrousseau.any2json.layex.TableMatcher;
 
-public class Closure implements TableMatcher {
+public class Many implements TableMatcher {
 
-    public Closure(Deque<TableMatcher> stack, int minCount, int maxCount) {
+    public Many(Deque<TableMatcher> stack, int minCount, int maxCount) {
         this.a = stack.pop();
         this.minCount = minCount;
         this.maxCount = maxCount;
@@ -33,7 +33,7 @@ public class Closure implements TableMatcher {
 
     @Override
     public String toString() {
-        return "CLOSURE(" + this.a + ", " + this.minCount + ", " + this.maxCount + ")";
+        return "MANY(" + this.a + ", " + this.minCount + ", " + this.maxCount + ")";
     }
 
     private TableMatcher a;

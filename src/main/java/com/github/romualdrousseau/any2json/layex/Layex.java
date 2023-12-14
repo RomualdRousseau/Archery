@@ -4,7 +4,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import com.github.romualdrousseau.any2json.layex.operations.Any;
-import com.github.romualdrousseau.any2json.layex.operations.Closure;
+import com.github.romualdrousseau.any2json.layex.operations.Many;
 import com.github.romualdrousseau.any2json.layex.operations.Concat;
 import com.github.romualdrousseau.any2json.layex.operations.EndOfRow;
 import com.github.romualdrousseau.any2json.layex.operations.Group;
@@ -107,15 +107,15 @@ public class Layex {
         if (c.equals("?")) {
             this.acceptPreviousSymbol();
             this.stack.push(e);
-            return new Closure(this.stack, 0, 1);
+            return new Many(this.stack, 0, 1);
         } else if (c.equals("*")) {
             this.acceptPreviousSymbol();
             this.stack.push(e);
-            return new Closure(this.stack, 0, Integer.MAX_VALUE);
+            return new Many(this.stack, 0, Integer.MAX_VALUE);
         } else if (c.equals("+")) {
             this.acceptPreviousSymbol();
             this.stack.push(e);
-            return new Closure(this.stack, 1, Integer.MAX_VALUE);
+            return new Many(this.stack, 1, Integer.MAX_VALUE);
         } else if (c.equals("{")) {
             this.acceptPreviousSymbol();
             final TableMatcher e2 = r4(e);
@@ -149,7 +149,7 @@ public class Layex {
                 }
             }
             this.stack.push(e);
-            return new Closure(this.stack, n1, n2);
+            return new Many(this.stack, n1, n2);
         } else {
             throw new RuntimeException("Syntax Error: " + c);
         }
