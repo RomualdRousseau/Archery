@@ -35,6 +35,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class XlsxSheet extends PatcheableSheetStore implements Closeable {
 
+    private final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
     private static final int BATCH_SIZE = 100000;
 
     public XlsxSheet(final String name, final InputStream sheetData, final SharedStrings sharedStrings,
@@ -313,7 +314,7 @@ public class XlsxSheet extends PatcheableSheetStore implements Closeable {
                     final double d = Double.valueOf(cell.value);
                     if (DateUtil.isADateFormat(cell.style.getDataFormat(), cell.style.getDataFormatString())
                             && DateUtil.isValidExcelDate(d)) {
-                        cell.value = new SimpleDateFormat("yyyy-MM-dd").format(DateUtil.getJavaDate(d));
+                        cell.value = DATE_FORMATTER.format(DateUtil.getJavaDate(d));
                     }
                 } catch (final NumberFormatException x) {
                     cell.type = CellType.STRING;

@@ -17,6 +17,8 @@ import org.apache.poi.ss.util.CellRangeAddress;
 
 public class XlsSheet extends PatcheableSheetStore {
 
+    private final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
+
     public XlsSheet(final Sheet sheet) throws IOException {
         this.sheet = sheet;
         this.mergedRegions = new ArrayList<CellRangeAddress>();
@@ -164,7 +166,7 @@ public class XlsSheet extends PatcheableSheetStore {
                 break;
             case NUMERIC:
                 if (DateUtil.isCellDateFormatted(cell)) {
-                    value = new SimpleDateFormat("yyyy-MM-dd").format(cell.getDateCellValue());
+                    value = DATE_FORMATTER.format(cell.getDateCellValue());
                 } else {
                     final double d = cell.getNumericCellValue();
                     if (d != Math.rint(d)) {
