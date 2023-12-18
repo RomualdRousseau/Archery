@@ -18,7 +18,7 @@ import com.linuxense.javadbf.DBFReader;
 
 class DbfSheet extends PatcheableSheetStore implements Closeable {
 
-    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
+    private final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
     private static final int BATCH_SIZE = 100000;
 
     private final String name;
@@ -124,7 +124,7 @@ class DbfSheet extends PatcheableSheetStore implements Closeable {
                 return v.toString();
             }
         } else if (v instanceof Date) {
-            return DbfSheet.DATE_FORMATTER.format((Date) v);
+            return DATE_FORMATTER.format((Date) v);
         } else {
             return v.toString();
         }
