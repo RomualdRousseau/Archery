@@ -110,6 +110,7 @@ class CsvSheet extends PatcheableSheetStore implements Closeable {
 
             if (firstPass) {
                 separator = this.guessSeparator(textRow);
+                firstPass = false;
             }
 
             final String[] cells = parseOneRow(textRow, separator);
