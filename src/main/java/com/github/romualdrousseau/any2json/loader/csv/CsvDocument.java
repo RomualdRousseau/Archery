@@ -84,7 +84,7 @@ public class CsvDocument extends BaseDocument {
     private boolean openWithEncoding(final File txtFile, final String encoding) {
         try {
             final var reader = new BufferedReader(new InputStreamReader(new FileInputStream(txtFile), encoding));
-            if (encoding.equals("UTF-8")) {
+            if (encoding.startsWith("UTF-")) {
                 this.processBOM(reader);
             }
             final var sheetName = Disk.removeExtension(txtFile.getName());
