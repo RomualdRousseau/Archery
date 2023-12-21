@@ -14,9 +14,10 @@ import com.github.romualdrousseau.shuju.strings.StringUtils;
 
 class ParquetSheet extends PatcheableSheetStore implements Closeable {
 
-    private static final int BATCH_SIZE = 100000;
+    private static final int BATCH_SIZE = 50000;
 
     private final String name;
+
     private ParquetReader<GenericRecord> reader;
     private DataFrame rows = null;
 
