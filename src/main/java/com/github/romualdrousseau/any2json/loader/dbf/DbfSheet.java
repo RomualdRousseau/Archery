@@ -18,7 +18,7 @@ import com.linuxense.javadbf.DBFReader;
 
 class DbfSheet extends PatcheableSheetStore implements Closeable {
 
-    private static final int BATCH_SIZE = 10000;
+    private static final int BATCH_SIZE = 50000;
 
     private final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
     private final String name;
