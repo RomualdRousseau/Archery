@@ -22,7 +22,7 @@ import org.xml.sax.SAXException;
 
 public class XlsxSheet extends PatcheableSheetStore implements Closeable {
 
-    private static final int BATCH_SIZE = 10000;
+    private static final int BATCH_SIZE = 50000;
 
     private final String name;
     private final InputStream sheetData;
