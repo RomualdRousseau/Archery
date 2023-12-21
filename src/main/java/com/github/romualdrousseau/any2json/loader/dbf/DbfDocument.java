@@ -16,7 +16,7 @@ import com.linuxense.javadbf.DBFReader;
 
 public class DbfDocument extends BaseDocument {
 
-    public static final List<String> EXTENSIONS = List.of(".dbf");
+    private static final List<String> EXTENSIONS = List.of(".dbf");
 
     private DbfSheet sheet;
 
