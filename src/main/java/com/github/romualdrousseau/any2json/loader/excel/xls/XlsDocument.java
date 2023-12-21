@@ -18,7 +18,7 @@ import com.github.romualdrousseau.any2json.Sheet;
 
 public class XlsDocument extends BaseDocument {
 
-    public static List<String> EXTENSIONS = List.of(".xls", ".xlsx", ".xlsm");
+    private static List<String> EXTENSIONS = List.of(".xls", ".xlsx", ".xlsm");
 
     private final ArrayList<XlsSheet> sheets = new ArrayList<XlsSheet>();
 

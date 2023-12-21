@@ -24,7 +24,7 @@ import org.apache.poi.xssf.eventusermodel.XSSFReader.SheetIterator;
 
 public class XlsxDocument extends BaseDocument {
 
-    public static List<String> EXTENSIONS = List.of(".xls", ".xlsx", ".xlsm");
+    private static List<String> EXTENSIONS = List.of(".xls", ".xlsx", ".xlsm");
 
     private final ArrayList<XlsxSheet> sheets = new ArrayList<XlsxSheet>();
 
