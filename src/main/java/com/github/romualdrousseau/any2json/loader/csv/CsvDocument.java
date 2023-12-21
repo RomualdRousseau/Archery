@@ -85,7 +85,7 @@ public class CsvDocument extends BaseDocument {
         try {
             final var reader = new BufferedReader(new InputStreamReader(new FileInputStream(txtFile), encoding));
             if (encoding.startsWith("UTF-")) {
-                this.processBOM(reader);
+                this.processUtfBOM(reader);
             }
             final var sheetName = Disk.removeExtension(txtFile.getName());
             this.sheet = new CsvSheet(sheetName, reader);
@@ -96,7 +96,7 @@ public class CsvDocument extends BaseDocument {
         }
     }
 
-    private void processBOM(final BufferedReader reader) throws IOException {
+    private void processUtfBOM(final BufferedReader reader) throws IOException {
         // skip BOM if present
         reader.mark(1);
         if (reader.read() != StringUtils.BOM_CHAR) {
