@@ -16,8 +16,10 @@ import java.util.stream.Stream;
 import org.tensorflow.SavedModelBundle;
 import org.tensorflow.SessionFunction;
 import org.tensorflow.Signature;
+import org.tensorflow.exceptions.TensorFlowException;
 import org.tensorflow.types.TFloat32;
 
+import com.github.romualdrousseau.any2json.HeaderTag;
 import com.github.romualdrousseau.any2json.Model;
 import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.any2json.util.TempFile;
@@ -97,6 +99,9 @@ public class NetTagClassifier extends SimpleTagClassifier {
     @Override
     public String predict(final String name, final List<String> entities, final List<String> context) {
         this.ensureClassifierLoaded();
+        if (this.tagClassifierModel == null) {
+            return HeaderTag.None.getValue();
+        }
 
         final var vector = this.createTrainingVector(name, entities, context).stream().mapToDouble(x -> x).toArray();
         final var entityInput = Arrays.stream(vector, 0, IN_ENTITY_SIZE).toArray();
@@ -109,7 +114,7 @@ public class NetTagClassifier extends SimpleTagClassifier {
                 "name_input", Tensor.of(nameInput).reshape(1, -1).toTFloat32(),
                 "context_input", Tensor.of(contextInput).reshape(1, -1).toTFloat32());
 
-        final var result = Tensor.of((TFloat32) tagClassifierFunc.call(inputs).get("tag_output").get());
+        final var result = Tensor.of((TFloat32) this.tagClassifierFunc.call(inputs).get("tag_output").get());
         return this.model.getTagList().get((int) result.argmax(1).item(0));
     }
 
@@ -190,9 +195,17 @@ public class NetTagClassifier extends SimpleTagClassifier {
         if (this.modelPath == null) {
             this.modelPath = this.JSONStringToModelPath(model.toJSON().getString("model"));
         }
-        if (this.tagClassifierModel == null) {
-            this.tagClassifierModel = SavedModelBundle.load(modelPath.toString(), "serve");
-            this.tagClassifierFunc = this.tagClassifierModel.function(Signature.DEFAULT_KEY);
+        try {
+            if (this.tagClassifierModel == null) {
+                this.tagClassifierModel = SavedModelBundle.load(modelPath.toString(), "serve");
+                this.tagClassifierFunc = this.tagClassifierModel.function(Signature.DEFAULT_KEY);
+            }
+        } catch(TensorFlowException x) {
+            if (tagClassifierModel != null) {
+                tagClassifierModel.close();
+                tagClassifierModel = null;
+                tagClassifierFunc = null;
+            }
         }
     }
 
