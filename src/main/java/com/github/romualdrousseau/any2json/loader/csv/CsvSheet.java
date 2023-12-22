@@ -16,6 +16,7 @@ class CsvSheet extends PatcheableSheetStore implements Closeable {
 
     private static final String[] SEPARATORS = { "\t", ",", ";" };
     private static final int BATCH_SIZE = 50000;
+    private static final int SAMPLE_SIZE = 8192;
 
     private final String name;
 
@@ -92,15 +93,23 @@ class CsvSheet extends PatcheableSheetStore implements Closeable {
     }
 
     public void checkDataEncoding() throws IOException {
-        this.reader.mark(0);
-        final var textRow = this.reader.readLine();
-        if (textRow != null) {
+        this.reader.mark(SAMPLE_SIZE);
+
+        final var sample = new StringBuffer();
+        var c = -1;
+        while(sample.length() < SAMPLE_SIZE && (c = this.reader.read()) >= 0) {
+            sample.append((char) c);
+        }
+        final var textRow = sample.toString();
+
+        if (!sample.isEmpty()) {
             final var separator = this.guessSeparator(textRow);
             final var cells = parseOneRow(textRow, separator);
             if (!this.checkIfGoodEncoding(cells)) {
                 throw new IOException("CSV bad encoding");
             }
         }
+
         this.reader.reset();
     }
 
