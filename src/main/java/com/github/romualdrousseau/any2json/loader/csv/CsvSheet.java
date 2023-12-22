@@ -194,20 +194,6 @@ class CsvSheet extends PatcheableSheetStore implements Closeable {
         return SEPARATORS[(int) Tensor.of(v).argmax(0).item(0)];
     }
 
-    private String getCellAt(final int colIndex, final int rowIndex) {
-        if(rowIndex >= this.rows.getRowCount()) {
-            return null;
-        }
-
-        final Row row = this.rows.getRow(rowIndex);
-
-        if(colIndex >= row.size()) {
-            return null;
-        }
-
-        return row.get(colIndex);
-    }
-
     private String readSample(int maxSampleLength) throws IOException {
         final var sample = new StringBuffer();
         while(true) {
@@ -226,5 +212,19 @@ class CsvSheet extends PatcheableSheetStore implements Closeable {
 
             sample.append((char) c);
         }
+    }
+
+    private String getCellAt(final int colIndex, final int rowIndex) {
+        if(rowIndex >= this.rows.getRowCount()) {
+            return null;
+        }
+
+        final Row row = this.rows.getRow(rowIndex);
+
+        if(colIndex >= row.size()) {
+            return null;
+        }
+
+        return row.get(colIndex);
     }
 }
