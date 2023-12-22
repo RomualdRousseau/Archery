@@ -94,22 +94,12 @@ class CsvSheet extends PatcheableSheetStore implements Closeable {
 
     public void checkDataEncoding() throws IOException {
         this.reader.mark(SAMPLE_SIZE);
-
-        final var sample = new StringBuffer();
-        var c = -1;
-        while(sample.length() < SAMPLE_SIZE && (c = this.reader.read()) >= 0) {
-            sample.append((char) c);
+        final var textRow = this.readSample(SAMPLE_SIZE);
+        final var separator = this.guessSeparator(textRow);
+        final var cells = parseOneRow(textRow, separator);
+        if (!this.checkIfGoodEncoding(cells)) {
+            throw new IOException("CSV bad encoding");
         }
-        final var textRow = sample.toString();
-
-        if (!sample.isEmpty()) {
-            final var separator = this.guessSeparator(textRow);
-            final var cells = parseOneRow(textRow, separator);
-            if (!this.checkIfGoodEncoding(cells)) {
-                throw new IOException("CSV bad encoding");
-            }
-        }
-
         this.reader.reset();
     }
 
@@ -216,5 +206,25 @@ class CsvSheet extends PatcheableSheetStore implements Closeable {
         }
 
         return row.get(colIndex);
+    }
+
+    private String readSample(int maxSampleLength) throws IOException {
+        final var sample = new StringBuffer();
+        while(true) {
+            if (sample.length() >= maxSampleLength) {
+                return sample.toString();
+            }
+
+            final var c = this.reader.read();
+            if (c < 0) {
+                return sample.toString();
+            }
+
+            if (c == '\n' || c == '\r') {
+                return sample.toString();
+            }
+
+            sample.append((char) c);
+        }
     }
 }
