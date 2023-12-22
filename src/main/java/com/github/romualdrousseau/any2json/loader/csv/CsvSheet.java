@@ -96,6 +96,9 @@ class CsvSheet extends PatcheableSheetStore implements Closeable {
         this.reader.mark(SAMPLE_SIZE);
         final var textRow = this.readSample(SAMPLE_SIZE);
         final var separator = this.guessSeparator(textRow);
+        if (separator == null) {
+            throw new IOException("CSV bad encoding");
+        }
         final var cells = parseOneRow(textRow, separator);
         if (!this.checkIfGoodEncoding(cells)) {
             throw new IOException("CSV bad encoding");
@@ -186,12 +189,19 @@ class CsvSheet extends PatcheableSheetStore implements Closeable {
     }
 
     private String guessSeparator(final String sample) {
-        // find the separator generating the more of columns
-        final float[] v = new float[SEPARATORS.length];
-        for (int i = 0; i < SEPARATORS.length; i++) {
-            v[i] = sample.split(SEPARATORS[i], -1).length;
+        final var v = new float[1 + SEPARATORS.length];
+        for (int i = 0; i < v.length; i++) {
+            v[i] = 1.0f;
         }
-        return SEPARATORS[(int) Tensor.of(v).argmax(0).item(0)];
+
+        // find the separator generating the more of columns
+
+        for (int i = 0; i < SEPARATORS.length; i++) {
+            v[i + 1] = sample.split(SEPARATORS[i], -1).length;
+        }
+
+        final var i = (int) Tensor.of(v).argmax(0).item(0);
+        return (i == 0) ? null : SEPARATORS[i - 1];
     }
 
     private String readSample(int maxSampleLength) throws IOException {
