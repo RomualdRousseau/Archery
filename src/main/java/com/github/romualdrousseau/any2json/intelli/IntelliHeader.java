@@ -1,5 +1,9 @@
 package com.github.romualdrousseau.any2json.intelli;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.base.BaseHeader;
@@ -49,21 +53,15 @@ public class IntelliHeader extends DataTableHeader {
 
         // Concat each element of the chain
 
-        final var buffer = new StringBuffer(curr.getCellAtRow(row).getValue());
+        final var values = new ArrayList<String>();
         while (curr != null) {
-            final String value = curr.getCellAtRow(row).getValue();
-            if (!buffer.toString().contains(value)) {
-                buffer.append(" ");
-                buffer.append(value);
-            }
+            values.add(curr.getCellAtRow(row).getValue());
             curr = curr.nextSibling;
         }
 
-        if (buffer.isEmpty()) {
-            return this.getCellAtRow(row);
-        } else {
-            return new BaseCell(buffer.toString(), this.getColumnIndex(), 1, this.getTable().getSheet());
-        }
+        return IntelliHeader.mergeValues(values)
+                .map(x -> new BaseCell(x, this.getColumnIndex(), 1, this.getTable().getSheet()))
+                .orElseGet(() -> this.getCellAtRow(row));
     }
 
     @Override
@@ -90,6 +88,10 @@ public class IntelliHeader extends DataTableHeader {
         }
         other.prevSibling = e;
         e.nextSibling = other;
+    }
+
+    public static Optional<String> mergeValues(final List<String> values) {
+        return StringUtils.merge(" ", values);
     }
 
     private final String name;
