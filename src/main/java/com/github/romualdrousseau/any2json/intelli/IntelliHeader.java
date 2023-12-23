@@ -53,7 +53,7 @@ public class IntelliHeader extends DataTableHeader {
         while (curr != null) {
             final String value = curr.getCellAtRow(row).getValue();
             if (!buffer.toString().contains(value)) {
-                buffer.append(' ');
+                buffer.append(" ");
                 buffer.append(value);
             }
             curr = curr.nextSibling;
