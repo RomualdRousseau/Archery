@@ -91,7 +91,7 @@ public class IntelliHeader extends DataTableHeader {
     }
 
     public static Optional<String> mergeValues(final List<String> values) {
-        return StringUtils.merge(" ", values);
+        return StringUtils.merge(Settings.MERGE_SEPARATOR, values);
     }
 
     private final String name;
