@@ -39,8 +39,17 @@ public class IntelliHeader extends DataTableHeader {
         if (!merged || this.nextSibling == null) {
             return this.getCellAtRow(row);
         }
-        final var buffer = new StringBuffer(this.getCellAtRow(row).getValue());
-        IntelliHeader curr = this.nextSibling;
+
+        // Rewind to the beginning of the chain
+
+        IntelliHeader curr = this;
+        while (curr.prevSibling != null) {
+            curr = curr.prevSibling;
+        }
+
+        // Concat each element of the chain
+
+        final var buffer = new StringBuffer(curr.getCellAtRow(row).getValue());
         while (curr != null) {
             final String value = curr.getCellAtRow(row).getValue();
             if (!buffer.toString().contains(value)) {
@@ -49,6 +58,7 @@ public class IntelliHeader extends DataTableHeader {
             }
             curr = curr.nextSibling;
         }
+
         if (buffer.isEmpty()) {
             return this.getCellAtRow(row);
         } else {
