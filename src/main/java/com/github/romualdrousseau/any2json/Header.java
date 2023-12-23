@@ -17,4 +17,6 @@ public interface Header {
     String getEntitiesAsString();
 
     boolean isColumnEmpty();
+
+    boolean isColumnMerged();
 }

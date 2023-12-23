@@ -36,22 +36,23 @@ public class IntelliHeader extends DataTableHeader {
 
     @Override
     public BaseCell getCellAtRow(final Row row, final boolean merged) {
-        if (!merged || this.nextSibbling == null) {
+        if (!merged || this.nextSibling == null) {
             return this.getCellAtRow(row);
         }
-        String buffer = "";
-        IntelliHeader curr = this;
+        final var buffer = new StringBuffer(this.getCellAtRow(row).getValue());
+        IntelliHeader curr = this.nextSibling;
         while (curr != null) {
             final String value = curr.getCellAtRow(row).getValue();
-            if (!buffer.contains(value)) {
-                buffer += value;
+            if (!buffer.toString().contains(value)) {
+                buffer.append(' ');
+                buffer.append(value);
             }
-            curr = curr.nextSibbling;
+            curr = curr.nextSibling;
         }
         if (buffer.isEmpty()) {
             return this.getCellAtRow(row);
         } else {
-            return new BaseCell(buffer, this.getColumnIndex(), 1, this.getTable().getSheet());
+            return new BaseCell(buffer.toString(), this.getColumnIndex(), 1, this.getTable().getSheet());
         }
     }
 
@@ -63,17 +64,25 @@ public class IntelliHeader extends DataTableHeader {
     @Override
     public void resetTag() {
         super.resetTag();
-        this.nextSibbling = null;
+        this.prevSibling = null;
+        this.nextSibling = null;
+    }
+
+    @Override
+    public boolean isColumnMerged() {
+        return this.prevSibling != null;
     }
 
     public void mergeTo(final IntelliHeader other) {
         IntelliHeader e = this;
-        while (e.nextSibbling != null) {
-            e = e.nextSibbling;
+        while (e.nextSibling != null) {
+            e = e.nextSibling;
         }
-        e.nextSibbling = other;
+        other.prevSibling = e;
+        e.nextSibling = other;
     }
 
     private final String name;
-    private IntelliHeader nextSibbling;
+    private IntelliHeader prevSibling;
+    private IntelliHeader nextSibling;
 }

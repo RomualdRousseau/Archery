@@ -39,6 +39,11 @@ public abstract class BaseHeader implements Header {
         return this.columnEmpty;
     }
 
+    @Override
+    public boolean isColumnMerged() {
+        return false;
+    }
+
     public void setColumnEmpty(boolean columnEmpty) {
         this.columnEmpty = columnEmpty;
     }
