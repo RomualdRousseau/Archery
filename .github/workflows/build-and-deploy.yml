@@ -24,7 +24,7 @@ jobs:
                 run: mvn initialize
 
             -   name: Build project
-                run: mvn -B package --file pom.xml
+                run: mvn -U -B package --file pom.xml
 
             -   name: Archive build artifact
                 uses: actions/upload-artifact@v3
@@ -69,7 +69,7 @@ jobs:
                     key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
 
             -   name: Deploy project snapshot
-                run: mvn -B clean deploy -Dmaven.test.skip=true --file pom.xml -s settings.xml -P snapshot
+                run: mvn -B deploy -Dmaven.test.skip=true --file pom.xml -s settings.xml -P snapshot
                 env:
                     OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
                     OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
@@ -102,7 +102,7 @@ jobs:
             -   name: Deploy project
                 run: |
                     export GPG_TTY=$(tty)
-                    mvn -B clean deploy -Dmaven.test.skip=true --file pom.xml -s settings.xml -P release
+                    mvn -B deploy -Dmaven.test.skip=true --file pom.xml -s settings.xml -P release
                 env:
                     OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
                     OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
