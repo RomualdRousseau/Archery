@@ -14,7 +14,7 @@ import com.github.romualdrousseau.shuju.commons.CollectionUtils;
 import com.github.romualdrousseau.shuju.preprocessing.Text;
 
 public class TrainingSetBuilder {
-    private static final float TRAININGSET_AUGMENT_COEF = 0.1f;
+    private static final float TRAININGSET_AUGMENT_COEF = 0.5f;
 
     public static List<TrainingEntry> gatherConflicts(final List<TrainingEntry> entries) {
         return entries.parallelStream().filter(x -> entries.stream().anyMatch(x::isConflict)).distinct().toList();
@@ -40,10 +40,15 @@ public class TrainingSetBuilder {
         final var augmentedTrainingSet = CollectionUtils
                 .shuffle(validationSet.stream().flatMap(mutator).collect(Collectors.toList()));
 
+        // Remove conflicts with validation set
+
+        final var cleanedTrainingSet = augmentedTrainingSet.parallelStream()
+                .filter(x -> !validationSet.stream().anyMatch(x::isConflict)).distinct().toList();
+
         // Concat original dataset and the mutated samples
 
-        final long p = Math.round((float) augmentedTrainingSet.size() * TrainingSetBuilder.TRAININGSET_AUGMENT_COEF);
-        return Stream.concat(validationSet.stream(), augmentedTrainingSet.stream().limit(p)).toList();
+        final long p = Math.round((float) cleanedTrainingSet.size() * TrainingSetBuilder.TRAININGSET_AUGMENT_COEF);
+        return Stream.concat(validationSet.stream(), cleanedTrainingSet.stream().limit(p)).toList();
     }
 
     private static Stream<TrainingEntry> mutateSample(
