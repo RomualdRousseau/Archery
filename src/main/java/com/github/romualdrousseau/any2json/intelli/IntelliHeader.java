@@ -59,7 +59,8 @@ public class IntelliHeader extends DataTableHeader {
             curr = curr.nextSibling;
         }
 
-        return IntelliHeader.mergeValues(values)
+        final var value = IntelliHeader.mergeValues(values);
+        return value
                 .map(x -> new BaseCell(x, this.getColumnIndex(), 1, this.getTable().getSheet()))
                 .orElseGet(() -> this.getCellAtRow(row));
     }
