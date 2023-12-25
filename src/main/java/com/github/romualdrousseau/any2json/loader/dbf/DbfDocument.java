@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.List;
 
 import com.github.romualdrousseau.any2json.Sheet;
@@ -88,7 +89,7 @@ public class DbfDocument extends BaseDocument {
             final var sheetName = Disk.removeExtension(dbfFile.getName());
             this.sheet = new DbfSheet(sheetName, reader);
             return true;
-        } catch (final IOException x) {
+        } catch (final IOException | UnsupportedCharsetException x) {
             return false;
         }
     }
