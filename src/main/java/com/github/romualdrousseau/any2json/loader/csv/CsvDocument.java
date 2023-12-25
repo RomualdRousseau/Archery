@@ -91,7 +91,7 @@ public class CsvDocument extends BaseDocument {
             this.sheet = new CsvSheet(sheetName, reader);
             this.sheet.checkDataEncoding();
             return true;
-        } catch(IOException x) {
+        } catch(final IOException x) {
             return false;
         }
     }
