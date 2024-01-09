@@ -14,7 +14,7 @@ import com.github.romualdrousseau.shuju.types.Tensor;
 
 class CsvSheet extends PatcheableSheetStore implements Closeable {
 
-    private static final String[] SEPARATORS = { "\t", "\\|", ",", ";" };
+    private static final String[] SEPARATORS = { "\t", "|", ",", ";" };
     private static final int BATCH_SIZE = 50000;
     private static final int SAMPLE_SIZE = 8192;
 
@@ -197,7 +197,12 @@ class CsvSheet extends PatcheableSheetStore implements Closeable {
         // find the separator generating the more of columns
 
         for (int i = 0; i < SEPARATORS.length; i++) {
-            v[i + 1] = sample.split(SEPARATORS[i], -1).length;
+            if (".$|()[{^?*+\\".indexOf(SEPARATORS[i]) != -1) {
+                v[i + 1] = sample.split("\\" + SEPARATORS[i], -1).length;
+            } else {
+                v[i + 1] = sample.split(SEPARATORS[i], -1).length;
+            }
+            System.out.println(SEPARATORS[i] + " " + v[i + 1]);
         }
 
         final var i = (int) Tensor.of(v).argmax(0).item(0);
