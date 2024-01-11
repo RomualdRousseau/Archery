@@ -202,7 +202,6 @@ class CsvSheet extends PatcheableSheetStore implements Closeable {
             } else {
                 v[i + 1] = sample.split(SEPARATORS[i], -1).length;
             }
-            System.out.println(SEPARATORS[i] + " " + v[i + 1]);
         }
 
         final var i = (int) Tensor.of(v).argmax(0).item(0);
