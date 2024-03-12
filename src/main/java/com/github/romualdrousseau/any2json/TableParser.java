@@ -9,11 +9,13 @@ import com.github.romualdrousseau.any2json.base.MetaTable;
 
 public interface TableParser extends AutoCloseable {
 
+    void updateModel(final Model model);
+
     void disablePivot();
 
-    void setParserOptions(String options);
+    void setParserOptions(final String options);
 
-    List<DataTable> getDataTables(BaseSheet sheet, List<BaseTable> tables);
+    List<DataTable> getDataTables(final BaseSheet sheet, final List<BaseTable> tables);
 
-    List<MetaTable> getMetaTables(BaseSheet sheet, List<BaseTable> tables);
+    List<MetaTable> getMetaTables(final BaseSheet sheet, final List<BaseTable> tables);
 }

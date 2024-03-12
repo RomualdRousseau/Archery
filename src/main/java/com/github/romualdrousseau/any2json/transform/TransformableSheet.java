@@ -5,6 +5,7 @@ import java.util.List;
 import org.python.util.PythonInterpreter;
 
 import com.github.romualdrousseau.any2json.PivotOption;
+import com.github.romualdrousseau.any2json.ReadingDirection;
 import com.github.romualdrousseau.any2json.base.BaseDocument;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.transform.op.DropColumn;
@@ -15,6 +16,7 @@ import com.github.romualdrousseau.any2json.transform.op.DropRowsWhenEntropyLessT
 import com.github.romualdrousseau.any2json.transform.op.DropRowsWhenFillRatioLessThan;
 import com.github.romualdrousseau.any2json.transform.op.RepeatColumnCell;
 import com.github.romualdrousseau.any2json.transform.op.RepeatRowCell;
+import com.github.romualdrousseau.any2json.transform.op.SwapRows;
 import com.github.romualdrousseau.shuju.strings.StringUtils;
 
 /**
@@ -50,9 +52,9 @@ public class TransformableSheet {
     public void applyAll() {
         ((BaseDocument) this.sheet.getDocument()).autoRecipe(this.sheet);
 
-        final String recipe = this.sheet.getDocument().getRecipe();
+        final var recipe = this.sheet.getDocument().getRecipe();
         if (!StringUtils.isBlank(recipe)) {
-            try (PythonInterpreter pyInterp = new PythonInterpreter()) {
+            try (var pyInterp = new PythonInterpreter()) {
                 pyInterp.set("sheet", this);
                 pyInterp.exec(recipe);
             }
@@ -64,8 +66,51 @@ public class TransformableSheet {
      *
      * @param options the parser options
      */
-    public void setDataTableParserFactory(String options) {
+    public void setDataTableParserFactory(final String options) {
         this.sheet.getDocument().getTableParser().setParserOptions(options);
+    }
+
+    /**
+     * This method sets the reading direction. The reading direction controls how the different elements of a sheets are
+     * linked together. The reading direction is a reading directional preferences in perception of visual stimuli
+     * depending of the cultures and writing systems.
+     *
+     * By default, the reading direction is set to GutenbergReading (or Left-Right Then Top-Botton, or LRTB,
+     * or normal Western reading order).
+     */
+    public void setReadingDirection(final ReadingDirection readingDirection) {
+        this.sheet.getDocument().setReadingDirection(readingDirection);
+    }
+
+    /**
+     * This method sets the bitmap threshold for the sheet. The bitmap threshold represents the strength of
+     * close elements in a sheet to be combined together.
+     *
+     * @param threshold the bitmap threshold
+     * @deprecated use {@link TransformableSheet#setCapillarityThreshold(float)}
+     */
+    @Deprecated
+    public void setBitmapThreshold(final float threshold) {
+        this.sheet.setCapillarityThreshold(threshold);
+    }
+
+    /**
+     * This method sets the extraction threshold for the sheet. The extraction threshold represents the strength of
+     * close elements in a sheet to be combined together. With a value of 0, the elements with the smallest area will be
+     * extracted.
+     *
+     * @param threshold the extraction threshold
+     */
+    public void setCapillarityThreshold(final float threshold) {
+        this.sheet.setCapillarityThreshold(threshold);
+    }
+
+    /**
+     * This method disables auto cropping of a sheets. The auto cropping will drop all empty rows and columns on the
+     * edges of the sheets.
+     */
+    public void disableAutoCrop() {
+        this.sheet.disableAutoCrop();
     }
 
     /**
@@ -123,15 +168,7 @@ public class TransformableSheet {
         this.sheet.patchCell(colIndex1, rowIndex1, colIndex2, rowIndex2, value);
     }
 
-    /**
-     * This method sets the bitmap threshold for the sheet. The bitmap threshold represents the strength of
-     * close elements in a sheet to be combined together.
-     *
-     * @param bitmapThreshold the bitmap threshold
-     */
-    public void setBitmapThreshold(final float bitmapThreshold) {
-        this.sheet.setBitmapThreshold(bitmapThreshold);
-    }
+
 
     /**
      * This method disables the pivot functionality of the sheet's associated document.
@@ -296,6 +333,16 @@ public class TransformableSheet {
      */
     public void dropRowsWhenEntropyLessThan(final float max, final int start, final int stop) {
         DropRowsWhenEntropyLessThan.Apply(this.sheet, max, start, stop);
+    }
+
+    /**
+     * This method swap 2 rows from the sheet.
+     *
+     * @param rowIndex1 the index of row1
+     * @param rowIndex2 the index of row2
+     */
+    public void swapRows(final int rowIndex1, final int rowIndex2) {
+        SwapRows.Apply(this.sheet, rowIndex1, rowIndex2);
     }
 
     private final BaseSheet sheet;

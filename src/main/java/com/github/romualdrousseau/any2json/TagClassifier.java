@@ -4,7 +4,9 @@ import java.util.List;
 
 public interface TagClassifier extends AutoCloseable {
 
-    String predict(String name, List<String> entities, List<String> context);
+    void updateModel(final Model model);
+
+    String predict(final String name, final List<String> entities, final List<String> context);
 
     TagClassifier setSnakeMode(final boolean snake);
 
