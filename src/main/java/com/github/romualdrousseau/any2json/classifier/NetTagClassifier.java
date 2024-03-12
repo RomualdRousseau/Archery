@@ -39,7 +39,6 @@ public class NetTagClassifier extends SimpleTagClassifier {
     public static final int IN_CONTEXT_SIZE = 100;
     public static final int OUT_TAG_SIZE = 64;
 
-    private final Model model;
     private final List<String> vocabulary;
     private final int ngrams;
     private final int wordMinSize;
@@ -48,15 +47,14 @@ public class NetTagClassifier extends SimpleTagClassifier {
     private final Text.IHasher hasher;
     private final boolean isModelTemp;
 
+    private Model model;
     private Path modelPath;
     private SavedModelBundle tagClassifierModel;
     private SessionFunction tagClassifierFunc;
 
-    public NetTagClassifier(final Model model, final List<String> vocabulary, final int ngrams, final int wordMinSize,
+    public NetTagClassifier(final List<String> vocabulary, final int ngrams, final int wordMinSize,
             final List<String> lexicon, final Path modelPath) {
-        super(model);
-
-        this.model = model;
+        super(null);
         this.vocabulary = vocabulary;
         this.ngrams = ngrams;
         this.wordMinSize = wordMinSize;
@@ -66,12 +64,10 @@ public class NetTagClassifier extends SimpleTagClassifier {
         this.hasher = new VocabularyHasher(this.vocabulary);
         this.modelPath = modelPath;
         this.isModelTemp = false;
-        this.updateModel();
     }
 
     public NetTagClassifier(final Model model) {
         super(model);
-
         this.model = model;
         this.vocabulary = JSON.<String>streamOf(model.toJSON().getArray("vocabulary")).toList();
         this.ngrams = model.toJSON().getInt("ngrams");
@@ -94,6 +90,16 @@ public class NetTagClassifier extends SimpleTagClassifier {
         if (this.modelPath != null && this.isModelTemp) {
             Disk.deleteDir(modelPath);
         }
+    }
+
+    @Override
+    public void updateModel(final Model model) {
+        this.model = model;
+        this.model.toJSON().setArray("vocabulary", JSON.arrayOf(this.vocabulary));
+        this.model.toJSON().setInt("ngrams", this.ngrams);
+        this.model.toJSON().setInt("wordMinSize", this.wordMinSize);
+        this.model.toJSON().setArray("lexicon", JSON.arrayOf(this.lexicon));
+        this.model.toJSON().setString("model", this.modelToJSONString(this.modelPath));
     }
 
     @Override
@@ -165,14 +171,6 @@ public class NetTagClassifier extends SimpleTagClassifier {
         return new TrainingEntry(
                 this.createTrainingVector(name, entities, context),
                 Text.pad_sequence(Text.to_categorical(label, this.model.getTagList()), OUT_TAG_SIZE));
-    }
-
-    public void updateModel() {
-        this.model.toJSON().setArray("vocabulary", JSON.arrayOf(this.vocabulary));
-        this.model.toJSON().setInt("ngrams", this.ngrams);
-        this.model.toJSON().setInt("wordMinSize", this.wordMinSize);
-        this.model.toJSON().setArray("lexicon", JSON.arrayOf(this.lexicon));
-        this.model.toJSON().setString("model", this.modelToJSONString(this.modelPath));
     }
 
     private List<Integer> createTrainingVector(final String name, final List<String> entities,
