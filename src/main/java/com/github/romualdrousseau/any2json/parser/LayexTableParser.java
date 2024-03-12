@@ -13,7 +13,6 @@ import com.github.romualdrousseau.any2json.base.MetaTable;
 import com.github.romualdrousseau.any2json.header.MetaHeader;
 import com.github.romualdrousseau.any2json.parser.table.DataTableGroupSubFooterParserFactory;
 import com.github.romualdrousseau.any2json.parser.table.DataTableGroupSubHeaderParserFactory;
-import com.github.romualdrousseau.any2json.parser.table.DataTableParser;
 import com.github.romualdrousseau.any2json.parser.table.DataTableParserFactory;
 import com.github.romualdrousseau.any2json.parser.table.MetaTableParser;
 import com.github.romualdrousseau.shuju.json.JSON;
@@ -23,35 +22,40 @@ import com.github.romualdrousseau.any2json.layex.TableMatcher;
 
 public class LayexTableParser implements TableParser {
 
-    public LayexTableParser(final Model model, final List<String> metaLayexes, final List<String> dataLayexes) {
-        this.model = model;
+    private final List<String> metaLayexes;
+    private final List<String> dataLayexes;
+
+    private Model model;
+    private boolean disablePivot;
+    private DataTableParserFactory dataTableParserFactory;
+    private List<TableMatcher> metaMatchers;
+    private List<TableMatcher> dataMatchers;
+
+    public LayexTableParser(final List<String> metaLayexes, final List<String> dataLayexes) {
         this.metaLayexes = metaLayexes;
         this.dataLayexes = dataLayexes;
-
         this.disablePivot = false;
         this.dataTableParserFactory = new DataTableGroupSubHeaderParserFactory();
         this.metaMatchers = metaLayexes.stream().map(Layex::new).map(Layex::compile).toList();
         this.dataMatchers = dataLayexes.stream().map(Layex::new).map(Layex::compile).toList();
-
-        // Update the model with the parser parameters
-
-        this.model.toJSON().setArray("metaLayexes", JSON.arrayOf(this.metaLayexes));
-        this.model.toJSON().setArray("dataLayexes", JSON.arrayOf(this.dataLayexes));
     }
 
     public LayexTableParser(final Model model) {
-        this.model = model;
-        this.metaLayexes = JSON.<String>streamOf(model.toJSON().getArray("metaLayexes")).toList();
-        this.dataLayexes = JSON.<String>streamOf(model.toJSON().getArray("dataLayexes")).toList();
-
-        this.disablePivot = false;
-        this.dataTableParserFactory = new DataTableGroupSubHeaderParserFactory();
-        this.metaMatchers = metaLayexes.stream().map(Layex::new).map(Layex::compile).toList();
-        this.dataMatchers = dataLayexes.stream().map(Layex::new).map(Layex::compile).toList();
+        this(
+            JSON.<String>streamOf(model.toJSON().getArray("metaLayexes")).toList(),
+            JSON.<String>streamOf(model.toJSON().getArray("dataLayexes")).toList());
+        this.updateModel(model);
     }
 
     @Override
     public void close() throws Exception {
+    }
+
+    @Override
+    public void updateModel(final Model model) {
+        this.model = model;
+        this.model.toJSON().setArray("metaLayexes", JSON.arrayOf(this.metaLayexes));
+        this.model.toJSON().setArray("dataLayexes", JSON.arrayOf(this.dataLayexes));
     }
 
     @Override
@@ -85,15 +89,7 @@ public class LayexTableParser implements TableParser {
             do {
                 for (final TableMatcher matcher : dataMatchers) {
                     if (!foundMatch && matcher.match(new TableLexer(table, tryCount))) {
-                        final DataTable dataTable = new DataTable(table);
-                        final DataTableParser parser = this.dataTableParserFactory.getInstance(dataTable,
-                                this.disablePivot);
-                        this.parseDataTable(table, dataTable, matcher, tryCount, parser, result);
-
-                        if (parser.getSplitRows().size() > 0) {
-                            this.splitAllSubTables(sheet, table, matcher, parser, result);
-                        }
-
+                        this.parseDataTable(table, matcher, tryCount, result);
                         table.setVisited(true);
                         foundMatch = true;
                     }
@@ -117,16 +113,13 @@ public class LayexTableParser implements TableParser {
             var foundMatch = false;
             for (final var matcher : this.getMetaMatcherList()) {
                 if (!foundMatch && matcher.match(new TableLexer(table, 0))) {
-                    final MetaTable metaTable = new MetaTable(table);
-                    final MetaTableParser parser = new MetaTableParser(metaTable);
-                    this.parseMetaTable(table, metaTable, matcher, parser, result);
+                    this.parseMetaTable(table, matcher, result);
                     foundMatch = true;
                 }
             }
 
             if (!foundMatch) {
-                final MetaTable metaTable = new MetaTable(table);
-                this.convertToMetaHeaders(metaTable, result);
+                this.convertToMetaHeaders(table, result);
             }
 
             table.setVisited(true);
@@ -151,22 +144,12 @@ public class LayexTableParser implements TableParser {
         this.dataMatchers = matchers;
     }
 
-    private void splitAllSubTables(final BaseSheet sheet, final BaseTable table, final TableMatcher matcher,
-            final DataTableParser parser, final List<DataTable> result) {
-        var firstRow = -1;
-        for (final var splitRow : parser.getSplitRows()) {
-            if (firstRow >= 0) {
-                final BaseTable subTable = new BaseTable(table, firstRow, table.getFirstRow() + splitRow - 1);
-                final DataTable dataTable = new DataTable(subTable);
-                this.parseDataTable(subTable, dataTable, matcher, 0, parser, result);
-            }
-            firstRow = table.getFirstRow() + splitRow;
-        }
-    }
-
-    private void parseDataTable(final BaseTable table, final DataTable dataTable, final TableMatcher matcher,
-            final int rowOffset, final DataTableParser parser, final List<DataTable> result) {
+    private void parseDataTable(final BaseTable table, final TableMatcher matcher,
+            final int rowOffset, final List<DataTable> result) {
+        final var dataTable = new DataTable(table);
+        final var parser = this.dataTableParserFactory.getInstance(dataTable, this.disablePivot);
         matcher.match(new TableLexer(table, rowOffset), parser);
+
         if (parser.getSplitRows().size() > 0) {
             dataTable.adjustLastRow(table.getFirstRow() + parser.getSplitRows().get(0) - 1);
         }
@@ -176,15 +159,30 @@ public class LayexTableParser implements TableParser {
         dataTable.ignoreRows().addAll(parser.getIgnoreRows());
         dataTable.setLoadCompleted(true);
         result.add(dataTable);
+
+        if (parser.getSplitRows().size() > 0) {
+            this.splitAllSubTables(table, matcher, parser.getSplitRows().get(0), result);
+        }
     }
 
-    private void parseMetaTable(final BaseTable table, final MetaTable metaTable, final TableMatcher matcher,
-            final MetaTableParser parser, final List<MetaTable> result) {
+    private void splitAllSubTables(final BaseTable table, final TableMatcher matcher, final int splitRow, final List<DataTable> result) {
+        final var firstRow = table.getFirstRow() + splitRow;
+        if (firstRow < table.getLastRow()) {
+            final var nextTable = new BaseTable(table, firstRow, table.getLastRow());
+            this.parseDataTable(nextTable, matcher, 0, result);
+        }
+    }
+
+    private void parseMetaTable(final BaseTable table, final TableMatcher matcher,
+            final List<MetaTable> result) {
+        final MetaTable metaTable = new MetaTable(table);
+        final var parser = new MetaTableParser(metaTable);
         matcher.match(new TableLexer(table, 0), parser);
         result.add(metaTable);
     }
 
-    private void convertToMetaHeaders(final MetaTable metaTable, final List<MetaTable> result) {
+    private void convertToMetaHeaders(final BaseTable table, final List<MetaTable> result) {
+        final MetaTable metaTable = new MetaTable(table);
         for (final var row : metaTable.rows()) {
             for (final var cell : row.cells()) {
                 if (cell.hasValue()) {
@@ -195,12 +193,4 @@ public class LayexTableParser implements TableParser {
         metaTable.setLoadCompleted(true);
         result.add(metaTable);
     }
-
-    private final Model model;
-    private final List<String> metaLayexes;
-    private final List<String> dataLayexes;
-    private boolean disablePivot;
-    private DataTableParserFactory dataTableParserFactory;
-    private List<TableMatcher> metaMatchers;
-    private List<TableMatcher> dataMatchers;
 }

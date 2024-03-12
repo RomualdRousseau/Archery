@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.romualdrousseau.any2json.base.BaseCell;
-import com.github.romualdrousseau.any2json.base.BaseHeader;
 import com.github.romualdrousseau.any2json.base.DataTable;
 import com.github.romualdrousseau.any2json.base.RowGroup;
 import com.github.romualdrousseau.any2json.header.DataTableHeader;
@@ -37,7 +36,7 @@ public class DataTableGroupSubHeaderParser extends DataTableParser {
 
     @Override
     public void processSymbolFunc(final BaseCell cell) {
-        final String symbol = cell.getSymbol();
+        final var symbol = cell.getSymbol();
 
         if (this.getColumn() == 0) {
             this.firstRowCell = null;
@@ -72,8 +71,6 @@ public class DataTableGroupSubHeaderParser extends DataTableParser {
                     this.processFooter(cell, symbol);
                     break;
             }
-        } else if (this.getGroup() == TABLE_FOOTER) {
-            this.processSplit(cell, symbol);
         }
     }
 
@@ -104,11 +101,17 @@ public class DataTableGroupSubHeaderParser extends DataTableParser {
             }
         } else if (this.firstRowHeader) {
             if (!this.disablePivot && symbol.equals("e") && cell.isPivotHeader() && cell.getColumnIndex() > 0) {
-                final PivotKeyHeader foundPivot = this.dataTable.findFirstPivotHeader();
+                var foundPivot = this.dataTable.findFirstPivotHeader();
                 if (foundPivot == null) {
-                    this.dataTable.addHeader(new PivotKeyHeader(this.dataTable, cell));
+                    foundPivot = new PivotKeyHeader(this.dataTable, cell);
+                    this.dataTable.addHeader(foundPivot);
                 } else{
                     foundPivot.addEntry(cell);
+                }
+                for (int i = 1; i < cell.getMergedCount(); i++) {
+                    final BaseCell clonedCell = new BaseCell(cell.getValue(), cell.getColumnIndex() + i, 1,
+                            cell.getSheet());
+                    foundPivot.addEntry(clonedCell);
                 }
             } else {
                 this.dataTable.addHeader(new DataTableHeader(this.dataTable, cell));
@@ -119,10 +122,10 @@ public class DataTableGroupSubHeaderParser extends DataTableParser {
                 }
             }
         } else {
-            BaseHeader header = this.dataTable.findHeaderByIndex(cell.getColumnIndex());
+            var header = this.dataTable.findHeaderByColumnIndex(cell.getColumnIndex());
             PivotEntry pivotEntry = null;
             if (header == null) {
-                final PivotKeyHeader foundPivot = this.dataTable.findFirstPivotHeader();
+                final var foundPivot = this.dataTable.findFirstPivotHeader();
                 if (foundPivot == null) {
                     header = new DataTableHeader(this.dataTable, cell);
                     this.dataTable.addHeader(header);
@@ -136,11 +139,11 @@ public class DataTableGroupSubHeaderParser extends DataTableParser {
             if (header != null) {
                 if (cell.hasValue() && !header.getName().contains(cell.getValue())) {
                     if (header instanceof PivotKeyHeader) {
-                        final PivotKeyHeader foundPivot = (PivotKeyHeader) header;
+                        final var foundPivot = (PivotKeyHeader) header;
                         pivotEntry = foundPivot.getEntries().get(0);
                     } else if (header instanceof DataTableHeader) {
-                        final DataTableHeader dataHeader = (DataTableHeader) header;
-                        final String newName = (dataHeader.getName() + " " + cell.getValue()).trim();
+                        final var dataHeader = (DataTableHeader) header;
+                        final var newName = (dataHeader.getName() + " " + cell.getValue()).trim();
                         dataHeader.setName(newName);
                     }
                 }
@@ -195,16 +198,10 @@ public class DataTableGroupSubHeaderParser extends DataTableParser {
 
     private void processFooter(final BaseCell cell, final String symbol) {
         if (symbol.equals("$")) {
-            final int n = this.dataTable.getLastRow() - this.dataTable.getFirstRow();
+            final var n = this.dataTable.getLastRow() - this.dataTable.getFirstRow();
             this.dataTable.setLastRowOffset(this.getRow() - n - 1);
             this.splitRows.add(this.getRow() + 1);
             this.footerProcessed = true;
-        }
-    }
-
-    private void processSplit(final BaseCell cell, final String symbol) {
-        if (symbol.equals("$")) {
-            this.splitRows.add(this.getRow() + 1);
         }
     }
 

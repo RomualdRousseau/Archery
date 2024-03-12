@@ -54,8 +54,8 @@ public class TableLexer implements Lexer<BaseCell, TableLexer.Cursor> {
             return BaseCell.EndOfRow;
         }
 
-        final BaseCell cell = row.getCellAt(colIndex);
-        colIndex += cell.getMergedCount();
+        final BaseCell cell = row.getCellAt(this.colIndex);
+        this.colIndex += cell.getMergedCount();
 
         return cell;
     }
