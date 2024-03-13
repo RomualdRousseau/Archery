@@ -3,7 +3,7 @@
 
     <groupId>com.github.romualdrousseau</groupId>
     <artifactId>any2json-excel</artifactId>
-    <version>2.37</version>
+    <version>2.38-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>any2json-excel</name>
@@ -34,19 +34,12 @@
         <maven.compiler.target>17</maven.compiler.target>
 
         <shuju.version>1.23</shuju.version>
-        <any2json.version>2.37</any2json.version>
+        <any2json.version>2.38-SNAPSHOT</any2json.version>
         <poi.version>5.2.3</poi.version>
 
         <junit.version>4.13.2</junit.version>
         <hamcrest.version>2.2</hamcrest.version>
     </properties>
-
-    <scm>
-        <connection>scm:git:https://github.com/romualdrousseau/any2json-excel.git</connection>
-        <developerConnection>scm:git:https://github.com/romualdrousseau/any2json-excel.git</developerConnection>
-        <url>https://github.com/romualdrousseau/any2json-excel</url>
-        <tag>HEAD</tag>
-    </scm>
 
     <distributionManagement>
         <snapshotRepository>
@@ -138,8 +131,16 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.16.2</version>
+                <configuration>
+                    <rulesUri>file:///${project.basedir}/rules.xml</rulesUri>
+                </configuration>
+            </plugin>
+            <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>3.3.2</version>
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -147,24 +148,25 @@
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.12.1</version>
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.1.2</version>
+                <version>3.2.5</version>
                 <dependencies>
                     <dependency>
                         <groupId>me.fabriciorby</groupId>
                         <artifactId>maven-surefire-junit5-tree-reporter</artifactId>
-                        <version>1.1.0</version>
+                        <version>1.2.1</version>
                     </dependency>
                 </dependencies>
                 <configuration>
                     <argLine>-Dfile.encoding="UTF-8"</argLine>
                     <argLine>--add-opens=java.base/java.nio=ALL-UNNAMED</argLine>
+                    <argLine>-Darrow.memory.debug.allocator=true</argLine>
                     <reportFormat>plain</reportFormat>
                     <consoleOutputReporter>
-                    <disable>true</disable>
+                        <disable>true</disable>
                     </consoleOutputReporter>
                     <statelessTestsetInfoReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfoTreeReporterUnicode"/>
                 </configuration>
@@ -194,16 +196,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <version>4.0.0-M9</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>3.4.5</version>
-            </plugin>
         </plugins>
     </build>
 
@@ -215,7 +207,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.11.0</version>
+                        <version>3.12.1</version>
                         <configuration>
                             <compilerArgs>
                                 <arg>-Xlint:unchecked</arg>
@@ -249,7 +241,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.6.0</version>
+                        <version>3.6.3</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -274,7 +266,7 @@
                     </plugin>
                 </plugins>
             </build>
-            <reporting>
+            <!-- <reporting>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -282,7 +274,7 @@
                         <version>3.6.0</version>
                     </plugin>
                 </plugins>
-            </reporting>
+            </reporting> -->
         </profile>
 
         <profile>
@@ -354,48 +346,50 @@
                     </plugin>
                 </plugins>
             </build>
-            <reporting>
+            <!-- <reporting>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.6.0</version>
+                        <version>3.6.3</version>
                     </plugin>
                 </plugins>
-            </reporting>
+            </reporting> -->
         </profile>
 
         <profile>
             <id>documentation</id>
             <build>
-                <plugins>
+                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.6.0</version>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
+                        <artifactId>maven-site-plugin</artifactId>
+                        <version>3.12.1</version>
+                        <configuration>
+                            <host>127.0.0.1</host>
+                            <skipDeploy>true</skipDeploy>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-project-info-reports-plugin</artifactId>
+                        <version>3.5.0</version>
                     </plugin>
                     <plugin>
                         <groupId>com.github.github</groupId>
                         <artifactId>site-maven-plugin</artifactId>
                         <version>0.12</version>
+                        <configuration>
+                            <server>github</server>
+                            <message>Creating site for ${project.version}</message>
+                            <merge>true</merge>
+                        </configuration>
                         <executions>
                             <execution>
-                                <phase>site</phase>
                                 <goals>
                                     <goal>site</goal>
                                 </goals>
-                                <configuration>
-                                    <server>github.com</server>
-                                    <message>Building site for ${project.version}</message>
-                                </configuration>
+                                <phase>site-deploy</phase>
                             </execution>
                         </executions>
                     </plugin>
@@ -406,7 +400,16 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.6.0</version>
+                        <version>3.6.3</version>
+                        <reportSets>
+                            <reportSet>
+                                <id>build-reports</id>
+                                <reports>
+                                    <report>javadoc</report>
+                                    <!--<report>test-javadoc</report>-->
+                                </reports>
+                            </reportSet>
+                        </reportSets>
                     </plugin>
                 </plugins>
             </reporting>
