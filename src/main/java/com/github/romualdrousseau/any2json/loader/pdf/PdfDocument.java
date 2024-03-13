@@ -11,8 +11,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.base.BaseDocument;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
-import com.github.romualdrousseau.any2json.parser.sheet.SimpleSheetParser;
-import com.github.romualdrousseau.any2json.parser.table.SimpleTableParser;
 import com.github.romualdrousseau.any2json.util.Disk;
 
 public class PdfDocument extends BaseDocument {
@@ -70,17 +68,6 @@ public class PdfDocument extends BaseDocument {
     @Override
     public Sheet getSheetAt(final int i) {
         return new BaseSheet(this, this.sheet.getName(), this.sheet.ensureDataLoaded());
-    }
-
-    @Override
-    public void autoRecipe(final BaseSheet sheet) {
-    }
-
-    @Override
-    public void updateParsersAndClassifiers() {
-        super.updateParsersAndClassifiers();
-        this.setSheetParser(new SimpleSheetParser());
-        this.setTableParser(new SimpleTableParser());
     }
 
     private boolean openWithEncoding(final File pdfFile, final String encoding) {

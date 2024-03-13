@@ -18,6 +18,7 @@ import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 class PdfSheet extends PatcheableSheetStore implements Closeable {
 
     private static final int BATCH_SIZE = 50000;
+    private static final int MAX_COLUMNS = 100;
 
     private final String name;
 
@@ -83,7 +84,7 @@ class PdfSheet extends PatcheableSheetStore implements Closeable {
         if (this.rows != null) {
             return this;
         }
-        try (final var writer = new DataFrameWriter(BATCH_SIZE);) {
+        try (final var writer = new DataFrameWriter(BATCH_SIZE, MAX_COLUMNS);) {
             this.rows = this.processRows(this.reader, writer);
             this.reader.close();
             this.reader = null;
@@ -109,8 +110,9 @@ class PdfSheet extends PatcheableSheetStore implements Closeable {
                         }
                         writer.write(Row.of(cells.toArray(String[]::new)));
                     }
+                    writer.write(Row.of(""));
+                    writer.write(Row.of(""));
                 }
-                writer.write(Row.of(""));
             }
         }
         return writer.getDataFrame();
