@@ -6,8 +6,9 @@
 ![Snyk Known Vulnerabilities](https://snyk.io/test/github/com.github.romualdrousseau/any2json-pdf/badge.svg)
 ![Test](https://github.com/RomualdRousseau/Any2Json-Pdf/actions/workflows/build-and-test.yml/badge.svg)
 ![Build](https://github.com/RomualdRousseau/Any2Json-Pdf/actions/workflows/build-and-deploy.yml/badge.svg)
+![Servier Inspired](https://raw.githubusercontent.com/RomualdRousseau/ServierHub/main/badges/inspired.svg)
 
-Any2Json plugin to parse complex layout implementing [Table Layout Regular Expression - Layex](https://romualdrousseau.github.io/Any2Json-Documents/white_papers/)
+Any2Json plugin to parse PDF document
 
 ## Description
 

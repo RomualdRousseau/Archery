@@ -26,7 +26,6 @@ public class PdfDocument extends BaseDocument {
         }
 
         this.sheet = null;
-
         if (EXTENSIONS.stream().filter(x -> pdfFile.getName().toLowerCase().endsWith(x)).findAny().isEmpty()) {
             return false;
         }

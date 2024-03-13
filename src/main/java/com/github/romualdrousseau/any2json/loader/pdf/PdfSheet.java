@@ -13,6 +13,7 @@ import com.github.romualdrousseau.shuju.bigdata.Row;
 import com.github.romualdrousseau.shuju.strings.StringUtils;
 
 import technology.tabula.ObjectExtractor;
+import technology.tabula.extractors.BasicExtractionAlgorithm;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 
 class PdfSheet extends PatcheableSheetStore implements Closeable {
@@ -96,11 +97,12 @@ class PdfSheet extends PatcheableSheetStore implements Closeable {
 
     private DataFrame processRows(final PDDocument reader, final DataFrameWriter writer) throws IOException {
         final var sea = new SpreadsheetExtractionAlgorithm();
+        final var bea = new BasicExtractionAlgorithm();
         try (final var extractor = new ObjectExtractor(reader)) {
             final var pi = extractor.extract();
             while (pi.hasNext()) {
                 final var page = pi.next();
-                final var tables = sea.extract(page);
+                final var tables = sea.isTabular(page) ? sea.extract(page) : bea.extract(page);
                 for (final var table : tables) {
                     final var rows = table.getRows();
                     for (final var row : rows) {
