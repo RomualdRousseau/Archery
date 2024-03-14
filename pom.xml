@@ -41,13 +41,6 @@
         <hamcrest.version>2.2</hamcrest.version>
     </properties>
 
-    <!-- <scm>
-        <connection>scm:git:https://github.com/romualdrousseau/any2json-layex-parser.git</connection>
-        <developerConnection>scm:git:https://github.com/romualdrousseau/any2json-layex-parser.git</developerConnection>
-        <url>https://github.com/romualdrousseau/any2json-layex-parser</url>
-        <tag>HEAD</tag>
-    </scm> -->
-
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
