@@ -97,6 +97,9 @@ Do not forget to configure the GitHub authentication in ***~/.m2/settings.xml***
 
 ### Documentation
 
+The following links will give you documentation about some background information, takes you through some implementation details,
+and then focuses on step-by-step instructions for getting the most out of Any2Json.
+
 * Using Any2Json: [here](https://romualdrousseau.github.io/Any2Json-Documents/).
 * API Reference: [here](https://romualdrousseau.github.io/Any2Json/).
 
