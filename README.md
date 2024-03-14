@@ -23,6 +23,9 @@ learning workflows, unlocking new possibilities for data enrichment and predicti
 data as a service, it offers a scalable and efficient means of managing semi-structured data, thereby expanding the toolkit
 of data services available to organizations.
 
+Visit our [full documentation](https://romualdrousseau.github.io/Any2Json-Documents/) and learn more about how it works, try our
+tutorials and find a full list of plugins and models.
+
 ## Getting Started
 
 ### Dependencies
@@ -93,8 +96,8 @@ Do not forget to configure the GitHub authentication in ***~/.m2/settings.xml***
 
 ### Documentation
 
-* Find the project documentation [here](https://romualdrousseau.github.io/Any2Json-Documents/).
-* Find the javadoc documentation [here](https://romualdrousseau.github.io/Any2Json/).
+* Using Any2Json: [here](https://romualdrousseau.github.io/Any2Json-Documents/).
+* API Reference: [here](https://romualdrousseau.github.io/Any2Json/).
 
 ## Authors
 
