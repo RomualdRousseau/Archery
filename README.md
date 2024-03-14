@@ -6,7 +6,7 @@
 ![Snyk Known Vulnerabilities](https://snyk.io/test/github/com.github.romualdrousseau/any2json/badge.svg)
 ![Test](https://github.com/RomualdRousseau/Any2Json/actions/workflows/build-and-test.yml/badge.svg)
 ![Build](https://github.com/RomualdRousseau/Any2Json/actions/workflows/build-and-deploy.yml/badge.svg)
-![Servier Inspired](https://raw.githubusercontent.com/RomualdRousseau/ServierHub/main/badges/inspired.svg)
+![Servier Inspired](https://raw.githubusercontent.com/servierhub/.github/main/badges/inspired.svg)
 
 A java API to manipulate semi structured documents and extract data from them.
 
