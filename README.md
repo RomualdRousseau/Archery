@@ -1,4 +1,4 @@
-# Any2Json Parquet
+# Any2Json Parquet Plugin
 
 ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
 ![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.romualdrousseau/any2json-parquet/badge.svg)
