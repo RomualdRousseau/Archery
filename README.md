@@ -103,6 +103,12 @@ and then focuses on step-by-step instructions for getting the most out of Any2Js
 * Using Any2Json: [here](https://romualdrousseau.github.io/Any2Json-Documents/).
 * API Reference: [here](https://romualdrousseau.github.io/Any2Json/).
 
+## Contribute
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+Please make sure to update tests as appropriate.
+
 ## Authors
 
 * Romuald Rousseau, romuald.rousseau@servier.com
