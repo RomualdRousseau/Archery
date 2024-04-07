@@ -80,7 +80,7 @@ public class DbfDocument extends BaseDocument {
     public void updateParsersAndClassifiers() {
         super.updateParsersAndClassifiers();
         this.setSheetParser(new SimpleSheetParser());
-        this.setTableParser(new SimpleTableParser());
+        this.setTableParser(new SimpleTableParser(this.getModel()));
     }
 
     private boolean openWithEncoding(final File dbfFile, final String encoding) {
