@@ -14,6 +14,13 @@ import com.github.romualdrousseau.any2json.header.DataTableHeader;
 
 public class SimpleTableParser implements TableParser {
 
+    public SimpleTableParser(final Model model) {
+    }
+
+    @Override
+    public void updateModel(final Model model) {
+    }
+
     @Override
     public void close() throws Exception {
     }
@@ -23,7 +30,7 @@ public class SimpleTableParser implements TableParser {
     }
 
     @Override
-    public void setParserOptions(String options) {
+    public void setParserOptions(final String options) {
     }
 
     @Override
@@ -38,11 +45,7 @@ public class SimpleTableParser implements TableParser {
         return Collections.emptyList();
     }
 
-    @Override
-    public void updateModel(final Model model) {
-    }
-
-    private void parseDataTable(DataTable table) {
+    private void parseDataTable(final DataTable table) {
         table.getRowAt(0).cells().forEach(c -> table.addHeader(new DataTableHeader(table, (BaseCell) c)));
         table.setFirstRowOffset(1);
     }

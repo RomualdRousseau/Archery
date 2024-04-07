@@ -1,6 +1,5 @@
 package com.github.romualdrousseau.any2json;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -14,41 +13,20 @@ import com.github.romualdrousseau.shuju.types.Tensor;
 
 public class Model {
 
-    public static final Model Default = new Model(Collections.emptyList(), Collections.emptyMap(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+    public static final Model Default = new ModelBuilder().build();
 
-    public Model(final List<String> entities, final Map<String, String> patterns, final List<String> filters,
-            final List<String> pivotEntityList, final List<String> tags, final List<String> requiredTags) {
-        this.model = JSON.newObject();
-        this.model.setArray("entities", JSON.arrayOf(entities));
-        this.model.setArray("patterns", JSON.arrayOf(patterns));
-        this.model.setArray("filters", JSON.arrayOf(filters));
-        this.model.setArray("pivotEntityList", JSON.arrayOf(pivotEntityList));
-        this.model.setArray("tags", JSON.arrayOf(tags));
-        this.model.setArray("requiredTags", JSON.arrayOf(requiredTags));
-        this.entities = entities;
-        this.patterns = patterns;
-        this.filters = filters;
-        this.pivotEntityList = pivotEntityList;
-        this.tags = tags;
-        this.requiredTags = requiredTags;
+    public Model(final JSONObject jsonModel) {
+        this.jsonModel = jsonModel;
+        this.entities = JSON.<String>streamOf(jsonModel.getArray("entities")).collect(Collectors.toUnmodifiableList());
+        this.patterns = JSON.<JSONObject>streamOf(jsonModel.getArray("patterns"))
+                .collect(Collectors.toUnmodifiableMap(x -> x.getString("key"), x -> x.getString("value")));
+        this.filters = JSON.<String>streamOf(jsonModel.getArray("filters")).collect(Collectors.toUnmodifiableList());
+        this.pivotEntities = JSON.<String>streamOf(jsonModel.getArray("pivotEntityList"))
+                .collect(Collectors.toUnmodifiableList());
+        this.tags = JSON.<String>streamOf(jsonModel.getArray("tags")).collect(Collectors.toUnmodifiableList());
+        this.requiredTags = JSON.<String>streamOf(jsonModel.getArray("requiredTags"))
+                .collect(Collectors.toUnmodifiableList());
         this.comparer = new RegexComparer(this.patterns);
-        this.update();
-    }
-
-    public Model(final JSONObject model) {
-        this.model = model;
-        this.entities = JSON.<String>streamOf(model.getArray("entities")).collect(Collectors.toList());
-        this.patterns = JSON.<JSONObject>streamOf(model.getArray("patterns"))
-                .collect(Collectors.toMap(x -> x.getString("key"), x -> x.getString("value")));
-        this.filters = JSON.<String>streamOf(model.getArray("filters")).collect(Collectors.toList());
-        this.pivotEntityList = JSON.<String>streamOf(model.getArray("pivotEntityList")).collect(Collectors.toList());
-        this.tags = JSON.<String>streamOf(model.getArray("tags")).collect(Collectors.toList());
-        this.requiredTags = JSON.<String>streamOf(model.getArray("requiredTags")).collect(Collectors.toList());
-        this.update();
-    }
-
-    public List<String> getFilters() {
-        return this.filters;
     }
 
     public List<String> getEntityList() {
@@ -59,8 +37,12 @@ public class Model {
         return this.patterns;
     }
 
+    public List<String> getFilters() {
+        return this.filters;
+    }
+
     public List<String> getPivotEntityList() {
-        return this.pivotEntityList;
+        return this.pivotEntities;
     }
 
     public List<String> getTagList() {
@@ -85,27 +67,15 @@ public class Model {
     }
 
     public JSONObject toJSON() {
-        return model;
+        return jsonModel;
     }
 
-    public void update() {
-        this.comparer = new RegexComparer(this.patterns);
-    }
-
-    public void registerTableParser(final TableParser tableParser) {
-        tableParser.updateModel(this);
-    }
-
-    public void registerTagClassifier(final TagClassifier tagClassifier) {
-        tagClassifier.updateModel(this);
-    }
-
-    private final JSONObject model;
+    private final JSONObject jsonModel;
     private final List<String> entities;
     private final Map<String, String> patterns;
     private final List<String> filters;
-    private final List<String> pivotEntityList;
+    private final List<String> pivotEntities;
     private final List<String> tags;
     private final List<String> requiredTags;
-    private RegexComparer comparer;
+    private final RegexComparer comparer;
 }

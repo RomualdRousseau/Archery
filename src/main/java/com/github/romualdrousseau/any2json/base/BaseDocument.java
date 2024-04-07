@@ -138,10 +138,10 @@ public abstract class BaseDocument implements Document {
             this.sheetParser = new SheetBitmapParser();
             this.tableParser = DynamicPackages.GetElementParserFactory()
                     .map(x -> x.newInstance(this.model))
-                    .orElseGet(SimpleTableParser::new);
+                    .orElseGet(() -> new SimpleTableParser(this.model));
         } else {
             this.sheetParser = new SimpleSheetParser();
-            this.tableParser = new SimpleTableParser();
+            this.tableParser = new SimpleTableParser(this.model);
         }
         if (this.hints.contains(Document.Hint.INTELLI_TAG)) {
             this.tagClassifier = DynamicPackages.GetTagClassifierFactory()
