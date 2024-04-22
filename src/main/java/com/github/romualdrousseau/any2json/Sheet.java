@@ -12,6 +12,8 @@ public interface Sheet {
 
     int getLastColumnNum();
 
+    Optional<TableGraph> getTableGraph();
+
     Optional<Table> getTable();
 
     void addSheetListener(final SheetListener listener);

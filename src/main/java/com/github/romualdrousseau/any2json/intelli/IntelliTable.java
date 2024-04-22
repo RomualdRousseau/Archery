@@ -36,8 +36,8 @@ public class IntelliTable extends DataTable {
             this.writer = new DataFrameWriter(BATCH_SIZE, this.tmpHeaders.size());
             final var pivot = this.findPivotHeader();
             root.parseIf(
-                    e -> this.buildRowsForOneTable(e, (DataTable) e.getTable(), pivot),
-                    e -> e.getTable() instanceof DataTable);
+                    e -> this.buildRowsForOneTable((BaseTableGraph) e, (DataTable) e.getTable(), pivot),
+                    e -> e instanceof BaseTableGraph && e.getTable() instanceof DataTable);
             this.setLoadCompleted(true);
             this.rows = this.writer.getDataFrame();
         } catch (final IOException x) {

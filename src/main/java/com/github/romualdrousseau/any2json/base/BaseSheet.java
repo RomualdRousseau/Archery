@@ -10,6 +10,7 @@ import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.SheetEvent;
 import com.github.romualdrousseau.any2json.SheetListener;
 import com.github.romualdrousseau.any2json.Table;
+import com.github.romualdrousseau.any2json.TableGraph;
 import com.github.romualdrousseau.any2json.config.Settings;
 import com.github.romualdrousseau.any2json.event.AllTablesExtractedEvent;
 import com.github.romualdrousseau.any2json.event.DataTableListBuiltEvent;
@@ -66,7 +67,7 @@ public class BaseSheet implements Sheet {
     }
 
     @Override
-    public Optional<Table> getTable() {
+    public Optional<TableGraph> getTableGraph() {
 
         // Here is the core of the algorithm
 
@@ -91,12 +92,12 @@ public class BaseSheet implements Sheet {
 
         // Find datatables and metatables
 
-        final List<BaseTable> tables = document.getSheetParser().findAllTables(this);
+        final var tables = document.getSheetParser().findAllTables(this);
         if (!this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables))) {
             return Optional.empty();
         }
 
-        final List<DataTable> dataTables = document.getTableParser().getDataTables(this, tables);
+        final var dataTables = document.getTableParser().getDataTables(this, tables);
         if (!this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables))) {
             return Optional.empty();
         }
@@ -104,25 +105,41 @@ public class BaseSheet implements Sheet {
             return Optional.empty();
         }
 
-        final List<MetaTable> metaTables = document.getTableParser().getMetaTables(this, tables);
+        final var metaTables = document.getTableParser().getMetaTables(this, tables);
         if (!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
+            return Optional.empty();
+        }
+
+        if (!document.getHints().contains(Document.Hint.INTELLI_LAYOUT)) {
+            return Optional.of(new BaseTableGraph(dataTables.get(0)));
+        }
+
+        // Build table graph: linked the metatable and datatables depending of the reading directional preferences
+        // in perception of visual stimuli depending of the cultures and writing systems.
+
+        final var readingDirection = document.getReadingDirection();
+        final var root = BaseTableGraphBuilder.build(metaTables, dataTables, readingDirection);
+
+        if (!this.notifyStepCompleted(new TableGraphBuiltEvent(this, root))) {
+            return Optional.empty();
+        }
+
+        return Optional.of(root);
+    }
+
+    @Override
+    public Optional<Table> getTable() {
+
+        final var root = this.getTableGraph();
+        if (root.isEmpty()) {
             return Optional.empty();
         }
 
         final DataTable table;
         if (document.getHints().contains(Document.Hint.INTELLI_LAYOUT)) {
-
-            // Build table graph: linked the metatable and datatables depending of the reading directional preferences
-            // in perception of visual stimuli depending of the cultures and writing systems.
-
-            final var readingDirection = document.getReadingDirection();
-            final BaseTableGraph root = BaseTableGraphBuilder.build(metaTables, dataTables, readingDirection);
-            if (!this.notifyStepCompleted(new TableGraphBuiltEvent(this, root))) {
-                return Optional.empty();
-            }
-            table = new IntelliTable(this, root);
+            table = new IntelliTable(this, (BaseTableGraph) root.get());
         } else {
-            table = dataTables.get(0);
+            table = (DataTable) root.get().getTable();
         }
 
         // Tag headers
