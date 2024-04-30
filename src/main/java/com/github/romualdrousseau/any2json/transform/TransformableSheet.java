@@ -106,6 +106,13 @@ public class TransformableSheet {
     }
 
     /**
+     * This method disables auto naming the headers of a table. The table will retain its original name.
+     */
+    public void disableAutoHeaderName() {
+        this.sheet.disableAutoHeaderName();
+    }
+
+    /**
      * This method disables auto cropping of a sheets. The auto cropping will drop all empty rows and columns on the
      * edges of the sheets.
      */
@@ -168,12 +175,11 @@ public class TransformableSheet {
         this.sheet.patchCell(colIndex1, rowIndex1, colIndex2, rowIndex2, value);
     }
 
-
-
     /**
      * This method disables the pivot functionality of the sheet's associated document.
      */
     public void disablePivot() {
+        this.sheet.disablePivot();
         this.sheet.getDocument().getTableParser().disablePivot();
     }
 

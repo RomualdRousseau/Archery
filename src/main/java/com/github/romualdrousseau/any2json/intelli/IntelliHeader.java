@@ -13,7 +13,7 @@ import com.github.romualdrousseau.shuju.strings.StringUtils;
 
 public class IntelliHeader extends DataTableHeader {
 
-    public IntelliHeader(final BaseHeader header) {
+    public IntelliHeader(final BaseHeader header, final boolean disableAutoName) {
         super(header.getTable(), new BaseCell(header.getName(), header.getColumnIndex(), 1,
                 header.getCell().getRawValue(), header.getTable().getSheet()));
 
@@ -25,9 +25,13 @@ public class IntelliHeader extends DataTableHeader {
                 this.name = this.entities().stream().findAny().map(x -> this.getEntitiesAsString())
                         .orElse(Settings.PIVOT_VALUE_SUFFIX);
             }
-        } else {
+        } else if (this.isPivotHeader() || !disableAutoName) {
             this.name = this.getTable().getSheet().getDocument().getModel().toEntityName(cellValue);
+        } else {
+            this.name= cellValue;
         }
+
+        this.disableAutoName = disableAutoName;
 
         this.setColumnIndex(header.getColumnIndex());
         this.setColumnEmpty(StringUtils.isFastBlank(this.name) && header.isColumnEmpty());
@@ -67,7 +71,7 @@ public class IntelliHeader extends DataTableHeader {
 
     @Override
     public BaseHeader clone() {
-        return new IntelliHeader(this);
+        return new IntelliHeader(this, this.disableAutoName);
     }
 
     @Override
@@ -96,6 +100,7 @@ public class IntelliHeader extends DataTableHeader {
     }
 
     private final String name;
+    private final boolean disableAutoName;
     private IntelliHeader prevSibling;
     private IntelliHeader nextSibling;
 }

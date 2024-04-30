@@ -1,6 +1,7 @@
 package com.github.romualdrousseau.any2json.base;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,7 +39,9 @@ public class BaseSheet implements Sheet {
         this.pivotValueFormat = "%s " + Settings.PIVOT_VALUE_SUFFIX;
         this.pivotTypeFormat = "%s " + Settings.PIVOT_TYPE_SUFFIX;
         this.groupValueFormat = "%s " + Settings.GROUP_VALUE_SUFFIX;
+        this.pivotEnabled = true;
         this.autoCropEnabled = true;
+        this.autoHeaderNameEnabled = true;
     }
 
     @Override
@@ -137,7 +140,7 @@ public class BaseSheet implements Sheet {
 
         final DataTable table;
         if (document.getHints().contains(Document.Hint.INTELLI_LAYOUT)) {
-            table = new IntelliTable(this, (BaseTableGraph) root.get());
+            table = new IntelliTable(this, (BaseTableGraph) root.get(), this.autoHeaderNameEnabled);
         } else {
             table = (DataTable) root.get().getTable();
         }
@@ -262,6 +265,9 @@ public class BaseSheet implements Sheet {
     }
 
     public List<String> getPivotEntityList() {
+        if (!this.pivotEnabled) {
+            return Collections.emptyList();
+        }
         if (this.pivotEntityList == null) {
             return this.getDocument().getModel().getPivotEntityList();
         } else {
@@ -311,6 +317,14 @@ public class BaseSheet implements Sheet {
 
     public void setGroupValueFormat(final String format) {
         this.groupValueFormat = format;
+    }
+
+    public void disablePivot() {
+        this.pivotEnabled = false;
+    }
+
+    public void disableAutoHeaderName() {
+        this.autoHeaderNameEnabled = false;
     }
 
     public void disableAutoCrop() {
@@ -364,7 +378,7 @@ public class BaseSheet implements Sheet {
     private String pivotTypeFormat;
     private String groupValueFormat;
     private List<String> pivotEntityList;
+    private boolean pivotEnabled;
     private boolean autoCropEnabled;
-
-
+    private boolean autoHeaderNameEnabled;
 }

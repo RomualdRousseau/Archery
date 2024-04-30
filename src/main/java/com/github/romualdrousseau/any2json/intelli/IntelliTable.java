@@ -23,7 +23,7 @@ public class IntelliTable extends DataTable {
 
     private static final int BATCH_SIZE = 10000;
 
-    public IntelliTable(final BaseSheet sheet, final BaseTableGraph root) {
+    public IntelliTable(final BaseSheet sheet, final BaseTableGraph root, final boolean headerAutoNameEnabled) {
         super(sheet);
 
         // Collect headers
@@ -46,7 +46,7 @@ public class IntelliTable extends DataTable {
 
         // Finalize headers
 
-        this.tmpHeaders.forEach(h -> this.addHeader(new IntelliHeader(h)));
+        this.tmpHeaders.forEach(h -> this.addHeader(new IntelliHeader(h, !headerAutoNameEnabled)));
     }
 
     @Override
