@@ -24,6 +24,7 @@ class PdfSheet extends PatcheableSheetStore implements Closeable {
 
     private static final int BATCH_SIZE = 50000;
     private static final int MAX_COLUMNS = 100;
+    private static final double MARGIN = 6.0;
 
     private final String name;
 
@@ -236,7 +237,7 @@ class PdfSheet extends PatcheableSheetStore implements Closeable {
     }
 
     private float pRowMargin(final double margin) {
-        return margin > 6.0 ? 1.0f : 0.0f;
+        return margin > MARGIN ? 1.0f : 0.0f;
     }
 
     private float pNotRowMargin(final double margin) {
