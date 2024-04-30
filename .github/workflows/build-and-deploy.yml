@@ -136,7 +136,7 @@ jobs:
         if: needs.check-version-is-release.outputs.is_release == 1
         runs-on: [ubuntu-latest]
         steps:
-            -   uses: geekyeggo/delete-artifact@v2
+            -   uses: geekyeggo/delete-artifact@v5
                 with:
                     name: target
 
@@ -145,6 +145,6 @@ jobs:
         if: needs.check-version-is-release.outputs.is_release == 0
         runs-on: [ubuntu-latest]
         steps:
-            -   uses: geekyeggo/delete-artifact@v2
+            -   uses: geekyeggo/delete-artifact@v5
                 with:
                     name: target
