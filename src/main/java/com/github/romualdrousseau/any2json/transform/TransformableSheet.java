@@ -20,13 +20,15 @@ import com.github.romualdrousseau.any2json.transform.op.SwapRows;
 import com.github.romualdrousseau.shuju.strings.StringUtils;
 
 /**
- * TransformableSheet Class is responsible to apply transformations to a sheet such as remove columns or rows. The
+ * TransformableSheet Class is responsible to apply transformations to a sheet
+ * such as remove columns or rows. The
  * transformations are called through a recipe written in Python.
  */
 public class TransformableSheet {
 
     /**
-     * This is a private constructor for the TransformableSheet class to apply transformations to the given sheet.
+     * This is a private constructor for the TransformableSheet class to apply
+     * transformations to the given sheet.
      *
      * @param sheet the sheet to transform
      */
@@ -35,8 +37,10 @@ public class TransformableSheet {
     }
 
     /**
-     * This method returns a new instance of TransformableSheet initialized with the given sheet. the TransformableSheet
-     * can be used to apply transformation of the sheet such as remove columns or rows.
+     * This method returns a new instance of TransformableSheet initialized with the
+     * given sheet. the TransformableSheet
+     * can be used to apply transformation of the sheet such as remove columns or
+     * rows.
      *
      * @param sheet the sheet to transform
      * @return a new instance
@@ -46,8 +50,10 @@ public class TransformableSheet {
     }
 
     /**
-     * This method performs all the transformations on the sheet by calling the "autoRecipe" method on the sheet's
-     * associated document and executing the custom recipe using a Python interpreter.
+     * This method performs all the transformations on the sheet by calling the
+     * "autoRecipe" method on the sheet's
+     * associated document and executing the custom recipe using a Python
+     * interpreter.
      */
     public void applyAll() {
         ((BaseDocument) this.sheet.getDocument()).autoRecipe(this.sheet);
@@ -62,20 +68,54 @@ public class TransformableSheet {
     }
 
     /**
-     * This method sets the parser options for the table parser used by the sheet's associated document.
+     * This method sets the parser options for the table parser used by the sheet's
+     * associated document.
+     *
+     * @param options the parser options
+     * @deprecated use {@link TransformableSheet#setParserOptions(String)}
+     */
+    public void setDataTableParserFactory(final String options) {
+        this.setDataTableParserOptions(options);
+    }
+
+    /**
+     * This method sets the parser options for the table parser used by the sheet's
+     * associated document.
      *
      * @param options the parser options
      */
-    public void setDataTableParserFactory(final String options) {
+    public void setParserOptions(final String options) {
         this.sheet.getDocument().getTableParser().setParserOptions(options);
     }
 
     /**
-     * This method sets the reading direction. The reading direction controls how the different elements of a sheets are
-     * linked together. The reading direction is a reading directional preferences in perception of visual stimuli
+     * This method sets the classifer case for the tag classifer used by the sheet's
+     * associated document.
+     *
+     * @param tagCase the classifer case: CAMEL, SNAKE, NONE
+     */
+    public void setClassifierCase(final String tagCase) {
+        if ("CAMEL".equals(tagCase)) {
+            this.sheet.getDocument().getTagClassifier().setCamelCase(true);
+            this.sheet.getDocument().getTagClassifier().setSnakeCase(false);
+        } else if ("SNAKE".equals(tagCase)) {
+            this.sheet.getDocument().getTagClassifier().setCamelCase(false);
+            this.sheet.getDocument().getTagClassifier().setSnakeCase(true);
+        } else {
+            this.sheet.getDocument().getTagClassifier().setCamelCase(false);
+            this.sheet.getDocument().getTagClassifier().setSnakeCase(false);
+        }
+    }
+
+    /**
+     * This method sets the reading direction. The reading direction controls how
+     * the different elements of a sheets are
+     * linked together. The reading direction is a reading directional preferences
+     * in perception of visual stimuli
      * depending of the cultures and writing systems.
      *
-     * By default, the reading direction is set to GutenbergReading (or Left-Right Then Top-Botton, or LRTB,
+     * By default, the reading direction is set to GutenbergReading (or Left-Right
+     * Then Top-Botton, or LRTB,
      * or normal Western reading order).
      */
     public void setReadingDirection(final ReadingDirection readingDirection) {
@@ -83,7 +123,8 @@ public class TransformableSheet {
     }
 
     /**
-     * This method sets the bitmap threshold for the sheet. The bitmap threshold represents the strength of
+     * This method sets the bitmap threshold for the sheet. The bitmap threshold
+     * represents the strength of
      * close elements in a sheet to be combined together.
      *
      * @param threshold the bitmap threshold
@@ -95,8 +136,10 @@ public class TransformableSheet {
     }
 
     /**
-     * This method sets the extraction threshold for the sheet. The extraction threshold represents the strength of
-     * close elements in a sheet to be combined together. With a value of 0, the elements with the smallest area will be
+     * This method sets the extraction threshold for the sheet. The extraction
+     * threshold represents the strength of
+     * close elements in a sheet to be combined together. With a value of 0, the
+     * elements with the smallest area will be
      * extracted.
      *
      * @param threshold the extraction threshold
@@ -106,14 +149,16 @@ public class TransformableSheet {
     }
 
     /**
-     * This method disables auto naming the headers of a table. The table will retain its original name.
+     * This method disables auto naming the headers of a table. The table will
+     * retain its original name.
      */
     public void disableAutoHeaderName() {
         this.sheet.disableAutoHeaderName();
     }
 
     /**
-     * This method disables auto cropping of a sheets. The auto cropping will drop all empty rows and columns on the
+     * This method disables auto cropping of a sheets. The auto cropping will drop
+     * all empty rows and columns on the
      * edges of the sheets.
      */
     public void disableAutoCrop() {
@@ -128,7 +173,8 @@ public class TransformableSheet {
     }
 
     /**
-     * This method merges the cells in the column specified by the given column index. The value of a given cell is
+     * This method merges the cells in the column specified by the given column
+     * index. The value of a given cell is
      * copied to all blank cells below it.
      *
      * @param colIndex the column index
@@ -141,7 +187,8 @@ public class TransformableSheet {
     }
 
     /**
-     * This method repeat the value for all the cells in the column specified by the given column index.
+     * This method repeat the value for all the cells in the column specified by the
+     * given column index.
      * The value of a given cell is copied to all blank cells below it.
      *
      * @param colIndex the column index
@@ -151,7 +198,8 @@ public class TransformableSheet {
     }
 
     /**
-     * This method repeat the value for all the cells in the row specified by the given row index.
+     * This method repeat the value for all the cells in the row specified by the
+     * given row index.
      * The value of a given cell is copied to all blank cells on the right of it.
      *
      * @param rowIndex the row index
@@ -161,14 +209,15 @@ public class TransformableSheet {
     }
 
     /**
-     * This method patches the cells of the given column and row indices with the given value. The style is copied from
+     * This method patches the cells of the given column and row indices with the
+     * given value. The style is copied from
      * an existing cell.
      *
      * @param colIndex1 the column index to copy the style from
      * @param rowIndex1 the row index to copy the style from
-     * @param colIndex2 the column index to copy the style  to
-     * @param rowIndex2 the row index to copy the style  to
-     * @param value the value of the destination cell
+     * @param colIndex2 the column index to copy the style to
+     * @param rowIndex2 the row index to copy the style to
+     * @param value     the value of the destination cell
      */
     public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2,
             final String value) {
@@ -176,7 +225,8 @@ public class TransformableSheet {
     }
 
     /**
-     * This method disables the pivot functionality of the sheet's associated document.
+     * This method disables the pivot functionality of the sheet's associated
+     * document.
      */
     public void disablePivot() {
         this.sheet.disablePivot();
@@ -184,7 +234,8 @@ public class TransformableSheet {
     }
 
     /**
-     * This method sets the pivot entities for the sheet using the given list of entities.
+     * This method sets the pivot entities for the sheet using the given list of
+     * entities.
      *
      * @param pivotEntityList the list of entities as a list of string
      */
@@ -193,7 +244,8 @@ public class TransformableSheet {
     }
 
     /**
-     * This method sets the pivot option for the sheet using the given option string.
+     * This method sets the pivot option for the sheet using the given option
+     * string.
      *
      * @param option the option string: "NONE", "WITH_TYPE", "WITH_TYPE_AND_VALUE"
      */
@@ -202,7 +254,8 @@ public class TransformableSheet {
     }
 
     /**
-     * This method sets the name of the pivot key header for the sheet using the given format.
+     * This method sets the name of the pivot key header for the sheet using the
+     * given format.
      *
      * @param format the format used as {@link String#format(String, Object...)}
      */
@@ -211,7 +264,8 @@ public class TransformableSheet {
     }
 
     /**
-     * This method sets the name of the pivot type header for the sheet using the given format.
+     * This method sets the name of the pivot type header for the sheet using the
+     * given format.
      *
      * @param format the format used as {@link String#format(String, Object...)}
      */
@@ -220,7 +274,8 @@ public class TransformableSheet {
     }
 
     /**
-     * This method sets the name of the pivot value header for the sheet using the given format.
+     * This method sets the name of the pivot value header for the sheet using the
+     * given format.
      *
      * @param format the format used as {@link String#format(String, Object...)}
      */
@@ -229,7 +284,8 @@ public class TransformableSheet {
     }
 
     /**
-     * This method sets the name of the group header for the sheet using the given format.
+     * This method sets the name of the group header for the sheet using the given
+     * format.
      *
      * @param format the format used as String#format(String, Object...)}
      */
@@ -238,9 +294,11 @@ public class TransformableSheet {
     }
 
     /**
-     * This method drops the column specified by the given column index from the sheet.
+     * This method drops the column specified by the given column index from the
+     * sheet.
      *
-     * Refrain to use this method as the colIndex is absolute and weak to layout changes.
+     * Refrain to use this method as the colIndex is absolute and weak to layout
+     * changes.
      *
      * @param colIndex the column index to drop
      */
@@ -249,11 +307,13 @@ public class TransformableSheet {
     }
 
     /**
-     * This method drops columns from the sheet that have a fill ratio less than the given fill ratio.
+     * This method drops columns from the sheet that have a fill ratio less than the
+     * given fill ratio.
      *
      * @param fillRatio the fill ratio
      *
-     *  @deprecated use {@link TransformableSheet#dropColumnsWhenFillRatioLessThan(float)}
+     * @deprecated use
+     *             {@link TransformableSheet#dropColumnsWhenFillRatioLessThan(float)}
      */
     @Deprecated
     public void dropNullColumns(final float fillRatio) {
@@ -261,7 +321,8 @@ public class TransformableSheet {
     }
 
     /**
-     * This method drops columns from the sheet that have a fill ratio less than the given fill ratio.
+     * This method drops columns from the sheet that have a fill ratio less than the
+     * given fill ratio.
      *
      * @param fillRatio the fill ratio
      */
@@ -270,7 +331,8 @@ public class TransformableSheet {
     }
 
     /**
-     * This method drops columns from the sheet that have an entropy less than the given maximum entropy.
+     * This method drops columns from the sheet that have an entropy less than the
+     * given maximum entropy.
      *
      * @param max the maximum entropy
      */
@@ -281,7 +343,8 @@ public class TransformableSheet {
     /**
      * This method drops the row specified by the given row index from the sheet.
      *
-     * Refrain to use this method as the rowIndex is absolute and weak to layout changes.
+     * Refrain to use this method as the rowIndex is absolute and weak to layout
+     * changes.
      *
      * @param rowIndex the row index to drop
      */
@@ -290,11 +353,13 @@ public class TransformableSheet {
     }
 
     /**
-     * This method drops rows from the sheet that have a fill ratio less than the given fill ratio.
+     * This method drops rows from the sheet that have a fill ratio less than the
+     * given fill ratio.
      *
      * @param fillRatio the fill ratio
      *
-     * @deprecated use {@link TransformableSheet#dropRowsWhenFillRatioLessThan(float)}
+     * @deprecated use
+     *             {@link TransformableSheet#dropRowsWhenFillRatioLessThan(float)}
      */
     @Deprecated
     public void dropNullRows(final float fillRatio) {
@@ -302,7 +367,8 @@ public class TransformableSheet {
     }
 
     /**
-     * This method drops rows from the sheet that have a fill ratio less than the given fill ratio.
+     * This method drops rows from the sheet that have a fill ratio less than the
+     * given fill ratio.
      *
      * @param fillRatio the fill ratio
      */
@@ -311,18 +377,20 @@ public class TransformableSheet {
     }
 
     /**
-     * This method drops rows from the sheet that have a fill ratio less than the given fill ratio.
+     * This method drops rows from the sheet that have a fill ratio less than the
+     * given fill ratio.
      *
      * @param fillRatio the fill ratio
-     * @param start the start column
-     * @param stop the stop column
+     * @param start     the start column
+     * @param stop      the stop column
      */
     public void dropRowsWhenFillRatioLessThan(final float fillRatio, final int start, final int stop) {
         DropRowsWhenFillRatioLessThan.Apply(this.sheet, fillRatio, start, stop);
     }
 
     /**
-     * This method drops rows from the sheet that have an entropy less than the given maximum entropy.
+     * This method drops rows from the sheet that have an entropy less than the
+     * given maximum entropy.
      *
      * @param max the maximum entropy
      */
@@ -331,11 +399,12 @@ public class TransformableSheet {
     }
 
     /**
-     * This method drops rows from the sheet that have an entropy less than the given maximum entropy.
+     * This method drops rows from the sheet that have an entropy less than the
+     * given maximum entropy.
      *
-     * @param max the maximum entropy
+     * @param max   the maximum entropy
      * @param start the start column
-     * @param stop the stop column
+     * @param stop  the stop column
      */
     public void dropRowsWhenEntropyLessThan(final float max, final int start, final int stop) {
         DropRowsWhenEntropyLessThan.Apply(this.sheet, max, start, stop);

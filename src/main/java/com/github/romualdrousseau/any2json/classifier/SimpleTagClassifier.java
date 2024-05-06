@@ -18,7 +18,7 @@ public class SimpleTagClassifier implements TagClassifier {
         final List<String> lexicon;
         if (model != null && model.toJSON().getArray("lexicon") != null) {
             lexicon = JSON.<String>streamOf(model.toJSON().getArray("lexicon")).toList();
-        } else{
+        } else {
             lexicon = StringUtils.getSymbols().stream().toList();
         }
 
