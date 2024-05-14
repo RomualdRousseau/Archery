@@ -74,8 +74,9 @@ public class TransformableSheet {
      * @param options the parser options
      * @deprecated use {@link TransformableSheet#setParserOptions(String)}
      */
+    @Deprecated
     public void setDataTableParserFactory(final String options) {
-        this.setDataTableParserOptions(options);
+        this.setParserOptions(options);
     }
 
     /**
@@ -94,16 +95,16 @@ public class TransformableSheet {
      *
      * @param tagCase the classifer case: CAMEL, SNAKE, NONE
      */
-    public void setClassifierCase(final String tagCase) {
+    public void setClassifierCaseMode(final String tagCase) {
         if ("CAMEL".equals(tagCase)) {
-            this.sheet.getDocument().getTagClassifier().setCamelCase(true);
-            this.sheet.getDocument().getTagClassifier().setSnakeCase(false);
+            this.sheet.getDocument().getTagClassifier().setCamelMode(true);
+            this.sheet.getDocument().getTagClassifier().setSnakeMode(false);
         } else if ("SNAKE".equals(tagCase)) {
-            this.sheet.getDocument().getTagClassifier().setCamelCase(false);
-            this.sheet.getDocument().getTagClassifier().setSnakeCase(true);
+            this.sheet.getDocument().getTagClassifier().setCamelMode(false);
+            this.sheet.getDocument().getTagClassifier().setSnakeMode(true);
         } else {
-            this.sheet.getDocument().getTagClassifier().setCamelCase(false);
-            this.sheet.getDocument().getTagClassifier().setSnakeCase(false);
+            this.sheet.getDocument().getTagClassifier().setCamelMode(false);
+            this.sheet.getDocument().getTagClassifier().setSnakeMode(false);
         }
     }
 
