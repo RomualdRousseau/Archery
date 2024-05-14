@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.any2json.transform;
+package com.github.romualdrousseau.any2json;
 
 import java.util.List;
 

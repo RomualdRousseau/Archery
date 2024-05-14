@@ -20,7 +20,7 @@ import com.github.romualdrousseau.any2json.event.SheetPreparedEvent;
 import com.github.romualdrousseau.any2json.event.TableGraphBuiltEvent;
 import com.github.romualdrousseau.any2json.event.TableReadyEvent;
 import com.github.romualdrousseau.any2json.intelli.IntelliTable;
-import com.github.romualdrousseau.any2json.transform.TransformableSheet;
+import com.github.romualdrousseau.any2json.TransformableSheet;
 import com.github.romualdrousseau.any2json.transform.op.AutoCrop;
 import com.github.romualdrousseau.shuju.commons.CollectionUtils;
 

@@ -131,6 +131,10 @@ jobs:
                     OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
                     GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
+            -   name: Deploy site
+                run: |
+                    mvn -U -B clean site site-deploy --file pom.xml -s settings.xml -P documentation
+
     clean-prd:
         needs: [deploy-prd]
         if: needs.check-version-is-release.outputs.is_release == 1
