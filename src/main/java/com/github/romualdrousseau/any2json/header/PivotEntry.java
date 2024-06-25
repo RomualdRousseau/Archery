@@ -4,10 +4,11 @@ import com.github.romualdrousseau.any2json.base.BaseCell;
 
 public class PivotEntry {
 
-    public PivotEntry(final BaseCell cell) {
+    public PivotEntry(final BaseCell cell, final String pivotEntityName) {
         this.cell = cell;
-        this.pivotValue = cell.getSheet().getDocument().getModel().toEntityValue(cell.getValue()).orElse(cell.getValue());
-        this.typeValue = cell.getSheet().getDocument().getModel().toEntityName(cell.getValue());
+        this.pivotValue = cell.getSheet().getDocument().getModel().toEntityValue(cell.getValue(), pivotEntityName)
+                .orElse(cell.getValue());
+        this.typeValue = cell.getSheet().getDocument().getModel().toEntityName(cell.getValue(), pivotEntityName);
     }
 
     public BaseCell getCell() {

@@ -14,7 +14,7 @@ public class PivotKeyHeader extends MetaHeader {
     public PivotKeyHeader(final BaseTable table, final BaseCell cell) {
         super(table, cell);
         this.entries = new ArrayList<>();
-        this.entries.add(new PivotEntry(cell));
+        this.entries.add(new PivotEntry(cell, this.getPivotEntityAsString().get()));
         this.valueName = this.getPivotEntityAsString().get();
     }
 
@@ -63,7 +63,7 @@ public class PivotKeyHeader extends MetaHeader {
     }
 
     public void addEntry(final BaseCell entry) {
-        this.entries.add(new PivotEntry(entry));
+        this.entries.add(new PivotEntry(entry, this.getPivotEntityAsString().get()));
     }
 
     private final List<PivotEntry> entries;

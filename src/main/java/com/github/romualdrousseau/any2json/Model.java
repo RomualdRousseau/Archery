@@ -57,8 +57,16 @@ public class Model {
         return this.comparer.anonymize(value);
     }
 
+    public String toEntityName(final String value, final String entityName) {
+        return this.comparer.anonymize(value, entityName);
+    }
+
     public Optional<String> toEntityValue(final String value) {
         return this.comparer.find(value);
+    }
+
+    public Optional<String> toEntityValue(final String value, final String entityName) {
+        return this.comparer.find(value, entityName);
     }
 
     public Tensor toEntityVector(final String value) {
