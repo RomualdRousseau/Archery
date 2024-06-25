@@ -356,7 +356,7 @@ public class BaseSheet implements Sheet {
             return -1;
         }
         var result = this.sheetStore.getLastColumnNum(0);
-        for (var i = 1; i <= Math.min(Settings.DEFAULT_SAMPLE_COUNT, this.sheetStore.getLastRowNum()); i++) {
+        for (var i = 1; i <= this.sheetStore.getLastRowNum(); i++) {
             result = Math.max(result, this.sheetStore.getLastColumnNum(i));
         }
         return result;

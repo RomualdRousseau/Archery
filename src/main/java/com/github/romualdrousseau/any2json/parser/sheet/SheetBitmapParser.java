@@ -7,7 +7,6 @@ import com.github.romualdrousseau.any2json.SheetParser;
 import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.base.BaseTable;
-import com.github.romualdrousseau.any2json.config.Settings;
 import com.github.romualdrousseau.any2json.event.BitmapGeneratedEvent;
 import com.github.romualdrousseau.shuju.cv.Filter;
 import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
@@ -27,9 +26,7 @@ public class SheetBitmapParser implements SheetParser {
     }
 
     private SheetBitmap getSheetBitmap(final BaseSheet sheet) {
-        return new SheetBitmap(sheet,
-                Math.min(sheet.getLastColumnNum(), Settings.DEFAULT_SAMPLE_COUNT),
-                sheet.getLastRowNum());
+        return new SheetBitmap(sheet, sheet.getLastColumnNum(), sheet.getLastRowNum());
     }
 
     private List<BaseTable> findAllTables(final BaseSheet sheet, final SheetBitmap image) {

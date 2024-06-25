@@ -4,8 +4,6 @@ import java.util.List;
 
 import org.python.util.PythonInterpreter;
 
-import com.github.romualdrousseau.any2json.PivotOption;
-import com.github.romualdrousseau.any2json.ReadingDirection;
 import com.github.romualdrousseau.any2json.base.BaseDocument;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.transform.op.DropColumn;
