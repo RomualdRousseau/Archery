@@ -12,5 +12,9 @@
             <id>gpg.passphrase</id>
             <passphrase>${env.GPG_PASSPHRASE}</passphrase>
         </server>
+        <server>
+            <id>github</id>
+            <password>${env.GITHUB}</password>
+        </server>
     </servers>
 </settings>

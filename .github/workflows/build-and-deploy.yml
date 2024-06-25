@@ -151,6 +151,8 @@ jobs:
             -   name: Deploy site
                 run: |
                     mvn -U -B clean site site-deploy --file pom.xml -s settings.xml -P documentation
+                env:
+                    GITHUB: ${{ secrets.GITHUB }}
 
     clean-prd:
         needs: [deploy-doc]
