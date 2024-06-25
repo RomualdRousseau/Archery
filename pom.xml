@@ -33,7 +33,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
-        <shuju.version>1.25</shuju.version>
+        <shuju.version>1.26</shuju.version>
         <any2json.version>2.42</any2json.version>
 
         <junit.version>4.13.2</junit.version>
