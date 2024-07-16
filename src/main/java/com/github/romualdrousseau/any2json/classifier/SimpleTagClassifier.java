@@ -6,7 +6,6 @@ import java.util.regex.Pattern;
 import com.github.romualdrousseau.any2json.Model;
 import com.github.romualdrousseau.any2json.TagClassifier;
 import com.github.romualdrousseau.shuju.json.JSON;
-import com.github.romualdrousseau.shuju.preprocessing.Text;
 import com.github.romualdrousseau.shuju.preprocessing.tokenizer.ShingleTokenizer;
 import com.github.romualdrousseau.shuju.strings.StringUtils;
 
@@ -60,19 +59,23 @@ public class SimpleTagClassifier implements TagClassifier {
     @Override
     public String ensureTagStyle(final String text) {
         if (this.snakeMode) {
+            this.tagTokenizer.disableLemmatization();
             return StringUtils.toSnake(text, this.tagTokenizer);
         }
         if (this.camelMode) {
+            this.tagTokenizer.disableLemmatization();
             return StringUtils.toCamel(text, this.tagTokenizer);
         }
         if (text.indexOf(" ") > 0 || text.indexOf("_") > 0) {
+            this.tagTokenizer.enableLemmatization();
             return StringUtils.toSnake(text, this.tagTokenizer);
         } else {
+            this.tagTokenizer.enableLemmatization();
             return StringUtils.toCamel(text, this.tagTokenizer);
         }
     }
 
-    private final Text.ITokenizer tagTokenizer;
+    private final ShingleTokenizer tagTokenizer;
     private boolean snakeMode;
     private boolean camelMode;
 }
