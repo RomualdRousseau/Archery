@@ -40,10 +40,11 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
-        <shuju.version>1.26</shuju.version>
+        <shuju.version>1.28</shuju.version>
         <any2json.version>2.42</any2json.version>
-        <poi.version>5.2.5</poi.version>
+        <poi.version>5.3.0</poi.version>
 
+        <log4j.version>2.23.1</log4j.version>
         <junit.version>4.13.2</junit.version>
         <hamcrest.version>2.2</hamcrest.version>
     </properties>
@@ -131,6 +132,19 @@
             <groupId>com.github.romualdrousseau</groupId>
             <artifactId>any2json-layex-parser</artifactId>
             <version>${any2json.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Log4j Framework -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-1.2-api</artifactId>
+            <version>${log4j.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
