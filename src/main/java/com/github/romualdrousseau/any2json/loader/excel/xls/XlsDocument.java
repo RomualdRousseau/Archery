@@ -75,6 +75,7 @@ public class XlsDocument extends BaseDocument {
     @Override
     public void updateParsersAndClassifiers() {
         if (this.getHints().contains(Document.Hint.INTELLI_TAG)) {
+            this.getHints().add(Document.Hint.INTELLI_EXTRACT);
             this.getHints().add(Document.Hint.INTELLI_LAYOUT);
         }
         super.updateParsersAndClassifiers();
