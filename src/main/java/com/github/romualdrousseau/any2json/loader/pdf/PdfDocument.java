@@ -4,10 +4,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 
+import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.base.BaseDocument;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
@@ -16,8 +18,17 @@ import com.github.romualdrousseau.any2json.util.Disk;
 public class PdfDocument extends BaseDocument {
 
     private static final List<String> EXTENSIONS = List.of(".pdf");
+    private static final EnumSet<Hint> CAPABILITIES = EnumSet.of(
+            Document.Hint.INTELLI_EXTRACT,
+            Document.Hint.INTELLI_LAYOUT,
+            Document.Hint.INTELLI_TAG);
 
     private PdfSheet sheet;
+
+    @Override
+    protected EnumSet<Hint> getIntelliCapabilities() {
+        return CAPABILITIES;
+    }
 
     @Override
     public boolean open(final File pdfFile, final String encoding, final String password) {
