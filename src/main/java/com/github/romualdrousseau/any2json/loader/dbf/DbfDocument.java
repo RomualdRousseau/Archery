@@ -5,21 +5,27 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.EnumSet;
 import java.util.List;
 
+import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.base.BaseDocument;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
-import com.github.romualdrousseau.any2json.parser.sheet.SimpleSheetParser;
-import com.github.romualdrousseau.any2json.parser.table.SimpleTableParser;
 import com.github.romualdrousseau.any2json.util.Disk;
 import com.linuxense.javadbf.DBFReader;
 
 public class DbfDocument extends BaseDocument {
 
     private static final List<String> EXTENSIONS = List.of(".dbf");
+    private static final EnumSet<Hint> CAPABILITIES = EnumSet.of(Document.Hint.INTELLI_TAG);
 
     private DbfSheet sheet;
+
+    @Override
+    protected EnumSet<Hint> getIntelliCapabilities() {
+        return CAPABILITIES;
+    }
 
     @Override
     public boolean open(final File dbfFile, final String encoding, final String password) {
@@ -74,13 +80,6 @@ public class DbfDocument extends BaseDocument {
 
     @Override
     public void autoRecipe(final BaseSheet sheet) {
-    }
-
-    @Override
-    public void updateParsersAndClassifiers() {
-        super.updateParsersAndClassifiers();
-        this.setSheetParser(new SimpleSheetParser());
-        this.setTableParser(new SimpleTableParser(this.getModel()));
     }
 
     private boolean openWithEncoding(final File dbfFile, final String encoding) {
