@@ -3,6 +3,7 @@ package com.github.romualdrousseau.any2json.loader.excel.xls;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.apache.poi.EncryptedDocumentException;
@@ -19,8 +20,17 @@ import com.github.romualdrousseau.any2json.Sheet;
 public class XlsDocument extends BaseDocument {
 
     private static List<String> EXTENSIONS = List.of(".xls", ".xlsx", ".xlsm");
+    private static final EnumSet<Hint> CAPABILITIES = EnumSet.of(
+            Document.Hint.INTELLI_EXTRACT,
+            Document.Hint.INTELLI_LAYOUT,
+            Document.Hint.INTELLI_TAG);
 
     private final ArrayList<XlsSheet> sheets = new ArrayList<XlsSheet>();
+
+    @Override
+    protected EnumSet<Hint> getIntelliCapabilities() {
+        return CAPABILITIES;
+    }
 
     @Override
     public boolean open(final File excelFile, final String encoding, final String password) {
@@ -73,11 +83,11 @@ public class XlsDocument extends BaseDocument {
     }
 
     @Override
-    public void updateParsersAndClassifiers() {
-        if (this.getHints().contains(Document.Hint.INTELLI_TAG)) {
-            this.getHints().add(Document.Hint.INTELLI_EXTRACT);
-            this.getHints().add(Document.Hint.INTELLI_LAYOUT);
+    public Document setHints(final EnumSet<Hint> hints) {
+        if (hints.contains(Document.Hint.INTELLI_TAG)) {
+            hints.add(Document.Hint.INTELLI_EXTRACT);
+            hints.add(Document.Hint.INTELLI_LAYOUT);
         }
-        super.updateParsersAndClassifiers();
+        return super.setHints(hints);
     }
 }
