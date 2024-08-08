@@ -2,6 +2,7 @@ package com.github.romualdrousseau.any2json.loader.parquet;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.apache.avro.generic.GenericRecord;
@@ -13,15 +14,22 @@ import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.base.BaseDocument;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
-import com.github.romualdrousseau.any2json.parser.sheet.SimpleSheetParser;
 import com.github.romualdrousseau.any2json.transform.op.DropColumnsWhenFillRatioLessThan;
 import com.github.romualdrousseau.any2json.util.Disk;
 
 public class ParquetDocument extends BaseDocument {
 
-    public static final List<String> EXTENSIONS = List.of(".parquet");
+    private static final List<String> EXTENSIONS = List.of(".parquet");
+    private static final EnumSet<Hint> CAPABILITIES = EnumSet.of(
+            Document.Hint.INTELLI_LAYOUT,
+            Document.Hint.INTELLI_TAG);
 
     private ParquetSheet sheet;
+
+    @Override
+    protected EnumSet<Hint> getIntelliCapabilities() {
+        return CAPABILITIES;
+    }
 
     @Override
     public boolean open(final File parquetFile, final String encoding, final String password) {
@@ -84,11 +92,5 @@ public class ParquetDocument extends BaseDocument {
         if (this.getHints().contains(Document.Hint.INTELLI_LAYOUT)) {
             DropColumnsWhenFillRatioLessThan.Apply(sheet, 0);
         }
-    }
-
-    @Override
-    public void updateParsersAndClassifiers() {
-        super.updateParsersAndClassifiers();
-        this.setSheetParser(new SimpleSheetParser());
     }
 }
