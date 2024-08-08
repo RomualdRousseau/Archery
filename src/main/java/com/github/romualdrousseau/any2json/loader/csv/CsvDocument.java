@@ -5,20 +5,27 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.EnumSet;
 
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.base.BaseDocument;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
-import com.github.romualdrousseau.any2json.parser.sheet.SimpleSheetParser;
 import com.github.romualdrousseau.any2json.transform.op.DropColumnsWhenFillRatioLessThan;
 import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.shuju.strings.StringUtils;
 
-
 public class CsvDocument extends BaseDocument {
 
+    private static final EnumSet<Hint> CAPABILITIES = EnumSet.of(
+            Document.Hint.INTELLI_LAYOUT,
+            Document.Hint.INTELLI_TAG);
+
     private CsvSheet sheet;
+
+    protected EnumSet<Hint> getIntelliCapabilities() {
+        return CAPABILITIES;
+    }
 
     @Override
     public boolean open(final File txtFile, final String encoding, final String password) {
@@ -75,12 +82,6 @@ public class CsvDocument extends BaseDocument {
         }
     }
 
-    @Override
-    public void updateParsersAndClassifiers() {
-        super.updateParsersAndClassifiers();
-        this.setSheetParser(new SimpleSheetParser());
-    }
-
     private boolean openWithEncoding(final File txtFile, final String encoding) {
         try {
             final var reader = new BufferedReader(new InputStreamReader(new FileInputStream(txtFile), encoding));
@@ -91,7 +92,7 @@ public class CsvDocument extends BaseDocument {
             this.sheet = new CsvSheet(sheetName, reader);
             this.sheet.checkDataEncoding();
             return true;
-        } catch(final IOException x) {
+        } catch (final IOException x) {
             return false;
         }
     }
