@@ -26,7 +26,6 @@ public class LayexTableParser implements TableParser {
     private final List<String> dataLayexes;
 
     private Model model;
-    private boolean disablePivot;
     private DataTableParserFactory dataTableParserFactory;
     private List<TableMatcher> metaMatchers;
     private List<TableMatcher> dataMatchers;
@@ -34,7 +33,6 @@ public class LayexTableParser implements TableParser {
     public LayexTableParser(final List<String> metaLayexes, final List<String> dataLayexes) {
         this.metaLayexes = metaLayexes;
         this.dataLayexes = dataLayexes;
-        this.disablePivot = false;
         this.dataTableParserFactory = new DataTableGroupSubHeaderParserFactory();
         this.metaMatchers = metaLayexes.stream().map(Layex::new).map(Layex::compile).toList();
         this.dataMatchers = dataLayexes.stream().map(Layex::new).map(Layex::compile).toList();
@@ -42,8 +40,8 @@ public class LayexTableParser implements TableParser {
 
     public LayexTableParser(final Model model) {
         this(
-            JSON.<String>streamOf(model.toJSON().getArray("metaLayexes")).toList(),
-            JSON.<String>streamOf(model.toJSON().getArray("dataLayexes")).toList());
+                JSON.<String>streamOf(model.toJSON().getArray("metaLayexes")).toList(),
+                JSON.<String>streamOf(model.toJSON().getArray("dataLayexes")).toList());
         this.updateModel(model);
     }
 
@@ -59,11 +57,6 @@ public class LayexTableParser implements TableParser {
     }
 
     @Override
-    public void disablePivot() {
-        this.disablePivot = true;
-    }
-
-    @Override
     public void setParserOptions(String options) {
         if (options.equals("DataTableGroupSubHeaderParserFactory")) {
             this.dataTableParserFactory = new DataTableGroupSubHeaderParserFactory();
@@ -76,8 +69,9 @@ public class LayexTableParser implements TableParser {
 
     @Override
     public List<DataTable> getDataTables(final BaseSheet sheet, final List<BaseTable> tables) {
-        final List<TableMatcher> dataMatchers = this.getDataMatcherList();
-        final ArrayList<DataTable> result = new ArrayList<DataTable>();
+        final var dataMatchers = this.getDataMatcherList();
+        final var result = new ArrayList<DataTable>();
+        final var disablePivot = !sheet.isPivotEnabled();
 
         tables.forEach(e -> {
             e.setVisited(false);
@@ -89,13 +83,12 @@ public class LayexTableParser implements TableParser {
             do {
                 for (final TableMatcher matcher : dataMatchers) {
                     if (!foundMatch && matcher.match(new TableLexer(table, tryCount))) {
-                        this.parseDataTable(table, matcher, tryCount, result);
+                        this.parseDataTable(table, matcher, tryCount, disablePivot, result);
                         table.setVisited(true);
                         foundMatch = true;
                     }
                 }
-            }
-            while(!foundMatch && ++tryCount < 3);
+            } while (!foundMatch && ++tryCount < 3);
         }
 
         return result;
@@ -145,31 +138,29 @@ public class LayexTableParser implements TableParser {
     }
 
     private void parseDataTable(final BaseTable table, final TableMatcher matcher,
-            final int rowOffset, final List<DataTable> result) {
-        final var dataTable = new DataTable(table);
-        final var parser = this.dataTableParserFactory.getInstance(dataTable, this.disablePivot);
+            final int rowOffset, final boolean disablePivot, final List<DataTable> result) {
+        final var dataTable = new DataTable(table, rowOffset);
+        final var parser = this.dataTableParserFactory.getInstance(dataTable, disablePivot);
         matcher.match(new TableLexer(table, rowOffset), parser);
 
         if (parser.getSplitRows().size() > 0) {
             dataTable.adjustLastRow(table.getFirstRow() + parser.getSplitRows().get(0) - 1);
-        }
-        if (rowOffset > 0) {
-            dataTable.setFirstRowOffset(dataTable.getFirstRowOffset() + rowOffset);
         }
         dataTable.ignoreRows().addAll(parser.getIgnoreRows());
         dataTable.setLoadCompleted(true);
         result.add(dataTable);
 
         if (parser.getSplitRows().size() > 0) {
-            this.splitAllSubTables(table, matcher, parser.getSplitRows().get(0), result);
+            this.splitAllSubTables(table, matcher, parser.getSplitRows().get(0), disablePivot, result);
         }
     }
 
-    private void splitAllSubTables(final BaseTable table, final TableMatcher matcher, final int splitRow, final List<DataTable> result) {
+    private void splitAllSubTables(final BaseTable table, final TableMatcher matcher, final int splitRow,
+            final boolean disablePivot, final List<DataTable> result) {
         final var firstRow = table.getFirstRow() + splitRow;
         if (firstRow < table.getLastRow()) {
             final var nextTable = new BaseTable(table, firstRow, table.getLastRow());
-            this.parseDataTable(nextTable, matcher, 0, result);
+            this.parseDataTable(nextTable, matcher, 0, disablePivot, result);
         }
     }
 
