@@ -72,7 +72,7 @@ public class XlsSheet extends PatcheableSheetStore {
             return patchCell;
         } else {
             final var cells = this.sheet.getRow(n);
-            return cells != null ? StringUtils.cleanToken(this.getData(cells.getCell(colIndex))) : null;
+            return cells != null ? this.getData(cells.getCell(colIndex)) : null;
         }
     }
 
@@ -162,7 +162,7 @@ public class XlsSheet extends PatcheableSheetStore {
 
         switch (cell.getCellType()) {
             case STRING:
-                value = cell.getRichStringCellValue().getString();
+                value = StringUtils.cleanToken(cell.getRichStringCellValue().getString());
                 break;
             case NUMERIC:
                 if (DateUtil.isCellDateFormatted(cell)) {

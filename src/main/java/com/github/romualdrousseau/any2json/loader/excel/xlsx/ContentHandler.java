@@ -100,7 +100,7 @@ public class ContentHandler extends DefaultHandler {
             } else if ("c".equals(name)) {
                 this.fillMissingCells();
                 if (this.processCellData(this.currCell)) {
-                    this.row.add(this.currCell.value);
+                    this.row.add(StringUtils.cleanToken(this.currCell.value));
                 } else {
                     this.row.add(null);
                 }

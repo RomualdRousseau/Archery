@@ -12,7 +12,6 @@ import javax.xml.parsers.SAXParserFactory;
 import com.github.romualdrousseau.any2json.base.PatcheableSheetStore;
 import com.github.romualdrousseau.shuju.bigdata.DataFrame;
 import com.github.romualdrousseau.shuju.bigdata.DataFrameWriter;
-import com.github.romualdrousseau.shuju.strings.StringUtils;
 
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.model.SharedStrings;
@@ -117,7 +116,7 @@ public class XlsxSheet extends PatcheableSheetStore implements Closeable {
             return patchCell;
         } else {
             final var cells = this.rows.getRow(n);
-            return cells != null && colIndex < cells.size() ? StringUtils.cleanToken(cells.get(colIndex)) : null;
+            return cells != null && colIndex < cells.size() ? cells.get(colIndex) : null;
         }
     }
 
