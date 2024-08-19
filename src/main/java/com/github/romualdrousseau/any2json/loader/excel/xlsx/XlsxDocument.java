@@ -110,8 +110,10 @@ public class XlsxDocument extends BaseDocument {
     @Override
     public Document setHints(final EnumSet<Hint> hints) {
         if (hints.contains(Document.Hint.INTELLI_TAG)) {
-            hints.add(Document.Hint.INTELLI_EXTRACT);
             hints.add(Document.Hint.INTELLI_LAYOUT);
+        }
+        if (hints.contains(Document.Hint.INTELLI_LAYOUT)) {
+            hints.add(Document.Hint.INTELLI_EXTRACT);
         }
         return super.setHints(hints);
     }

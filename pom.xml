@@ -40,8 +40,8 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
-        <shuju.version>1.28</shuju.version>
-        <any2json.version>2.44-SNAPSHOT</any2json.version>
+        <shuju.version>1.29</shuju.version>
+        <any2json.version>2.44</any2json.version>
         <poi.version>5.3.0</poi.version>
 
         <log4j.version>2.23.1</log4j.version>
