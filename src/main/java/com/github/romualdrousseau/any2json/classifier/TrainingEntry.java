@@ -6,23 +6,33 @@ import java.util.stream.Stream;
 
 public class TrainingEntry {
 
+    public static TrainingEntry of(final String name, final List<String> entities, final List<String> context,
+            final String label, final Trainable trainable) {
+        return new TrainingEntry(
+                trainable.getInputVector(name, entities, context),
+                trainable.getOutputVector(label));
+    }
+
+    private List<Integer> value;
+    private List<Integer> label;
+
     public TrainingEntry(final List<Integer> value, final List<Integer> label) {
         this.value = value;
         this.label = label;
     }
 
-    private List<Integer> value;
     public List<Integer> getValue() {
         return this.value;
     }
+
     public void setValue(final List<Integer> value) {
         this.value = value;
     }
 
-    private List<Integer> label;
     public List<Integer> getLabel() {
         return this.label;
     }
+
     public void setLabel(final List<Integer> label) {
         this.label = label;
     }
@@ -46,18 +56,25 @@ public class TrainingEntry {
     }
 
     public boolean isConflict(final TrainingEntry other) {
-        return this.getValue().equals(other.getValue()) && !this.getLabel().equals(other.getLabel());
+        return this.value.equals(other.value) && !this.label.equals(other.label);
     }
 
+    @Override
     public boolean equals(final Object other) {
         if (!(other instanceof TrainingEntry)) {
             return false;
         }
         final var otherEntry = (TrainingEntry) other;
-        return this.getValue().equals(otherEntry.getValue()) && this.getLabel().equals(otherEntry.getLabel());
+        return this.value.equals(otherEntry.value) && this.label.equals(otherEntry.label);
     }
 
+    @Override
+    public int hashCode() {
+        return value.hashCode() ^ value.hashCode();
+    }
+
+    @Override
     public String toString() {
-        return "[" + this.getValue().toString() + ", " + this.getLabel().toString() + "]";
+        return "[" + value.toString() + ", " + this.label.toString() + "]";
     }
 }

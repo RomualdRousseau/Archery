@@ -7,7 +7,7 @@ import com.github.romualdrousseau.any2json.Model;
 public class NetTagClassifierClass implements TagClassifierClass {
 
     @Override
-    public TagClassifier newInstance(Model model) {
-        return new NetTagClassifier(model);
+    public TagClassifier newInstance(Model model, final TagClassifier.TagStyle tagStyle) {
+        return new NetTagClassifier(model, tagStyle);
     }
 }
