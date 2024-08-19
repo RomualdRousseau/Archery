@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.romualdrousseau.any2json.SheetParser;
-import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.base.BaseTable;
 import com.github.romualdrousseau.any2json.event.BitmapGeneratedEvent;
@@ -30,25 +29,25 @@ public class SheetBitmapParser implements SheetParser {
     }
 
     private List<BaseTable> findAllTables(final BaseSheet sheet, final SheetBitmap image) {
-        final ArrayList<BaseTable> result = new ArrayList<BaseTable>();
+        final var result = new ArrayList<BaseTable>();
 
-        final List<SearchPoint[]> rectangles = this.findAllRectangles(image, sheet.getCapillarityThreshold());
+        final var rectangles = this.findAllRectangles(image, sheet.getCapillarityThreshold());
         for (final SearchPoint[] rectangle : rectangles) {
-            final int firstColumnNum = rectangle[0].getX();
-            int firstRowNum = rectangle[0].getY();
-            final int lastColumnNum = rectangle[1].getX();
-            final int lastRowNum = rectangle[1].getY();
+            final var firstColumnNum = rectangle[0].getX();
+            final var lastColumnNum = rectangle[1].getX();
+            final var lastRowNum = rectangle[1].getY();
+            var firstRowNum = rectangle[0].getY();
 
             if (firstColumnNum > lastColumnNum || firstRowNum > lastRowNum) {
                 continue;
             }
 
-            final BaseTable table = new BaseTable(sheet, firstColumnNum, firstRowNum, lastColumnNum,
+            final var table = new BaseTable(sheet, firstColumnNum, firstRowNum, lastColumnNum,
                     lastRowNum);
 
             boolean isSplitted = false;
             for (int i = 0; i < table.getNumberOfRows(); i++) {
-                final BaseRow row = table.getRowAt(i);
+                final var row = table.getRowAt(i);
                 if (row.isEmpty()) {
                     final int currRowNum = table.getFirstRow() + i;
                     if (firstRowNum <= (currRowNum - 1)) {
@@ -71,7 +70,7 @@ public class SheetBitmapParser implements SheetParser {
     }
 
     private List<SearchPoint[]> findAllRectangles(final SheetBitmap original, final float threshold) {
-        final ISearchBitmap filtered = original.clone();
+        final var filtered = original.clone();
         if (threshold == 0.5f) {
             final Filter filter = new Filter(new Template(new float[][] { { 0, 0, 0 }, { 1, 1, 0 }, { 0, 0, 0 } }));
             filter.apply(original, filtered, 0.5f);
@@ -83,9 +82,9 @@ public class SheetBitmapParser implements SheetParser {
             filter.apply(original, filtered, 0.5f);
         }
 
-        List<SearchPoint[]> rectangles = new RectangleExtractor().extractAll(filtered);
+        var rectangles = new RectangleExtractor().extractAll(filtered);
 
-        for (final SearchPoint[] rectangle : rectangles) {
+        for (final var rectangle : rectangles) {
             rectangle[0].setX(Math.max(0, rectangle[0].getX() - 1));
         }
 
@@ -93,10 +92,10 @@ public class SheetBitmapParser implements SheetParser {
                 SearchPoint.ExpandInX(SearchPoint.MergeInX(SearchPoint.RemoveOverlaps(rectangles)), original),
                 original);
 
-        final List<SearchPoint> points = extractAllSearchPoints(original, rectangles);
+        final var points = extractAllSearchPoints(original, rectangles);
 
-        for (final SearchPoint point : points) {
-            final SearchPoint neighboor = new SearchPoint(point.getX() + 1, point.getY(), point.getSAD());
+        for (final var point : points) {
+            final var neighboor = new SearchPoint(point.getX() + 1, point.getY(), point.getSAD());
             rectangles.add(new SearchPoint[] { point, neighboor });
         }
 
@@ -109,12 +108,12 @@ public class SheetBitmapParser implements SheetParser {
 
     private List<SearchPoint> extractAllSearchPoints(final ISearchBitmap filtered,
             final List<SearchPoint[]> rectangles) {
-        final ArrayList<SearchPoint> result = new ArrayList<SearchPoint>();
+        final var result = new ArrayList<SearchPoint>();
         for (int i = 0; i < filtered.getHeight(); i++) {
             for (int j = 0; j < filtered.getWidth(); j++) {
                 if (filtered.get(j, i) > 0) {
                     boolean isOutside = true;
-                    for (final SearchPoint[] rectangle : rectangles) {
+                    for (final var rectangle : rectangles) {
                         if (SearchPoint.IsInside(rectangle, j, i)) {
                             isOutside = false;
                             break;

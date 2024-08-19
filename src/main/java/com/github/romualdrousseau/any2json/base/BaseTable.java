@@ -2,7 +2,6 @@ package com.github.romualdrousseau.any2json.base;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import com.github.romualdrousseau.any2json.Header;
@@ -13,15 +12,17 @@ public class BaseTable implements Table, Visitable {
 
     public BaseTable(final BaseSheet sheet, final int firstColumn, final int firstRow, final int lastColumn,
             final int lastRow) {
-        this(sheet, firstColumn, firstRow, lastColumn, lastRow, new RowCache(), new LinkedList<>());
+        this(sheet, firstColumn, firstRow, lastColumn, lastRow, new RowCache(), new ArrayList<>());
     }
 
     public BaseTable(final BaseTable parent) {
-        this(parent.sheet, parent.firstColumn, parent.firstRow, parent.lastColumn, parent.lastRow, parent.cachedRows, parent.ignoreRows);
+        this(parent.sheet, parent.firstColumn, parent.firstRow, parent.lastColumn, parent.lastRow, parent.cachedRows,
+                parent.ignoreRows);
     }
 
     public BaseTable(final BaseTable parent, final int firstRow, final int lastRow) {
-        this(parent.sheet, parent.firstColumn, firstRow, parent.lastColumn, lastRow, parent.cachedRows, parent.ignoreRows);
+        this(parent.sheet, parent.firstColumn, firstRow, parent.lastColumn, lastRow, parent.cachedRows,
+                parent.ignoreRows);
     }
 
     private BaseTable(final BaseSheet sheet, final int firstColumn, final int firstRow, final int lastColumn,
@@ -35,7 +36,7 @@ public class BaseTable implements Table, Visitable {
         this.lastColumn = lastColumn;
         this.cachedRows = cachedRows;
         this.ignoreRows = ignoreRows;
-        this.headers = new LinkedList<>();
+        this.headers = new ArrayList<>(lastColumn - firstColumn);
 
         this.visited = false;
         this.lastRow = lastRow;
@@ -66,27 +67,19 @@ public class BaseTable implements Table, Visitable {
 
     @Override
     public BaseRow getRowAt(final int rowIndex) {
-        if (rowIndex < 0 || rowIndex >= getNumberOfRows()) {
+        if (rowIndex < 0 || rowIndex >= this.getNumberOfRows()) {
             throw new ArrayIndexOutOfBoundsException(rowIndex);
         }
-
-        final var relRowIndex = this.firstRowOffset + rowIndex;
-
-        var result = cachedRows.get(this.firstRow + relRowIndex);
-        if (result == null) {
-            result = new BaseRow(this, relRowIndex);
-
+        return this.cachedRows.computeIfAbsent(this.firstRowOffset + rowIndex, (x) -> {
+            final var result = new BaseRow(this, x);
             // Retrieve ignore status possibly lost in cache removal
-            for(final var i: this.ignoreRows()) {
+            for (final var i : this.ignoreRows()) {
                 if (i == rowIndex) {
                     result.setIgnored(true);
                 }
             }
-
-            cachedRows.put(this.firstRow + relRowIndex, result);
-        }
-
-        return result;
+            return result;
+        });
     }
 
     @Override
@@ -102,7 +95,7 @@ public class BaseTable implements Table, Visitable {
     @Override
     public List<String> getHeaderNames() {
         final var result = new ArrayList<String>();
-        for(final var header: this.headers()) {
+        for (final var header : this.headers()) {
             if (!header.isColumnEmpty()) {
                 result.add(header.getName());
             }
@@ -208,7 +201,7 @@ public class BaseTable implements Table, Visitable {
     }
 
     public void addHeader(final BaseHeader header) {
-        this.headers.addLast(header);
+        this.headers.add(header);
     }
 
     public void setHeader(final int i, final BaseHeader header) {
@@ -216,7 +209,7 @@ public class BaseTable implements Table, Visitable {
     }
 
     public List<BaseHeader> findAllHeaders(final BaseHeader headerToFind) {
-        final var result = new LinkedList<BaseHeader>();
+        final var result = new ArrayList<BaseHeader>();
         for (final var header : this.headers()) {
             if (header.equals(headerToFind)) {
                 result.add((BaseHeader) header);
@@ -235,7 +228,7 @@ public class BaseTable implements Table, Visitable {
     }
 
     public BaseHeader findClosestHeader(final BaseHeader headerToFind) {
-        for(final var header : this.headers()) {
+        for (final var header : this.headers()) {
             if (header.equals(headerToFind)) {
                 return (BaseHeader) header;
             }
@@ -249,7 +242,7 @@ public class BaseTable implements Table, Visitable {
     private final int firstColumn;
     private final int firstRow;
     private final int lastColumn;
-    private final LinkedList<Header> headers;
+    private final ArrayList<Header> headers;
     private int lastRow;
     private int firstRowOffset;
     private int lastRowOffset;

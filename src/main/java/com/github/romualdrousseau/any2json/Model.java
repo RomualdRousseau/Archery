@@ -1,12 +1,13 @@
 package com.github.romualdrousseau.any2json;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import com.github.romualdrousseau.shuju.json.JSON;
-import com.github.romualdrousseau.shuju.json.JSONObject;
+import org.apache.commons.collections4.map.LRUMap;
+
+import com.github.romualdrousseau.any2json.base.ModelData;
 import com.github.romualdrousseau.shuju.preprocessing.Text;
 import com.github.romualdrousseau.shuju.preprocessing.comparer.RegexComparer;
 import com.github.romualdrousseau.shuju.types.Tensor;
@@ -15,18 +16,28 @@ public class Model {
 
     public static final Model Default = new ModelBuilder().build();
 
-    public Model(final JSONObject jsonModel) {
-        this.jsonModel = jsonModel;
-        this.entities = JSON.<String>streamOf(jsonModel.getArray("entities")).collect(Collectors.toUnmodifiableList());
-        this.patterns = JSON.<JSONObject>streamOf(jsonModel.getArray("patterns"))
-                .collect(Collectors.toUnmodifiableMap(x -> x.getString("key"), x -> x.getString("value")));
-        this.filters = JSON.<String>streamOf(jsonModel.getArray("filters")).collect(Collectors.toUnmodifiableList());
-        this.pivotEntities = JSON.<String>streamOf(jsonModel.getArray("pivotEntityList"))
-                .collect(Collectors.toUnmodifiableList());
-        this.tags = JSON.<String>streamOf(jsonModel.getArray("tags")).collect(Collectors.toUnmodifiableList());
-        this.requiredTags = JSON.<String>streamOf(jsonModel.getArray("requiredTags"))
-                .collect(Collectors.toUnmodifiableList());
+    public Model(final ModelData modelData) {
+        this(modelData, new HashMap<String, String>());
+    }
+
+    public Model(final ModelData modelData, final Map<String, String> modelAttributes) {
+        this.modelData = modelData;
+        this.attributes = modelAttributes;
+        this.entities = modelData.getList("entities");
+        this.patterns = modelData.getMap("patterns");
+        this.filters = modelData.getList("filters");
+        this.pivotEntities = modelData.getList("pivotEntityList");
+        this.tags = modelData.getList("tags");
+        this.requiredTags = modelData.getList("requiredTags");
         this.comparer = new RegexComparer(this.patterns);
+    }
+
+    public ModelData getData() {
+        return modelData;
+    }
+
+    public Map<String, String> getAttributes() {
+        return this.attributes;
     }
 
     public List<String> getEntityList() {
@@ -62,7 +73,7 @@ public class Model {
     }
 
     public Optional<String> toEntityValue(final String value) {
-        return this.comparer.find(value);
+        return this.toEntityValueCache.computeIfAbsent(value, this.comparer::find);
     }
 
     public Optional<String> toEntityValue(final String value, final String entityName) {
@@ -70,15 +81,12 @@ public class Model {
     }
 
     public Tensor toEntityVector(final String value) {
-        return Tensor.of(Text.to_categorical(value, this.entities, this.comparer).stream()
-                .mapToDouble(x -> (double) x).toArray());
+        return this.toEntityVectorCache.computeIfAbsent(value, v -> Tensor
+                .of(Text.to_categorical(v, this.entities, this.comparer).stream().mapToDouble(x -> x).toArray()));
     }
 
-    public JSONObject toJSON() {
-        return jsonModel;
-    }
-
-    private final JSONObject jsonModel;
+    private final ModelData modelData;
+    private final Map<String, String> attributes;
     private final List<String> entities;
     private final Map<String, String> patterns;
     private final List<String> filters;
@@ -86,4 +94,7 @@ public class Model {
     private final List<String> tags;
     private final List<String> requiredTags;
     private final RegexComparer comparer;
+
+    private LRUMap<String, Optional<String>> toEntityValueCache = new LRUMap<>();
+    private LRUMap<String, Tensor> toEntityVectorCache = new LRUMap<>();
 }

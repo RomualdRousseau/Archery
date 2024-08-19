@@ -2,6 +2,8 @@ package com.github.romualdrousseau.any2json.base;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -15,17 +17,30 @@ import com.github.romualdrousseau.shuju.json.JSONObject;
 
 public class ModelData {
 
+    public static ModelData empty() {
+        return new ModelData(JSON.newObject());
+    }
+
     public static ModelData loadFromJSON(final JSONObject jsonObject) {
         return new ModelData(jsonObject);
+    }
+
+    public static ModelData loadFromResource(final Class<?> clazz, final String resourceName)
+            throws IOException, URISyntaxException {
+        final URL resourceUrl = clazz.getResource(resourceName);
+        if (resourceUrl == null) {
+            throw new IOException("Error loading model");
+        }
+        return new ModelData(JSON.loadObject(Path.of(resourceUrl.toURI())));
     }
 
     public static ModelData loadFromPath(final Path path) {
         return new ModelData(JSON.loadObject(path));
     }
 
-    public static ModelData loadFromURL(final String uri) throws IOException, InterruptedException {
+    public static ModelData loadFromWebURL(final String url) throws IOException, InterruptedException {
         final var client = HttpClient.newHttpClient();
-        final var request = HttpRequest.newBuilder().uri(URI.create(uri)).build();
+        final var request = HttpRequest.newBuilder().uri(URI.create(url)).build();
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() != 200) {
             throw new IOException("Error loading model");
@@ -33,10 +48,28 @@ public class ModelData {
         return new ModelData(JSON.objectOf(response.body()));
     }
 
-    private final JSONObject backstore;
-
     private ModelData(final JSONObject backstore) {
         this.backstore = backstore;
+    }
+
+    public boolean hasKey(final String key) {
+        return this.backstore.get(key).isPresent();
+    }
+
+    public int getInt(final String key) {
+        return this.backstore.getInt(key);
+    }
+
+    public void setInt(final String key, final int value) {
+        this.backstore.setInt(key, value);
+    }
+
+    public void setString(final String key, final String value) {
+        this.backstore.setString(key, value);
+    }
+
+    public String getString(final String key) {
+        return this.backstore.getString(key);
     }
 
     public List<String> getList(final String key) {
@@ -68,4 +101,6 @@ public class ModelData {
     public void save(final Path path) {
         JSON.saveObject(this.backstore, path);
     }
+
+    private final JSONObject backstore;
 }

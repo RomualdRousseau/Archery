@@ -5,26 +5,35 @@ import com.github.romualdrousseau.shuju.strings.StringUtils;
 
 public class AutoCrop {
 
-    public static void Apply(final BaseSheet sheet) {
-        AutoCrop._cropLeft(sheet);
-        AutoCrop._cropRight(sheet);
+    public static void Apply(final BaseSheet sheet, final float minRatio) {
+        AutoCrop._cropLeft(sheet, minRatio);
+        sheet.removeAllNullColumns();
+        AutoCrop._cropRight(sheet, minRatio);
         sheet.removeAllNullColumns();
 
-        AutoCrop._cropTop(sheet);
-        AutoCrop._cropBottom(sheet);
+        AutoCrop._cropTop(sheet, minRatio);
+        sheet.removeAllNullRows();
+        AutoCrop._cropBottom(sheet, minRatio);
         sheet.removeAllNullRows();
     }
 
-    public static void _cropLeft(final BaseSheet sheet) {
-        for(int j = 0; j <= sheet.getLastColumnNum(); j++) {
-            int emptyCount = sheet.getLastRowNum() + 1;
-            for(int i = 0; i <= sheet.getLastRowNum(); i++) {
-                if(sheet.hasCellDataAt(j, i) && !StringUtils.isFastBlank(sheet.getCellDataAt(j, i))) {
-                    emptyCount--;
+    public static void _cropLeft(final BaseSheet sheet, final float minRatio) {
+        for (int j = 0; j <= sheet.getLastColumnNum(); j++) {
+            var emptyCount = sheet.getLastRowNum() + 1;
+
+            final float fillRatio;
+            if (emptyCount == 0) {
+                fillRatio = 0.0f;
+            } else {
+                for (int i = 0; i <= sheet.getLastRowNum(); i++) {
+                    if (sheet.hasCellDataAt(j, i) && !StringUtils.isFastBlank(sheet.getCellDataAt(j, i))) {
+                        emptyCount--;
+                    }
                 }
+                fillRatio = 1.0f - (float) emptyCount / (float) (sheet.getLastRowNum() + 1);
             }
-            final float m = 1.0f - (float) emptyCount / (float) (sheet.getLastRowNum() + 1);
-            if (m <= 0) {
+
+            if (fillRatio <= minRatio) {
                 sheet.markColumnAsNull(j);
             } else {
                 return;
@@ -32,16 +41,23 @@ public class AutoCrop {
         }
     }
 
-    public static void _cropRight(final BaseSheet sheet) {
-        for(int j = sheet.getLastColumnNum(); j >= 0 ; j--) {
+    public static void _cropRight(final BaseSheet sheet, final float minRatio) {
+        for (int j = sheet.getLastColumnNum(); j >= 0; j--) {
             int emptyCount = sheet.getLastRowNum() + 1;
-            for(int i = 0; i <= sheet.getLastRowNum(); i++) {
-                if(sheet.hasCellDataAt(j, i) && !StringUtils.isFastBlank(sheet.getCellDataAt(j, i))) {
-                    emptyCount--;
+
+            final float fillRatio;
+            if (emptyCount == 0) {
+                fillRatio = 0.0f;
+            } else {
+                for (int i = 0; i <= sheet.getLastRowNum(); i++) {
+                    if (sheet.hasCellDataAt(j, i) && !StringUtils.isFastBlank(sheet.getCellDataAt(j, i))) {
+                        emptyCount--;
+                    }
                 }
+                fillRatio = 1.0f - (float) emptyCount / (float) (sheet.getLastRowNum() + 1);
             }
-            final float m = 1.0f - (float) emptyCount / (float) (sheet.getLastRowNum() + 1);
-            if (m <= 0) {
+
+            if (fillRatio <= minRatio) {
                 sheet.markColumnAsNull(j);
             } else {
                 return;
@@ -49,16 +65,24 @@ public class AutoCrop {
         }
     }
 
-    public static void _cropTop(final BaseSheet sheet) {
-        for(int i = 0; i <= sheet.getLastRowNum(); i++) {
+    public static void _cropTop(final BaseSheet sheet, final float minRatio) {
+        for (int i = 0; i <= sheet.getLastRowNum(); i++) {
             int emptyCount = sheet.getLastColumnNum() + 1;
-            for(int j = 0; j <= sheet.getLastColumnNum(i); j++) {
-                if(sheet.hasCellDataAt(j, i) && !StringUtils.isFastBlank(sheet.getCellDataAt(j, i))) {
-                    emptyCount--;
+
+            final float fillRatio;
+            if (emptyCount == 0) {
+                fillRatio = 0.0f;
+            } else {
+                final var lastColumnNum = sheet.getLastColumnNum(i);
+                for (int j = 0; j <= lastColumnNum; j++) {
+                    if (sheet.hasCellDataAt(j, i) && !StringUtils.isFastBlank(sheet.getCellDataAt(j, i))) {
+                        emptyCount--;
+                    }
                 }
+                fillRatio = 1.0f - (float) emptyCount / (float) (sheet.getLastColumnNum() + 1);
             }
-            final float m = 1.0f - (float) emptyCount / (float) (sheet.getLastColumnNum() + 1);
-            if (m <= 0) {
+
+            if (fillRatio <= minRatio) {
                 sheet.markRowAsNull(i);
             } else {
                 return;
@@ -66,16 +90,24 @@ public class AutoCrop {
         }
     }
 
-    public static void _cropBottom(final BaseSheet sheet) {
-        for(int i = sheet.getLastRowNum(); i >= 0; i--) {
+    public static void _cropBottom(final BaseSheet sheet, final float minRatio) {
+        for (int i = sheet.getLastRowNum(); i >= 0; i--) {
             int emptyCount = sheet.getLastColumnNum() + 1;
-            for(int j = 0; j <= sheet.getLastColumnNum(i); j++) {
-                if(sheet.hasCellDataAt(j, i) && !StringUtils.isFastBlank(sheet.getCellDataAt(j, i))) {
-                    emptyCount--;
+
+            final float fillRatio;
+            if (emptyCount == 0) {
+                fillRatio = 0.0f;
+            } else {
+                final var lastColumnNum = sheet.getLastColumnNum(i);
+                for (int j = 0; j <= lastColumnNum; j++) {
+                    if (sheet.hasCellDataAt(j, i) && !StringUtils.isFastBlank(sheet.getCellDataAt(j, i))) {
+                        emptyCount--;
+                    }
                 }
+                fillRatio = 1.0f - (float) emptyCount / (float) (sheet.getLastColumnNum() + 1);
             }
-            final float m = 1.0f - (float) emptyCount / (float) (sheet.getLastColumnNum() + 1);
-            if (m <= 0) {
+
+            if (fillRatio <= minRatio) {
                 sheet.markRowAsNull(i);
             } else {
                 return;

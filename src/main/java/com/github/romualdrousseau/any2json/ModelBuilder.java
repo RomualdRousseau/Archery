@@ -1,18 +1,13 @@
 package com.github.romualdrousseau.any2json;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import com.github.romualdrousseau.shuju.json.JSON;
-import com.github.romualdrousseau.shuju.json.JSONObject;
+import com.github.romualdrousseau.any2json.base.ModelData;
 
 public class ModelBuilder {
 
@@ -21,7 +16,7 @@ public class ModelBuilder {
     }
 
     public ModelBuilder reset() {
-        this.jsonModel = JSON.newObject();
+        this.modelData = ModelData.empty();
         this.entities = Collections.emptyList();
         this.patterns = Collections.emptyMap();
         this.filters = Collections.emptyList();
@@ -30,34 +25,31 @@ public class ModelBuilder {
         this.requiredTags = Collections.emptyList();
         this.tableParser = null;
         this.tagClassifier = null;
-        this._updateJSON();
         return this;
+    }
+
+    public ModelBuilder fromModelData(final ModelData modelData) {
+        this.modelData = modelData;
+        this.entities = modelData.getList("entities");
+        this.patterns = modelData.getMap("patterns");
+        this.filters = modelData.getList("filters");
+        this.pivotEntities = modelData.getList("pivotEntityList");
+        this.tags = modelData.getList("tags");
+        this.requiredTags = modelData.getList("requiredTags");
+        return this;
+    }
+
+    public ModelBuilder fromResource(final Class<?> clazz, final String resourceName)
+            throws IOException, URISyntaxException {
+        return this.fromModelData(ModelData.loadFromResource(clazz, resourceName));
     }
 
     public ModelBuilder fromPath(final Path path) {
-        return this.fromJSON(JSON.loadObject(path));
+        return this.fromModelData(ModelData.loadFromPath(path));
     }
 
     public ModelBuilder fromURI(final String uri) throws IOException, InterruptedException {
-        final var client = HttpClient.newHttpClient();
-        final var request = HttpRequest.newBuilder().uri(URI.create(uri)).build();
-        final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() != 200) {
-            throw new IOException("Error loading model");
-        }
-        return this.fromJSON(JSON.objectOf(response.body()));
-    }
-
-    public ModelBuilder fromJSON(final JSONObject model) {
-        this.jsonModel = model;
-        this.entities = JSON.<String>streamOf(this.jsonModel.getArray("entities")).collect(Collectors.toList());
-        this.patterns = JSON.<JSONObject>streamOf(this.jsonModel.getArray("patterns"))
-                .collect(Collectors.toMap(x -> x.getString("key"), x -> x.getString("value")));
-        this.filters = JSON.<String>streamOf(this.jsonModel.getArray("filters")).collect(Collectors.toList());
-        this.pivotEntities = JSON.<String>streamOf(this.jsonModel.getArray("pivotEntityList")).collect(Collectors.toList());
-        this.tags = JSON.<String>streamOf(this.jsonModel.getArray("tags")).collect(Collectors.toList());
-        this.requiredTags = JSON.<String>streamOf(this.jsonModel.getArray("requiredTags")).collect(Collectors.toList());
-        return this;
+        return this.fromModelData(ModelData.loadFromWebURL(uri));
     }
 
     public List<String> getEntityList() {
@@ -125,27 +117,27 @@ public class ModelBuilder {
     }
 
     public Model build() {
-        this._updateJSON();
-        final var model = new Model(this.jsonModel);
+        this.updateModelData();
+        final var model = new Model(this.modelData);
         if (this.tableParser != null) {
-            this.tableParser.updateModel(model);
+            this.tableParser.setModel(model);
         }
         if (this.tagClassifier != null) {
-            this.tagClassifier.updateModel(model);
+            this.tagClassifier.setModel(model);
         }
         return model;
     }
 
-    private void _updateJSON() {
-        this.jsonModel.setArray("entities", JSON.arrayOf(this.entities));
-        this.jsonModel.setArray("patterns", JSON.arrayOf(this.patterns));
-        this.jsonModel.setArray("filters", JSON.arrayOf(this.filters));
-        this.jsonModel.setArray("pivotEntityList", JSON.arrayOf(this.pivotEntities));
-        this.jsonModel.setArray("tags", JSON.arrayOf(this.tags));
-        this.jsonModel.setArray("requiredTags", JSON.arrayOf(this.requiredTags));
+    private void updateModelData() {
+        this.modelData.setList("entities", this.entities);
+        this.modelData.setMap("patterns", this.patterns);
+        this.modelData.setList("filters", this.filters);
+        this.modelData.setList("pivotEntityList", this.pivotEntities);
+        this.modelData.setList("tags", this.tags);
+        this.modelData.setList("requiredTags", this.requiredTags);
     }
 
-    private JSONObject jsonModel;
+    private ModelData modelData;
     private List<String> entities;
     private Map<String, String> patterns;
     private List<String> filters;

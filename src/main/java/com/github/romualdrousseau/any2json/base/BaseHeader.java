@@ -80,13 +80,13 @@ public abstract class BaseHeader implements Header {
         return this.cell.getPivotEntityAsString();
     }
 
-    public boolean equals(final BaseHeader o) {
-        return this.getName().equalsIgnoreCase(o.getName());
-    }
-
     @Override
     public boolean equals(final Object o) {
-        return o instanceof BaseHeader && this.equals((BaseHeader) o);
+        if (!(o instanceof BaseHeader)) {
+            return false;
+        }
+        final var other = (BaseHeader) o;
+        return other != null &&  this.getName().equalsIgnoreCase(other.getName());
     }
 
     public abstract String getValue();

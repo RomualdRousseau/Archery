@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 import com.github.romualdrousseau.any2json.Document;
 import com.github.romualdrousseau.any2json.PivotOption;
@@ -21,7 +22,6 @@ import com.github.romualdrousseau.any2json.event.TableGraphBuiltEvent;
 import com.github.romualdrousseau.any2json.event.TableReadyEvent;
 import com.github.romualdrousseau.any2json.intelli.IntelliTable;
 import com.github.romualdrousseau.any2json.TransformableSheet;
-import com.github.romualdrousseau.any2json.transform.op.AutoCrop;
 import com.github.romualdrousseau.shuju.commons.CollectionUtils;
 
 public class BaseSheet implements Sheet {
@@ -34,14 +34,17 @@ public class BaseSheet implements Sheet {
         this.columnMask = CollectionUtils.mutableRange(0, this.storeLastColumnNum + 1);
         this.rowMask = CollectionUtils.mutableRange(0, this.sheetStore.getLastRowNum() + 1);
 
+        this.pivotEnabled = true;
+        this.metaEnabled = true;
+        this.autoCropEnabled = false;
+        this.autoHeaderNameEnabled = true;
+        this.autoMetaEnabled = true;
+
         this.pivotOption = PivotOption.NONE;
         this.pivotKeyFormat = "%s " + Settings.PIVOT_KEY_SUFFIX;
         this.pivotValueFormat = "%s " + Settings.PIVOT_VALUE_SUFFIX;
         this.pivotTypeFormat = "%s " + Settings.PIVOT_TYPE_SUFFIX;
         this.groupValueFormat = "%s " + Settings.GROUP_VALUE_SUFFIX;
-        this.pivotEnabled = true;
-        this.autoCropEnabled = true;
-        this.autoHeaderNameEnabled = true;
     }
 
     @Override
@@ -85,14 +88,6 @@ public class BaseSheet implements Sheet {
             return Optional.empty();
         }
 
-        // Auto crop
-
-        if (this.autoCropEnabled) {
-            AutoCrop.Apply(this);
-        }
-
-        this.document.updateParsersAndClassifiers();
-
         // Find datatables and metatables
 
         final var tables = this.document.getSheetParser().findAllTables(this);
@@ -108,7 +103,12 @@ public class BaseSheet implements Sheet {
             return Optional.empty();
         }
 
-        final var metaTables = this.document.getTableParser().getMetaTables(this, tables);
+        final List<MetaTable> metaTables;
+        if (this.metaEnabled) {
+            metaTables = this.document.getTableParser().getMetaTables(this, tables);
+        } else {
+            metaTables = Collections.emptyList();
+        }
         if (!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
             return Optional.empty();
         }
@@ -117,8 +117,10 @@ public class BaseSheet implements Sheet {
             return Optional.of(new BaseTableGraph(dataTables.get(0)));
         }
 
-        // Build table graph: linked the metatable and datatables depending of the reading directional preferences
-        // in perception of visual stimuli depending of the cultures and writing systems.
+        // Build table graph: linked the metatable and datatables depending of the
+        // reading directional preferences
+        // in perception of visual stimuli depending of the cultures and writing
+        // systems.
 
         final var readingDirection = this.document.getReadingDirection();
         final var root = BaseTableGraphBuilder.build(metaTables, dataTables, readingDirection);
@@ -153,10 +155,6 @@ public class BaseSheet implements Sheet {
         return Optional.of(table);
     }
 
-    public boolean isPivotEnabled() {
-        return this.pivotEnabled;
-    }
-
     public SheetStore getSheetStore() {
         return this.sheetStore;
     }
@@ -166,7 +164,8 @@ public class BaseSheet implements Sheet {
         if (translatedRow < 0) {
             return -1;
         }
-        return this.sheetStore.getLastColumnNum(translatedRow) - (this.storeLastColumnNum - this.columnMask.size() + 1);
+        final var lastColumnNum = this.sheetStore.getLastColumnNum(translatedRow);
+        return (int) this.columnMask.stream().filter(x -> x <= lastColumnNum).count();
     }
 
     public boolean hasCellDataAt(final int colIndex, final int rowIndex) {
@@ -226,7 +225,8 @@ public class BaseSheet implements Sheet {
         if (translatedRow2 < 0) {
             return;
         }
-        this.sheetStore.patchCell(translatedColumn1, translatedRow1, translatedColumn2, translatedRow2, value, this.unmergedAll);
+        this.sheetStore.patchCell(translatedColumn1, translatedRow1, translatedColumn2, translatedRow2, value,
+                this.unmergedAll);
     }
 
     public boolean notifyStepCompleted(final SheetEvent e) {
@@ -268,15 +268,74 @@ public class BaseSheet implements Sheet {
         this.capillarityThreshold = threshold;
     }
 
+    public boolean isMetaEnabled() {
+        return this.metaEnabled;
+    }
+
+    public void enableMeta() {
+        this.metaEnabled = true;
+    }
+
+    public void disableMeta() {
+        this.metaEnabled = false;
+    }
+
+    public boolean isAutoCropEnabled() {
+        return this.autoCropEnabled;
+    }
+
+    public void enableAutoCrop() {
+        this.autoCropEnabled = true;
+    }
+
+    public void disableAutoCrop() {
+        this.autoCropEnabled = false;
+    }
+
+    public boolean isAutoHeaderNameEnabled() {
+        return this.autoHeaderNameEnabled;
+    }
+
+    public void enableAutoHeaderName() {
+        this.autoHeaderNameEnabled = true;
+    }
+
+    public void disableAutoHeaderName() {
+        this.autoHeaderNameEnabled = false;
+    }
+
+    public boolean isAutoMetaEnabled() {
+        return this.autoMetaEnabled;
+    }
+
+    public void enableAutoMeta() {
+        this.autoMetaEnabled = true;
+    }
+
+    public void disableAutoMeta() {
+        this.autoMetaEnabled = false;
+    }
+
+    public boolean isPivotEnabled() {
+        return this.pivotEnabled;
+    }
+
+    public void enablePivot() {
+        this.pivotEnabled = true;
+    }
+
+    public void disablePivot() {
+        this.pivotEnabled = false;
+    }
+
     public List<String> getPivotEntityList() {
         if (!this.pivotEnabled) {
             return Collections.emptyList();
         }
         if (this.pivotEntityList == null) {
             return this.getDocument().getModel().getPivotEntityList();
-        } else {
-            return this.pivotEntityList;
         }
+        return this.pivotEntityList;
     }
 
     public void setPivotEntityList(final List<String> pivotEntityList) {
@@ -323,18 +382,6 @@ public class BaseSheet implements Sheet {
         this.groupValueFormat = format;
     }
 
-    public void disablePivot() {
-        this.pivotEnabled = false;
-    }
-
-    public void disableAutoHeaderName() {
-        this.autoHeaderNameEnabled = false;
-    }
-
-    public void disableAutoCrop() {
-        this.autoCropEnabled = false;
-    }
-
     public void swapRows(int rowIndex1, int rowIndex2) {
         final var tmp = this.rowMask.get(rowIndex1);
         this.rowMask.set(rowIndex1, this.rowMask.get(rowIndex2));
@@ -345,25 +392,22 @@ public class BaseSheet implements Sheet {
         if (colIndex < 0 || colIndex >= this.columnMask.size()) {
             return -1;
         }
-        return this.columnMask.get(colIndex);
+        return Optional.of(this.columnMask.get(colIndex)).orElse(-1);
     }
 
     private int translateRow(final int rowIndex) {
         if (rowIndex < 0 || rowIndex >= this.rowMask.size()) {
             return -1;
         }
-        return this.rowMask.get(rowIndex);
+        return Optional.of(this.rowMask.get(rowIndex)).orElse(-1);
     }
 
     private int computeLastColumnNum() {
         if (this.sheetStore.getLastRowNum() < 0) {
             return -1;
         }
-        var result = this.sheetStore.getLastColumnNum(0);
-        for (var i = 1; i <= this.sheetStore.getLastRowNum(); i++) {
-            result = Math.max(result, this.sheetStore.getLastColumnNum(i));
-        }
-        return result;
+        return IntStream.rangeClosed(0, this.sheetStore.getLastRowNum())
+                .map(this.sheetStore::getLastColumnNum).max().getAsInt();
     }
 
     private final BaseDocument document;
@@ -376,13 +420,15 @@ public class BaseSheet implements Sheet {
 
     private boolean unmergedAll = false;
     private float capillarityThreshold = Settings.DEFAULT_CAPILLARITY_THRESHOLD;
+    private boolean pivotEnabled;
+    private boolean metaEnabled;
+    private boolean autoCropEnabled;
+    private boolean autoHeaderNameEnabled;
+    private boolean autoMetaEnabled;
     private PivotOption pivotOption;
     private String pivotKeyFormat;
     private String pivotValueFormat;
     private String pivotTypeFormat;
     private String groupValueFormat;
     private List<String> pivotEntityList;
-    private boolean pivotEnabled;
-    private boolean autoCropEnabled;
-    private boolean autoHeaderNameEnabled;
 }

@@ -8,42 +8,43 @@ import com.github.romualdrousseau.shuju.strings.StringUtils;
 
 public class DropRowsWhenEntropyLessThan {
 
-    public static void Apply(final BaseSheet sheet, final float max) {
+    public static void Apply(final BaseSheet sheet, final float minEntropy) {
         for(int i = 0; i <= sheet.getLastRowNum(); i++) {
-            final HashMap<String, Double> x = new HashMap<>();
-            int n = 0;
-            for(int j = 0; j <= sheet.getLastColumnNum(i); j++) {
-                if(sheet.hasCellDataAt(j, i) && !sheet.getCellDataAt(j, i).isBlank()) {
-                    final String value = sheet.getCellDataAt(j, i);
-                    if (!StringUtils.isFastBlank(sheet.getCellDataAt(j, i))) {
+            final var x = new HashMap<String, Double>();
+            final var lastColumnNum = sheet.getLastColumnNum(i);
+            var n = 0;
+            for(int j = 0; j <= lastColumnNum; j++) {
+                if(sheet.hasCellDataAt(j, i)) {
+                    final var value = sheet.getCellDataAt(j, i);
+                    if (!StringUtils.isFastBlank(value)) {
                         x.put(value, x.getOrDefault(value, 0.0) + 1.0);
                         n++;
                     }
                 }
             }
             final float e = (float) computeEntropy(x, n);
-            if (e <= max) {
+            if (e <= minEntropy) {
                 sheet.markRowAsNull(i);
             }
         }
         sheet.removeAllNullRows();
     }
 
-    public static void Apply(final BaseSheet sheet, final float max, final int start, final int stop) {
+    public static void Apply(final BaseSheet sheet, final float minEntropy, final int start, final int stop) {
         for(int i = 0; i <= sheet.getLastRowNum(); i++) {
             final HashMap<String, Double> x = new HashMap<>();
-            int n = 0;
+            var n = 0;
             for(int j = start; j <= stop; j++) {
-                if(sheet.hasCellDataAt(j, i) && !sheet.getCellDataAt(j, i).isBlank()) {
-                    final String value = sheet.getCellDataAt(j, i);
-                    if (!StringUtils.isFastBlank(sheet.getCellDataAt(j, i))) {
+                if(sheet.hasCellDataAt(j, i)) {
+                    final var value = sheet.getCellDataAt(j, i);
+                    if (!StringUtils.isFastBlank(value)) {
                         x.put(value, x.getOrDefault(value, 0.0) + 1.0);
                         n++;
                     }
                 }
             }
-            final float e = (float) computeEntropy(x, n);
-            if (e <= max) {
+            final var e = (float) computeEntropy(x, n);
+            if (e <= minEntropy) {
                 sheet.markRowAsNull(i);
             }
         }
@@ -51,7 +52,7 @@ public class DropRowsWhenEntropyLessThan {
     }
 
     private static double computeEntropy(final HashMap<String, Double> x, final double n) {
-        double result = 0.0f;
+        var result = 0.0f;
         for (final Entry<String, Double> e: x.entrySet()) {
             final double p = e.getValue() / n;
             result += p * Math.log(p) / Math.log(2);

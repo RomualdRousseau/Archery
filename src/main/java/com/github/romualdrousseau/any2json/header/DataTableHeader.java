@@ -43,11 +43,9 @@ public class DataTableHeader extends BaseHeader {
     @Override
     public List<String> entities() {
         if (this.entities == null) {
-            if (this.getColumnIndex() < 0 || this.getColumnIndex() >= this.getTable().getNumberOfColumns()) {
-                this.entities =  Collections.emptyList();
-            } else {
-                this.entities = this.sampleEntities();
-            }
+            this.entities = (this.getColumnIndex() < 0 || this.getColumnIndex() >= this.getTable().getNumberOfColumns())
+                    ? Collections.emptyList()
+                    : this.sampleEntities();
         }
         return this.entities;
     }
@@ -75,14 +73,17 @@ public class DataTableHeader extends BaseHeader {
         if (StringUtils.isFastBlank(this.getName())) {
             this.tag = HeaderTag.None;
         } else {
-            final String tagValue = this.getTable().getSheet().getDocument().getTagClassifier().predict(this.getName(), this.entities(), this.getTable().getHeaderNames());
+            final var classifier = this.getTable().getSheet().getDocument().getTagClassifier();
+            final var context = this.getTable().getHeaderNames();
+            final String tagValue = classifier.predict(this.getName(), this.entities(), context);
             this.tag = new HeaderTag(tagValue);
         }
     }
 
     private List<String> sampleEntities() {
-        final int N = Math.min(this.getTable().getNumberOfRows(), Settings.DEFAULT_SAMPLE_COUNT);
-        final Tensor entityVector = Tensor.zeros(this.getTable().getSheet().getDocument().getModel().getEntityList().size());
+        final var N = Math.min(this.getTable().getNumberOfRows(), Settings.DEFAULT_SAMPLE_COUNT);
+        final var entityVector = Tensor
+                .zeros(this.getTable().getSheet().getDocument().getModel().getEntityList().size());
         float n = 0.0f;
         for (int i = 0; i < N; i++) {
             final BaseRow row = this.getTable().getRowAt(i);
@@ -98,8 +99,11 @@ public class DataTableHeader extends BaseHeader {
         if (n > 0.0f) {
             entityVector.if_lt_then(n, 0.0f, 1.0f);
         }
-        final List<String> entityList = this.getTable().getSheet().getDocument().getModel().getEntityList();
-        return IntStream.range(0, entityVector.size).boxed().filter(i -> entityVector.data[i] == 1).map(i -> entityList.get(i)).toList();
+        final var entityList = this.getTable().getSheet().getDocument().getModel().getEntityList();
+        return IntStream.range(0, entityVector.size).boxed()
+                .filter(i -> entityVector.data[i] == 1)
+                .map(i -> entityList.get(i))
+                .toList();
     }
 
     private String name;

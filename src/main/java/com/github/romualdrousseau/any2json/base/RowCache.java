@@ -1,18 +1,12 @@
 package com.github.romualdrousseau.any2json.base;
 
-import java.util.Map;
-import java.util.LinkedHashMap;
+import org.apache.commons.collections4.map.LRUMap;
 
 import com.github.romualdrousseau.any2json.config.Settings;
 
-public class RowCache extends LinkedHashMap<Integer, BaseRow> {
+public class RowCache extends LRUMap<Integer, BaseRow> {
 
     public RowCache() {
-        super(Settings.MAX_STORE_ROWS, 0.75F, true);
-    }
-
-    @Override
-    protected boolean removeEldestEntry(Map.Entry<Integer, BaseRow> eldest) {
-        return this.size() > Settings.MAX_STORE_ROWS;
+        super(Settings.MAX_STORE_ROWS);
     }
 }

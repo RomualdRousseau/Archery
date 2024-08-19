@@ -27,7 +27,8 @@ public class BaseCell implements Cell, Symbol {
         this(value, colIndex, mergedCount, value, sheet);
     }
 
-    public BaseCell(final String value, final int colIndex, final int mergedCount, final String rawValue, final BaseSheet sheet) {
+    public BaseCell(final String value, final int colIndex, final int mergedCount, final String rawValue,
+            final BaseSheet sheet) {
         this.colIndex = colIndex;
         this.mergedCount = mergedCount;
         this.rawValue = (rawValue == null) ? "" : rawValue;
@@ -52,6 +53,14 @@ public class BaseCell implements Cell, Symbol {
 
     @Override
     public List<String> entities() {
+        if (this.entityList == null) {
+            final var allEntityList = this.sheet.getDocument().getModel().getEntityList();
+            final var entityVector = this.getEntityVector();
+            this.entityList = IntStream.range(0, entityVector.size)
+                    .filter(i -> entityVector.data[i] > 0.0f)
+                    .mapToObj(i -> allEntityList.get(i))
+                    .toList();
+        }
         return this.entityList;
     }
 
@@ -63,7 +72,7 @@ public class BaseCell implements Cell, Symbol {
             return "$";
         } else if (!this.hasValue()) {
             return "s";
-        } else if (this.entityList.size() > 0) {
+        } else if (this.entities().size() > 0) {
             return "e";
         } else {
             return "v";
@@ -72,7 +81,7 @@ public class BaseCell implements Cell, Symbol {
 
     @Override
     public boolean matchLiteral(final String literal) {
-        return this.entityList.stream().anyMatch(x -> x.equalsIgnoreCase(literal));
+        return this.entities().stream().anyMatch(x -> x.equalsIgnoreCase(literal));
     }
 
     public BaseSheet getSheet() {
@@ -92,6 +101,9 @@ public class BaseCell implements Cell, Symbol {
     }
 
     public Tensor getEntityVector() {
+        if (this.entityVector == null) {
+            this.entityVector = this.sheet.getDocument().getModel().toEntityVector(this.value);
+        }
         return this.entityVector;
     }
 
@@ -101,7 +113,8 @@ public class BaseCell implements Cell, Symbol {
 
     public Optional<String> getPivotEntityAsString() {
         if (this.sheet != null) {
-            return this.entityList.stream().filter(x -> this.sheet.getPivotEntityList().contains(x)).findFirst();
+            final var pivotEntityList = this.sheet.getPivotEntityList();
+            return this.entities().stream().filter(x -> pivotEntityList.contains(x)).findFirst();
         } else {
             return Optional.empty();
         }
@@ -109,10 +122,9 @@ public class BaseCell implements Cell, Symbol {
 
     public void setValue(final String value) {
         this.value = value;
-        if (this.sheet != null) {
-            final List<String> entityList = this.sheet.getDocument().getModel().getEntityList();
-            this.entityVector = this.sheet.getDocument().getModel().toEntityVector(this.value);
-            this.entityList = IntStream.range(0, this.entityVector.size).boxed().filter(i -> this.entityVector.data[i] > 0.0f).map(i -> entityList.get(i)).toList();
+        if (this.sheet != null && this.hasValue()) {
+            this.entityVector = null;
+            this.entityList = null;
         } else {
             this.entityVector = Tensor.Null;
             this.entityList = Collections.emptyList();

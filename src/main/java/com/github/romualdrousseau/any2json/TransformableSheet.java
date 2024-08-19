@@ -7,6 +7,7 @@ import org.python.util.PythonInterpreter;
 
 import com.github.romualdrousseau.any2json.base.BaseDocument;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
+import com.github.romualdrousseau.any2json.transform.op.AutoCrop;
 import com.github.romualdrousseau.any2json.transform.op.DropColumn;
 import com.github.romualdrousseau.any2json.transform.op.DropColumnsWhenEntropyLessThan;
 import com.github.romualdrousseau.any2json.transform.op.DropColumnsWhenFillRatioLessThan;
@@ -64,17 +65,38 @@ public class TransformableSheet {
                 pyInterp.exec(recipe);
             }
         }
+
+        if (sheet.isAutoCropEnabled()) {
+            AutoCrop.Apply(this.sheet, 0.0f);
+        }
+
+        ((BaseDocument) this.sheet.getDocument()).updateParsersAndClassifiers();
     }
 
     /**
      * This method sets the hints for the associated document by overwriting the
-     * default hints for the document format.
+     * default hints.
      *
      * @param hints the hints: INTELLI_EXTRACT, INTELLI_LAYOUT, INTELLI_TAG
      */
     public void setDocumentHints(final String... hints) {
-        ((BaseDocument) this.sheet.getDocument()).setRawHints(
-                EnumSet.copyOf(List.of(hints).stream().map(Document.Hint::valueOf).toList()));
+        final var document = (BaseDocument) this.sheet.getDocument();
+        final var newHintSet = EnumSet.copyOf(List.of(hints).stream().map(Document.Hint::valueOf).toList());
+        document.setRawHints(newHintSet);
+    }
+
+    /**
+     * This method unsets the hints for the associated document by removing the
+     * hints from the default hints.
+     *
+     * @param hints the hints: INTELLI_EXTRACT, INTELLI_LAYOUT, INTELLI_TAG
+     */
+    public void unsetDocumentHints(final String... hints) {
+        final var document = (BaseDocument) this.sheet.getDocument();
+        final var newHintSet = document.getHints();
+        final var hintSetToRemove = EnumSet.copyOf(List.of(hints).stream().map(Document.Hint::valueOf).toList());
+        newHintSet.removeIf(hintSetToRemove::contains);
+        document.setRawHints(newHintSet);
     }
 
     /**
@@ -85,6 +107,7 @@ public class TransformableSheet {
      * Prerequisities: INTELLI_EXTRACT
      *
      * @param threshold the bitmap threshold
+     *
      * @deprecated use {@link TransformableSheet#setCapillarityThreshold(float)}
      */
     @Deprecated
@@ -123,13 +146,14 @@ public class TransformableSheet {
         this.sheet.getDocument().setReadingDirection(readingDirection);
     }
 
-     /**
+    /**
      * This method sets the parser options for the table parser used by the sheet's
      * associated document.
      *
      * Prerequisities: INTELLI_LAYOUT
      *
      * @param options the parser options
+     *
      * @deprecated use {@link TransformableSheet#setParserOptions(String)}
      */
     @Deprecated
@@ -153,23 +177,47 @@ public class TransformableSheet {
      * This method sets the classifer case for the tag classifer used by the sheet's
      * associated document.
      *
-     * @param tagCase the classifer case: CAMEL, SNAKE, NONE
+     * @param tagCase the classifer case: NONE, SNAKE, CAMEL
+     *
+     * @deprecated use {@link TransformableSheet#setClassifierTagStyle(String)}
      */
+    @Deprecated
     public void setClassifierCaseMode(final String tagCase) {
-        if ("CAMEL".equals(tagCase)) {
-            this.sheet.getDocument().getTagClassifier().setCamelMode(true);
-            this.sheet.getDocument().getTagClassifier().setSnakeMode(false);
-        } else if ("SNAKE".equals(tagCase)) {
-            this.sheet.getDocument().getTagClassifier().setCamelMode(false);
-            this.sheet.getDocument().getTagClassifier().setSnakeMode(true);
+        if ("SNAKE".equals(tagCase)) {
+            this.sheet.getDocument().getTagClassifier().setTagStyle(TagClassifier.TagStyle.SNAKE);
+        } else if ("CAMEL".equals(tagCase)) {
+            this.sheet.getDocument().getTagClassifier().setTagStyle(TagClassifier.TagStyle.CAMEL);
         } else {
-            this.sheet.getDocument().getTagClassifier().setCamelMode(false);
-            this.sheet.getDocument().getTagClassifier().setSnakeMode(false);
+            this.sheet.getDocument().getTagClassifier().setTagStyle(TagClassifier.TagStyle.NONE);
         }
     }
 
     /**
-     * This method disables auto naming the headers of a table. The table will
+     * This method sets the classifer case for the tag classifer used by the sheet's
+     * associated document.
+     *
+     * @param tagStyle the classifer case: NONE, SNAKE, CAMEL
+     */
+    public void setClassifierTagStyle(final String tagStyle) {
+        if ("SNAKE".equals(tagStyle)) {
+            this.sheet.getDocument().getTagClassifier().setTagStyle(TagClassifier.TagStyle.SNAKE);
+        } else if ("CAMEL".equals(tagStyle)) {
+            this.sheet.getDocument().getTagClassifier().setTagStyle(TagClassifier.TagStyle.CAMEL);
+        } else {
+            this.sheet.getDocument().getTagClassifier().setTagStyle(TagClassifier.TagStyle.NONE);
+        }
+    }
+
+    /**
+     * This method enables auto naming the headers of tables. The tables will
+     * retain its original name.
+     */
+    public void enableAutoHeaderName() {
+        this.sheet.enableAutoHeaderName();
+    }
+
+    /**
+     * This method disables auto naming the headers of tables. The tables will
      * retain its original name.
      */
     public void disableAutoHeaderName() {
@@ -177,7 +225,15 @@ public class TransformableSheet {
     }
 
     /**
-     * This method disables auto cropping of a sheets. The auto cropping drops
+     * This method enables auto cropping of thesheet. The auto cropping drops
+     * all empty rows and columns on the edges of the sheets.
+     */
+    public void enableAutoCrop() {
+        this.sheet.enableAutoCrop();
+    }
+
+    /**
+     * This method disables auto cropping of thesheet. The auto cropping drops
      * all empty rows and columns on the edges of the sheets.
      */
     public void disableAutoCrop() {
@@ -185,58 +241,45 @@ public class TransformableSheet {
     }
 
     /**
-     * This method unmerges all merged cells in the sheet.
+     * This method enables auto meta conversion of the sheet. The auto meta
+     * conversion converts
+     * all data without a match of a layex to meta.
      */
-    public void unmergeAll() {
-        this.sheet.unmergeAll();
+    public void enableAutoMeta() {
+        this.sheet.enableAutoMeta();
     }
 
     /**
-     * This method repeat the value for all the cells in the column specified by the
-     * given column index. The value of a given cell is copied to all blank cells below it.
-     *
-     * @param colIndex the column index
-     *
-     * @deprecated use {@link TransformableSheet#repeatRowCell(int)}
+     * This method disables auto meta conversion of the sheet. The auto meta
+     * conversion converts
+     * all data without a match of a layex to meta.
      */
-    @Deprecated
-    public void mergeCell(final int colIndex) {
-        RepeatColumnCell.Apply(this.sheet, colIndex);
+    public void disableAutoMeta() {
+        this.sheet.disableAutoMeta();
     }
 
     /**
-     * This method repeat the value for all the cells in the column specified by the
-     * given column index. The value of a given cell is copied to all blank cells below it.
-     *
-     * @param colIndex the column index
+     * This method enables the extraction of meta data of the sheet's associated
+     * document. meta and table data will be extracted.
      */
-    public void repeatColumnCell(final int colIndex) {
-        RepeatColumnCell.Apply(this.sheet, colIndex);
+    public void enableMeta() {
+        this.sheet.enableMeta();
     }
 
     /**
-     * This method repeat the value for all the cells in the row specified by the
-     * given row index. The value of a given cell is copied to all blank cells on the right of it.
-     *
-     * @param rowIndex the row index
+     * This method disables the extraction of meta data of the sheet's associated
+     * document. Only table data will be extracted.
      */
-    public void repeatRowCell(final int rowIndex) {
-        RepeatRowCell.Apply(this.sheet, rowIndex);
+    public void disableMeta() {
+        this.sheet.disableMeta();
     }
 
     /**
-     * This method patches the cells of the given column and row indices with the
-     * given value. The style is copied from an existing cell.
-     *
-     * @param colIndex1 the column index to copy the style from
-     * @param rowIndex1 the row index to copy the style from
-     * @param colIndex2 the column index to copy the style to
-     * @param rowIndex2 the row index to copy the style to
-     * @param value     the value of the destination cell
+     * This method enables the pivot functionality of the sheet's associated
+     * document.
      */
-    public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2,
-            final String value) {
-        this.sheet.patchCell(colIndex1, rowIndex1, colIndex2, rowIndex2, value);
+    public void enablePivot() {
+        this.sheet.enablePivot();
     }
 
     /**
@@ -308,6 +351,83 @@ public class TransformableSheet {
     }
 
     /**
+     * This method crops the sheet by dropping all rows and columns on
+     * the edges of the sheet.
+     */
+    public void cropAll() {
+        AutoCrop.Apply(this.sheet, 0.0f);
+    }
+
+    /**
+     * This method crops the sheet by dropping all rows and columns on
+     * the edges of the sheet with a fill ratio less than the given
+     * minimum ratio.
+     *
+     * @param minRatio the minimum ratio
+     */
+    public void cropWhenFillRatioLessThan(final float minRatio) {
+        AutoCrop.Apply(this.sheet, minRatio);
+    }
+
+    /**
+     * This method unmerges all merged cells in the sheet.
+     */
+    public void unmergeAll() {
+        this.sheet.unmergeAll();
+    }
+
+    /**
+     * This method repeat the value for all the cells in the column specified by the
+     * given column index. The value of a given cell is copied to all blank cells
+     * below it.
+     *
+     * @param colIndex the column index
+     *
+     * @deprecated use {@link TransformableSheet#repeatRowCell(int)}
+     */
+    @Deprecated
+    public void mergeCell(final int colIndex) {
+        RepeatColumnCell.Apply(this.sheet, colIndex);
+    }
+
+    /**
+     * This method repeat the value for all the cells in the column specified by the
+     * given column index. The value of a given cell is copied to all blank cells
+     * below it.
+     *
+     * @param colIndex the column index
+     */
+    public void repeatColumnCell(final int colIndex) {
+        RepeatColumnCell.Apply(this.sheet, colIndex);
+    }
+
+    /**
+     * This method repeat the value for all the cells in the row specified by the
+     * given row index. The value of a given cell is copied to all blank cells on
+     * the right of it.
+     *
+     * @param rowIndex the row index
+     */
+    public void repeatRowCell(final int rowIndex) {
+        RepeatRowCell.Apply(this.sheet, rowIndex);
+    }
+
+    /**
+     * This method patches the cells of the given column and row indices with the
+     * given value. The style is copied from an existing cell.
+     *
+     * @param colIndex1 the column index to copy the style from
+     * @param rowIndex1 the row index to copy the style from
+     * @param colIndex2 the column index to copy the style to
+     * @param rowIndex2 the row index to copy the style to
+     * @param value     the value of the destination cell
+     */
+    public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2,
+            final String value) {
+        this.sheet.patchCell(colIndex1, rowIndex1, colIndex2, rowIndex2, value);
+    }
+
+    /**
      * This method drops the column specified by the given column index from the
      * sheet.
      *
@@ -322,36 +442,60 @@ public class TransformableSheet {
 
     /**
      * This method drops columns from the sheet that have a fill ratio less than the
-     * given fill ratio.
+     * given minimum ratio.
      *
-     * @param fillRatio the fill ratio
+     * @param minRatio the minimum ratio
      *
      * @deprecated use
      *             {@link TransformableSheet#dropColumnsWhenFillRatioLessThan(float)}
      */
     @Deprecated
-    public void dropNullColumns(final float fillRatio) {
-        DropColumnsWhenFillRatioLessThan.Apply(this.sheet, fillRatio);
+    public void dropNullColumns(final float minRatio) {
+        DropColumnsWhenFillRatioLessThan.Apply(this.sheet, minRatio);
     }
 
     /**
      * This method drops columns from the sheet that have a fill ratio less than the
-     * given fill ratio.
+     * given minimum ratio.
      *
-     * @param fillRatio the fill ratio
+     * @param minRatio the minimum ratio
      */
-    public void dropColumnsWhenFillRatioLessThan(final float fillRatio) {
-        DropColumnsWhenFillRatioLessThan.Apply(this.sheet, fillRatio);
+    public void dropColumnsWhenFillRatioLessThan(final float minRatio) {
+        DropColumnsWhenFillRatioLessThan.Apply(this.sheet, minRatio);
+    }
+
+    /**
+     * This method drops columns from the sheet that have a fill ratio less than the
+     * given minimum ratio.
+     *
+     * @param minRatio the minimum ratio
+     * @param start    the start column
+     * @param stop     the stop column
+     */
+    public void dropColumnsWhenFillRatioLessThan(final float minRatio, final int start, final int stop) {
+        DropColumnsWhenFillRatioLessThan.Apply(this.sheet, minRatio, start, stop);
     }
 
     /**
      * This method drops columns from the sheet that have an entropy less than the
-     * given maximum entropy.
+     * given minimum entropy.
      *
-     * @param max the maximum entropy
+     * @param minEntropy the minimum entropy
      */
-    public void dropColumnsWhenEntropyLessThan(final float max) {
-        DropColumnsWhenEntropyLessThan.Apply(this.sheet, max);
+    public void dropColumnsWhenEntropyLessThan(final float minEntropy) {
+        DropColumnsWhenEntropyLessThan.Apply(this.sheet, minEntropy);
+    }
+
+    /**
+     * This method drops columns from the sheet that have an entropy less than the
+     * given minimum entropy.
+     *
+     * @param minEntropy the minimum entropy
+     * @param start      the start column
+     * @param stop       the stop column
+     */
+    public void dropColumnsWhenEntropyLessThan(final float minEntropy, final int start, final int stop) {
+        DropColumnsWhenEntropyLessThan.Apply(this.sheet, minEntropy, start, stop);
     }
 
     /**
@@ -367,64 +511,6 @@ public class TransformableSheet {
     }
 
     /**
-     * This method drops rows from the sheet that have a fill ratio less than the
-     * given fill ratio.
-     *
-     * @param fillRatio the fill ratio
-     *
-     * @deprecated use
-     *             {@link TransformableSheet#dropRowsWhenFillRatioLessThan(float)}
-     */
-    @Deprecated
-    public void dropNullRows(final float fillRatio) {
-        DropRowsWhenFillRatioLessThan.Apply(this.sheet, fillRatio);
-    }
-
-    /**
-     * This method drops rows from the sheet that have a fill ratio less than the
-     * given fill ratio.
-     *
-     * @param fillRatio the fill ratio
-     */
-    public void dropRowsWhenFillRatioLessThan(final float fillRatio) {
-        DropRowsWhenFillRatioLessThan.Apply(this.sheet, fillRatio);
-    }
-
-    /**
-     * This method drops rows from the sheet that have a fill ratio less than the
-     * given fill ratio.
-     *
-     * @param fillRatio the fill ratio
-     * @param start     the start column
-     * @param stop      the stop column
-     */
-    public void dropRowsWhenFillRatioLessThan(final float fillRatio, final int start, final int stop) {
-        DropRowsWhenFillRatioLessThan.Apply(this.sheet, fillRatio, start, stop);
-    }
-
-    /**
-     * This method drops rows from the sheet that have an entropy less than the
-     * given maximum entropy.
-     *
-     * @param max the maximum entropy
-     */
-    public void dropRowsWhenEntropyLessThan(final float max) {
-        DropRowsWhenEntropyLessThan.Apply(this.sheet, max);
-    }
-
-    /**
-     * This method drops rows from the sheet that have an entropy less than the
-     * given maximum entropy.
-     *
-     * @param max   the maximum entropy
-     * @param start the start column
-     * @param stop  the stop column
-     */
-    public void dropRowsWhenEntropyLessThan(final float max, final int start, final int stop) {
-        DropRowsWhenEntropyLessThan.Apply(this.sheet, max, start, stop);
-    }
-
-    /**
      * This method swap 2 rows from the sheet.
      *
      * @param rowIndex1 the index of row1
@@ -432,6 +518,64 @@ public class TransformableSheet {
      */
     public void swapRows(final int rowIndex1, final int rowIndex2) {
         SwapRows.Apply(this.sheet, rowIndex1, rowIndex2);
+    }
+
+    /**
+     * This method drops rows from the sheet that have a fill ratio less than the
+     * given minimum ratio.
+     *
+     * @param minRatio the minimum ratio
+     *
+     * @deprecated use
+     *             {@link TransformableSheet#dropRowsWhenFillRatioLessThan(float)}
+     */
+    @Deprecated
+    public void dropNullRows(final float minRatio) {
+        DropRowsWhenFillRatioLessThan.Apply(this.sheet, minRatio);
+    }
+
+    /**
+     * This method drops rows from the sheet that have a fill ratio less than the
+     * given minimum ratio.
+     *
+     * @param minRatio the minimum ratio
+     */
+    public void dropRowsWhenFillRatioLessThan(final float minRatio) {
+        DropRowsWhenFillRatioLessThan.Apply(this.sheet, minRatio);
+    }
+
+    /**
+     * This method drops rows from the sheet that have a fill ratio less than the
+     * given minimum ratio.
+     *
+     * @param minRatio the minimum ratio
+     * @param start    the start column
+     * @param stop     the stop column
+     */
+    public void dropRowsWhenFillRatioLessThan(final float minRatio, final int start, final int stop) {
+        DropRowsWhenFillRatioLessThan.Apply(this.sheet, minRatio, start, stop);
+    }
+
+    /**
+     * This method drops rows from the sheet that have an entropy less than the
+     * given minimum entropy.
+     *
+     * @param minEntropy the minimum entropy
+     */
+    public void dropRowsWhenEntropyLessThan(final float minEntropy) {
+        DropRowsWhenEntropyLessThan.Apply(this.sheet, minEntropy);
+    }
+
+    /**
+     * This method drops rows from the sheet that have an entropy less than the
+     * given minimum entropy.
+     *
+     * @param minEntropy the minimum entropy
+     * @param start      the start column
+     * @param stop       the stop column
+     */
+    public void dropRowsWhenEntropyLessThan(final float minEntropy, final int start, final int stop) {
+        DropRowsWhenEntropyLessThan.Apply(this.sheet, minEntropy, start, stop);
     }
 
     private final BaseSheet sheet;
