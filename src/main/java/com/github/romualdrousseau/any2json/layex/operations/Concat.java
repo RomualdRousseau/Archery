@@ -9,18 +9,14 @@ import com.github.romualdrousseau.any2json.layex.TableMatcher;
 
 public class Concat implements TableMatcher {
 
-    public Concat(Deque<TableMatcher> stack) {
+    public Concat(final Deque<TableMatcher> stack) {
         this.a = stack.pop();
         this.b = stack.pop();
     }
 
     @Override
-    public <S extends Symbol, C> boolean match(Lexer<S, C> stream, TableParser<S> context) {
-        if(!this.a.match(stream, context)) {
-            return false;
-        } else {
-            return this.b.match(stream, context);
-        }
+    public <S extends Symbol, C> boolean match(final Lexer<S, C> stream, final TableParser<S> context) {
+        return omatch(stream, context, a) && omatch(stream, context, b);
     }
 
     @Override
@@ -28,6 +24,10 @@ public class Concat implements TableMatcher {
         return "CONCAT(" + this.a + "," + this.b + ")";
     }
 
-    private TableMatcher a;
-    private TableMatcher b;
+    private static final <S extends Symbol, C> boolean omatch(final Lexer<S, C> stream, final TableParser<S> context, final TableMatcher a) {
+        return a instanceof Nop || a.match(stream, context);
+    }
+
+    private final TableMatcher a;
+    private final TableMatcher b;
 }

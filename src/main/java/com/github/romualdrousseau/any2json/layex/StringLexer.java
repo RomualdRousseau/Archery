@@ -1,15 +1,24 @@
 package com.github.romualdrousseau.any2json.layex;
 
-import java.util.LinkedList;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 public class StringLexer implements Lexer<StringSymbol, Integer> {
 
     public StringLexer(final String s) {
-        this.stack = new LinkedList<Integer>();
+        this.stack = new ArrayDeque<>();
         this.s = s;
         this.i = 0;
     }
 
+    @Override
+    public StringLexer reset() {
+        this.stack.clear();
+        this.i = 0;
+        return this;
+    }
+
+    @Override
     public StringSymbol read() {
         if (this.i >= this.s.length()) {
             return StringSymbol.EndOfStream;
@@ -18,6 +27,7 @@ public class StringLexer implements Lexer<StringSymbol, Integer> {
         }
     }
 
+    @Override
     public StringSymbol peek() {
         if (this.i >= this.s.length()) {
             return StringSymbol.EndOfStream;
@@ -26,19 +36,23 @@ public class StringLexer implements Lexer<StringSymbol, Integer> {
         }
     }
 
+    @Override
     public void push() {
         this.stack.push(this.i);
     }
 
+    @Override
     public Integer pop() {
         return this.stack.pop();
     }
 
+    @Override
     public void seek(final Integer i) {
         this.i = i;
     }
 
-    private final LinkedList<Integer> stack;
+    private final Deque<Integer> stack;
     private final String s;
     private int i;
+
 }

@@ -7,14 +7,14 @@ import com.github.romualdrousseau.any2json.layex.TableMatcher;
 
 public class ValueNeg implements TableMatcher {
 
-    public ValueNeg(String v) {
+    public ValueNeg(final String v) {
         this.v = v.toLowerCase();
     }
 
     @Override
-    public <S extends Symbol, C> boolean match(Lexer<S, C> stream, TableParser<S> context) {
-        S symbol = stream.read();
-        String c = symbol.getSymbol();
+    public <S extends Symbol, C> boolean match(final Lexer<S, C> stream, final TableParser<S> context) {
+        final var symbol = stream.read();
+        final var c = symbol.getSymbol();
         if (!c.equals("") && c.charAt(0) >= 'a' && c.charAt(0) <= 'z' && !c.equals(this.v)) {
             if (context != null) {
                 context.notify(symbol);
@@ -30,5 +30,5 @@ public class ValueNeg implements TableMatcher {
         return "!VALUE('" + this.v + "')";
     }
 
-    private String v;
+    private final String v;
 }

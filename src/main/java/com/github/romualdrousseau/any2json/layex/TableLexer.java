@@ -1,10 +1,12 @@
 package com.github.romualdrousseau.any2json.layex;
 
-import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+import org.apache.commons.collections4.map.LRUMap;
 
 import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.base.BaseCell;
-import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.base.BaseTable;
 
 public class TableLexer implements Lexer<BaseCell, TableLexer.Cursor> {
@@ -24,78 +26,82 @@ public class TableLexer implements Lexer<BaseCell, TableLexer.Cursor> {
             return this.rowIndex;
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof Cursor)) {
+                return false;
+            }
+            final var other = (Cursor) o;
+            return other != null && this.colIndex == other.colIndex && this.rowIndex == other.rowIndex;
+        }
+
+        @Override
+        public int hashCode() {
+            return this.colIndex ^ this.rowIndex;
+        }
+
         private final int colIndex;
         private final int rowIndex;
     }
 
-    public TableLexer(final Table table, int rowOffset) {
-        this.stack = new ArrayList<Cursor>();
+    public TableLexer(final Table table, final int rowOffset) {
+        this.lruCache = new LRUMap<>(1024);
+        this.stack = new ArrayDeque<>();
         this.table = (BaseTable) table;
-        this.colIndex = 0;
-        this.rowIndex = rowOffset;
+        this.rowOffset = rowOffset;
+        this.cursor = new Cursor(0, this.rowOffset);
+    }
+
+    @Override
+    public TableLexer reset() {
+        this.stack.clear();
+        this.cursor = new Cursor(0, this.rowOffset);
+        return this;
     }
 
     @Override
     public BaseCell read() {
-        if (this.rowIndex >= this.table.getNumberOfRows()) {
-            return BaseCell.EndOfStream;
+        final var cell = this.peek();
+        if (cell == BaseCell.EndOfRow) {
+            this.cursor = new Cursor(0, this.cursor.getRowIndex() + 1);
+        } else {
+            this.cursor = new Cursor(this.cursor.getColIndex() + cell.getMergedCount(), this.cursor.getRowIndex());
         }
-
-        if (this.colIndex >= this.table.getNumberOfColumns()) {
-            this.colIndex = 0;
-            this.rowIndex++;
-            return BaseCell.EndOfRow;
-        }
-
-        final BaseRow row = this.table.getRowAt(this.rowIndex);
-        if (row.isEmpty()) {
-            this.colIndex = 0;
-            this.rowIndex++;
-            return BaseCell.EndOfRow;
-        }
-
-        final BaseCell cell = row.getCellAt(this.colIndex);
-        this.colIndex += cell.getMergedCount();
-
         return cell;
     }
 
     @Override
     public BaseCell peek() {
-        if (this.rowIndex >= this.table.getNumberOfRows()) {
-            return BaseCell.EndOfStream;
-        }
-
-        if (this.colIndex >= this.table.getNumberOfColumns()) {
-            return BaseCell.EndOfRow;
-        }
-
-        final BaseRow row = this.table.getRowAt(this.rowIndex);
-        if (row.isEmpty()) {
-            return BaseCell.EndOfRow;
-        }
-
-        return row.getCellAt(colIndex);
+        return this.lruCache.computeIfAbsent(this.cursor, (x) -> {
+            if (x.getRowIndex() >= this.table.getNumberOfRows()) {
+                return BaseCell.EndOfStream;
+            }
+            if (x.getColIndex() >= this.table.getNumberOfColumns()) {
+                return BaseCell.EndOfRow;
+            }
+            final var row = this.table.getRowAt(x.getRowIndex());
+            return (!row.isEmpty()) ? row.getCellAt(x.getColIndex()) : BaseCell.EndOfRow;
+        });
     }
 
     @Override
     public void push() {
-        this.stack.add(new Cursor(this.colIndex, this.rowIndex));
+        this.stack.push(this.cursor);
     }
 
     @Override
     public Cursor pop() {
-        return this.stack.remove(this.stack.size() - 1);
+        return this.stack.pop();
     }
 
     @Override
     public void seek(final Cursor c) {
-        this.colIndex = c.getColIndex();
-        this.rowIndex = c.getRowIndex();
+        this.cursor = c;
     }
 
-    private final ArrayList<Cursor> stack;
+    private final LRUMap<Cursor, BaseCell> lruCache;
+    private final Deque<Cursor> stack;
     private final BaseTable table;
-    private int colIndex;
-    private int rowIndex;
+    private final int rowOffset;
+    private Cursor cursor;
 }

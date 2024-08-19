@@ -13,8 +13,8 @@ public class Value implements TableMatcher {
 
     @Override
     public <S extends Symbol, C> boolean match(final Lexer<S, C> stream, final TableParser<S> context) {
-        final S symbol = stream.read();
-        final String c = symbol.getSymbol();
+        final var symbol = stream.read();
+        final var c = symbol.getSymbol();
         if (!c.equals("") && c.charAt(0) >= 'a' && c.charAt(0) <= 'z' && c.equals(this.v)) {
             if (context != null) {
                 context.notify(symbol);

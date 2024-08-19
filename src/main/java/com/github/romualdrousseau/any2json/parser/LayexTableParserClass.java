@@ -6,7 +6,7 @@ import com.github.romualdrousseau.any2json.Model;
 
 public class LayexTableParserClass implements TableParserClass {
 
-    public TableParser newInstance(Model model) {
-        return new LayexTableParser(model);
+    public TableParser newInstance(final Model model, final String parserOptions) {
+        return new LayexTableParser(model, parserOptions);
     }
 }

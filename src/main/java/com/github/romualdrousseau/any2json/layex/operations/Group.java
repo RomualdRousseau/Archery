@@ -10,17 +10,17 @@ import com.github.romualdrousseau.any2json.layex.TableMatcher;
 
 public class Group implements TableMatcher {
 
-    public Group(Deque<TableMatcher> stack, int group) {
+    public Group(final Deque<TableMatcher> stack, final int group) {
       this.a = stack.pop();
       this.group = group;
     }
 
     @Override
-    public <S extends Symbol, C> boolean match(Lexer<S, C> stream, TableParser<S> context) {
+    public <S extends Symbol, C> boolean match(final Lexer<S, C> stream, final TableParser<S> context) {
         if(context != null) {
             context.setGroup(this.group);
         }
-        return this.a.match(stream, context);
+        return omatch(stream, context, this.a);
     }
 
     @Override
@@ -28,6 +28,10 @@ public class Group implements TableMatcher {
       return "GROUP(" + this.a + ")";
     }
 
-    private TableMatcher a;
-    private int group;
+    private static final <S extends Symbol, C> boolean omatch(final Lexer<S, C> stream, final TableParser<S> context, final TableMatcher a) {
+        return a instanceof Nop || a.match(stream, context);
+    }
+
+    private final TableMatcher a;
+    private final int group;
   }

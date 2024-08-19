@@ -8,9 +8,9 @@ import com.github.romualdrousseau.any2json.layex.TableMatcher;
 public class EndOfRow implements TableMatcher {
 
     @Override
-    public <S extends Symbol, C> boolean match(Lexer<S, C> stream, TableParser<S> context) {
-        S symbol = stream.read();
-        String c = symbol.getSymbol();
+    public <S extends Symbol, C> boolean match(final Lexer<S, C> stream, final TableParser<S> context) {
+        final var symbol = stream.read();
+        final var c = symbol.getSymbol();
         if (!c.equals("") && c.equals("$")) {
             if (context != null) {
                 context.notify(symbol);

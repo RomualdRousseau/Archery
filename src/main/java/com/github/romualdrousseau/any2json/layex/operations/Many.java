@@ -10,18 +10,18 @@ import com.github.romualdrousseau.any2json.layex.TableMatcher;
 
 public class Many implements TableMatcher {
 
-    public Many(Deque<TableMatcher> stack, int minCount, int maxCount) {
+    public Many(final Deque<TableMatcher> stack, final int minCount, final int maxCount) {
         this.a = stack.pop();
         this.minCount = minCount;
         this.maxCount = maxCount;
     }
 
     @Override
-    public <S extends Symbol, C> boolean match(Lexer<S, C> stream, TableParser<S> context) {
+    public <S extends Symbol, C> boolean match(final Lexer<S, C> stream, final TableParser<S> context) {
         int count = 0;
         while (true) {
             stream.push();
-            if ((count >= maxCount) || !this.a.match(stream, context)) {
+            if ((count >= maxCount) || !omatch(stream, context, a)) {
                 stream.seek(stream.pop());
                 return (minCount <= count);
             } else {
@@ -36,7 +36,11 @@ public class Many implements TableMatcher {
         return "MANY(" + this.a + ", " + this.minCount + ", " + this.maxCount + ")";
     }
 
-    private TableMatcher a;
-    private int minCount;
-    private int maxCount;
+    private static final <S extends Symbol, C> boolean omatch(final Lexer<S, C> stream, final TableParser<S> context, final TableMatcher a) {
+        return a instanceof Nop || a.match(stream, context);
+    }
+
+    private final TableMatcher a;
+    private final int minCount;
+    private final int maxCount;
 }

@@ -9,13 +9,13 @@ import com.github.romualdrousseau.any2json.layex.TableMatcher;
 
 public class Not implements TableMatcher {
 
-    public Not(LinkedList<TableMatcher> stack) {
+    public Not(final LinkedList<TableMatcher> stack) {
         this.a = stack.pop();
     }
 
     @Override
-    public <S extends Symbol, C> boolean match(Lexer<S, C> stream, TableParser<S> context) {
-        return !this.a.match(stream, context);
+    public <S extends Symbol, C> boolean match(final Lexer<S, C> stream, final TableParser<S> context) {
+        return !omatch(stream, context, a);
     }
 
     @Override
@@ -23,5 +23,9 @@ public class Not implements TableMatcher {
         return "NOT(" + this.a + ")";
     }
 
-    private TableMatcher a;
+    private static final <S extends Symbol, C> boolean omatch(final Lexer<S, C> stream, final TableParser<S> context, final TableMatcher a) {
+        return a instanceof Nop || a.match(stream, context);
+    }
+
+    private final TableMatcher a;
 }

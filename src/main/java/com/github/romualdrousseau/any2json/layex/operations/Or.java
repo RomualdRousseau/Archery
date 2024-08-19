@@ -10,20 +10,20 @@ import com.github.romualdrousseau.any2json.layex.TableMatcher;
 
 public class Or implements TableMatcher {
 
-    public Or(Deque<TableMatcher> stack) {
+    public Or(final Deque<TableMatcher> stack) {
         this.a = stack.pop();
         this.b = stack.pop();
     }
 
     @Override
-    public <S extends Symbol, C> boolean match(Lexer<S, C> stream, TableParser<S> context) {
+    public <S extends Symbol, C> boolean match(final Lexer<S, C> stream, final TableParser<S> context) {
         stream.push();
-        if(this.a.match(stream, context)) {
+        if(omatch(stream, context, a)) {
             stream.pop();
             return true;
         } else {
             stream.seek(stream.pop());
-            return this.b.match(stream, context);
+            return omatch(stream, context, b);
         }
     }
 
@@ -32,6 +32,10 @@ public class Or implements TableMatcher {
         return "OR(" + this.a + "," + this.b + ")";
     }
 
-    private TableMatcher a;
-    private TableMatcher b;
+    private static final <S extends Symbol, C> boolean omatch(final Lexer<S, C> stream, final TableParser<S> context, final TableMatcher a) {
+        return a instanceof Nop || a.match(stream, context);
+    }
+
+    private final TableMatcher a;
+    private final TableMatcher b;
 }
