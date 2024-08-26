@@ -60,8 +60,8 @@ revert-version:
 
 # Build the documentation
 build-doc:
-    mvn -P documentation clean site site:stage
     just --justfile any2json-documents/justfile build
+    mvn -P documentation clean site site:stage
 
 # Update all plugins and dependencies
 update-dependencies:

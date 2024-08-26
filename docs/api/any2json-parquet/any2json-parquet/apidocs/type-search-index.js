@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"com.github.romualdrousseau.any2json.loader.parquet","l":"ParquetClass"},{"p":"com.github.romualdrousseau.any2json.loader.parquet","l":"ParquetDocument"}];updateSearchResults();
