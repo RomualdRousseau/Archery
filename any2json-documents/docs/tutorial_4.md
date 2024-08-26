@@ -56,7 +56,7 @@ following depedencies are required to run the code of this tutorial:
 </dependency>
 <dependency>
     <groupId>com.github.romualdrousseau</groupId>
-    <artifactId>shuju-jackson</artifactId>
+    <artifactId>shuju-jackson-json</artifactId>
     <version>${shuju.version}</version>
 </dependency>
 <!-- Any2Json Framework -->
