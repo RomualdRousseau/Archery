@@ -51,7 +51,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.release>17</maven.compiler.release>
 
-        <shuju.version>1.29-SNAPSHOT</shuju.version>
+        <shuju.version>1.29.3</shuju.version>
         <log4j.version>2.23.1</log4j.version>
 
         <junit.version>4.13.2</junit.version>
