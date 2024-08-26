@@ -24,7 +24,7 @@ jobs:
                   key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
 
             - name: Installing local dependencies
-              run: mvn initialize --projects :${{ inputs.service }} --file pom.xml --also-make --batch-mode
+              run: mvn initialize --file pom.xml --also-make --batch-mode
 
             - name: Deploy project snapshot
               run: mvn -U -B clean deploy -P snapshot --file pom.xml -s .mvn/settings.xml --also-make --batch-mode

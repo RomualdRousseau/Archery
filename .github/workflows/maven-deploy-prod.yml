@@ -32,7 +32,7 @@ jobs:
                   key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
 
             - name: Installing local dependencies
-              run: mvn initialize --projects :${{ inputs.service }} --file pom.xml --also-make --batch-mode
+              run: mvn initialize --file pom.xml --also-make --batch-mode
 
             - name: Set version
               run: |
