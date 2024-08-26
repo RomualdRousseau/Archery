@@ -34,13 +34,12 @@
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <!-- ShuJu Framework -->
-        <shuju.version>1.29</shuju.version>
-        <!-- Other Framework -->
+
+        <shuju.version>1.30-SNAPSHOT</shuju.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <jython.version>2.7.3</jython.version>
         <jackson.version>2.15.2</jackson.version>
-        <!-- Test Framework -->
+
         <junit.version>4.13.2</junit.version>
         <hamcrest.version>2.2</hamcrest.version>
     </properties>
