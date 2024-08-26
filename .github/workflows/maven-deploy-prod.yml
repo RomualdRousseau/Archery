@@ -31,6 +31,9 @@ jobs:
                   path: ~/.m2/repository
                   key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
 
+            - name: Installing local dependencies
+              run: mvn initialize --projects :${{ inputs.service }} --file pom.xml --also-make --batch-mode
+
             - name: Set version
               run: |
                   mvn versions:set -DnewVersion=${{ inputs.version }} --file pom.xml --also-make --batch-mode
@@ -46,7 +49,7 @@ jobs:
             - name: Deploy project
               run: |
                   export GPG_TTY=$(tty)
-                  mvn -U -B clean deploy -Dmaven.test.skip=true -P release --file pom.xml -s .mvn/settings.xml --also-make --batch-mode
+                  mvn -U -B clean deploy -P release --file pom.xml -s .mvn/settings.xml --also-make --batch-mode
               env:
                   OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
                   OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
