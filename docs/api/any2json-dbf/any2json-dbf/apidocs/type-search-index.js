@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"com.github.romualdrousseau.any2json.loader.dbf","l":"DbfClass"},{"p":"com.github.romualdrousseau.any2json.loader.dbf","l":"DbfDocument"}];updateSearchResults();
