@@ -35,7 +35,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
-        <any2json.version>2.44</any2json.version>
+        <any2json.version>2.45-SNAPSHOT</any2json.version>
         <tabula.version>1.0.5</tabula.version>
 
         <junit.version>4.13.2</junit.version>
