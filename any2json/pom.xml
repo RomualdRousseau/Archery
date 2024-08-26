@@ -45,7 +45,7 @@
         <!-- Test Framework -->
         <dependency>
             <groupId>com.github.romualdrousseau</groupId>
-            <artifactId>shuju-jackson</artifactId>
+            <artifactId>shuju-jackson-json</artifactId>
             <version>${shuju.version}</version>
             <scope>test</scope>
         </dependency>

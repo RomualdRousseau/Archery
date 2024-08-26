@@ -58,7 +58,7 @@ module to enable the intelligent layout parsing. The following depedencies are r
 </dependency>
 <dependency>
     <groupId>com.github.romualdrousseau</groupId>
-    <artifactId>shuju-jackson</artifactId>
+    <artifactId>shuju-jackson-json</artifactId>
     <version>${shuju.version}</version>
 </dependency>
 <!-- Any2Json Framework -->
