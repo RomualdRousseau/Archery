@@ -11,10 +11,7 @@ import com.github.romualdrousseau.any2json.classifier.SimpleTagClassifier;
  */
 public class Test_Any2Json {
 
-    private static final Model model;
-    static {
-        model = ModelDB.createConnection("sales-english");
-    }
+    private static final Model model = ModelDB.createConnection("sales-english");
 
     @Test
     public void testSimpleClassifierWithEnclosedTag() throws Exception {

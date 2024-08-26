@@ -159,7 +159,7 @@ public abstract class BaseDocument implements Document {
         }
     }
 
-    private Model model = Model.Default;
+    private Model model = Model.Default.get();
     private EnumSet<Hint> hints = EnumSet.noneOf(Document.Hint.class);
     private String recipe = "";
     private SheetParser sheetParser;

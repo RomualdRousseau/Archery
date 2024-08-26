@@ -14,7 +14,12 @@ import com.github.romualdrousseau.shuju.types.Tensor;
 
 public class Model {
 
-    public static final Model Default = new ModelBuilder().build();
+    public static final ThreadLocal<Model> Default = new ThreadLocal<>() {
+        @Override
+        protected Model initialValue() {
+            return new ModelBuilder().build();
+        }
+    };
 
     public Model(final ModelData modelData) {
         this(modelData, new HashMap<String, String>());
@@ -95,6 +100,6 @@ public class Model {
     private final List<String> requiredTags;
     private final RegexComparer comparer;
 
-    private LRUMap<String, Optional<String>> toEntityValueCache = new LRUMap<>();
-    private LRUMap<String, Tensor> toEntityVectorCache = new LRUMap<>();
+    private final LRUMap<String, Optional<String>> toEntityValueCache = new LRUMap<>();
+    private final LRUMap<String, Tensor> toEntityVectorCache = new LRUMap<>();
 }
