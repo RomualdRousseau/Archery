@@ -1,0 +1,5 @@
+site_name: Any2Json Documents
+nav:
+  - Home: index.md
+  - How it works: how_it_works.md
+  - White Papers: white_papers.md

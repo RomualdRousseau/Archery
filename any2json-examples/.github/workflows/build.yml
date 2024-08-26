@@ -1,0 +1,33 @@
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    build:
+        runs-on: [ubuntu-latest]
+        steps:
+            -   uses: actions/checkout@v3
+            -   name: Set up JDK 17
+
+                uses: actions/setup-java@v3
+                with:
+                    java-version: 17
+                    distribution: 'temurin'
+
+            -   uses: actions/cache@v3
+                with:
+                    path: ~/.m2/repository
+                    key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+
+            -   name: Installing local dependencies
+                run: mvn initialize
+
+            -   name: Build project
+                run: mvn -U -B package --file pom.xml
+
+            -   name: Archive build artifact
+                uses: actions/upload-artifact@v3
+                with:
+                    name: target
+                    path: target

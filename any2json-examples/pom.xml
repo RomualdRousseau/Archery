@@ -1,0 +1,240 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.github.romualdrousseau</groupId>
+    <artifactId>any2json-examples</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>Any2Json Examples</name>
+    <description>
+        This package contains a number of examples that demonstrates how you can use the Any2Json to load documents from
+        "real life".
+    </description>
+    <url>https://github.com/romualdrousseau/any2json-examples</url>
+
+    <licenses>
+        <license>
+            <name>GNU GENERAL PUBLIC LICENSE, Version 3.0</name>
+            <url>https://www.gnu.org/licenses/gpl-3.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Romuald Rousseau</name>
+            <email>romualdrousseau@gmail.com</email>
+            <organization>romualdrousseau</organization>
+            <organizationUrl>https://github.com/romualdrousseau</organizationUrl>
+        </developer>
+    </developers>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.build.reportingEncoding>UTF-8</project.build.reportingEncoding>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <!-- Any2jSon Framework -->
+        <shuju.version>1.28</shuju.version>
+        <any2json.version>2.44-SNAPSHOT</any2json.version>
+        <!-- Other Framework -->
+        <log4j.version>2.23.1</log4j.version>
+        <!-- Test Framework -->
+        <junit.version>4.13.2</junit.version>
+        <hamcrest.version>2.2</hamcrest.version>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>snapshots-repo</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases><enabled>false</enabled></releases>
+            <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+        <repository>
+            <id>repo</id>
+            <url>https://oss.sonatype.org/content/repositories/releases</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <!-- ShuJu Framework -->
+        <dependency>
+            <groupId>com.github.romualdrousseau</groupId>
+            <artifactId>shuju</artifactId>
+            <version>${shuju.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.romualdrousseau</groupId>
+            <artifactId>shuju-jackson</artifactId>
+            <version>${shuju.version}</version>
+        </dependency>
+        <!-- Any2Json Framework -->
+        <dependency>
+            <groupId>com.github.romualdrousseau</groupId>
+            <artifactId>any2json</artifactId>
+            <version>${any2json.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.romualdrousseau</groupId>
+            <artifactId>any2json-layex-parser</artifactId>
+            <version>${any2json.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.romualdrousseau</groupId>
+            <artifactId>any2json-net-classifier</artifactId>
+            <version>${any2json.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.romualdrousseau</groupId>
+            <artifactId>any2json-csv</artifactId>
+            <version>${any2json.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.romualdrousseau</groupId>
+            <artifactId>any2json-excel</artifactId>
+            <version>${any2json.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.romualdrousseau</groupId>
+            <artifactId>any2json-pdf</artifactId>
+            <version>${any2json.version}</version>
+        </dependency>
+        <!-- Log4j Framework -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-1.2-api</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <!-- Test Framework -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>${hamcrest.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.16.2</version>
+                <configuration>
+                    <rulesUri>file:///${project.basedir}/rules.xml</rulesUri>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.3.2</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>3.1.2</version>
+                <executions>
+                    <execution>
+                        <?m2e ignore?>
+                        <id>xelem</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <file>libs/xelem-3.1/xelem-3.1.jar</file>
+                            <groupId>nl.fountain</groupId>
+                            <artifactId>xelem</artifactId>
+                            <version>3.1</version>
+                            <packaging>jar</packaging>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <execution>
+                        <?m2e ignore?>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>lint</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.13.0</version>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>-Xlint:unchecked</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>2.23.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>2.0.13</version>
+            </dependency>
+            <!-- Fix vunerabilities -->
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>3.25.3</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>
