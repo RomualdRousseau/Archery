@@ -1,0 +1,30 @@
+on:
+    workflow_call:
+        secrets:
+            OSSRH_USERNAME:
+                required: true
+            OSSRH_TOKEN:
+                required: true
+
+jobs:
+    maven-deploy-snapshot:
+        runs-on: [ubuntu-latest]
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Set up JDK 17
+              uses: actions/setup-java@v4
+              with:
+                  java-version: 17
+                  distribution: "temurin"
+
+            - uses: actions/cache@v4
+              with:
+                  path: ~/.m2/repository
+                  key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+
+            - name: Deploy project snapshot
+              run: mvn -U -B clean deploy -Dmaven.test.skip=true -P snapshot --file pom.xml -s .mvn/settings.xml --also-make --batch-mode
+              env:
+                  OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+                  OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Tutorial 7 - Data extraction from PDF - Any2Json Documents</title>
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">Any2Json Documents</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="navitem">
+                                <a href=".." class="nav-link">Home</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../how_it_works/" class="nav-link">How it works</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../white_papers/" class="nav-link">White Papers</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#tutorial-7-data-extraction-from-pdf" class="nav-link">Tutorial 7 - Data extraction from PDF</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#setup-any2json" class="nav-link">Setup Any2Json</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#load-base-model" class="nav-link">Load base model</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#conclusion" class="nav-link">Conclusion</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="tutorial-7-data-extraction-from-pdf">Tutorial 7 - Data extraction from PDF</h1>
+<p><a href="https://github.com/RomualdRousseau/Any2Json-Examples">View source on GitHub</a>.</p>
+<p>This tutoral is a continuation of the <a href="../tutorial_6/">Tutorial 6</a>.</p>
+<p>This tutorial will demonstrate how to use <a href="https://github.com/RomualdRousseau/Any2Json">Any2Json</a> to extract data from
+one PDF. The document is not well-formed and very noisy. To demonstrate the usage of this framework, we
+will load a document with a somewhat complex layout, as seen here:</p>
+<p><img alt="document with noises" src="../images/tutorial7_data.png" /></p>
+<h2 id="setup-any2json">Setup Any2Json</h2>
+<h3 id="import-the-packages-and-setup-the-main-class">Import the packages and setup the main class:</h3>
+<pre><code class="language-java">package com.github.romualdrousseau.any2json.examples;
+
+import java.util.EnumSet;
+import java.util.List;
+
+import com.github.romualdrousseau.any2json.Document;
+import com.github.romualdrousseau.any2json.DocumentFactory;
+import com.github.romualdrousseau.any2json.parser.LayexTableParser;
+
+public class Tutorial7 implements Runnable {
+
+    public Tutorial7() {
+    }
+
+    @Override
+    public void run() {
+        // Code will come here
+    }
+
+    public static void main(final String[] args) {
+        new Tutorial7().run();
+    }
+}
+</code></pre>
+<h3 id="pomxml">pom.xml</h3>
+<p>Any2Json has a very modular design where each functionality can be loaded separatly. We add the "any2json-net-classifier"
+module to enable the tagging capabilities. This module use <a href="https://www.tensorflow.org/">TensorFlow</a> for Java. The
+following depedencies are required to run the code of this tutorial:</p>
+<pre><code class="language-xml">&lt;!-- ShuJu Framework --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.github.romualdrousseau&lt;/groupId&gt;
+    &lt;artifactId&gt;shuju&lt;/artifactId&gt;
+    &lt;version&gt;${shuju.version}&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.github.romualdrousseau&lt;/groupId&gt;
+    &lt;artifactId&gt;shuju-jackson&lt;/artifactId&gt;
+    &lt;version&gt;${shuju.version}&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;!-- Any2Json Framework --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.github.romualdrousseau&lt;/groupId&gt;
+    &lt;artifactId&gt;any2json&lt;/artifactId&gt;
+    &lt;version&gt;${any2json.version}&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.github.romualdrousseau&lt;/groupId&gt;
+    &lt;artifactId&gt;any2json-layex-parser&lt;/artifactId&gt;
+    &lt;version&gt;${any2json.version}&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.github.romualdrousseau&lt;/groupId&gt;
+    &lt;artifactId&gt;any2json-net-classifier&lt;/artifactId&gt;
+    &lt;version&gt;${any2json.version}&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.github.romualdrousseau&lt;/groupId&gt;
+    &lt;artifactId&gt;any2json-csv&lt;/artifactId&gt;
+    &lt;version&gt;${any2json.version}&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.github.romualdrousseau&lt;/groupId&gt;
+    &lt;artifactId&gt;any2json-excel&lt;/artifactId&gt;
+    &lt;version&gt;${any2json.version}&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.github.romualdrousseau&lt;/groupId&gt;
+    &lt;artifactId&gt;any2json-pdf&lt;/artifactId&gt;
+    &lt;version&gt;${any2json.version}&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre>
+<h2 id="load-base-model">Load base model</h2>
+<p>To parse a document, any2Json needs a model that will contains the parameters required to the parsing. Instead to start
+from an empty Model (See <a href="../tutorial_10/">Tutorial 10</a>), we will start from an existing one and we will adapt it for our
+document. You can find a list and details of all models <a href="https://github.com/RomualdRousseau/Any2Json-Models/">here</a>.</p>
+<p>The base model, we will use, is "sales-english" that has been trained on 200+ english documents containing distributor
+data and with a large range of different layouts.</p>
+<p>The base model already recognize some entities such as DATE and NUMBER. We will configure a layex to extract the
+different elements of the documents. You can find more details about layex <a href="../white_papers/">here</a>.</p>
+<pre><code class="language-java">final var model = Common.loadModelFromGitHub(&quot;sales-english&quot;);
+
+// Add a layex to the model
+
+final var tableParser = new LayexTableParser(
+        List.of(&quot;(v.$)+&quot;),
+        List.of(&quot;(()(v.+$v.+$))(()(e.+$)+())(v.+$)&quot;));
+model.registerTableParser(tableParser);
+</code></pre>
+<h3 id="load-the-document">Load the document</h3>
+<p>We load the document by creating a document instance with the model. The hint "Document.Hint.INTELLI_LAYOUT" tells
+the document instance that the document has a complex layout. WThe recipe "sheet.setCapillarityThreshold(0)" tells the
+parser engine to extract the features as <strong><em>small</em></strong> as possible:</p>
+<pre><code class="language-java">final var file = Common.loadData(&quot;document with noises.pdf&quot;, this.getClass());
+try (final var doc = DocumentFactory.createInstance(file, &quot;UTF-8&quot;)
+        .setModel(model)
+        .setHints(EnumSet.of(Document.Hint.INTELLI_LAYOUT))
+        .setRecipe(
+            &quot;sheet.setCapillarityThreshold(0)&quot;,
+            &quot;sheet.dropNullRows(0.45)&quot;)) {
+    ...
+}
+</code></pre>
+<h3 id="output-the-tabular-result">Output the tabular result</h3>
+<p>Finally, we iterate over the sheets, rows and cells and output the data on the console:</p>
+<pre><code class="language-java">doc.sheets().forEach(s -&gt; Common.addSheetDebugger(s).getTable().ifPresent(t -&gt; {
+    Common.printHeaders(t.headers());
+    Common.printRows(t.rows());
+}));
+</code></pre>
+<pre><code class="language-bash">2024-03-13 17:56:46 INFO  Common:43 - Loaded model: sales-english
+2024-03-13 17:56:46 INFO  Common:60 - Loaded resource: /data/document with noises.pdf
+2024-03-13 17:56:49 DEBUG Common:87 - Extracting features ...
+2024-03-13 17:56:49 DEBUG Common:91 - Generating Layout Graph ...
+2024-03-13 17:56:49 DEBUG Common:95 - Assembling Tabular Output ...
+============================== DUMP GRAPH ===============================
+document with noises
+|- Item DescriptionUnit BGA Code / UPC or Prod. Ref#. /Rtl ON HAND ORDER MONTH ONCURRCURRLAST YEARYEAR GROWTHCURR MONTH CURRLAST GROWTH Sts YEARYEAR   DATA(0, 0, 6, 20, 21, 18) (1)
+================================== END ==================================
+2024-03-13 17:56:49 DEBUG Common:100 - Done.
+Item Description        ON HAND ORDER MO        ONCURRCURRLAST Y        GROWTHCURR MONTH        CURRLAST GROWTH                         
+XXXXXX XXXXXXX X                     107        050487320 + 52 %                  $1,700        $16,558$9,916 +                         
+XXXXXXXXX XX XXm                      61         01516915 + 27 %                    $750        $8,450$750 + 27                         
+XXXXXXXX XXXXXXX                      93             019197195 +                 1 %$484        $4,807$4,582 +5                         
+XXXXXXXX XX XXXM                      84        011154215 - 28 %                    $198        $2,772$3,870 - 2                        
+XXXXXXXX XXX/XXX                       0            01215 - 20 %                      $0        $378$407 -7 % A/                        
+XXXXXXXX X/XXXXX                       5           062637 - 30 %                    $183        $793$1,128 - 30                         
+XXXXXXXX XX/XXXX                      51                037983 -                 5 %$124        $3,068$3,029 +1                         
+XXXXXXX X/XXXXXX                      86             024282277 +                 2 %$960        $11,280$11,080 +                        
+XXXXXXX XX/XXXX                       94             037292273 +               7 %$1,572        $12,410$11,387 +                        
+XXXXXXXX XXXX XX                       0            0015 - 100 %                      $0        $0$1,042 - 100 %                        
+XXXXXXXX XXX/XXX                       0        08612555 + 127 %                  $1,998        $3,441$1,915 + 8                        
+XXXXXXXX XXX/XXX                      46               0117375 -                 3 %$374        $2,482$2,550 -3                         
+XXXXXXXXX XX/XXX                      12             000 + 100 %                      $0        $0$0 + 100 % A/A                        
+XXXXXXXXX XX/XXX                     105               018235235                 0 %$873        $11,397$11,100 +                        
+XXXXXXXXXXXXXXXX                      36           044137 + 11 %                    $190        $1,900$1,665 + 1                        
+XXXXXXXXX XX XXX                       0            0310 + 100 %                      $0        $419$0 + 100 % N                        
+XXXXXXXXX XX XXX                       0           00204 - 100 %                      $0        $0$2,775 - 100 %                        
+XXXXXXXXX XX XXX                       0           00345 - 100 %                      $0        $0$8,259 - 100 %  
+</code></pre>
+<p>On this output, we print out the graph of the document built during the parsing and we can see clearly the relation
+between the elements of the spreadsheet and how there are structured in tabular form.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Congratulations! You have loaded documents using Any2Json.</p>
+<p>For more examples of using Any2Json, check out the <a href="../">tutorials</a>.</p></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script src="../js/jquery-3.6.0.min.js"></script>
+        <script src="../js/bootstrap.min.js"></script>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js"></script>
+        <script src="../search/main.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

@@ -83,7 +83,7 @@ mvn -P release clean deploy
 Run the following command line:
 
 ```bash
-mvn -P documentation clean site site-deploy
+mvn -P documentation clean site site:stage
 ```
 
 Do not forget to configure the GitHub authentication in ***~/.m2/settings.xml*** as follow:
@@ -100,8 +100,8 @@ Do not forget to configure the GitHub authentication in ***~/.m2/settings.xml***
 The following links will give you documentation about some background information, takes you through some implementation details,
 and then focuses on step-by-step instructions for getting the most out of Any2Json:
 
-* Using Any2Json: [here](https://romualdrousseau.github.io/Any2Json-Documents/).
-* API Reference: [here](https://romualdrousseau.github.io/Any2Json/).
+* Using Any2Json: [here](https://romualdrousseau.github.io/Any2Json-monorepo/).
+* API Reference: [here](https://romualdrousseau.github.io/Any2Json-monorepo/api/).
 
 ## Contribute
 

@@ -1,0 +1,14 @@
+name: any2json-monorepo-release
+
+on:
+    release:
+        types: [published]
+
+jobs:
+    deploy-prod:
+        uses: ./.github/workflows/maven-deploy-prod.yml
+        with:
+            version: ${{ github.event.release.tag_name }}
+        secrets: inherit
+
+

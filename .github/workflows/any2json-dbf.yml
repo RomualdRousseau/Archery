@@ -1,0 +1,22 @@
+name: any2json-dbf
+
+on:
+    push:
+        branches:
+            - '**'
+            - "!main"
+        paths:
+            - shuju/**
+            - .github/workflows/any2json-dbf.yml
+
+jobs:
+    build:
+        uses: ./.github/workflows/maven-build.yml
+        with:
+            service: any2json-dbf
+
+    test:
+        needs: [build]
+        uses: ./.github/workflows/maven-test.yml
+        with:
+            service: any2json-dbf

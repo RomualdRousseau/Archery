@@ -1,0 +1,35 @@
+on:
+    workflow_call:
+        inputs:
+            service:
+                required: true
+                type: string
+
+jobs:
+    maven-build:
+        runs-on: [ubuntu-latest]
+        steps:
+            - uses: actions/checkout@v4
+            - name: Set up JDK 17
+
+              uses: actions/setup-java@v4
+              with:
+                  java-version: 17
+                  distribution: "temurin"
+
+            - uses: actions/cache@v4
+              with:
+                  path: ~/.m2/repository
+                  key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+
+            - name: Installing local dependencies
+              run: mvn initialize --projects :${{ inputs.service }} --file pom.xml --also-make --batch-mode
+
+            - name: Build project
+              run: mvn -U -B package -Dmaven.test.skip=true --projects :${{ inputs.service }} --file pom.xml --also-make --batch-mode
+
+            - name: Archive build artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ${{ inputs.service }}-target
+                  path: ${{ inputs.service }}/target

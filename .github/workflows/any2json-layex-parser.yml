@@ -1,0 +1,22 @@
+name: any2json-layex-parser
+
+on:
+    push:
+        branches:
+            - '**'
+            - "!main"
+        paths:
+            - shuju/**
+            - .github/workflows/any2json-layex-parser.yml
+
+jobs:
+    build:
+        uses: ./.github/workflows/maven-build.yml
+        with:
+            service: any2json-layex-parser
+
+    test:
+        needs: [build]
+        uses: ./.github/workflows/maven-test.yml
+        with:
+            service: any2json-layex-parser

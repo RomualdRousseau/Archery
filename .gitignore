@@ -25,5 +25,8 @@ buildNumber.properties
 .vscode
 .venv/
 
-# Docs
-docs/
+# mkdoc
+misc/
+svg-inkscape/
+target/
+site/

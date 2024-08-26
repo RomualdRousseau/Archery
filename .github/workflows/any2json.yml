@@ -1,0 +1,22 @@
+name: any2json
+
+on:
+    push:
+        branches:
+            - '**'
+            - "!main"
+        paths:
+            - any2json/**
+            - .github/workflows/any2json.yml
+
+jobs:
+    build:
+        uses: ./.github/workflows/maven-build.yml
+        with:
+            service: any2json
+
+    test:
+        needs: [build]
+        uses: ./.github/workflows/maven-test.yml
+        with:
+            service: any2json

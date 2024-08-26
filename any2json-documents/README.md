@@ -50,15 +50,15 @@ For more details, see the [Installation Guide](https://github.com/casey/just).
 Run the following command line:
 
 ```bash
-just run
+just serve
 ```
 
-### Build and deploy the documentation on GitHub
+### Build the documentation
 
 Run the following command line:
 
 ```bash
-just deploy
+just build
 ```
 
 ## Contribute

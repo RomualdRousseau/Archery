@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Tutorial 1 - Getting Started - Any2Json Documents</title>
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">Any2Json Documents</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="navitem">
+                                <a href=".." class="nav-link">Home</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../how_it_works/" class="nav-link">How it works</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../white_papers/" class="nav-link">White Papers</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#tutorial-1-getting-started" class="nav-link">Tutorial 1 - Getting Started</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#setup-any2json" class="nav-link">Setup Any2Json</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#minimal-code" class="nav-link">Minimal code</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#load-several-file-formats" class="nav-link">Load several file formats</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#conclusion" class="nav-link">Conclusion</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="tutorial-1-getting-started">Tutorial 1 - Getting Started</h1>
+<p><a href="https://github.com/RomualdRousseau/Any2Json-Examples">View source on GitHub</a>.</p>
+<p>This short introduction uses <a href="https://github.com/RomualdRousseau/Any2Json">Any2Json</a> to:</p>
+<ol>
+<li>Load simple tabular documents in CSV and Exce formats.</li>
+<li>Display the tabular result on the console.</li>
+</ol>
+<p>The expected layout of each document is a single header row followed by rows of cells:</p>
+<p><img alt="document with simple table" src="../images/tutorial1_data.png" /></p>
+<h2 id="setup-any2json">Setup Any2Json</h2>
+<h3 id="import-the-packages-and-setup-the-main-class">Import the packages and setup the main class:</h3>
+<pre><code class="language-java">package com.github.romualdrousseau.any2json.examples;
+
+import java.util.EnumSet;
+import java.util.List;
+
+import com.github.romualdrousseau.any2json.Document;
+import com.github.romualdrousseau.any2json.DocumentFactory;
+import com.github.romualdrousseau.any2json.parser.LayexTableParser;
+
+public class Tutorial1 implements Runnable {
+
+    public Tutorial1() {
+    }
+
+    @Override
+    public void run() {
+        // Code will come here
+    }
+
+    public static void main(final String[] args) {
+        new Tutorial1().run();
+    }
+}
+</code></pre>
+<h3 id="pomxml">pom.xml</h3>
+<p>Any2Json has a very modular design. Each module has to be loaded explicitely. The following modules are
+required to run the code of this tutorial:</p>
+<pre><code class="language-xml">&lt;!-- ShuJu Framework --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.github.romualdrousseau&lt;/groupId&gt;
+    &lt;artifactId&gt;shuju&lt;/artifactId&gt;
+    &lt;version&gt;${shuju.version}&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.github.romualdrousseau&lt;/groupId&gt;
+    &lt;artifactId&gt;shuju-jackson&lt;/artifactId&gt;
+    &lt;version&gt;${shuju.version}&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;!-- Any2Json Framework --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.github.romualdrousseau&lt;/groupId&gt;
+    &lt;artifactId&gt;any2json&lt;/artifactId&gt;
+    &lt;version&gt;${any2json.version}&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.github.romualdrousseau&lt;/groupId&gt;
+    &lt;artifactId&gt;any2json-csv&lt;/artifactId&gt;
+    &lt;version&gt;${any2json.version}&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.github.romualdrousseau&lt;/groupId&gt;
+    &lt;artifactId&gt;any2json-excel&lt;/artifactId&gt;
+    &lt;version&gt;${any2json.version}&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre>
+<h2 id="minimal-code">Minimal code</h2>
+<p>The minimal code to load a document is as follow:</p>
+<pre><code class="language-java">final var file = Common.loadData(f, this.getClass());
+try (final var doc = DocumentFactory.createInstance(file, &quot;UTF-8&quot;)) {
+    doc.sheets().forEach(s -&gt; s.getTable().ifPresent(t -&gt; {
+        doSomethingWithHeaders(t.headers());
+        doSomethingWithRows(t.rows());
+    }));
+}
+</code></pre>
+<p>The encoding ("UTF-8" here) is used if the encoding could not be detected when loading the document.</p>
+<h3 id="iterate-overs-the-headers">Iterate overs the headers:</h3>
+<pre><code class="language-java">headers.forEach(h -&gt; {
+    // Do something with the header
+});
+</code></pre>
+<h3 id="iterate-over-the-rows-and-cells">Iterate over the rows and cells:</h3>
+<pre><code class="language-java">rows.forEach(r -&gt; {
+    r.cells().forEach(c -&gt; {
+        // Do something with the cell
+    });
+});
+</code></pre>
+<h2 id="load-several-file-formats">Load several file formats</h2>
+<p>Here is a complete example to load and print the content of different CSV and Excel files:</p>
+<pre><code class="language-java">package com.github.romualdrousseau.any2json.examples;
+
+import java.util.List;
+
+import com.github.romualdrousseau.any2json.DocumentFactory;
+
+public class Tutorial1 implements Runnable {
+
+    private static List&lt;String&gt; FILES = List.of(
+            &quot;document with simple table.csv&quot;,
+            &quot;document with simple table.xls&quot;,
+            &quot;document with simple table.xlsx&quot;);
+
+    public Tutorial1() {
+    }
+
+    @Override
+    public void run() {
+        FILES.forEach(f -&gt; {
+            final var file = Common.loadData(f, this.getClass());
+            try (final var doc = DocumentFactory.createInstance(file, &quot;UTF-8&quot;)) {
+                doc.sheets().forEach(s -&gt; s.getTable().ifPresent(t -&gt; {
+                    Common.printHeaders(t.headers());
+                    Common.printRows(t.rows());
+                }));
+            }
+        });
+    }
+
+    public static void main(final String[] args) {
+        new Tutorial1().run();
+    }
+}
+</code></pre>
+<pre><code class="language-bash">2024-03-09 18:40:23 INFO  Common:37 - Loaded resource: /data/document with simple table.csv
+            Date                  Client                     Qty                  Amount
+      2023/02/01                     AAA                       1                     100
+      2023/02/01                     BBB                       1                     100
+      2023/02/01                     BBB                       3                     300
+      2023/02/01                     AAA                       1                     100
+2024-03-09 18:40:24 INFO  Common:37 - Loaded resource: /data/document with simple table.xls
+            Date                  Client                     Qty                  Amount                        
+      2023-02-01                     AAA                       1                     100                        
+      2023-02-01                     BBB                       1                     100                        
+      2023-02-01                     BBB                       3                     300                        
+      2023-02-01                     AAA                       1                     100                        
+2024-03-09 18:40:24 INFO  Common:37 - Loaded resource: /data/document with simple table.xlsx
+            Date                  Client                     Qty                  Amount
+      2023-02-01                     AAA                       1                     100
+      2023-02-01                     BBB                       1                     100
+      2023-02-01                     BBB                       3                     300
+      2023-02-01                     AAA                       1                     100
+</code></pre>
+<h2 id="conclusion">Conclusion</h2>
+<p>Congratulations! You have loaded documents using Any2Json.</p>
+<p>For more examples of using Any2Json, check out the <a href="../">tutorials</a>.</p></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script src="../js/jquery-3.6.0.min.js"></script>
+        <script src="../js/bootstrap.min.js"></script>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js"></script>
+        <script src="../search/main.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

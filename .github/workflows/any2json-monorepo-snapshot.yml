@@ -1,0 +1,11 @@
+name: any2json-monorepo-snapshot
+
+on:
+    push:
+        branches:
+            - "main"
+
+jobs:
+    deploy-snapshot:
+        uses: ./.github/workflows/maven-deploy-snapshot.yml
+        secrets: inherit
