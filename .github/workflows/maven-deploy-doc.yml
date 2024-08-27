@@ -43,7 +43,7 @@ jobs:
             - name: Build documentation
               run: |
                   mkdocs build --config-file ./any2json-documents/mkdocs.yml --site-dir ./target/docs
-                  mvn -B -P documentation clean site site:stage
+                  mvn -B -P documentation site site:stage
 
             - name: Setup pages
               uses: actions/configure-pages@v5
