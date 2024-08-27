@@ -19,7 +19,7 @@ import com.github.romualdrousseau.any2json.event.TableReadyEvent;
 
 public class Common {
     private static final Logger LOGGER = LoggerFactory.getLogger(Common.class);
-    private static final String REPO_BASE_URL = "https://raw.githubusercontent.com/RomualdRousseau/Any2Json-Models/main";
+    private static final String REPO_BASE_URL = "https://raw.githubusercontent.com/RomualdRousseau/Any2Json/Any2Json-Models/main";
 
     public static <T> ModelBuilder loadModelBuilder(final String modelName, final Class<T> clazz) {
         return new ModelBuilder().fromPath(Common.getResourcePath(String.format("/models/%s.json", modelName), clazz));
