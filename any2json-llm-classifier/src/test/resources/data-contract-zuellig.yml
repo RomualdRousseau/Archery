@@ -1,0 +1,227 @@
+dataContractSpecification: 0.9.3
+id: urn:datacontract:hongkong:zuellig:sales
+info:
+  title: Zuellig Sales
+  version: 1.0.0
+  description: |
+    Daily extract of sales
+  owner: Romuald
+  contact:
+    name: Romuald (Data Product Owner)
+    url: https://teams.microsoft.com/l/channel/example/checkout
+tags:
+  - daily
+  - sales
+links:
+  datacontractCli: https://cli.datacontract.com
+terms:
+  usage: |
+    Data can be used for reports, analytics and machine learning use cases.
+    Order may be linked and joined by other tables
+  limitations: |
+    Not suitable for real-time use cases.
+    Data may not be used to identify individual customers.
+    Max data processing per day: 10 TiB
+  billing: 5000 USD per month
+  noticePeriod: P3M
+models:
+  sales:
+    description: Daily extract of sales.
+    type: table
+    fields:
+      date:
+        description: the date.
+        type: DATE
+        required: false
+        example: "20220303"
+      customer_code:
+        description: the customer code.
+        type: NUMBER
+        required: false
+        example: "0000612-000"
+      customer_name:
+        description: the customer name.
+        type: STRING
+        required: false
+        example: "PHARMACHOICE LTD."
+      product_code:
+        description: the product code.
+        type: NUMBER
+        required: true
+        example: "ITEM 4690200"
+      product_name:
+        description: the product name.
+        type: STRING
+        required: false
+        example: "COVERAM 10MG (10+10) 30'S"
+      quantity:
+        description: the quantity.
+        type: NUMBER
+        required: true
+        example: "100"
+      amount:
+        description: the amount.
+        type: NUMBER
+        required: false
+        example: "4090"
+definitions:
+  date:
+    domain: sales
+    name: date
+    title: Date
+    type: DATE
+    description: the invoice date
+    example: "INVOICE DATE"
+    tags:
+      - sales
+  customer_code:
+    domain: sales
+    name: customer_code
+    title: Customer Code
+    type: REFERENCE
+    description: the SAP sold to code
+    example: "SAP SOLD TO CODE"
+    tags:
+      - sales
+  customer_name:
+    domain: sales
+    name: customer_name
+    title: Customer Name
+    type: STRING
+    description: the customer name in chinese
+    example: CUSTOMER CHINESE NAME"
+    tags:
+      - sales
+  product_code:
+    domain: sales
+    name: product_code
+    title: Product Code
+    type: REFERENCE
+    description: the SAP material code
+    example: "SAP MATERIAL CODE"
+    required: true
+    tags:
+      - sales
+  product_name:
+    domain: sales
+    name: product_name
+    title: Product Name
+    type: STRING
+    description: the item description
+    example: "ITEM DESCRIPTION"
+    tags:
+      - sales
+  quantity:
+    domain: sales
+    name: quantity
+    title: Quantity
+    type: NUMBER
+    description: Qty
+    example: "SALES QUANTITY"
+    required: true
+    tags:
+      - sales
+  amount:
+    domain: sales
+    name: amount
+    title: Amount
+    type: NUMBER
+    description: Sales Value
+    example: "TOTAL"
+    tags:
+      - sales
+  expiry_date:
+    domain: sales
+    name: expiry_date
+    title: Expiry Date
+    type: DATE
+    description: the expiry date
+    example: "EXPIRY DATE"
+    tags:
+      - sales
+  invoice_number:
+    domain: sales
+    name: invoice_number
+    title: Invoice Number
+    type: REFERENCE
+    description: the expiry date
+    example: "INVOICE NUMBER"
+    tags:
+      - sales
+entities:
+  DATE:
+    patterns:
+      - \d{1,4}[/|.|-]\d{1,2}[/|.|-]\d{1,4}
+    pivot: true
+  PRODUCTCODE:
+    patterns:
+      - ^ITEM \d+$
+  REFERENCE:
+    patterns:
+      - ^[\d\-]{8,}$
+  TOTAL:
+    patterns:
+      - total\b(?!.*(care|pharmacy).*\b)
+  NUMBER:
+    patterns:
+      - ^-?[\d,]+(\.\d+)?([e|E]-?\d+)?$
+extracts:
+  cleanser:
+    description: Remove the data around the table.
+    type: python
+    filters:
+      - (\(\$.*\))$
+      - "[\\\\!\"'#$%&()*+,\\-./:;<=>?@\\[\\]^_`{|}~▼\\t\\n]"
+      - \s+
+    recipe:
+        - sheet.cropWhenFillRatioLessThan(0.1)
+  parser:
+    description: Simple table with one header and data.
+    type: layex
+    data:
+      - (()(ES.+$))(()([/^TOTAL/|E]+$)*(.+$))+
+      - (()(.+$))(()(.+$)+())()
+    meta:
+      - ((.)(.$))+
+examples:
+  - type: csv
+    model: sales
+    description: An example sales.
+    data: |
+      customer_code,customer_name,quantity,amount,product_code
+      "01/01/2024","30028761","23006423",100,4090
+      "01/01/2024","30028761","23006423",80,0
+      "01/01/2024","30027147","23006423",40,1636
+      "01/01/2024","30027147","23006423",40,0
+servicelevels:
+  availability:
+    description: The server is available during support hours
+    percentage: 99.9%
+  retention:
+    description: Data is retained for one year
+    period: P1Y
+    unlimited: false
+  latency:
+    description: Data is available within 25 hours after the sales was placed
+    threshold: 25h
+    sourceTimestampField: sales.date
+    processedTimestampField: sales.date
+  freshness:
+    description: The age of the youngest row in a table.
+    threshold: 25h
+    timestampField: sales.date
+  frequency:
+    description: Data is delivered once a day
+    type: batch
+    interval: daily
+    cron: 0 0 * * *
+  support:
+    description: The data is available during typical business hours at headquarters
+    time: 9am to 5pm in EST on business days
+    responseTime: 1h
+  backup:
+    description: Data is backed up once a week, every Sunday at 0:00 UTC.
+    interval: weekly
+    cron: 0 0 * * 0
+    recoveryTime: 24 hours
+    recoveryPoint: 1 week

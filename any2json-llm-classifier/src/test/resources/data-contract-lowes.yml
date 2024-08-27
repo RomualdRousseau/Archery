@@ -1,7 +1,7 @@
 dataContractSpecification: 0.9.3
-id: urn:datacontract:singapore:zuellig:sales
+id: urn:datacontract:panama:lowes:sales
 info:
-  title: Zuellig Sales
+  title: Lowes Sales
   version: 1.0.0
   description: |
     Daily extract of sales
@@ -34,16 +34,26 @@ models:
         type: DATE
         required: true
         example: "01/01/2024"
-      customerCode:
+      customer_code:
         description: the customer code.
         type: NUMBER
         required: true
-        example: "30028761"
-      productCode:
+        example: "0000612-000"
+      customer_name:
+        description: the customer name.
+        type: STRING
+        required: true
+        example: "PHARMACHOICE LTD."
+      product_code:
         description: the product code.
         type: NUMBER
         required: true
-        example: "23006423"
+        example: "ITEM 4690200"
+      product_name:
+        description: the product name.
+        type: STRING
+        required: false
+        example: "COVERAM 10MG (10+10) 30'S"
       quantity:
         description: the quantity.
         type: NUMBER
@@ -70,7 +80,7 @@ definitions:
     title: Customer Code
     type: REFERENCE
     description: the customer code
-    example: "30028761"
+    example: "0000612-000"
     tags:
       - sales
   customer_name:
@@ -79,7 +89,7 @@ definitions:
     title: Customer Name
     type: STRING
     description: the customer name
-    example: "30028761"
+    example: "PHARMACHOICE LTD."
     tags:
       - sales
   product_code:
@@ -88,7 +98,7 @@ definitions:
     title: Product Code
     type: REFERENCE
     description: the product code
-    example: "23006423"
+    example: "ITEM 4690200"
     tags:
       - sales
   product_name:
@@ -97,7 +107,7 @@ definitions:
     title: Product Name
     type: STRING
     description: the product name
-    example: "23006423"
+    example: "COVERAM 10MG (10+10) 30'S"
     tags:
       - sales
   quantity:
@@ -118,6 +128,23 @@ definitions:
     example: "4090"
     tags:
       - sales
+entities:
+  DATE:
+    patterns:
+      - \d{1,4}[/|.|-]\d{1,2}[/|.|-]\d{1,4}
+    pivot: true
+  PRODUCTCODE:
+    patterns:
+      - ^ITEM \d+$
+  REFERENCE:
+    patterns:
+      - ^[\d\-]{8,}$
+  TOTAL:
+    patterns:
+      - total\b(?!.*(care|pharmacy).*\b)
+  NUMBER:
+    patterns:
+      - ^-?[\d,]+(\.\d+)?([e|E]-?\d+)?$
 extracts:
   cleanser:
     description: Remove the data around the table.
@@ -132,18 +159,10 @@ extracts:
   parser:
     description: Simple table with one header and data.
     type: layex
-    entities:
-      - DATE
-      - PRODUCTCODE
-      - REFERENCE
-      - TOTAL
-    patterns:
-      "\\d{1,4}[/|.|-]\\d{1,2}[/|.|-]\\d{1,4}": "DATE"
-      "^ITEM \\d+$": "PRODUCTCODE"
-      "^[\\d\\-]{8,}$": "REFERENCE"
-      "total\\b(?!.*(care|pharmacy).*\\b)": "TOTAL"
-    pivotEntities:
-      - DATE
+    filters:
+      - (\(\$.*\))$
+      - "[\\\\!\"'#$%&()*+,\\-./:;<=>?@\\[\\]^_`{|}~▼\\t\\n]"
+      - \s+
     data:
       - (()(.+$))((/PRODUCTCODE/.+$)(/^TOTAL/.+$)+(/TOTAL/.+$))+()
     meta:
@@ -153,7 +172,7 @@ examples:
     model: sales
     description: An example sales.
     data: |
-      date,customerCode,productCode,quantity,amount
+      customer_code,customer_name,quantity,amount,product_code
       "01/01/2024","30028761","23006423",100,4090
       "01/01/2024","30028761","23006423",80,0
       "01/01/2024","30027147","23006423",40,1636
