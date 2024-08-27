@@ -30,3 +30,6 @@ misc/
 svg-inkscape/
 target/
 site/
+
+# env
+.env
