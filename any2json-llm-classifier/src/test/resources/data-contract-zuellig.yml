@@ -79,8 +79,8 @@ definitions:
     name: customer_code
     title: Customer Code
     type: REFERENCE
-    description: the SAP sold to code
-    example: "SAP SOLD TO CODE"
+    description: this is the sold customer code
+    example: "SOLD TO CUSTOMER CODE"
     tags:
       - sales
   customer_name:
@@ -89,7 +89,7 @@ definitions:
     title: Customer Name
     type: STRING
     description: the customer name in chinese
-    example: CUSTOMER CHINESE NAME"
+    example: "CUSTOMER CHINESE NAME"
     tags:
       - sales
   product_code:
@@ -144,7 +144,7 @@ definitions:
     name: invoice_number
     title: Invoice Number
     type: REFERENCE
-    description: the expiry date
+    description: the invoice number
     example: "INVOICE NUMBER"
     tags:
       - sales
