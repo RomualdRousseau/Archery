@@ -16,10 +16,6 @@
     <description>Convert any text file in Json</description>
     <url>https://github.com/romualdrousseau/any2json-dbf</url>
 
-    <properties>
-        <javadbf.version>1.14.1</javadbf.version>
-    </properties>
-
     <dependencies>
         <!-- Any2Json Framework -->
         <dependency>

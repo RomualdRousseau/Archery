@@ -16,10 +16,6 @@
     <description>Convert any text file in Json</description>
     <url>https://github.com/romualdrousseau/any2json-excel</url>
 
-    <properties>
-        <poi.version>5.3.0</poi.version>
-    </properties>
-
     <dependencies>
         <!-- Any2Json Framework -->
         <dependency>
@@ -73,7 +69,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-install-plugin</artifactId>
-                <version>3.1.2</version>
+                <version>3.1.3</version>
                 <executions>
                     <execution>
                         <?m2e ignore?>
