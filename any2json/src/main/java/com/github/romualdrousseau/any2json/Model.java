@@ -7,7 +7,7 @@ import java.util.Optional;
 
 import org.apache.commons.collections4.map.LRUMap;
 
-import com.github.romualdrousseau.any2json.base.ModelData;
+import com.github.romualdrousseau.any2json.modeldata.EmptyModelData;
 import com.github.romualdrousseau.shuju.preprocessing.Text;
 import com.github.romualdrousseau.shuju.preprocessing.comparer.RegexComparer;
 import com.github.romualdrousseau.shuju.types.Tensor;
@@ -17,7 +17,7 @@ public class Model {
     public static final ThreadLocal<Model> Default = new ThreadLocal<>() {
         @Override
         protected Model initialValue() {
-            return new ModelBuilder().build();
+            return new Model(EmptyModelData.empty());
         }
     };
 
@@ -27,46 +27,46 @@ public class Model {
 
     public Model(final ModelData modelData, final Map<String, String> modelAttributes) {
         this.modelData = modelData;
-        this.attributes = modelAttributes;
-        this.entities = modelData.getList("entities");
-        this.patterns = modelData.getMap("patterns");
-        this.filters = modelData.getList("filters");
-        this.pivotEntities = modelData.getList("pivotEntityList");
-        this.tags = modelData.getList("tags");
-        this.requiredTags = modelData.getList("requiredTags");
-        this.comparer = new RegexComparer(this.patterns);
+        this.modelAttributes = modelAttributes;
+        this.entityList = modelData.getList("entities");
+        this.patternMap = modelData.getMap("patterns");
+        this.filterList = modelData.getList("filters");
+        this.pivotEntityList = modelData.getList("pivotEntityList");
+        this.tagList = modelData.getList("tags");
+        this.requiredTagList = modelData.getList("requiredTags");
+        this.comparer = new RegexComparer(this.patternMap);
     }
 
     public ModelData getData() {
         return modelData;
     }
 
-    public Map<String, String> getAttributes() {
-        return this.attributes;
+    public Map<String, String> getModelAttributes() {
+        return this.modelAttributes;
     }
 
     public List<String> getEntityList() {
-        return this.entities;
+        return this.entityList;
     }
 
     public Map<String, String> getPatternMap() {
-        return this.patterns;
+        return this.patternMap;
     }
 
-    public List<String> getFilters() {
-        return this.filters;
+    public List<String> getFilterList() {
+        return this.filterList;
     }
 
     public List<String> getPivotEntityList() {
-        return this.pivotEntities;
+        return this.pivotEntityList;
     }
 
     public List<String> getTagList() {
-        return this.tags;
+        return this.tagList;
     }
 
     public List<String> getRequiredTagList() {
-        return this.requiredTags;
+        return this.requiredTagList;
     }
 
     public String toEntityName(final String value) {
@@ -87,17 +87,17 @@ public class Model {
 
     public Tensor toEntityVector(final String value) {
         return this.toEntityVectorCache.computeIfAbsent(value, v -> Tensor
-                .of(Text.to_categorical(v, this.entities, this.comparer).stream().mapToDouble(x -> x).toArray()));
+                .of(Text.to_categorical(v, this.entityList, this.comparer).stream().mapToDouble(x -> x).toArray()));
     }
 
     private final ModelData modelData;
-    private final Map<String, String> attributes;
-    private final List<String> entities;
-    private final Map<String, String> patterns;
-    private final List<String> filters;
-    private final List<String> pivotEntities;
-    private final List<String> tags;
-    private final List<String> requiredTags;
+    private final Map<String, String> modelAttributes;
+    private final List<String> entityList;
+    private final Map<String, String> patternMap;
+    private final List<String> filterList;
+    private final List<String> pivotEntityList;
+    private final List<String> tagList;
+    private final List<String> requiredTagList;
     private final RegexComparer comparer;
 
     private final LRUMap<String, Optional<String>> toEntityValueCache = new LRUMap<>();

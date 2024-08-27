@@ -41,7 +41,7 @@ public class DataTableHeader extends BaseHeader {
     }
 
     @Override
-    public List<String> entities() {
+    public Iterable<String> entities() {
         if (this.entities == null) {
             this.entities = (this.getColumnIndex() < 0 || this.getColumnIndex() >= this.getTable().getNumberOfColumns())
                     ? Collections.emptyList()
@@ -74,8 +74,7 @@ public class DataTableHeader extends BaseHeader {
             this.tag = HeaderTag.None;
         } else {
             final var classifier = this.getTable().getSheet().getDocument().getTagClassifier();
-            final var context = this.getTable().getHeaderNames();
-            final String tagValue = classifier.predict(this.getName(), this.entities(), context);
+            final String tagValue = classifier.predict(this.getTable(), this);
             this.tag = new HeaderTag(tagValue);
         }
     }

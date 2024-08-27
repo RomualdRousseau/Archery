@@ -3,7 +3,9 @@ package com.github.romualdrousseau.any2json.classifier;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import com.github.romualdrousseau.any2json.Header;
 import com.github.romualdrousseau.any2json.Model;
+import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.TagClassifier;
 import com.github.romualdrousseau.shuju.preprocessing.tokenizer.ShingleTokenizer;
 import com.github.romualdrousseau.shuju.strings.StringUtils;
@@ -18,10 +20,10 @@ public class SimpleTagClassifier implements TagClassifier {
         this.model = model;
         this.tagStyle = tagStyle;
 
-        final List<String> lexicon = (model != null && model.getData().hasKey("lexicon"))
+        this.lexicon =(model != null && model.getData().get("lexicon").isPresent())
                 ? model.getData().getList("lexicon")
                 : StringUtils.getSymbols().stream().toList();
-        this.tagTokenizer = new ShingleTokenizer(lexicon, 1);
+        this.tagTokenizer = new ShingleTokenizer(this.getLexicon(), 1);
     }
 
     @Override
@@ -57,6 +59,17 @@ public class SimpleTagClassifier implements TagClassifier {
     }
 
     @Override
+    public List<String> getLexicon() {
+        return lexicon;
+    }
+
+    @Override
+    public TagClassifier setLexicon(final List<String> lexicon) {
+        this.lexicon = lexicon;
+        return this;
+    }
+
+    @Override
     public String ensureTagStyle(final String text) {
         if (this.tagStyle == TagClassifier.TagStyle.SNAKE) {
             this.tagTokenizer.disableLemmatization();
@@ -76,7 +89,8 @@ public class SimpleTagClassifier implements TagClassifier {
     }
 
     @Override
-    public String predict(String name, List<String> entities, List<String> context) {
+    public String predict(final Table table, final Header header) {
+        final var name = header.getName();
         final var m = pattern.matcher(name);
         if (m.find()) {
             return m.group(1);
@@ -90,4 +104,5 @@ public class SimpleTagClassifier implements TagClassifier {
 
     private Model model;
     private TagClassifier.TagStyle tagStyle;
+    private List<String> lexicon;
 }

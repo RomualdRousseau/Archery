@@ -74,6 +74,18 @@ public class BaseSheet implements Sheet {
     }
 
     @Override
+    public void applyTransformations() {
+        if (this.transfoApplied) {
+            return;
+        }
+        if (this.getLastRowNum() <= 0 || this.getLastColumnNum() <= 0) {
+            return;
+        }
+        TransformableSheet.of(this).applyAll();
+        this.transfoApplied = true;
+    }
+
+    @Override
     public Optional<TableGraph> getTableGraph() {
 
         // Here is the core of the algorithm
@@ -82,9 +94,9 @@ public class BaseSheet implements Sheet {
             return Optional.empty();
         }
 
-        // Apply recipes
+        // Apply transformations
 
-        TransformableSheet.of(this).applyAll();
+        this.applyTransformations();
         if (!this.notifyStepCompleted(new SheetPreparedEvent(this))) {
             return Optional.empty();
         }
@@ -453,6 +465,7 @@ public class BaseSheet implements Sheet {
     private final List<Integer> columnMask;
     private final int storeLastColumnNum;
 
+    private boolean transfoApplied = false;
     private boolean unmergedAll = false;
     private float capillarityThreshold = Settings.DEFAULT_CAPILLARITY_THRESHOLD;
     private boolean pivotEnabled;

@@ -16,6 +16,7 @@ import com.github.romualdrousseau.any2json.parser.sheet.SimpleSheetParser;
 import com.github.romualdrousseau.any2json.parser.table.SimpleTableParser;
 import com.github.romualdrousseau.any2json.readdir.GutenbergDiagonal;
 import com.github.romualdrousseau.any2json.transform.op.StitchRows;
+import com.github.romualdrousseau.shuju.strings.StringUtils;
 
 public abstract class BaseDocument implements Document {
 
@@ -87,6 +88,9 @@ public abstract class BaseDocument implements Document {
 
     @Override
     public String getRecipe() {
+        if (StringUtils.isBlank(this.recipe)) {
+            this.recipe = String.join("\n", this.model.getData().getList("recipe"));
+        }
         return this.recipe;
     }
 
@@ -143,19 +147,25 @@ public abstract class BaseDocument implements Document {
         final var capa = this.getIntelliCapabilities();
 
         if (capa.contains(Document.Hint.INTELLI_EXTRACT) && this.hints.contains(Document.Hint.INTELLI_EXTRACT)) {
-            this.sheetParser = new SheetBitmapParser();
+            if (this.sheetParser instanceof SimpleSheetParser) {
+                this.sheetParser = new SheetBitmapParser();
+            }
         }
 
         if (capa.contains(Document.Hint.INTELLI_LAYOUT) && this.hints.contains(Document.Hint.INTELLI_LAYOUT)) {
-            this.tableParser = DynamicPackages.GetElementParserFactory()
-                    .map(x -> x.newInstance(this.model, this.tableParser.getParserOptions()))
-                    .orElseGet(() -> new SimpleTableParser(this.model, null));
+            if (this.tableParser instanceof SimpleTableParser) {
+                this.tableParser = DynamicPackages.GetElementParserFactory()
+                        .map(x -> x.newInstance(this.model, this.tableParser.getParserOptions()))
+                        .orElseGet(() -> new SimpleTableParser(this.model, null));
+            }
         }
 
         if (capa.contains(Document.Hint.INTELLI_TAG) && this.hints.contains(Document.Hint.INTELLI_TAG)) {
-            this.tagClassifier = DynamicPackages.GetTagClassifierFactory()
-                    .map(x -> x.newInstance(this.model, this.tagClassifier.getTagStyle()))
-                    .orElseGet(() -> new SimpleTagClassifier(this.model, this.tagClassifier.getTagStyle()));
+            if (this.tagClassifier instanceof SimpleTagClassifier) {
+                this.tagClassifier = DynamicPackages.GetTagClassifierFactory()
+                        .map(x -> x.newInstance(this.model, this.tagClassifier.getTagStyle()))
+                        .orElseGet(() -> new SimpleTagClassifier(this.model, this.tagClassifier.getTagStyle()));
+            }
         }
     }
 

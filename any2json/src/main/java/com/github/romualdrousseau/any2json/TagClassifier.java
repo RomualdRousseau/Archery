@@ -14,11 +14,15 @@ public interface TagClassifier extends AutoCloseable {
 
     TagClassifier setModel(final Model model);
 
-    String predict(final String name, final List<String> entities, final List<String> context);
+    String predict(final Table table, final Header header);
 
     TagClassifier.TagStyle getTagStyle();
 
     TagClassifier setTagStyle(final TagClassifier.TagStyle mode);
+
+    List<String> getLexicon();
+
+    TagClassifier setLexicon(final List<String> lexion);
 
     String ensureTagStyle(final String text);
 }

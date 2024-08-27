@@ -12,6 +12,8 @@ public interface Sheet {
 
     int getLastColumnNum();
 
+    void applyTransformations();
+
     Optional<TableGraph> getTableGraph();
 
     Optional<Table> getTable();
