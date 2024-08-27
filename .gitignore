@@ -26,10 +26,9 @@ buildNumber.properties
 .venv/
 
 # mkdoc
-misc/
-svg-inkscape/
-target/
-site/
+any2json-documents/**/misc/
+any2json-documents/**/svg-inkscape/
+any2json-documents/site/
 
 # env
 .env
