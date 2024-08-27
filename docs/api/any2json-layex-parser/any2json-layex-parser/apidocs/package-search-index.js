@@ -1,1 +1,0 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.github.romualdrousseau.any2json.layex"},{"l":"com.github.romualdrousseau.any2json.layex.operations"},{"l":"com.github.romualdrousseau.any2json.parser"},{"l":"com.github.romualdrousseau.any2json.parser.table"}];updateSearchResults();

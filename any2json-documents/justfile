@@ -1,5 +1,5 @@
 build: copy-pdfs
-    mkdocs build --site-dir ../docs
+    mkdocs build --site-dir ../target/docs
 
 serve: copy-pdfs
     mkdocs serve

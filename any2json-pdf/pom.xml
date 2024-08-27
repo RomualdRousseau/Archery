@@ -18,10 +18,6 @@
     </description>
     <url>https://github.com/romualdrousseau/any2json-pdf</url>
 
-    <properties>
-        <tabula.version>1.0.5</tabula.version>
-    </properties>
-
     <dependencies>
         <!-- Any2Json Framework -->
         <dependency>

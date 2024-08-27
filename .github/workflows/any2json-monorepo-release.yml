@@ -5,10 +5,16 @@ on:
         types: [published]
 
 jobs:
-    deploy-prod:
-        uses: ./.github/workflows/maven-deploy-prod.yml
+    # deploy-prod:
+    #     uses: ./.github/workflows/maven-deploy-prod.yml
+    #     with:
+    #         version: ${{ github.event.release.tag_name }}
+    #     secrets: inherit
+
+    deploy-doc:
+        needs: [deploy-prod]
+        uses: ./.github/workflows/maven-deploy-doc.yml
         with:
             version: ${{ github.event.release.tag_name }}
-        secrets: inherit
 
 

@@ -78,7 +78,7 @@ Run the following command line:
 mvn -P release clean deploy
 ```
 
-### Build and deploy the javadoc documentation
+### Build the javadoc documentation
 
 Run the following command line:
 

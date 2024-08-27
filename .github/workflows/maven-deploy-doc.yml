@@ -1,0 +1,58 @@
+on:
+    workflow_call:
+        inputs:
+            version:
+                required: true
+                type: string
+
+jobs:
+    maven-deploy-doc:
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        runs-on: [ubuntu-latest]
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Set up JDK 17
+              uses: actions/setup-java@v4
+              with:
+                  java-version: 17
+                  distribution: "temurin"
+
+            - name: Set up Python 3.11
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.11"
+
+            - name: Set up MkDocs
+              run: pip install mkdocs
+
+            - name: Cache
+              uses: actions/cache@v4
+              with:
+                  path: ~/.m2/repository
+                  key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+
+            - name: Set version
+              run: |
+                  mvn versions:set -DnewVersion=${{ inputs.version }}
+                  mvn versions:commit
+
+            - name: Build documentation
+              run: |
+                  mkdocs build --config-file ./any2json-documents/mkdocs.yml --site-dir ./target/docs
+                  mvn -B -P documentation clean site site:stage
+
+            - name: Setup pages
+              uses: actions/configure-pages@v5
+
+            - name: Upload artifact
+              uses: actions/upload-pages-artifact@v3
+              with:
+                  path: ./target/docs
+
+            - name: Deploy to GitHub Pages
+              id: deployment
+              uses: actions/deploy-pages@v4
