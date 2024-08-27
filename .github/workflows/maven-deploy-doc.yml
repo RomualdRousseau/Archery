@@ -21,6 +21,12 @@ jobs:
                   java-version: 17
                   distribution: "temurin"
 
+            - name: Set up Python 3.11
+              uses: actions/setup-python@v5
+              with:
+                  python-version: 3.11
+            - run: pip install mkdocs
+
             - name: Cache
               uses: actions/cache@v4
               with:
@@ -39,7 +45,9 @@ jobs:
               run: mvn -U -B -DskipTests install
 
             - name: Build documentation
-              run: mvn -B -P documentation site site:stage
+              run: |
+                mkdocs build --config-file ./any2json-documents/mkdocs.yml --site-dir ./target/docs
+                mvn -B -P documentation site site:stage
 
             - name: Setup pages
               uses: actions/configure-pages@v5
