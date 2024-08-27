@@ -78,9 +78,17 @@ public class JsonModelBuilder {
         return this.fromModelData(new JsonModelData(JSON.objectOf(response.body())));
     }
 
+    public List<String> getEntityList() {
+        return this.entities;
+    }
+
     public JsonModelBuilder setEntityList(final List<String> entities) {
         this.entities = entities;
         return this;
+    }
+
+    public Map<String, String> getPatternMap() {
+        return this.patterns;
     }
 
     public JsonModelBuilder setPatternMap(final Map<String, String> patterns) {

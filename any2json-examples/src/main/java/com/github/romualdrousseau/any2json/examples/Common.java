@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.romualdrousseau.any2json.Header;
-import com.github.romualdrousseau.any2json.ModelBuilder;
+import com.github.romualdrousseau.any2json.modeldata.JsonModelBuilder;
 import com.github.romualdrousseau.any2json.Row;
 import com.github.romualdrousseau.any2json.Sheet;
 import com.github.romualdrousseau.any2json.event.BitmapGeneratedEvent;
@@ -21,15 +21,15 @@ public class Common {
     private static final Logger LOGGER = LoggerFactory.getLogger(Common.class);
     private static final String REPO_BASE_URL = "https://raw.githubusercontent.com/RomualdRousseau/Any2Json/Any2Json-Models/main";
 
-    public static <T> ModelBuilder loadModelBuilder(final String modelName, final Class<T> clazz) {
-        return new ModelBuilder().fromPath(Common.getResourcePath(String.format("/models/%s.json", modelName), clazz));
+    public static <T> JsonModelBuilder loadModelBuilder(final String modelName, final Class<T> clazz) {
+        return new JsonModelBuilder().fromPath(Common.getResourcePath(String.format("/models/%s.json", modelName), clazz));
     }
 
-    public static ModelBuilder loadModelBuilderFromGitHub(final String modelName) {
+    public static JsonModelBuilder loadModelBuilderFromGitHub(final String modelName) {
         try {
             LOGGER.info("Loaded model: " + modelName);
-            final var uri = String.format("%1$s/%2$s/%2$s.json", REPO_BASE_URL, modelName);
-            return new ModelBuilder().fromURI(uri);
+            final var url = String.format("%1$s/%2$s/%2$s.json", REPO_BASE_URL, modelName);
+            return new JsonModelBuilder().fromURL(url);
         } catch (final IOException | InterruptedException x) {
             throw new RuntimeException(x);
         }

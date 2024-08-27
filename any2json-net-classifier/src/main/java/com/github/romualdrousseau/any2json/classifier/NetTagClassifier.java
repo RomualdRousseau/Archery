@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.tensorflow.SavedModelBundle;
 import org.tensorflow.SessionFunction;
@@ -20,14 +21,16 @@ import org.tensorflow.Signature;
 import org.tensorflow.exceptions.TensorFlowException;
 import org.tensorflow.types.TFloat32;
 
+import com.github.romualdrousseau.any2json.Header;
 import com.github.romualdrousseau.any2json.HeaderTag;
 import com.github.romualdrousseau.any2json.Model;
+import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.TagClassifier;
 import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.any2json.util.TempFile;
+import com.github.romualdrousseau.shuju.types.Tensor;
 import com.github.romualdrousseau.shuju.commons.PythonManager;
 import com.github.romualdrousseau.shuju.json.JSON;
-import com.github.romualdrousseau.shuju.types.Tensor;
 import com.github.romualdrousseau.shuju.preprocessing.Text;
 import com.github.romualdrousseau.shuju.preprocessing.hasher.VocabularyHasher;
 import com.github.romualdrousseau.shuju.preprocessing.tokenizer.NgramTokenizer;
@@ -43,7 +46,6 @@ public class NetTagClassifier extends SimpleTagClassifier implements Trainable {
     private final List<String> vocabulary;
     private final int ngrams;
     private final int wordMinSize;
-    private final List<String> lexicon;
     private final Text.ITokenizer tokenizer;
     private final Text.IHasher hasher;
     private final boolean isModelTemp;
@@ -54,14 +56,14 @@ public class NetTagClassifier extends SimpleTagClassifier implements Trainable {
 
     public NetTagClassifier(final List<String> vocabulary, final int ngrams, final int wordMinSize,
             final List<String> lexicon, final Optional<Path> modelPath) {
+        this.setLexicon(lexicon);
 
         this.vocabulary = vocabulary;
         this.ngrams = ngrams;
         this.wordMinSize = wordMinSize;
-        this.lexicon = lexicon;
 
         this.tokenizer = (ngrams == 0)
-                ? new ShingleTokenizer(this.lexicon, this.wordMinSize)
+                ? new ShingleTokenizer(this.getLexicon(), this.wordMinSize)
                 : new NgramTokenizer(ngrams);
         this.hasher = new VocabularyHasher(this.vocabulary);
         this.isModelTemp = modelPath.filter(x -> x.toFile().exists()).isEmpty();
@@ -71,12 +73,12 @@ public class NetTagClassifier extends SimpleTagClassifier implements Trainable {
     public NetTagClassifier(final Model model, final TagClassifier.TagStyle tagStyle) {
         this(
                 model.getData().getList("vocabulary"),
-                model.getData().getInt("ngrams"),
-                model.getData().getInt("wordMinSize"),
+                model.getData().<Integer>get("ngrams").orElse(0),
+                model.getData().<Integer>get("wordMinSize").orElse(2),
                 model.getData().getList("lexicon"),
-                Optional.ofNullable(model.getAttributes().get("modelPath")).map(Path::of));
+                Optional.ofNullable(model.getModelAttributes().get("modelPath")).map(Path::of));
 
-        assert this.isModelTemp && model.getData().getString("model") != null : "model element must exist";
+        assert this.isModelTemp && model.getData().<String>get("model").isPresent() : "model element must exist";
 
         this.setModel(model);
         this.setTagStyle(tagStyle);
@@ -90,17 +92,21 @@ public class NetTagClassifier extends SimpleTagClassifier implements Trainable {
     @Override
     public void updateModelData() {
         this.getModel().getData().setList("vocabulary", this.vocabulary);
-        this.getModel().getData().setInt("ngrams", this.ngrams);
-        this.getModel().getData().setInt("wordMinSize", this.wordMinSize);
-        this.getModel().getData().setList("lexicon", this.lexicon);
+        this.getModel().getData().set("ngrams", this.ngrams);
+        this.getModel().getData().set("wordMinSize", this.wordMinSize);
+        this.getModel().getData().setList("lexicon", this.getLexicon());
         if (!this.isModelTemp && this.modelPath.isPresent()) {
-            this.getModel().getAttributes().put("modelPath", this.modelPath.get().toString());
-            this.getModel().getData().setString("model", this.serializeModelML(this.modelPath.get()));
+            this.getModel().getModelAttributes().put("modelPath", this.modelPath.get().toString());
+            this.getModel().getData().set("model", this.serializeModelML(this.modelPath.get()));
         }
     }
 
     @Override
-    public String predict(final String name, final List<String> entities, final List<String> context) {
+    public String predict(final Table table, final Header header) {
+        final var name = header.getName();
+        final var entities = StreamSupport.stream(header.entities().spliterator(), false).toList();
+        final var context = StreamSupport.stream(table.getHeaderNames().spliterator(), false).toList();
+
         if (!this.loadModelML()) {
             return HeaderTag.None.getValue();
         }
@@ -119,6 +125,32 @@ public class NetTagClassifier extends SimpleTagClassifier implements Trainable {
 
         final var result = Tensor.of((TFloat32) this.tagClassifierFunc.call(inputs).get("tag_output").get());
         return this.getModel().getTagList().get((int) result.argmax(1).item(0));
+    }
+
+    @Override
+    public List<Integer> getInputVector(final String name, final List<String> entities,
+            final List<String> context) {
+        final var part1 = Text.to_categorical(entities, this.getModel().getEntityList());
+        final var part2 = Text.one_hot(name, this.getModel().getFilterList(), this.tokenizer, this.hasher);
+        final var part3 = context.stream()
+                .filter(x -> !x.equals(name))
+                .flatMap(x -> Text.one_hot(x, this.getModel().getFilterList(), this.tokenizer, this.hasher).stream())
+                .distinct().sorted().toList();
+        return Stream.of(
+                Text.pad_sequence(part1, IN_ENTITY_SIZE).subList(0, IN_ENTITY_SIZE),
+                Text.pad_sequence(part2, IN_NAME_SIZE).subList(0, IN_NAME_SIZE),
+                Text.pad_sequence(part3, IN_CONTEXT_SIZE).subList(0, IN_CONTEXT_SIZE))
+                .flatMap(Collection::stream)
+                .toList();
+    }
+
+    @Override
+    public List<Integer> getOutputVector(final String label) {
+        return Text.pad_sequence(Text.to_categorical(label, this.getModel().getTagList()), OUT_TAG_SIZE);
+    }
+
+    public List<String> getVocabulary() {
+        return this.vocabulary;
     }
 
     public Process fit(final List<TrainingEntry> trainingSet, final List<TrainingEntry> validationSet)
@@ -148,38 +180,10 @@ public class NetTagClassifier extends SimpleTagClassifier implements Trainable {
                         "-m " + this.modelPath.get());
     }
 
-    public List<String> getVocabulary() {
-        return this.vocabulary;
-    }
-
-    public List<String> getLexicon() {
-        return this.lexicon;
-    }
-
-    public List<Integer> getInputVector(final String name, final List<String> entities,
-            final List<String> context) {
-        final var part1 = Text.to_categorical(entities, this.getModel().getEntityList());
-        final var part2 = Text.one_hot(name, this.getModel().getFilters(), this.tokenizer, this.hasher);
-        final var part3 = context.stream()
-                .filter(x -> !x.equals(name))
-                .flatMap(x -> Text.one_hot(x, this.getModel().getFilters(), this.tokenizer, this.hasher).stream())
-                .distinct().sorted().toList();
-        return Stream.of(
-                Text.pad_sequence(part1, IN_ENTITY_SIZE).subList(0, IN_ENTITY_SIZE),
-                Text.pad_sequence(part2, IN_NAME_SIZE).subList(0, IN_NAME_SIZE),
-                Text.pad_sequence(part3, IN_CONTEXT_SIZE).subList(0, IN_CONTEXT_SIZE))
-                .flatMap(Collection::stream)
-                .toList();
-    }
-
-    public List<Integer> getOutputVector(final String label) {
-        return Text.pad_sequence(Text.to_categorical(label, this.getModel().getTagList()), OUT_TAG_SIZE);
-    }
-
     private boolean loadModelML() {
         try {
             if (this.modelPath.isEmpty()) {
-                final var modelString = this.getModel().getData().getString("model");
+                final var modelString = this.getModel().getData().<String>get("model").get();
                 this.modelPath = Optional.of(this.unserializeModelML(modelString));
             }
             if (this.tagClassifierModel == null) {
