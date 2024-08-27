@@ -19,6 +19,7 @@
         <module>any2json</module>
         <module>any2json-layex-parser</module>
         <module>any2json-net-classifier</module>
+        <module>any2json-llm-classifier</module>
         <module>any2json-csv</module>
         <module>any2json-excel</module>
         <module>any2json-parquet</module>
