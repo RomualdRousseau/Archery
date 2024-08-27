@@ -30,6 +30,12 @@
             <groupId>technology.tabula</groupId>
             <artifactId>tabula</artifactId>
              <version>${tabula.version}</version>
+             <exclusions>
+                <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcprov-jdk15on</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>
