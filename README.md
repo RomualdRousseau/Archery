@@ -24,7 +24,7 @@ to prepare your data for training processes in a predictive and reproductible ma
 it offers a scalable and efficient means of managing semi-structured data, thereby expanding the toolkit of data services available
 to organizations.
 
-Visit our [full documentation](https://romualdrousseau.github.io/Any2Json-Documents/) and learn more about how it works, try our
+Visit our [full documentation](https://romualdrousseau.github.io/Any2Json/) and learn more about how it works, try our
 tutorials and find a full list of plugins and models.
 
 ## Getting Started
@@ -100,8 +100,8 @@ Do not forget to configure the GitHub authentication in ***~/.m2/settings.xml***
 The following links will give you documentation about some background information, takes you through some implementation details,
 and then focuses on step-by-step instructions for getting the most out of Any2Json:
 
-* Using Any2Json: [here](https://romualdrousseau.github.io/Any2Json-monorepo/).
-* API Reference: [here](https://romualdrousseau.github.io/Any2Json-monorepo/api/).
+* Using Any2Json: [here](https://romualdrousseau.github.io/Any2Json/).
+* API Reference: [here](https://romualdrousseau.github.io/Any2Json/api/).
 
 ## Contribute
 
