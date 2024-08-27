@@ -60,7 +60,7 @@ revert-version:
 
 # Build the documentation
 build-doc: copy-pdfs
-    mkdocs build --config-file ./any2json-documents/mkdocs.yml --site-dir ./target/docs
+    mkdocs build --config-file ./any2json-documents/mkdocs.yml --site-dir ../target/docs
     mvn -P documentation site site:stage
 
 # Serve the documentation
