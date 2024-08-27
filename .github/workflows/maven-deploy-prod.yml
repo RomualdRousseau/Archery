@@ -46,12 +46,12 @@ jobs:
                   mvn versions:commit
 
             - name: Installing local dependencies
-              run: mvn -U -B initialize
+              run: mvn -U -B clean initialize
 
             - name: Deploy project
               run: |
                   export GPG_TTY=$(tty)
-                  mvn -U -B clean install deploy -P release -s .mvn/settings.xml
+                  mvn -U -B deploy -P release -s .mvn/settings.xml
               env:
                   OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
                   OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
