@@ -20,3 +20,4 @@ jobs:
         uses: ./.github/workflows/maven-test.yml
         with:
             service: any2json-examples
+        secrets: inherit
