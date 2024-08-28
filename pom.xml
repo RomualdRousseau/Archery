@@ -53,7 +53,7 @@
 
         <maven-minimum.version>3.6.3</maven-minimum.version>
 
-        <shuju.version>1.29.6</shuju.version>
+        <shuju.version>1.29.7</shuju.version>
         <log4j.version>2.23.1</log4j.version>
         <snappy.version>1.1.10.6</snappy.version>
         <jackson.version>2.17.2</jackson.version>
@@ -107,17 +107,6 @@
     </scm>
 
     <dependencies>
-        <!-- Log4j Framework -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j2-impl</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-1.2-api</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
         <!-- Test Framework -->
         <dependency>
             <groupId>junit</groupId>
@@ -136,11 +125,6 @@
     <dependencyManagement>
         <dependencies>
             <!-- Fix vunerabilities -->
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-api</artifactId>
-                <version>${log4j.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
@@ -263,6 +247,11 @@
             </dependency>
             <!-- Fix convergences -->
             <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
                 <version>${jackson.version}</version>
@@ -382,7 +371,9 @@
                         <version>3.13.0</version>
                         <configuration>
                             <compilerArgs>
+                                <arg>-Xlint:-options</arg>
                                 <arg>-Xlint:unchecked</arg>
+                                <arg>-Xlint:deprecation</arg>
                             </compilerArgs>
                         </configuration>
                     </plugin>
