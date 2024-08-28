@@ -4,6 +4,9 @@ on:
             service:
                 required: true
                 type: string
+        secrets:
+            OPENAI_KEY:
+                required: true
 
 jobs:
     maven-test:
@@ -29,3 +32,5 @@ jobs:
 
             - name: Test project
               run: mvn -U -B test --projects :${{ inputs.service }} --also-make
+              env:
+                  OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
