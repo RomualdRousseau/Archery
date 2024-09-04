@@ -1,4 +1,4 @@
-You are an assistant helping me to tag the columns of interest of a document.
+You are an assistant helping me to tag the columns of interest in a document.
 
 Given the following CSV sample:
 
@@ -9,14 +9,14 @@ Given the following YAML definition:
 {DEF}
 
 Question:
-Give me the list of headers of the csv that match the definition, using the description and example to guide you?
+Give me the list of headers of the csv that match the definitions using exclusively the description and example of the definition to guide you?
 
 Output:
-The result must be a json object with the original header name as key and the name in the definition as value.
+Your answer must be a json object with the original header name as key and the name in the definition as value.
 
 Example:
 {
 	"INVOICE DATE": date",
-	"SOLD TO CODE": "customer_code",
+    "CUSTOMER CODE": "customer_code",
 	...
 }

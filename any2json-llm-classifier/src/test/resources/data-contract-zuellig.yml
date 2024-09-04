@@ -79,8 +79,8 @@ definitions:
     name: customer_code
     title: Customer Code
     type: REFERENCE
-    description: this is the sold customer code
-    example: "SOLD TO CUSTOMER CODE"
+    description: the old customer code
+    example: "OLD CUSTOMER CODE"
     tags:
       - sales
   customer_name:
@@ -88,8 +88,8 @@ definitions:
     name: customer_name
     title: Customer Name
     type: STRING
-    description: the customer name in chinese
-    example: "CUSTOMER CHINESE NAME"
+    description: the ship to customer name
+    example: "SHIPTO CUSTOMER NAME"
     tags:
       - sales
   product_code:
