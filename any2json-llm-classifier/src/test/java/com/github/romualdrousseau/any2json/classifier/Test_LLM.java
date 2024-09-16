@@ -46,9 +46,9 @@ public class Test_LLM {
     }
 
     @Test
-    public void testDocumentHongKong() throws IOException, URISyntaxException {
+    public void testDocumentHongKongA() throws IOException, URISyntaxException {
         final var model = new DataContractModelBuilder()
-                .fromResource(getClass(), "/data-contract-zuellig.yml")
+                .fromResource(getClass(), "/data-contract-zuellig-a.yml")
                 .setLexicon("english")
                 .build();
 
@@ -66,7 +66,34 @@ public class Test_LLM {
                         csvContent.replace(csvContent.length() - 1, csvContent.length(), "\n");
                     }
                 });
-                // System.out.println(csvContent.toString());
+                System.out.println(csvContent.toString());
+            });
+        }
+
+    }
+
+    @Test
+    public void testDocumentHongKongB() throws IOException, URISyntaxException {
+        final var model = new DataContractModelBuilder()
+                .fromResource(getClass(), "/data-contract-zuellig-b.yml")
+                .setLexicon("english")
+                .build();
+
+        final var file = this.getResourcePath("/data/Malaysia - ZUELLIG - Sales - 20201002.xlsx");
+        try (final var doc = DocumentFactory.createInstance(file.toFile(), "UTF-8")
+                .setHints(EnumSet.of(Document.Hint.INTELLI_TAG))
+                .setModel(model)) {
+            doc.getSheetAt(0).getTable().ifPresent(t -> {
+                final var csvContent = new StringBuilder();
+                t.headers().forEach(h -> csvContent.append(h.getName() + " (" + h.getTag().getValue() + "),"));
+                csvContent.replace(csvContent.length() - 1, csvContent.length(), "\n");
+                StreamSupport.stream(t.rows().spliterator(), false).forEach(r -> {
+                    if (r.getNumberOfCells() > 0) {
+                        r.cells().forEach(c -> csvContent.append("\"" + c.getValue() + "\","));
+                        csvContent.replace(csvContent.length() - 1, csvContent.length(), "\n");
+                    }
+                });
+                System.out.println(csvContent.toString());
             });
         }
 
