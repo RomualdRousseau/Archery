@@ -17,7 +17,7 @@ public interface Document extends AutoCloseable {
 
     TagClassifier getTagClassifier();
 
-    boolean open(final File file, final String encoding, final String password);
+    boolean open(final File file, final String encoding, final String password, final String sheetName);
 
     void close();
 

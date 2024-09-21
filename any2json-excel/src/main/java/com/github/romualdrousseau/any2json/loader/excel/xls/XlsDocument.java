@@ -33,7 +33,7 @@ public class XlsDocument extends BaseDocument {
     }
 
     @Override
-    public boolean open(final File excelFile, final String encoding, final String password) {
+    public boolean open(final File excelFile, final String encoding, final String password, final String sheetName) {
         if (excelFile == null) {
             throw new IllegalArgumentException();
         }

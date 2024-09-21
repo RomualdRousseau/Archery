@@ -28,7 +28,7 @@ public class DbfDocument extends BaseDocument {
     }
 
     @Override
-    public boolean open(final File dbfFile, final String encoding, final String password) {
+    public boolean open(final File dbfFile, final String encoding, final String password, final String sheetName) {
         if (dbfFile == null) {
             throw new IllegalArgumentException();
         }
@@ -39,9 +39,10 @@ public class DbfDocument extends BaseDocument {
             return false;
         }
 
-        if (encoding != null && this.openWithEncoding(dbfFile, encoding)) {
+        final var sheetName2 = (sheetName == null) ? Disk.removeExtension(dbfFile.getName()) : sheetName;
+        if (encoding != null && this.openWithEncoding(dbfFile, encoding, sheetName2)) {
             return true;
-        } else if (this.openWithEncoding(dbfFile, "ISO-8859-1")) {
+        } else if (this.openWithEncoding(dbfFile, "ISO-8859-1", sheetName2)) {
             return true;
         } else {
             this.close();
@@ -82,10 +83,9 @@ public class DbfDocument extends BaseDocument {
     public void autoRecipe(final BaseSheet sheet) {
     }
 
-    private boolean openWithEncoding(final File dbfFile, final String encoding) {
+    private boolean openWithEncoding(final File dbfFile, final String encoding, final String sheetName) {
         try {
             final var reader = new DBFReader(new FileInputStream(dbfFile), Charset.forName(encoding));
-            final var sheetName = Disk.removeExtension(dbfFile.getName());
             this.sheet = new DbfSheet(sheetName, reader);
             return true;
         } catch (final IOException | UnsupportedCharsetException x) {

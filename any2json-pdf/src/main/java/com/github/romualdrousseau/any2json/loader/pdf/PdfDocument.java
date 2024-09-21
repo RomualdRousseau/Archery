@@ -31,7 +31,7 @@ public class PdfDocument extends BaseDocument {
     }
 
     @Override
-    public boolean open(final File pdfFile, final String encoding, final String password) {
+    public boolean open(final File pdfFile, final String encoding, final String password, final String sheetName) {
         if (pdfFile == null) {
             throw new IllegalArgumentException();
         }
@@ -41,9 +41,10 @@ public class PdfDocument extends BaseDocument {
             return false;
         }
 
-        if (encoding != null && this.openWithEncoding(pdfFile, encoding)) {
+        final var sheetName2 = (sheetName == null) ? Disk.removeExtension(pdfFile.getName()) : sheetName;
+        if (encoding != null && this.openWithEncoding(pdfFile, encoding, sheetName2)) {
             return true;
-        } else if (this.openWithEncoding(pdfFile, "ISO-8859-1")) {
+        } else if (this.openWithEncoding(pdfFile, "ISO-8859-1", sheetName2)) {
             return true;
         } else {
             this.close();
@@ -80,10 +81,9 @@ public class PdfDocument extends BaseDocument {
         return new BaseSheet(this, this.sheet.getName(), this.sheet.ensureDataLoaded());
     }
 
-    private boolean openWithEncoding(final File pdfFile, final String encoding) {
+    private boolean openWithEncoding(final File pdfFile, final String encoding, final String sheetName) {
         try {
             final var reader = PDDocument.load(new FileInputStream(pdfFile));
-            final var sheetName = Disk.removeExtension(pdfFile.getName());
             this.sheet = new PdfSheet(sheetName, reader);
             return true;
         } catch (final IOException | UnsupportedCharsetException x) {

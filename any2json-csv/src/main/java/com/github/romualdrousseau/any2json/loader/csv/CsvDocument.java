@@ -28,16 +28,17 @@ public class CsvDocument extends BaseDocument {
     }
 
     @Override
-    public boolean open(final File txtFile, final String encoding, final String password) {
+    public boolean open(final File txtFile, final String encoding, final String password, final String sheetName) {
         if (txtFile == null) {
             throw new IllegalArgumentException();
         }
 
         this.sheet = null;
 
-        if (encoding != null && this.openWithEncoding(txtFile, encoding)) {
+        final var sheetName2 = (sheetName == null) ? Disk.removeExtension(txtFile.getName()) : sheetName;
+        if (encoding != null && this.openWithEncoding(txtFile, encoding, sheetName2)) {
             return true;
-        } else if (this.openWithEncoding(txtFile, "UTF-8")) {
+        } else if (this.openWithEncoding(txtFile, "UTF-8", sheetName2)) {
             return true;
         } else {
             this.close();
@@ -82,13 +83,12 @@ public class CsvDocument extends BaseDocument {
         }
     }
 
-    private boolean openWithEncoding(final File txtFile, final String encoding) {
+    private boolean openWithEncoding(final File txtFile, final String encoding, final String sheetName) {
         try {
             final var reader = new BufferedReader(new InputStreamReader(new FileInputStream(txtFile), encoding));
             if (encoding.startsWith("UTF-")) {
                 this.processUtfBOM(reader);
             }
-            final var sheetName = Disk.removeExtension(txtFile.getName());
             this.sheet = new CsvSheet(sheetName, reader);
             this.sheet.checkDataEncoding();
             return true;
