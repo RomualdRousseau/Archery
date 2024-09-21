@@ -24,7 +24,9 @@ class PdfSheet extends PatcheableSheetStore implements Closeable {
 
     private static final int BATCH_SIZE = 50000;
     private static final int MAX_COLUMNS = 100;
-    private static final double MARGIN = 6.0;
+    private static final int LATICE_SPACES = 3; // Number of spaces to be consider as a column separator
+    private static final int LATICE_MARGINS = 1; // Minimum margins to consider the begin of a row
+    private static final int LATICE_COLUMN_SEPARATORS = 4; // Number of column separators to consider it is a row
 
     private final String name;
 
@@ -119,7 +121,8 @@ class PdfSheet extends PatcheableSheetStore implements Closeable {
         return writer.getDataFrame();
     }
 
-    private void processRowsTabular(final SpreadsheetExtractionAlgorithm sea, final Page page, final DataFrameWriter writer) throws IOException {
+    private void processRowsTabular(final SpreadsheetExtractionAlgorithm sea, final Page page,
+            final DataFrameWriter writer) throws IOException {
         final var tables = sea.extract(page);
         for (final var table : tables) {
             final var rows = table.getRows();
@@ -135,7 +138,9 @@ class PdfSheet extends PatcheableSheetStore implements Closeable {
         }
     }
 
-    private void processRowsLatice(BasicExtractionAlgorithm bea, Page page, DataFrameWriter writer) throws IOException {
+    private void processRowsLatice(final BasicExtractionAlgorithm bea, final Page page, final DataFrameWriter writer)
+            throws IOException {
+        final var tableRows = new ArrayList<String>();
         final var tables = bea.extract(page);
         for (final var table : tables) {
             final var rows = table.getRows();
@@ -148,13 +153,13 @@ class PdfSheet extends PatcheableSheetStore implements Closeable {
                             writer.write(Row.of(""));
                             writer.write(Row.of(""));
                         }
-                        final var cells = new ArrayList<String>();
-                        for (final var text : this.getCells(elements)) {
-                            cells.add(StringUtils.cleanToken(text));
-                        }
-                        writer.write(Row.of(this.getCells(elements)));
+                        tableRows.add(this.getTableRow(elements));
                         isPreviousTableRow = true;
                     } else {
+                        if (tableRows.size() > 0) {
+                            this.processTableLatice(tableRows, writer);
+                            tableRows.clear();
+                        }
                         if (isPreviousTableRow) {
                             writer.write(Row.of(""));
                             writer.write(Row.of(""));
@@ -162,8 +167,51 @@ class PdfSheet extends PatcheableSheetStore implements Closeable {
                         writer.write(Row.of(StringUtils.cleanToken(this.getText(elements))));
                         isPreviousTableRow = false;
                     }
+                } else {
+                    isPreviousTableRow = false;
                 }
             }
+        }
+        if (tableRows.size() > 0) {
+            this.processTableLatice(tableRows, writer);
+            tableRows.clear();
+        }
+    }
+
+    private void processTableLatice(final ArrayList<String> rows, final DataFrameWriter writer) throws IOException {
+        final var tabs = new ArrayList<Integer>();
+        final int maxLength = rows.stream().mapToInt(x -> x.length()).max().getAsInt();
+
+        var last_tab = -1;
+        for (int i = 0; i < maxLength; i++) {
+            final int tab = i;
+            final var allBlanks = rows.stream().allMatch(x -> tab >= x.length() || this.isLaticeSpace(x.charAt(tab)));
+            if (allBlanks) {
+                if (last_tab >= 0 && (tab - last_tab) == 1) {
+                    tabs.remove(tabs.size() - 1);
+                }
+                tabs.add(tab);
+                last_tab = tab;
+            }
+        }
+        tabs.add(maxLength - 1);
+
+        for (final var row : rows) {
+            final var cells = new ArrayList<String>();
+            for (int i = 0; i < tabs.size() - 1; i++) {
+                final var begin = tabs.get(i);
+                if (begin < row.length()) {
+                    final var end = tabs.get(i + 1);
+                    if (end < row.length() - 1) {
+                        cells.add(StringUtils.cleanToken(row.substring(begin, end)));
+                    } else {
+                        cells.add(StringUtils.cleanToken(row.substring(begin)));
+                    }
+                } else {
+                    cells.add("");
+                }
+            }
+            writer.write(Row.of(cells.toArray(new String[] {})));
         }
     }
 
@@ -172,7 +220,7 @@ class PdfSheet extends PatcheableSheetStore implements Closeable {
         final var elements = new ArrayList<TextElement>();
         for (final var cell : row) {
             for (final var element : cell.getTextElements()) {
-                if (element instanceof TextElement){
+                if (element instanceof TextElement) {
                     elements.add((TextElement) element);
                 }
             }
@@ -180,43 +228,40 @@ class PdfSheet extends PatcheableSheetStore implements Closeable {
         return elements;
     }
 
-    private boolean isTableRow(List<TextElement> elements, boolean isPreviousTableRow) {
-        var margin = Math.floor(Math.max(elements.get(0).getX() / elements.get(0).getWidthOfSpace() - 4, 0) / 4);
-        var separators = 0.0;
-        // var symbols = 0.0;
+    private boolean isTableRow(final List<TextElement> elements, final boolean isPreviousTableRow) {
+        final var margins = (int) Math
+                .floor(Math.max(elements.get(0).getX() / elements.get(0).getWidthOfSpace(), 0) / LATICE_SPACES);
 
+        var separators = 0;
         var x = elements.get(0).getX();
-        for (final TextElement element: elements) {
-            // if (element.getText().isBlank()) {
-            //     symbols += 1.0;
-            // }
-            separators += Math.floor(Math.max((element.getX() - x) / element.getWidthOfSpace() - 4, 0) / 4);
+        for (final TextElement element : elements) {
+            final var spacing = Math.max((element.getX() - x) / element.getWidthOfSpace() - LATICE_SPACES, 0);
+            if (spacing > 0) {
+                separators++;
+            }
             x = element.getX();
         }
 
-        // Very naive Naive Bayes
-        final var pRow = pRowMargin(margin) * pRowSeparators(separators);
-        final var pNotRow = pNotRowMargin(margin) * pNotRowSeparators(separators);
-        return (!isPreviousTableRow) ? pRow > pNotRow : pRow >= pNotRow;
+        final var pRow = 0.5 * pRowMargin(margins) + 0.5 * pRowSeparators(separators);
+        return (!isPreviousTableRow) ? pRow == 1.0 : pRow >= 0.5; // Give a bit of lax if we are in a table, i.e. the
+                                                                  // previous row was a table row
     }
 
-    private String[] getCells(List<TextElement> elements) {
-        var x = 0.0;
+    private String getTableRow(final List<TextElement> elements) {
         var text = "";
-        for (final TextElement element: elements) {
-            final var spacing = Math.max((element.getX() - x) / element.getWidthOfSpace() - 4, 0);
+        for (final TextElement element : elements) {
+            final var spacing = Math.max(element.getX() / element.getWidthOfSpace() - 1, 0) - text.length();
             for (int i = 0; i < spacing; i++) {
                 text += " ";
             }
             text += element.getText();
-            x = element.getX();
         }
-        return text.split("   +");
+        return text;
     }
 
-    private String getText(List<TextElement> elements) {
+    private String getText(final List<TextElement> elements) {
         var text = "";
-        for (final TextElement element: elements) {
+        for (final TextElement element : elements) {
             text += element.getText();
         }
         return text;
@@ -236,19 +281,15 @@ class PdfSheet extends PatcheableSheetStore implements Closeable {
         return row.get(colIndex);
     }
 
-    private float pRowMargin(final double margin) {
-        return margin > MARGIN ? 1.0f : 0.0f;
+    private float pRowMargin(final int margins) {
+        return margins >= LATICE_MARGINS ? 1.0f : 0.0f;
     }
 
-    private float pNotRowMargin(final double margin) {
-        return 1.0f - pRowMargin(margin);
+    private float pRowSeparators(final int separators) {
+        return separators >= LATICE_COLUMN_SEPARATORS ? 1.0f : 0.0f;
     }
 
-    private float pRowSeparators(final double separators) {
-        return separators > 0.0 ? 1.0f : 0.0f;
-    }
-
-    private float pNotRowSeparators(final double separators) {
-        return 1.0f - this.pRowSeparators(separators);
+    private boolean isLaticeSpace(final char c) {
+        return List.of(' ', '-', '_', '|').contains(c);
     }
 }
