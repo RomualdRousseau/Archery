@@ -45,6 +45,7 @@ public class BaseSheet implements Sheet {
         this.pivotValueFormat = "%s " + Settings.PIVOT_VALUE_SUFFIX;
         this.pivotTypeFormat = "%s " + Settings.PIVOT_TYPE_SUFFIX;
         this.groupValueFormat = "%s " + Settings.GROUP_VALUE_SUFFIX;
+        this.columnValueFormat = "%s " + Settings.COLUMN_VALUE_SUFFIX;
     }
 
     @Override
@@ -229,6 +230,32 @@ public class BaseSheet implements Sheet {
                 this.unmergedAll);
     }
 
+    public void patchCells(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2,
+            final List<String> values) {
+        int colIndex = colIndex2;
+        for (final var value : values) {
+            if (value != null) {
+                this.patchCell(colIndex1, rowIndex1, colIndex, rowIndex2, value);
+            }
+            colIndex++;
+        }
+    }
+
+    public List<Integer> searchCell(final String regex, final int offset, final int length, final int nth) {
+        int n = 0;
+        for(int i = 0; i < length; i++) {
+            for (int j = 0; j < this.getLastColumnNum(offset + i); j++) {
+                final var cell = this.getCellDataAt(j, offset + i);
+                if (cell.matches(regex)) {
+                    if (++n == nth) {
+                        return List.of(j, offset + i);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     public boolean notifyStepCompleted(final SheetEvent e) {
         for (final var listener : listeners) {
             listener.stepCompleted(e);
@@ -382,6 +409,14 @@ public class BaseSheet implements Sheet {
         this.groupValueFormat = format;
     }
 
+    public String getColumnValueFormat() {
+        return this.columnValueFormat;
+    }
+
+    public void setColumnValueFormat(final String format) {
+        this.columnValueFormat = format;
+    }
+
     public void swapRows(int rowIndex1, int rowIndex2) {
         final var tmp = this.rowMask.get(rowIndex1);
         this.rowMask.set(rowIndex1, this.rowMask.get(rowIndex2));
@@ -430,5 +465,6 @@ public class BaseSheet implements Sheet {
     private String pivotValueFormat;
     private String pivotTypeFormat;
     private String groupValueFormat;
+    private String columnValueFormat;
     private List<String> pivotEntityList;
 }

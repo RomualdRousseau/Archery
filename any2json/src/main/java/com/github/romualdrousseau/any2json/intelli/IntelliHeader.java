@@ -22,13 +22,13 @@ public class IntelliHeader extends DataTableHeader {
             if (header.isColumnEmpty()) {
                 this.name = "";
             } else {
-                this.name = this.entities().stream().findAny().map(x -> this.getEntitiesAsString())
-                        .orElse(Settings.PIVOT_VALUE_SUFFIX);
+                this.name = String.format(this.getTable().getSheet().getColumnValueFormat(),
+                        this.entities().stream().findAny().map(x -> this.getEntitiesAsString()).orElse("VALUE"));
             }
         } else if (this.isPivotHeader() || !disableAutoName) {
             this.name = this.getTable().getSheet().getDocument().getModel().toEntityName(cellValue);
         } else {
-            this.name= cellValue;
+            this.name = cellValue;
         }
 
         this.disableAutoName = disableAutoName;
