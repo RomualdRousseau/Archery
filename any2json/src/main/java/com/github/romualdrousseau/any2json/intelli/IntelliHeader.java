@@ -24,7 +24,8 @@ public class IntelliHeader extends DataTableHeader {
                 this.name = "";
             } else {
                 this.name = String.format(this.getTable().getSheet().getColumnValueFormat(),
-                        this.entities().stream().findAny().map(x -> this.getEntitiesAsString()).orElse("VALUE"));
+                        StreamSupport.stream(this.entities().spliterator(), false).findAny()
+                                .map(x -> this.getEntitiesAsString()).orElse("VALUE"));
             }
         } else if (this.isPivotHeader() || !disableAutoName) {
             this.name = this.getTable().getSheet().getDocument().getModel().toEntityName(cellValue);
