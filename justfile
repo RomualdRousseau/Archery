@@ -24,7 +24,7 @@ clean:
 
 # Build
 build:
-    mvn -DskipTests package
+    mvn -U -DskipTests package
 
 # Run the tests
 test:
