@@ -70,16 +70,8 @@ public class BaseTable implements Table, Visitable {
         if (rowIndex < 0 || rowIndex >= this.getNumberOfRows()) {
             throw new ArrayIndexOutOfBoundsException(rowIndex);
         }
-        return this.cachedRows.computeIfAbsent(this.firstRow + this.firstRowOffset + rowIndex, (x) -> {
-            final var result = new BaseRow(this, x);
-            // Retrieve ignore status possibly lost in cache removal
-            for (final var i : this.ignoreRows()) {
-                if (i == rowIndex) {
-                    result.setIgnored(true);
-                }
-            }
-            return result;
-        });
+        final var rowGID = this.firstRow + this.firstRowOffset + rowIndex;
+        return this.cachedRows.computeIfAbsent(rowGID, x -> new BaseRow(this, x - this.firstRow));
     }
 
     @Override

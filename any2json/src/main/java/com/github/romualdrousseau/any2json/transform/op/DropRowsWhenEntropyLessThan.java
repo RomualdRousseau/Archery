@@ -12,7 +12,7 @@ public class DropRowsWhenEntropyLessThan {
         for(int i = 0; i <= sheet.getLastRowNum(); i++) {
             final var x = new HashMap<String, Double>();
             final var lastColumnNum = sheet.getLastColumnNum(i);
-            var n = 0;
+            int n = 0;
             for(int j = 0; j <= lastColumnNum; j++) {
                 if(sheet.hasCellDataAt(j, i)) {
                     final var value = sheet.getCellDataAt(j, i);
@@ -22,7 +22,7 @@ public class DropRowsWhenEntropyLessThan {
                     }
                 }
             }
-            final float e = (float) computeEntropy(x, n);
+            final var e = (float) computeEntropy(x, n);
             if (e <= minEntropy) {
                 sheet.markRowAsNull(i);
             }
@@ -32,8 +32,8 @@ public class DropRowsWhenEntropyLessThan {
 
     public static void Apply(final BaseSheet sheet, final float minEntropy, final int start, final int stop) {
         for(int i = 0; i <= sheet.getLastRowNum(); i++) {
-            final HashMap<String, Double> x = new HashMap<>();
-            var n = 0;
+            final var x = new HashMap<String, Double>();
+            int n = 0;
             for(int j = start; j <= stop; j++) {
                 if(sheet.hasCellDataAt(j, i)) {
                     final var value = sheet.getCellDataAt(j, i);
@@ -52,7 +52,7 @@ public class DropRowsWhenEntropyLessThan {
     }
 
     private static double computeEntropy(final HashMap<String, Double> x, final double n) {
-        var result = 0.0f;
+        var result = 0.0;
         for (final Entry<String, Double> e: x.entrySet()) {
             final double p = e.getValue() / n;
             result += p * Math.log(p) / Math.log(2);

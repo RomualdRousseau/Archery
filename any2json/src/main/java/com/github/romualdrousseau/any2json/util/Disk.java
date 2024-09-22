@@ -25,11 +25,11 @@ public class Disk
     }
 
     public static void zipDir(final Path sourceDirPath, final File zipFilePath) throws IOException {
-        try (final ZipOutputStream zs = new ZipOutputStream(new FileOutputStream(zipFilePath))) {
+        try (final var zs = new ZipOutputStream(new FileOutputStream(zipFilePath))) {
             Files.walk(sourceDirPath)
                     .filter(path -> !Files.isDirectory(path))
                     .forEach(path -> {
-                        final ZipEntry zipEntry = new ZipEntry(sourceDirPath.relativize(path).toString().replace("\\", "/"));
+                        final var zipEntry = new ZipEntry(sourceDirPath.relativize(path).toString().replace("\\", "/"));
                         try {
                             zs.putNextEntry(zipEntry);
                             Files.copy(path, zs);
@@ -43,16 +43,19 @@ public class Disk
 
     public static void unzipDir(final Path zipFile, final Path folder) throws IOException {
         final byte[] buffer = new byte[4096];
-        try (final ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile.toFile()))) {
+        try (final var zis = new ZipInputStream(new FileInputStream(zipFile.toFile()))) {
             ZipEntry ze = zis.getNextEntry();
             while (ze != null) {
-                final Path newFile = folder.resolve(ze.getName());
+                final var newFile = folder.resolve(ze.getName()).normalize();
+                if (!newFile.startsWith(folder)) {
+                    throw new IOException("Bad zip entry: " + ze.getName());
+                }
 
                 // Ensure parent directory exists
                 newFile.getParent().toFile().mkdirs();
 
                 if (!ze.isDirectory()) {
-                    try (final FileOutputStream fos = new FileOutputStream(newFile.toFile())) {
+                    try (final var fos = new FileOutputStream(newFile.toFile())) {
                         int len;
                         while ((len = zis.read(buffer)) > 0) {
                             fos.write(buffer, 0, len);
@@ -75,8 +78,8 @@ public class Disk
     }
 
     public static void removeFileName(final Path filename1, final Path filename2) {
-        final File file1 = filename1.toFile();
-        final File file2 = filename2.toFile();
+        final var file1 = filename1.toFile();
+        final var file2 = filename2.toFile();
         file1.renameTo(file2);
     }
 
