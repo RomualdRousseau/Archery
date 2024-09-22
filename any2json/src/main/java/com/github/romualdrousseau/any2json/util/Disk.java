@@ -7,15 +7,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
-import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class Disk
 {
-    private static final List<String> DANGEROUS_PATH = List.of("..", ".");
-
     public static void copyDir(Path src, Path dest) throws IOException {
         Files.walk(src).forEach(source -> copyFile(source, dest.resolve(src.relativize(source))));
     }
@@ -49,11 +46,10 @@ public class Disk
         try (final var zis = new ZipInputStream(new FileInputStream(zipFile.toFile()))) {
             ZipEntry ze = zis.getNextEntry();
             while (ze != null) {
-                if (DANGEROUS_PATH.contains(ze.getName())) {
-                    continue;
+                final var newFile = folder.resolve(ze.getName()).normalize();
+                if (!newFile.startsWith(folder)) {
+                    throw new IOException("Bad zip entry: " + ze.getName());
                 }
-
-                final var newFile = folder.resolve(ze.getName());
 
                 // Ensure parent directory exists
                 newFile.getParent().toFile().mkdirs();
