@@ -8,12 +8,13 @@ public class BaseRow implements Row {
     public BaseRow(final BaseTable table, final int rowIndex) {
         this.table = table;
         this.rowIndex = rowIndex;
+        this.cachedCells = new BaseCell[table.getNumberOfColumns()];
+
+        this.ignored = table.ignoreRows().stream().anyMatch(x -> table.getFirstRowOffset() + x == rowIndex);
         this.cellCount = 0;
         this.emptyCellCount = 0;
         this.islandCellCount = 0;
         this.cellCountUpdated = false;
-        this.cachedCells = new BaseCell[table.getNumberOfColumns()];
-        this.ignored = false;
         this.rowNum = 0;
     }
 
@@ -58,9 +59,9 @@ public class BaseRow implements Row {
         if (colIndex < 0 || colIndex >= this.table.getNumberOfColumns()) {
             throw new IndexOutOfBoundsException();
         }
-        BaseCell result = cachedCells[colIndex];
+        var result = cachedCells[colIndex];
         if (result == null) {
-            final String v = this.getCellValueAt(colIndex);
+            final var v = this.getCellValueAt(colIndex);
             result = new BaseCell(v, colIndex, this.getNumberOfMergedCellsAt(colIndex), this.table.getSheet());
             cachedCells[colIndex] = result;
         }
@@ -104,7 +105,7 @@ public class BaseRow implements Row {
     private void updateCellCount() {
         int n = 0;
         for (int i = 0; i < this.table.getNumberOfColumns();) {
-            final BaseCell cell = this.getCellAt(i);
+            final var cell = this.getCellAt(i);
             if (!cell.hasValue()) {
                 this.emptyCellCount++;
                 n = 0;
@@ -121,11 +122,12 @@ public class BaseRow implements Row {
 
     private final BaseTable table;
     private final int rowIndex;
+    private final BaseCell[] cachedCells;
+
+    private boolean ignored;
     private int cellCount;
     private int emptyCellCount;
     private int islandCellCount;
     private boolean cellCountUpdated;
-    private final BaseCell[] cachedCells;
-    private boolean ignored;
     private int rowNum;
 }
