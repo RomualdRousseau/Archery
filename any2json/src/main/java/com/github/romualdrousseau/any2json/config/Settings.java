@@ -12,6 +12,7 @@ public class Settings {
     public final static String PIVOT_VALUE_SUFFIX = "#VALUE?";
     public static final String PIVOT_TYPE_SUFFIX = "#TYPE?";
     public final static String GROUP_VALUE_SUFFIX = "#GROUP?";
+    public final static String COLUMN_VALUE_SUFFIX = "#COLUMN?";
 
     public static final String MERGE_SEPARATOR = " ";
 }

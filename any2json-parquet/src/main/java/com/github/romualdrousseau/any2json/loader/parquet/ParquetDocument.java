@@ -32,7 +32,7 @@ public class ParquetDocument extends BaseDocument {
     }
 
     @Override
-    public boolean open(final File parquetFile, final String encoding, final String password) {
+    public boolean open(final File parquetFile, final String encoding, final String password, final String sheetName) {
         if (parquetFile == null) {
             throw new IllegalArgumentException();
         }
@@ -48,8 +48,8 @@ public class ParquetDocument extends BaseDocument {
             final var config = new Configuration();
             final var file = HadoopInputFile.fromPath(path, config);
             final var reader = AvroParquetReader.<GenericRecord>builder(file).disableCompatibility().build();
-            final var sheetName = Disk.removeExtension(parquetFile.getName());
-            this.sheet = new ParquetSheet(sheetName, reader);
+            final var sheetName2 = (sheetName == null) ? Disk.removeExtension(parquetFile.getName()) : sheetName;
+            this.sheet = new ParquetSheet(sheetName2, reader);
             return true;
         } catch (IOException x) {
             this.close();

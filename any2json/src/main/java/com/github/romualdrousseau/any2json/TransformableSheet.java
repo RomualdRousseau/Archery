@@ -351,6 +351,16 @@ public class TransformableSheet {
     }
 
     /**
+     * This method sets the name of a column header wihtout name for the sheet using the given
+     * format.
+     *
+     * @param format the format used as String#format(String, Object...)}
+     */
+    public void setColumnValueFormat(final String format) {
+        this.sheet.setColumnValueFormat(format);
+    }
+
+    /**
      * This method crops the sheet by dropping all rows and columns on
      * the edges of the sheet.
      */
@@ -413,7 +423,7 @@ public class TransformableSheet {
     }
 
     /**
-     * This method patches the cells of the given column and row indices with the
+     * This method patches the cell of the given column and row indices with the
      * given value. The style is copied from an existing cell.
      *
      * @param colIndex1 the column index to copy the style from
@@ -425,6 +435,21 @@ public class TransformableSheet {
     public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2,
             final String value) {
         this.sheet.patchCell(colIndex1, rowIndex1, colIndex2, rowIndex2, value);
+    }
+
+    /**
+     * This method patches the sequence of cells from the given column and row indices with the
+     * given values. The style is copied from an existing cell.
+     *
+     * @param colIndex1 the column index to copy the style from
+     * @param rowIndex1 the row index to copy the style from
+     * @param colIndex2 the column index to copy the style to
+     * @param rowIndex2 the row index to copy the style to
+     * @param values     the values of the destination cells
+     */
+    public void patchCells(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2,
+            final List<String> values) {
+        this.sheet.patchCells(colIndex1, rowIndex1, colIndex2, rowIndex2, values);
     }
 
     /**
@@ -576,6 +601,41 @@ public class TransformableSheet {
      */
     public void dropRowsWhenEntropyLessThan(final float minEntropy, final int start, final int stop) {
         DropRowsWhenEntropyLessThan.Apply(this.sheet, minEntropy, start, stop);
+    }
+
+    /**
+     * This method searches for the first occurence of a value that match a regex within a given row.
+     *
+     * @param regex the regex to search
+     * @param rowIndex the row indexc to search
+     */
+    public List<Integer> searchFirstValue(final String regex, final int rowIndex) {
+        return this.sheet.searchCell(regex, rowIndex, 1, 1);
+    }
+
+    /**
+     * This method searches for the first occurence of a value that match a regex within a given region of rows.
+     * The region of rows begins at a given offset and has a given number of rows.
+     *
+     * @param regex the regex to search
+     * @param offset the starting offset of the region to search
+     * @param length the number of rows to search
+     */
+    public List<Integer> searchFirstValue(final String regex, final int offset, final int length) {
+        return this.sheet.searchCell(regex, offset, length, 1);
+    }
+
+    /**
+     * This method searches for the nth occurence of a value that match a regex within a given region of rows.
+     * The region of rows begins at a given offset and has a given number of rows.
+     *
+     * @param regex the regex to search
+     * @param offset the starting offset of the region to search
+     * @param length the number of rows to search
+     * @param nth the nth occurence to match
+     */
+    public List<Integer> searchNthValue(final String regex, final int offset, final int length, final int nth) {
+        return this.sheet.searchCell(regex, offset, length, nth);
     }
 
     private final BaseSheet sheet;
