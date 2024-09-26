@@ -7,10 +7,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.github.romualdrousseau.any2json.ModelData;
-import com.github.romualdrousseau.shuju.json.JSON;
-import com.github.romualdrousseau.shuju.json.JSONArray;
-import com.github.romualdrousseau.shuju.json.JSONCollector;
-import com.github.romualdrousseau.shuju.json.JSONObject;
+import com.github.romualdrousseau.any2json.commons.json.JSON;
+import com.github.romualdrousseau.any2json.commons.json.JSONArray;
+import com.github.romualdrousseau.any2json.commons.json.JSONCollector;
+import com.github.romualdrousseau.any2json.commons.json.JSONObject;
 
 public class JsonModelData implements ModelData {
 

@@ -4,7 +4,7 @@ import org.apache.commons.collections4.map.LRUMap;
 
 import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.config.Settings;
-import com.github.romualdrousseau.shuju.strings.StringFuzzy;
+import com.github.romualdrousseau.any2json.commons.strings.StringFuzzy;
 
 public class StitchRows {
 

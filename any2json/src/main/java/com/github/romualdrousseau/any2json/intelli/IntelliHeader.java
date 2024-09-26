@@ -10,7 +10,7 @@ import com.github.romualdrousseau.any2json.base.BaseCell;
 import com.github.romualdrousseau.any2json.base.BaseHeader;
 import com.github.romualdrousseau.any2json.config.Settings;
 import com.github.romualdrousseau.any2json.header.DataTableHeader;
-import com.github.romualdrousseau.shuju.strings.StringUtils;
+import com.github.romualdrousseau.any2json.commons.strings.StringUtils;
 
 public class IntelliHeader extends DataTableHeader {
 

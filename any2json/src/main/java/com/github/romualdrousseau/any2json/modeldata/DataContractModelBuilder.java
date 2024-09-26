@@ -12,8 +12,8 @@ import java.util.Collections;
 import java.util.List;
 
 import com.github.romualdrousseau.any2json.Model;
-import com.github.romualdrousseau.shuju.yaml.YAML;
-import com.github.romualdrousseau.shuju.yaml.YAMLObject;
+import com.github.romualdrousseau.any2json.commons.yaml.YAML;
+import com.github.romualdrousseau.any2json.commons.yaml.YAMLObject;
 
 public class DataContractModelBuilder {
 

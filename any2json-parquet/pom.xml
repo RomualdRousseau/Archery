@@ -14,7 +14,7 @@
 
     <name>any2json-parquet</name>
     <description>Convert any text file in Parquet</description>
-    <url>https://github.com/romualdrousseau/any2json-parquet</url>
+    <url>https://github.com/romualdrousseau/any2json-monorepo</url>
 
     <dependencies>
         <!-- Any2Json Framework -->
@@ -54,12 +54,6 @@
             <version>${parquet.version}</version>
         </dependency>
         <!-- Test Framework -->
-        <dependency>
-            <groupId>com.github.romualdrousseau</groupId>
-            <artifactId>shuju-jackson-json</artifactId>
-            <version>${shuju.version}</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>com.github.romualdrousseau</groupId>
             <artifactId>any2json-net-classifier</artifactId>

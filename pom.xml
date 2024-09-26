@@ -16,6 +16,7 @@
     <url>https://github.com/romualdrousseau/any2json-monorepo</url>
 
     <modules>
+        <module>any2json-commons</module>
         <module>any2json</module>
         <module>any2json-layex-parser</module>
         <module>any2json-net-classifier</module>
@@ -54,9 +55,9 @@
 
         <maven-minimum.version>3.6.3</maven-minimum.version>
 
-        <shuju.version>1.30-SNAPSHOT</shuju.version>
         <log4j.version>2.23.1</log4j.version>
-        <snappy.version>1.1.10.6</snappy.version>
+        <fury.version>0.4.1</fury.version>
+        <snappy.version>1.1.10.7</snappy.version>
         <jackson.version>2.17.2</jackson.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <jython.version>2.7.4</jython.version>
@@ -66,6 +67,8 @@
         <parquet.version>1.14.2</parquet.version>
         <tabula.version>1.0.5</tabula.version>
         <openai-service.version>0.18.2</openai-service.version>
+        <reflections.version>0.10.2</reflections.version>
+        <tensorflow.version>0.5.0</tensorflow.version>
 
         <junit.version>4.13.2</junit.version>
         <junit-suite.version>1.10.2</junit-suite.version>

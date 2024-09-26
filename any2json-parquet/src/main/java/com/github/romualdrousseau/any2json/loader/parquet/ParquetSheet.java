@@ -7,10 +7,10 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.parquet.hadoop.ParquetReader;
 
 import com.github.romualdrousseau.any2json.base.PatcheableSheetStore;
-import com.github.romualdrousseau.shuju.bigdata.DataFrame;
-import com.github.romualdrousseau.shuju.bigdata.DataFrameWriter;
-import com.github.romualdrousseau.shuju.bigdata.Row;
-import com.github.romualdrousseau.shuju.strings.StringUtils;
+import com.github.romualdrousseau.any2json.commons.bigdata.DataFrame;
+import com.github.romualdrousseau.any2json.commons.bigdata.DataFrameWriter;
+import com.github.romualdrousseau.any2json.commons.bigdata.Row;
+import com.github.romualdrousseau.any2json.commons.strings.StringUtils;
 
 class ParquetSheet extends PatcheableSheetStore implements Closeable {
 

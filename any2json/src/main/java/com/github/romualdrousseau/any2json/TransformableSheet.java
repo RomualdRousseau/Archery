@@ -17,7 +17,7 @@ import com.github.romualdrousseau.any2json.transform.op.DropRowsWhenFillRatioLes
 import com.github.romualdrousseau.any2json.transform.op.RepeatColumnCell;
 import com.github.romualdrousseau.any2json.transform.op.RepeatRowCell;
 import com.github.romualdrousseau.any2json.transform.op.SwapRows;
-import com.github.romualdrousseau.shuju.strings.StringUtils;
+import com.github.romualdrousseau.any2json.commons.strings.StringUtils;
 
 /**
  * TransformableSheet Class is responsible to apply transformations to a sheet

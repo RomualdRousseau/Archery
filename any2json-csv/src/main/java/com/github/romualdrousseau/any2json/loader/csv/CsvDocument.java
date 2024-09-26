@@ -13,7 +13,7 @@ import com.github.romualdrousseau.any2json.base.BaseDocument;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.transform.op.DropColumnsWhenFillRatioLessThan;
 import com.github.romualdrousseau.any2json.util.Disk;
-import com.github.romualdrousseau.shuju.strings.StringUtils;
+import com.github.romualdrousseau.any2json.commons.strings.StringUtils;
 
 public class CsvDocument extends BaseDocument {
 

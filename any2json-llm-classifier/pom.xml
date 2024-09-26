@@ -16,15 +16,10 @@
     <description>
         Any2Json plugin to tag tabular output implementing embeddings.
     </description>
-    <url>https://github.com/romualdrousseau/any2json-llm-classifier</url>
+    <url>https://github.com/romualdrousseau/any2json-monorepo</url>
 
     <dependencies>
         <!-- Any2Json Framework -->
-        <dependency>
-            <groupId>com.github.romualdrousseau</groupId>
-            <artifactId>shuju</artifactId>
-            <version>${shuju.version}</version>
-        </dependency>
         <dependency>
             <groupId>com.github.romualdrousseau</groupId>
             <artifactId>any2json</artifactId>
@@ -47,18 +42,6 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j2-impl</artifactId>
             <version>${log4j.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.romualdrousseau</groupId>
-            <artifactId>shuju-jackson-json</artifactId>
-            <version>${shuju.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.romualdrousseau</groupId>
-            <artifactId>shuju-jackson-yaml</artifactId>
-            <version>${shuju.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

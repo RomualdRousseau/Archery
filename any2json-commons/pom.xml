@@ -1,0 +1,58 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.github.romualdrousseau</groupId>
+        <artifactId>any2json-monorepo</artifactId>
+        <version>2.45-SNAPSHOT</version>
+    </parent>
+
+    <groupId>com.github.romualdrousseau</groupId>
+    <artifactId>any2json-commons</artifactId>
+    <version>2.45-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>any2json-commons</name>
+    <description>
+        Any2Json plugin to tag tabular output implementing embeddings.
+    </description>
+    <url>https://github.com/romualdrousseau/any2json-monorepo</url>
+
+    <dependencies>
+        <!-- Serialization -->
+        <dependency>
+            <groupId>org.furyio</groupId>
+            <artifactId>fury-core</artifactId>
+            <version>${fury.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.furyio</groupId>
+            <artifactId>fury-format</artifactId>
+            <version>${fury.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.xerial.snappy</groupId>
+            <artifactId>snappy-java</artifactId>
+            <version>${snappy.version}</version>
+        </dependency>
+        <!-- Reflections Framework -->
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>${reflections.version}</version>
+        </dependency>
+        <!-- Test Framework -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

@@ -10,8 +10,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.github.romualdrousseau.shuju.commons.CollectionUtils;
-import com.github.romualdrousseau.shuju.preprocessing.Text;
+import com.github.romualdrousseau.any2json.commons.types.CollectionUtils;
+import com.github.romualdrousseau.any2json.commons.preprocessing.Text;
 
 public class TrainingSetBuilder {
     private static final float TRAININGSET_AUGMENT_COEF = 0.5f;

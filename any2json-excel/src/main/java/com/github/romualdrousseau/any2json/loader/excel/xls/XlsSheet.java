@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.romualdrousseau.any2json.base.PatcheableSheetStore;
-import com.github.romualdrousseau.shuju.strings.StringUtils;
+import com.github.romualdrousseau.any2json.commons.strings.StringUtils;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;

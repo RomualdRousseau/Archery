@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 import com.github.romualdrousseau.any2json.base.BaseSheet;
-import com.github.romualdrousseau.shuju.strings.StringUtils;
+import com.github.romualdrousseau.any2json.commons.strings.StringUtils;
 
 public class DropColumnsWhenEntropyLessThan {
 

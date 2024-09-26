@@ -6,11 +6,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import com.github.romualdrousseau.any2json.base.PatcheableSheetStore;
-import com.github.romualdrousseau.shuju.bigdata.DataFrame;
-import com.github.romualdrousseau.shuju.bigdata.DataFrameWriter;
-import com.github.romualdrousseau.shuju.bigdata.Row;
-import com.github.romualdrousseau.shuju.strings.StringUtils;
-import com.github.romualdrousseau.shuju.types.Tensor;
+import com.github.romualdrousseau.any2json.commons.bigdata.DataFrame;
+import com.github.romualdrousseau.any2json.commons.bigdata.DataFrameWriter;
+import com.github.romualdrousseau.any2json.commons.bigdata.Row;
+import com.github.romualdrousseau.any2json.commons.strings.StringUtils;
+import com.github.romualdrousseau.any2json.commons.types.Tensor;
 
 class CsvSheet extends PatcheableSheetStore implements Closeable {
 
@@ -204,7 +204,7 @@ class CsvSheet extends PatcheableSheetStore implements Closeable {
             }
         }
 
-        final var i = (int) Tensor.of(v).argmax(0).item(0);
+        final var i = (int) Tensor.of(v).argmax();
         return (i == 0) ? null : SEPARATORS[i - 1];
     }
 

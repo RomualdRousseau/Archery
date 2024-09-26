@@ -9,10 +9,10 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.github.romualdrousseau.any2json.ModelData;
-import com.github.romualdrousseau.shuju.commons.Pair;
-import com.github.romualdrousseau.shuju.yaml.YAML;
-import com.github.romualdrousseau.shuju.yaml.YAMLArray;
-import com.github.romualdrousseau.shuju.yaml.YAMLObject;
+import com.github.romualdrousseau.any2json.commons.types.Pair;
+import com.github.romualdrousseau.any2json.commons.yaml.YAML;
+import com.github.romualdrousseau.any2json.commons.yaml.YAMLArray;
+import com.github.romualdrousseau.any2json.commons.yaml.YAMLObject;
 
 public class DataContractModelData implements ModelData {
 

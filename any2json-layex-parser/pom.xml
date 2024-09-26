@@ -16,7 +16,7 @@
     <description>
         Any2Json plugin to parse complex layout implementing Table Layout Regular Expression - Layex
     </description>
-    <url>https://github.com/romualdrousseau/any2json-layex-parser</url>
+    <url>https://github.com/romualdrousseau/any2json-monorepo</url>
 
     <dependencies>
         <!-- Any2Json Framework -->

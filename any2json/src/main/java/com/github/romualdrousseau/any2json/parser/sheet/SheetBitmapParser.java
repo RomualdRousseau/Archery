@@ -7,11 +7,11 @@ import com.github.romualdrousseau.any2json.SheetParser;
 import com.github.romualdrousseau.any2json.base.BaseSheet;
 import com.github.romualdrousseau.any2json.base.BaseTable;
 import com.github.romualdrousseau.any2json.event.BitmapGeneratedEvent;
-import com.github.romualdrousseau.shuju.cv.Filter;
-import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
-import com.github.romualdrousseau.shuju.cv.SearchPoint;
-import com.github.romualdrousseau.shuju.cv.Template;
-import com.github.romualdrousseau.shuju.cv.shapeextractor.RectangleExtractor;
+import com.github.romualdrousseau.any2json.commons.cv.Filter;
+import com.github.romualdrousseau.any2json.commons.cv.ISearchBitmap;
+import com.github.romualdrousseau.any2json.commons.cv.SearchPoint;
+import com.github.romualdrousseau.any2json.commons.cv.Template;
+import com.github.romualdrousseau.any2json.commons.cv.shapeextractor.RectangleExtractor;
 
 public class SheetBitmapParser implements SheetParser {
 

@@ -14,7 +14,7 @@
 
     <name>any2json-csv</name>
     <description>Convert any text file in Json</description>
-    <url>https://github.com/romualdrousseau/any2json-csv</url>
+    <url>https://github.com/romualdrousseau/any2json-monorepo</url>
 
     <dependencies>
         <!-- Any2Json Framework -->
@@ -24,12 +24,6 @@
             <version>${project.version}</version>
         </dependency>
         <!-- Test Framework -->
-        <dependency>
-            <groupId>com.github.romualdrousseau</groupId>
-            <artifactId>shuju-jackson-json</artifactId>
-            <version>${shuju.version}</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>com.github.romualdrousseau</groupId>
             <artifactId>any2json-net-classifier</artifactId>

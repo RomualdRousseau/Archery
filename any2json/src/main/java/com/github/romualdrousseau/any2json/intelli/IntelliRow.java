@@ -2,7 +2,7 @@ package com.github.romualdrousseau.any2json.intelli;
 
 import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.base.BaseTable;
-import com.github.romualdrousseau.shuju.bigdata.Row;
+import com.github.romualdrousseau.any2json.commons.bigdata.Row;
 
 public class IntelliRow extends BaseRow {
 

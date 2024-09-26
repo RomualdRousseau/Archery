@@ -7,8 +7,8 @@ import com.github.romualdrousseau.any2json.Header;
 import com.github.romualdrousseau.any2json.Model;
 import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.TagClassifier;
-import com.github.romualdrousseau.shuju.preprocessing.tokenizer.ShingleTokenizer;
-import com.github.romualdrousseau.shuju.strings.StringUtils;
+import com.github.romualdrousseau.any2json.commons.preprocessing.tokenizer.ShingleTokenizer;
+import com.github.romualdrousseau.any2json.commons.strings.StringUtils;
 
 public class SimpleTagClassifier implements TagClassifier {
 

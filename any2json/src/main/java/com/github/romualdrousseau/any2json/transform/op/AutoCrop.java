@@ -1,7 +1,7 @@
 package com.github.romualdrousseau.any2json.transform.op;
 
 import com.github.romualdrousseau.any2json.base.BaseSheet;
-import com.github.romualdrousseau.shuju.strings.StringUtils;
+import com.github.romualdrousseau.any2json.commons.strings.StringUtils;
 
 public class AutoCrop {
 

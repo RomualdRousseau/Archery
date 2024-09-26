@@ -16,7 +16,7 @@ import com.github.romualdrousseau.any2json.parser.sheet.SimpleSheetParser;
 import com.github.romualdrousseau.any2json.parser.table.SimpleTableParser;
 import com.github.romualdrousseau.any2json.readdir.GutenbergDiagonal;
 import com.github.romualdrousseau.any2json.transform.op.StitchRows;
-import com.github.romualdrousseau.shuju.strings.StringUtils;
+import com.github.romualdrousseau.any2json.commons.strings.StringUtils;
 
 public abstract class BaseDocument implements Document {
 

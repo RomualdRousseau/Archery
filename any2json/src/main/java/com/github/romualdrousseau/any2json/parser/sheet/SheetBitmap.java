@@ -1,7 +1,7 @@
 package com.github.romualdrousseau.any2json.parser.sheet;
 
 import com.github.romualdrousseau.any2json.base.BaseSheet;
-import com.github.romualdrousseau.shuju.cv.ISearchBitmap;
+import com.github.romualdrousseau.any2json.commons.cv.ISearchBitmap;
 
 public class SheetBitmap implements ISearchBitmap
 {

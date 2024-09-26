@@ -16,7 +16,7 @@
     <description>
         Any2Json plugin to load PDF file.
     </description>
-    <url>https://github.com/romualdrousseau/any2json-pdf</url>
+    <url>https://github.com/romualdrousseau/any2json-monorepo</url>
 
     <dependencies>
         <!-- Any2Json Framework -->

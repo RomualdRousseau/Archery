@@ -14,10 +14,10 @@ import com.github.romualdrousseau.any2json.base.BaseRow;
 import com.github.romualdrousseau.any2json.base.RowGroup;
 import com.github.romualdrousseau.any2json.header.PivotEntry;
 import com.github.romualdrousseau.any2json.header.PivotKeyHeader;
-import com.github.romualdrousseau.shuju.bigdata.DataFrame;
-import com.github.romualdrousseau.shuju.bigdata.DataFrameWriter;
-import com.github.romualdrousseau.shuju.bigdata.Row;
-import com.github.romualdrousseau.shuju.strings.StringUtils;
+import com.github.romualdrousseau.any2json.commons.bigdata.DataFrame;
+import com.github.romualdrousseau.any2json.commons.bigdata.DataFrameWriter;
+import com.github.romualdrousseau.any2json.commons.bigdata.Row;
+import com.github.romualdrousseau.any2json.commons.strings.StringUtils;
 
 public class IntelliTable extends DataTable {
 

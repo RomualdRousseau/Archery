@@ -7,8 +7,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
-import com.github.romualdrousseau.shuju.json.JSON;
-import com.github.romualdrousseau.shuju.json.JSONObject;
+import com.github.romualdrousseau.any2json.commons.json.JSON;
+import com.github.romualdrousseau.any2json.commons.json.JSONObject;
 import com.github.romualdrousseau.any2json.Header;
 import com.github.romualdrousseau.any2json.Model;
 import com.github.romualdrousseau.any2json.Table;

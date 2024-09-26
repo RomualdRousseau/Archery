@@ -16,7 +16,7 @@
     <description>
         A java API to manipulate semi structured documents and extract data from them.
     </description>
-    <url>https://github.com/romualdrousseau/any2json</url>
+    <url>https://github.com/romualdrousseau/any2json-monorepo</url>
 
     <dependencies>
         <!-- Commons Framework -->
@@ -31,18 +31,11 @@
             <artifactId>jython-standalone</artifactId>
             <version>${jython.version}</version>
         </dependency>
-        <!-- ShuJu Framework -->
+        <!-- Any2Json Framework -->
         <dependency>
             <groupId>com.github.romualdrousseau</groupId>
-            <artifactId>shuju</artifactId>
-            <version>${shuju.version}</version>
-        </dependency>
-        <!-- Test Framework -->
-        <dependency>
-            <groupId>com.github.romualdrousseau</groupId>
-            <artifactId>shuju-jackson-json</artifactId>
-            <version>${shuju.version}</version>
-            <scope>test</scope>
+            <artifactId>any2json-commons</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

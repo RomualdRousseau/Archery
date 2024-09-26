@@ -15,9 +15,9 @@ import java.util.Map;
 import com.github.romualdrousseau.any2json.Model;
 import com.github.romualdrousseau.any2json.TableParser;
 import com.github.romualdrousseau.any2json.TagClassifier;
-import com.github.romualdrousseau.shuju.json.JSON;
-import com.github.romualdrousseau.shuju.json.JSONObject;
-import com.github.romualdrousseau.shuju.yaml.YAML;
+import com.github.romualdrousseau.any2json.commons.json.JSON;
+import com.github.romualdrousseau.any2json.commons.json.JSONObject;
+import com.github.romualdrousseau.any2json.commons.yaml.YAML;
 
 public class JsonModelBuilder {
 

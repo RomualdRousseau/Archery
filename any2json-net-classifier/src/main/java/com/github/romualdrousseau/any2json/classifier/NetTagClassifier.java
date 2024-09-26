@@ -19,6 +19,8 @@ import org.tensorflow.SavedModelBundle;
 import org.tensorflow.SessionFunction;
 import org.tensorflow.Signature;
 import org.tensorflow.exceptions.TensorFlowException;
+import org.tensorflow.ndarray.Shape;
+import org.tensorflow.ndarray.buffer.DataBuffers;
 import org.tensorflow.types.TFloat32;
 
 import com.github.romualdrousseau.any2json.Header;
@@ -28,13 +30,13 @@ import com.github.romualdrousseau.any2json.Table;
 import com.github.romualdrousseau.any2json.TagClassifier;
 import com.github.romualdrousseau.any2json.util.Disk;
 import com.github.romualdrousseau.any2json.util.TempFile;
-import com.github.romualdrousseau.shuju.types.Tensor;
-import com.github.romualdrousseau.shuju.commons.PythonManager;
-import com.github.romualdrousseau.shuju.json.JSON;
-import com.github.romualdrousseau.shuju.preprocessing.Text;
-import com.github.romualdrousseau.shuju.preprocessing.hasher.VocabularyHasher;
-import com.github.romualdrousseau.shuju.preprocessing.tokenizer.NgramTokenizer;
-import com.github.romualdrousseau.shuju.preprocessing.tokenizer.ShingleTokenizer;
+import com.github.romualdrousseau.any2json.commons.types.Tensor;
+import com.github.romualdrousseau.any2json.commons.python.PythonManager;
+import com.github.romualdrousseau.any2json.commons.json.JSON;
+import com.github.romualdrousseau.any2json.commons.preprocessing.Text;
+import com.github.romualdrousseau.any2json.commons.preprocessing.hasher.VocabularyHasher;
+import com.github.romualdrousseau.any2json.commons.preprocessing.tokenizer.NgramTokenizer;
+import com.github.romualdrousseau.any2json.commons.preprocessing.tokenizer.ShingleTokenizer;
 
 public class NetTagClassifier extends SimpleTagClassifier implements Trainable {
 
@@ -119,12 +121,12 @@ public class NetTagClassifier extends SimpleTagClassifier implements Trainable {
                 .toArray();
 
         final Map<String, org.tensorflow.Tensor> inputs = Map.of(
-                "entity_input", Tensor.of(entityInput).reshape(1, -1).toTFloat32(),
-                "name_input", Tensor.of(nameInput).reshape(1, -1).toTFloat32(),
-                "context_input", Tensor.of(contextInput).reshape(1, -1).toTFloat32());
+                "entity_input", this.toTFloat32(Tensor.of(entityInput)),
+                "name_input", this.toTFloat32(Tensor.of(nameInput)),
+                "context_input", this.toTFloat32(Tensor.of(contextInput)));
 
-        final var result = Tensor.of((TFloat32) this.tagClassifierFunc.call(inputs).get("tag_output").get());
-        return this.getModel().getTagList().get((int) result.argmax(1).item(0));
+        final var result = this.fromTFloat32((TFloat32) this.tagClassifierFunc.call(inputs).get("tag_output").get());
+        return this.getModel().getTagList().get(result.argmax());
     }
 
     @Override
@@ -233,5 +235,14 @@ public class NetTagClassifier extends SimpleTagClassifier implements Trainable {
         } catch (final IOException x) {
             throw new UncheckedIOException(x);
         }
+    }
+
+    public Tensor fromTFloat32(final TFloat32 v) {
+        final double[] data = v.streamOfObjects().mapToDouble(i -> (double) i).toArray();
+        return Tensor.of(data);
+    }
+
+    public TFloat32 toTFloat32(final Tensor tensor) {
+        return TFloat32.tensorOf(Shape.of(1L, (long) tensor.size), DataBuffers.of(tensor.data));
     }
 }

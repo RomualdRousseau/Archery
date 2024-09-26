@@ -8,9 +8,9 @@ import java.util.Optional;
 import org.apache.commons.collections4.map.LRUMap;
 
 import com.github.romualdrousseau.any2json.modeldata.EmptyModelData;
-import com.github.romualdrousseau.shuju.preprocessing.Text;
-import com.github.romualdrousseau.shuju.preprocessing.comparer.RegexComparer;
-import com.github.romualdrousseau.shuju.types.Tensor;
+import com.github.romualdrousseau.any2json.commons.preprocessing.Text;
+import com.github.romualdrousseau.any2json.commons.preprocessing.comparer.RegexComparer;
+import com.github.romualdrousseau.any2json.commons.types.Tensor;
 
 public class Model {
 

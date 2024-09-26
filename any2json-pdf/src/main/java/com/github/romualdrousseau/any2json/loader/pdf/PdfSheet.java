@@ -8,10 +8,10 @@ import java.util.List;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
 import com.github.romualdrousseau.any2json.base.PatcheableSheetStore;
-import com.github.romualdrousseau.shuju.bigdata.DataFrame;
-import com.github.romualdrousseau.shuju.bigdata.DataFrameWriter;
-import com.github.romualdrousseau.shuju.bigdata.Row;
-import com.github.romualdrousseau.shuju.strings.StringUtils;
+import com.github.romualdrousseau.any2json.commons.bigdata.DataFrame;
+import com.github.romualdrousseau.any2json.commons.bigdata.DataFrameWriter;
+import com.github.romualdrousseau.any2json.commons.bigdata.Row;
+import com.github.romualdrousseau.any2json.commons.strings.StringUtils;
 
 import technology.tabula.ObjectExtractor;
 import technology.tabula.Page;
