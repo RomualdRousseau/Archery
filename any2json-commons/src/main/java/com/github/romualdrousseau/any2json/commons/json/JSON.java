@@ -1,6 +1,5 @@
 package com.github.romualdrousseau.any2json.commons.json;
 
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -8,29 +7,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.reflections.Reflections;
+import com.github.romualdrousseau.any2json.commons.json.jackson.JSONJacksonFactory;
 
 public class JSON {
-    public final static String PACKAGE_LOADER_PREFIX = "com.github.romualdrousseau.shuju.json";
-
-    private static JSONFactory Factory;
-    static {
-        final Reflections reflections = new Reflections(PACKAGE_LOADER_PREFIX);
-        JSON.Factory = reflections.getSubTypesOf(JSONFactory.class).stream()
-                .map(JSON::newFactoryInstance)
-                .findFirst()
-                .get();
-    }
-
-    private static <T> JSONFactory newFactoryInstance(Class<T> clazz) {
-        try {
-            return (JSONFactory) clazz.getConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException
-                | IllegalArgumentException | InvocationTargetException
-                | NoSuchMethodException | SecurityException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private static JSONFactory Factory = new JSONJacksonFactory();
 
     public static JSONArray newArray() {
         return JSON.Factory.newArray();

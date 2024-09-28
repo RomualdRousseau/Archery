@@ -31,6 +31,12 @@
             <artifactId>jython-standalone</artifactId>
             <version>${jython.version}</version>
         </dependency>
+        <!-- Reflections Framework -->
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>${reflections.version}</version>
+        </dependency>
         <!-- Any2Json Framework -->
         <dependency>
             <groupId>com.github.romualdrousseau</groupId>

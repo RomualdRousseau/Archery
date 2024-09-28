@@ -1,6 +1,5 @@
 package com.github.romualdrousseau.any2json.commons.yaml;
 
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -8,29 +7,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.reflections.Reflections;
+import com.github.romualdrousseau.any2json.commons.yaml.jackson.YAMLJacksonFactory;
 
 public class YAML {
-    public final static String PACKAGE_LOADER_PREFIX = "com.github.romualdrousseau.shuju.yaml";
-
-    private static YAMLFactory Factory;
-    static {
-        final var reflections = new Reflections(PACKAGE_LOADER_PREFIX);
-        YAML.Factory = reflections.getSubTypesOf(YAMLFactory.class).stream()
-                .map(YAML::newFactoryInstance)
-                .findFirst()
-                .get();
-    }
-
-    private static <T> YAMLFactory newFactoryInstance(final Class<T> clazz) {
-        try {
-            return (YAMLFactory) clazz.getConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException
-                | IllegalArgumentException | InvocationTargetException
-                | NoSuchMethodException | SecurityException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private static YAMLFactory Factory = new YAMLJacksonFactory();
 
     public static YAMLArray newArray() {
         return YAML.Factory.newArray();
