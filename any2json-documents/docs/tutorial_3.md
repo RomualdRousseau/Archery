@@ -50,17 +50,6 @@ Any2Json has a very modular design where each functionality can be loaded separa
 module to enable the intelligent layout parsing. The following depedencies are required to run the code of this tutorial:
 
 ```xml
-<!-- ShuJu Framework -->
-<dependency>
-    <groupId>com.github.romualdrousseau</groupId>
-    <artifactId>shuju</artifactId>
-    <version>${shuju.version}</version>
-</dependency>
-<dependency>
-    <groupId>com.github.romualdrousseau</groupId>
-    <artifactId>shuju-jackson-json</artifactId>
-    <version>${shuju.version}</version>
-</dependency>
 <!-- Any2Json Framework -->
 <dependency>
     <groupId>com.github.romualdrousseau</groupId>

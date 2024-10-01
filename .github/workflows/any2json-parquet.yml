@@ -6,7 +6,7 @@ on:
             - '**'
             - "!main"
         paths:
-            - shuju/**
+            - any2json/**
             - .github/workflows/any2json-parquet.yml
 
 jobs:

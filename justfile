@@ -1,4 +1,8 @@
 set positional-arguments
+set dotenv-required
+set dotenv-load
+
+export TF_CPP_MIN_LOG_LEVEL := "3"
 
 #
 # RECIPES
@@ -28,11 +32,11 @@ build:
 
 # Run the tests
 test:
-    mvn -Dtest=UnitTestSuite -Dsurefire.failIfNoSpecifiedTests=false test
+    mvn -Dsurefire.failIfNoSpecifiedTests=false test
 
 # Run all tests
 test-full:
-    mvn -Dtest=UnitFullTestSuite -Dsurefire.failIfNoSpecifiedTests=false test
+    mvn -Dsurefire.failIfNoSpecifiedTests=false test
 
 # Install in the local repository
 install:
