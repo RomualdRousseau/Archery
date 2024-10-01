@@ -48,7 +48,29 @@ public class Tensor {
     }
 
     public int argmax() {
-        // TODO implement this
-        return 0;
+        if (this.size < 1) {
+            return -1;
+        }
+        int i_max = 0;
+        float v_max = this.data[0];
+        for (int i = 1; i < this.data.length; i++) {
+            if (this.data[i] > v_max) {
+                i_max = i;
+                v_max = this.data[i];
+            }
+        }
+        return i_max;
+    }
+
+    public boolean equals(Tensor other, float eps) {
+        if (this.size != other.size) {
+            return false;
+        }
+        for (int i = 0; i < this.data.length; i++) {
+            if (Math.abs(this.data[i] - other.data[i]) > eps) {
+                return false;
+            }
+        }
+        return true;
     }
 }
