@@ -26,9 +26,9 @@ buildNumber.properties
 .venv/
 
 # mkdoc
-any2json-documents/**/misc/
-any2json-documents/**/svg-inkscape/
-any2json-documents/site/
+archery-documents/**/misc/
+archery-documents/**/svg-inkscape/
+archery-documents/site/
 
 # env
 .env

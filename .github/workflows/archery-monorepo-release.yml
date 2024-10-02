@@ -1,0 +1,28 @@
+name: archery-monorepo-release
+
+on:
+    release:
+        types: [published]
+
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+concurrency:
+    group: "pages"
+    cancel-in-progress: false
+
+jobs:
+    deploy-prod:
+        uses: ./.github/workflows/maven-deploy-prod.yml
+        with:
+            version: ${{ github.event.release.tag_name }}
+        secrets: inherit
+
+    deploy-doc:
+        uses: ./.github/workflows/maven-deploy-doc.yml
+        with:
+            version: ${{ github.event.release.tag_name }}
+
+

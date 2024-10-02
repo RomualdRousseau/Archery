@@ -1,11 +1,11 @@
-# Any2Json
+# Archery
 
 ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
-![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.romualdrousseau/any2json/badge.svg)
-![Snyk security score](https://snyk-widget.herokuapp.com/badge/mvn/com.github.romualdrousseau/any2json/badge.svg)
-![Snyk Known Vulnerabilities](https://snyk.io/test/github/com.github.romualdrousseau/any2json/badge.svg)
-![Test](https://github.com/RomualdRousseau/Any2Json/actions/workflows/build-and-test.yml/badge.svg)
-![Build](https://github.com/RomualdRousseau/Any2Json/actions/workflows/build-and-deploy.yml/badge.svg)
+![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.romualdrousseau/archery/badge.svg)
+![Snyk security score](https://snyk-widget.herokuapp.com/badge/mvn/com.github.romualdrousseau/archery/badge.svg)
+![Snyk Known Vulnerabilities](https://snyk.io/test/github/com.github.romualdrousseau/archery/badge.svg)
+![Test](https://github.com/RomualdRousseau/Archery/actions/workflows/build-and-test.yml/badge.svg)
+![Build](https://github.com/RomualdRousseau/Archery/actions/workflows/build-and-deploy.yml/badge.svg)
 ![Servier Inspired](https://raw.githubusercontent.com/servierhub/.github/main/badges/inspired.svg)
 
 A java API to manipulate semi structured documents and extract data from them.
@@ -15,7 +15,7 @@ A java API to manipulate semi structured documents and extract data from them.
 In today's data-driven landscape, navigating the complexities of semi-structured documents poses a significant challenge
 for organizations. These documents, characterized by diverse formats and a lack of standardization, often require
 specialized skills for effective manipulation and analysis. However, we propose a novel framework to address this
-challenge. By leveraging innovative algorithms and machine learning techniques, [Any2Json](https://github.com/RomualdRousseau/Any2Json)
+challenge. By leveraging innovative algorithms and machine learning techniques, [Archery](https://github.com/RomualdRousseau/Archery)
 offers a solution that gives you control over the data extraction process with tweakable and repeatable settings.
 Moreover, by automating the extraction process, it not only saves time but also minimizes errors, particularly beneficial
 for industries dealing with large volumes of such documents. Crucially, this framework integrates with machine learning workflows,
@@ -24,7 +24,7 @@ to prepare your data for training processes in a predictive and reproductible ma
 it offers a scalable and efficient means of managing semi-structured data, thereby expanding the toolkit of data services available
 to organizations.
 
-Visit our [full documentation](https://romualdrousseau.github.io/Any2Json/) and learn more about how it works, try our
+Visit our [full documentation](https://romualdrousseau.github.io/Archery/) and learn more about how it works, try our
 tutorials and find a full list of plugins and models.
 
 ## Getting Started
@@ -98,10 +98,10 @@ Do not forget to configure the GitHub authentication in ***~/.m2/settings.xml***
 ### Documentation
 
 The following links will give you documentation about some background information, takes you through some implementation details,
-and then focuses on step-by-step instructions for getting the most out of Any2Json:
+and then focuses on step-by-step instructions for getting the most out of Archery:
 
-* Using Any2Json: [here](https://romualdrousseau.github.io/Any2Json/).
-* API Reference: [here](https://romualdrousseau.github.io/Any2Json/api/).
+* Using Archery: [here](https://romualdrousseau.github.io/Archery/).
+* API Reference: [here](https://romualdrousseau.github.io/Archery/api/).
 
 ## Contribute
 

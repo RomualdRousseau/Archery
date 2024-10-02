@@ -64,12 +64,12 @@ revert-version:
 
 # Build the documentation
 build-doc: copy-pdfs
-    mkdocs build --config-file ./any2json-documents/mkdocs.yml --site-dir ../target/docs
+    mkdocs build --config-file ./archery-documents/mkdocs.yml --site-dir ../target/docs
     mvn -P documentation site site:stage
 
 # Serve the documentation
 serve-doc: copy-pdfs
-    mkdocs serve --config-file ./any2json-documents/mkdocs.yml
+    mkdocs serve --config-file ./archery-documents/mkdocs.yml
 
 # Update all plugins and dependencies
 update-dependencies:
@@ -80,5 +80,5 @@ update-plugins:
     mvn -DcreateChecksum=true versions:display-plugin-updates
 
 @copy-pdfs:
-    cp ./any2json-documents/whitepapers/Semi-structured\ Document\ Feature\ Extraction/misc/main.pdf ./any2json-documents/docs/resources/feature-extraction.pdf
-    cp ./any2json-documents/whitepapers/Table\ Layout\ Regular\ Expression\ -\ Layex/misc/main.pdf ./any2json-documents/docs/resources/layex.pdf
+    cp ./archery-documents/whitepapers/Semi-structured\ Document\ Feature\ Extraction/misc/main.pdf ./archery-documents/docs/resources/feature-extraction.pdf
+    cp ./archery-documents/whitepapers/Table\ Layout\ Regular\ Expression\ -\ Layex/misc/main.pdf ./archery-documents/docs/resources/layex.pdf

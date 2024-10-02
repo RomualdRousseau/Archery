@@ -5,28 +5,28 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.romualdrousseau</groupId>
-    <artifactId>any2json-monorepo</artifactId>
+    <artifactId>archery-monorepo</artifactId>
     <version>2.45-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>any2json-monorepo</name>
+    <name>archery-monorepo</name>
     <description>
         A java API to manipulate semi structured documents and extract data from them.
     </description>
-    <url>https://github.com/romualdrousseau/any2json-monorepo</url>
+    <url>https://github.com/romualdrousseau/archery-monorepo</url>
 
     <modules>
-        <module>any2json-commons</module>
-        <module>any2json</module>
-        <module>any2json-layex-parser</module>
-        <module>any2json-net-classifier</module>
-        <module>any2json-llm-classifier</module>
-        <module>any2json-csv</module>
-        <module>any2json-excel</module>
-        <module>any2json-parquet</module>
-        <module>any2json-dbf</module>
-        <module>any2json-pdf</module>
-        <module>any2json-examples</module>
+        <module>archery-commons</module>
+        <module>archery</module>
+        <module>archery-layex-parser</module>
+        <module>archery-net-classifier</module>
+        <module>archery-llm-classifier</module>
+        <module>archery-csv</module>
+        <module>archery-excel</module>
+        <module>archery-parquet</module>
+        <module>archery-dbf</module>
+        <module>archery-pdf</module>
+        <module>archery-examples</module>
     </modules>
 
     <licenses>
@@ -106,9 +106,9 @@
     </distributionManagement>
 
     <scm>
-        <connection>scm:git:https://github.com/romualdrousseau/any2json-monorepo.git</connection>
-        <developerConnection>scm:git:https://github.com/romualdrousseau/any2json-monorepo.git</developerConnection>
-        <url>https://github.com/romualdrousseau/any2json-monorepo</url>
+        <connection>scm:git:https://github.com/romualdrousseau/archery-monorepo.git</connection>
+        <developerConnection>scm:git:https://github.com/romualdrousseau/archery-monorepo.git</developerConnection>
+        <url>https://github.com/romualdrousseau/archery-monorepo</url>
     </scm>
 
     <dependencies>
