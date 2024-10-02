@@ -78,7 +78,7 @@ following depedencies are required to run the code of this tutorial:
 
 ## Load base model
 
-To parse a document, any2Json needs a model that will contains the parameters required to the parsing. Instead to start
+To parse a document, Archery needs a model that will contains the parameters required to the parsing. Instead to start
 from an empty Model (See [Tutorial 10](tutorial_10.md)), we will start from an existing one and we will adapt it for our
 document. You can find a list and details of all models [here](https://github.com/RomualdRousseau/Archery-Models/).
 

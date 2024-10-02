@@ -13,7 +13,7 @@
 \hypersetup{
     colorlinks=true,
     linkcolor=blue,
-    filecolor=magenta,      
+    filecolor=magenta,
     urlcolor=cyan,
     pdftitle={Semi-structured Document Feature Extraction},
     pdfpagemode=FullScreen,
@@ -66,9 +66,9 @@ A reading direction is defined by a tuple of a directions. Directions are define
 
 \begin{itemize}
     \item Vertical direction when cells are vertically arranged. We can have respectively 2 vertical directions top (T)
-    to bottom (B) or bottom (B) to top (T) that we notes respectively TB or BT. 
+    to bottom (B) or bottom (B) to top (T) that we notes respectively TB or BT.
     \item Horizontal direction when cells are horizontally arranged. We can have respectively 2 horizontal directions
-    left (L) to right (R) or right (R) to left (L) that we notes respectively LR or RL. 
+    left (L) to right (R) or right (R) to left (L) that we notes respectively LR or RL.
     \item The first element of the tuple is the primary direction or line direction and the second element is the
     secondary direction or character direction.
 \end{itemize}
@@ -130,7 +130,7 @@ than this threshold, the area contains a META else a TABLE:
 \begin{lstlisting}[language=Python, caption=Spreadsheet To Bitmap]
 def area(r):
   return r.rows * r.cols
-  
+
 def classify(RECTANGLES, THRESHOLD):
   for r in RECTANGLES:
     if area(r) < THRESHOLD:
@@ -168,7 +168,7 @@ def reading_direction_findclosestfromstart():
     closest = None
     min = 0
     for meta in METAS:
-        dist = (meta.row - 
+        dist = (meta.row -
                 reading_direction_start_cell.row)**2
                 + (meta.col -
                 reading_direction_start_cell.col)**2
@@ -204,7 +204,7 @@ for meta in METAS:
     root.append(meta)
     else:
     parent.append(meta)
-    
+
 # TABLES are processed in second and possibliy
 # attached to METAS
 for table in TABLES:
@@ -238,10 +238,10 @@ spreadsheet:
     },
     {
 		"meta": "Product 1",
-		"table": 
+		"table":
 		[
             {
-                "Date": "2023-Feb-01", 
+                "Date": "2023-Feb-01",
                 "Client": "AAA", "Qty": 1,
                 "Amount": 100
             },
@@ -249,7 +249,7 @@ spreadsheet:
     },
     {
 		"meta": "Product 2",
-		"table": 
+		"table":
 		[
 			{
                 "Date": "2023-Feb-01",
@@ -260,7 +260,7 @@ spreadsheet:
     },
     {
 		"meta": "Product 3",
-		"table": 
+		"table":
 		[
 			{
                 "Date": "2023-Feb-01",
@@ -360,7 +360,7 @@ Han, S., Northoff, G. Reading direction and culture. Nat Rev Neurosci 9, 965 (20
 
 \section{Implementation}
 
-Java - \hyperlink{https://github.com/RomualdRousseau/Any2Json}{github}
+Java - \hyperlink{https://github.com/RomualdRousseau/Archery}{github}
 
 
 \end{document}

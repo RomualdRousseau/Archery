@@ -138,7 +138,7 @@ We will present in a tagger based on word embedding and a neural network to clas
 
 All these steps are summarized in the graph below:
 
-![Detailed Algorithm](images/any2json_algo.drawio.png)
+![Detailed Algorithm](images/archery_algo.drawio.png)
 
 ## Conclusion
 

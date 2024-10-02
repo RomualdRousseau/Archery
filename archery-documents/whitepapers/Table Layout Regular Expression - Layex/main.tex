@@ -13,7 +13,7 @@
 \hypersetup{
     colorlinks=true,
     linkcolor=blue,
-    filecolor=magenta,      
+    filecolor=magenta,
     urlcolor=cyan,
     pdftitle={Table Layout Regular Expression - Layex},
     pdfpagemode=FullScreen,
@@ -119,9 +119,9 @@ The collection of table T over an alphabet $\Sigma$ is defined recursively as fo
 A reading direction is defined by a tuple of a directions. Directions are defined as follows:
 \begin{itemize}
     \item Vertical direction when cells are vertically arranged. We can have respectively 2 vertical directions top (T)
-    to bottom (B) or bottom (B) to top (T) that we notes respectively TB or BT. 
+    to bottom (B) or bottom (B) to top (T) that we notes respectively TB or BT.
     \item Horizontal direction when cells are horizontally arranged. We can have respectively 2 horizontal directions
-    left (L) to right (R) or right (R) to left (L) that we notes respectively LR or RL. 
+    left (L) to right (R) or right (R) to left (L) that we notes respectively LR or RL.
     \item The first element of the tuple is the primary direction or line direction and the second element is the
     secondary direction or character direction.
 \end{itemize}
@@ -139,48 +139,48 @@ Few examples:
 The collection of stream S over the table T and a reading direction R is defined by the following transformations:
 \begin{longtable}{|m{0.4\columnwidth}|m{0.3\columnwidth}|m{0.3\columnwidth}|}
 \caption{Stream Transformation} \\
-% Header    
+% Header
 \hline \rowcolor[HTML]{D0D0D0}
     Reading Direction & Table & Stream \\
 \hline
     % Row
     \multirow{2}{*}{TB-LR} & \includegraphics{table-h} & $A \cdot B$ \\
-\cline{2-3} 
+\cline{2-3}
                            & \includegraphics{table-v} & $A \cdot \{\$\} \cdot B$ \\
 \hline
     % Row
     \multirow{2}{*}{TB-RL} & \includegraphics{table-h} & $B \cdot A$ \\
-\cline{2-3} 
+\cline{2-3}
                            & \includegraphics{table-v} & $A \cdot \{\$\} \cdot B$ \\
 \hline
     % Row
     \multirow{2}{*}{BT-LR} & \includegraphics{table-h} & $A \cdot B$ \\
-\cline{2-3} 
+\cline{2-3}
                            & \includegraphics{table-v} & $B \cdot \{\$\} \cdot A$ \\
 \hline
     % Row
     \multirow{2}{*}{BT-RL} & \includegraphics{table-h} & $B \cdot A$ \\
-\cline{2-3} 
+\cline{2-3}
                            & \includegraphics{table-v} & $B \cdot \{\$\} \cdot A$ \\
 \hline
     % Row
     \multirow{2}{*}{TB-LR} & \includegraphics{table-h} & $A \cdot B$ \\
-\cline{2-3} 
+\cline{2-3}
                            & \includegraphics{table-v} & $A \cdot \{\$\} \cdot B$ \\
 \hline
     % Row
     \multirow{2}{*}{TB-RL} & \includegraphics{table-h} & $B \cdot A$ \\
-\cline{2-3} 
+\cline{2-3}
                            & \includegraphics{table-v} & $A \cdot \{\$\} \cdot B$ \\
 \hline
     % Row
     \multirow{2}{*}{BT-LR} & \includegraphics{table-h} & $A \cdot B$ \\
-\cline{2-3} 
+\cline{2-3}
                            & \includegraphics{table-v} & $B \cdot \{\$\} \cdot A$ \\
 \hline
     % Row
     \multirow{2}{*}{BT-RL} & \includegraphics{table-h} & $B \cdot A$ \\
-\cline{2-3} 
+\cline{2-3}
                            & \includegraphics{table-v} & $B \cdot \{\$\} \cdot A$ \\
 \hline
 \end{longtable}
@@ -411,6 +411,6 @@ Where,
 
 \section{Implementation}
 
-Java - \hyperlink{https://github.com/RomualdRousseau/Any2Json}{github}
+Java - \hyperlink{https://github.com/RomualdRousseau/Archery}{github}
 
 \end{document}
