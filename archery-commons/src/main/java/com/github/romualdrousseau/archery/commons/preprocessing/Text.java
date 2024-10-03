@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.github.romualdrousseau.archery.commons.types.CollectionUtils;
+import com.github.romualdrousseau.archery.commons.collections.CollectionUtils;
 import com.github.romualdrousseau.archery.commons.json.JSON;
 import com.github.romualdrousseau.archery.commons.json.JSONArray;
 import com.github.romualdrousseau.archery.commons.preprocessing.hasher.DefaultHasher;

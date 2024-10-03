@@ -4,7 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 import com.github.romualdrousseau.archery.commons.preprocessing.tokenizer.ShingleTokenizer;
 import com.github.romualdrousseau.archery.commons.strings.StringUtils;
@@ -12,6 +13,7 @@ import com.github.romualdrousseau.archery.commons.strings.StringUtils;
 public class Test_StringUtils {
 
     @Test
+    @Tag("unit")
     public void testSnakeWithLemmatization() {
         final var tokenizer = new ShingleTokenizer(List.of("al", "total,tot", "dollar", "percent"));
         assertEquals("total_quantity_dollar", StringUtils.toSnake("total quantity $", tokenizer));
@@ -23,6 +25,7 @@ public class Test_StringUtils {
     }
 
     @Test
+    @Tag("unit")
     public void testSnakeWithoutLemmatization() {
         final var tokenizer = new ShingleTokenizer(List.of("al", "total,tot", "dollar", "percent"), 1, false);
         assertEquals("total_quantity_dollar", StringUtils.toSnake("total quantity $", tokenizer));
@@ -34,6 +37,7 @@ public class Test_StringUtils {
     }
 
     @Test
+    @Tag("unit")
     public void testCamelWithLemmatization() {
         final var tokenizer = new ShingleTokenizer(List.of("al", "total,tot", "dollar", "percent"));
         assertEquals("totalQuantityDollar", StringUtils.toCamel("total quantity $", tokenizer));
@@ -45,6 +49,7 @@ public class Test_StringUtils {
     }
 
     @Test
+    @Tag("unit")
     public void testCamelWithoutLemmatization() {
         final var tokenizer = new ShingleTokenizer(List.of("al", "total,tot", "dollar", "percent"), 1, false);
         assertEquals("totQuantityDollar", StringUtils.toCamel("tot quantity $", tokenizer));
@@ -56,6 +61,7 @@ public class Test_StringUtils {
     }
 
     @Test
+    @Tag("unit")
     public void testCleanToken() {
         assertEquals("total quantity $", StringUtils.cleanToken("  total   quantity $  "));
         assertEquals("total quantity $", StringUtils.cleanToken(" \"\"\"  total   quantity $  \"\"\""));

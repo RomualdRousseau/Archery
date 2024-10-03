@@ -22,7 +22,7 @@ import com.github.romualdrousseau.archery.event.TableGraphBuiltEvent;
 import com.github.romualdrousseau.archery.event.TableReadyEvent;
 import com.github.romualdrousseau.archery.intelli.IntelliTable;
 import com.github.romualdrousseau.archery.TransformableSheet;
-import com.github.romualdrousseau.archery.commons.types.CollectionUtils;
+import com.github.romualdrousseau.archery.commons.collections.CollectionUtils;
 
 public class BaseSheet implements Sheet {
 

@@ -7,9 +7,9 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.parquet.hadoop.ParquetReader;
 
 import com.github.romualdrousseau.archery.base.PatcheableSheetStore;
-import com.github.romualdrousseau.archery.commons.bigdata.DataFrame;
-import com.github.romualdrousseau.archery.commons.bigdata.DataFrameWriter;
-import com.github.romualdrousseau.archery.commons.bigdata.Row;
+import com.github.romualdrousseau.archery.commons.collections.DataFrame;
+import com.github.romualdrousseau.archery.commons.collections.DataFrameWriter;
+import com.github.romualdrousseau.archery.commons.collections.Row;
 import com.github.romualdrousseau.archery.commons.strings.StringUtils;
 
 class ParquetSheet extends PatcheableSheetStore implements Closeable {

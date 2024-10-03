@@ -12,7 +12,7 @@ import com.github.romualdrousseau.archery.Document;
 import com.github.romualdrousseau.archery.Sheet;
 import com.github.romualdrousseau.archery.base.BaseDocument;
 import com.github.romualdrousseau.archery.base.BaseSheet;
-import com.github.romualdrousseau.archery.util.Disk;
+import com.github.romualdrousseau.archery.commons.io.Disk;
 import com.linuxense.javadbf.DBFReader;
 
 public class DbfDocument extends BaseDocument {

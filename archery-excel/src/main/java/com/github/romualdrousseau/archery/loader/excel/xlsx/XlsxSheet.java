@@ -10,8 +10,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
 import com.github.romualdrousseau.archery.base.PatcheableSheetStore;
-import com.github.romualdrousseau.archery.commons.bigdata.DataFrame;
-import com.github.romualdrousseau.archery.commons.bigdata.DataFrameWriter;
+import com.github.romualdrousseau.archery.commons.collections.DataFrame;
+import com.github.romualdrousseau.archery.commons.collections.DataFrameWriter;
 
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.model.SharedStrings;

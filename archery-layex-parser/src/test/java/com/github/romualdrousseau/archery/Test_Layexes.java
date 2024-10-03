@@ -4,10 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
-import com.github.romualdrousseau.archery.layex.Layex;
-import com.github.romualdrousseau.archery.layex.StringLexer;
+import com.github.romualdrousseau.archery.parser.layex.Layex;
+import com.github.romualdrousseau.archery.parser.layex.StringLexer;
 
 
 /**
@@ -16,6 +17,7 @@ import com.github.romualdrousseau.archery.layex.StringLexer;
 public class Test_Layexes {
 
     @Test
+    @Tag("unit")
     public void testCompile() throws Exception {
         final var matcher = new Layex("(()(h+$))(()(v+$)())+(f+$)$").compile();
         final var expected = "CONCAT(GROUP(CONCAT(GROUP(NOP),GROUP(CONCAT(MANY(VALUE('h'), 1, 2147483647),EOR)))),CONCAT(GROUP(MANY(CONCAT(GROUP(NOP),CONCAT(GROUP(CONCAT(MANY(VALUE('v'), 1, 2147483647),EOR)),GROUP(NOP))), 1, 2147483647)),CONCAT(GROUP(CONCAT(MANY(VALUE('f'), 1, 2147483647),EOR)),EOR)))";
@@ -23,6 +25,7 @@ public class Test_Layexes {
     }
 
     @Test
+    @Tag("unit")
     public void testStringMatch() throws Exception {
         final var lexer = new StringLexer("hhhh$vvvv$vvvv$vvvv$ffff$$");
         final var matcher = new Layex("(()(h+$))(()(v+$)())+(f+$)$").compile();
@@ -31,6 +34,7 @@ public class Test_Layexes {
     }
 
     @Test
+    @Tag("unit")
     public void testStringDontMatch() throws Exception {
         final var lexer = new StringLexer("hhhh$vvvv$vvvv$vsvv$ffff$$");
         final var matcher = new Layex("(()(h+$))(()(v+$)())+(f+$)$").compile();

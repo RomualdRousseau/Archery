@@ -3,7 +3,7 @@ package com.github.romualdrousseau.archery.parser.table;
 import java.util.List;
 
 import com.github.romualdrousseau.archery.base.BaseCell;
-import com.github.romualdrousseau.archery.layex.TableParser;
+import com.github.romualdrousseau.archery.parser.layex.TableParser;
 
 public abstract class DataTableParser extends TableParser<BaseCell> {
 

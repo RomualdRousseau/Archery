@@ -10,18 +10,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 
 import com.github.romualdrousseau.archery.commons.preprocessing.comparer.RegexComparer;
 
-
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class Test_RegexComparer {
 
     private Map<String, String> patterns;
     private List<String> bagOfWords;
 
-    @Before
+    @BeforeAll
     public void setUp() {
         this.patterns = new HashMap<>();
         patterns.put("\\d{1,4}[/|.|-]\\d{1,2}[/|.|-]\\d{1,4}", "DATE");
@@ -31,18 +33,21 @@ public class Test_RegexComparer {
     }
 
     @Test
+    @Tag("unit")
     public void testApplyNullValuesInList() {
         final var rc = new RegexComparer(this.patterns);
         assertFalse(rc.apply(null, this.bagOfWords));
     }
 
     @Test
+    @Tag("unit")
     public void testApplyEmptyList() {
         final var rc = new RegexComparer(this.patterns);
         assertFalse(rc.apply("NUMBER", Collections.emptyList()));
     }
 
     @Test
+    @Tag("unit")
     public void testApplyMatchingPattern() {
         final var rc = new RegexComparer(this.patterns);
         assertTrue(rc.apply("NUMBER", this.bagOfWords));
@@ -50,6 +55,7 @@ public class Test_RegexComparer {
     }
 
     @Test
+    @Tag("unit")
     public void testApplyNonMatchingPattern() {
         final var rc = new RegexComparer(this.patterns);
         assertFalse(rc.apply("NUMBER", this.bagOfWords.stream().skip(2).toList()));
@@ -57,6 +63,7 @@ public class Test_RegexComparer {
     }
 
     @Test
+    @Tag("unit")
     public void testAnonymizeMatchingPattern() {
         final var rc = new RegexComparer(this.patterns);
         assertEquals("NUMBER", rc.anonymize(this.bagOfWords.get(0)));
@@ -64,6 +71,7 @@ public class Test_RegexComparer {
     }
 
     @Test
+    @Tag("unit")
     public void testAnonymizeNonMatchingPattern() {
         final var rc = new RegexComparer(this.patterns);
         assertEquals(this.bagOfWords.get(2), rc.anonymize(this.bagOfWords.get(2)));
@@ -71,6 +79,7 @@ public class Test_RegexComparer {
     }
 
     @Test
+    @Tag("unit")
     public void testAnonymizeMatchingPatternWithFilter() {
         final var rc = new RegexComparer(this.patterns);
         assertEquals("NUMBER", rc.anonymize(this.bagOfWords.get(0), "NUMBER"));
@@ -78,6 +87,7 @@ public class Test_RegexComparer {
     }
 
     @Test
+    @Tag("unit")
     public void testAnonymizeNonMatchingPatternWithFilter() {
         final var rc = new RegexComparer(this.patterns);
         assertEquals(this.bagOfWords.get(0), rc.anonymize(this.bagOfWords.get(0), "DATE"));
@@ -85,6 +95,7 @@ public class Test_RegexComparer {
     }
 
     @Test
+    @Tag("unit")
     public void testFindMatchingPattern() {
         final var rc = new RegexComparer(this.patterns);
         assertEquals("1000.25", rc.find(this.bagOfWords.get(0)).get());
@@ -92,6 +103,7 @@ public class Test_RegexComparer {
     }
 
     @Test
+    @Tag("unit")
     public void testFindNonMatchingPattern() {
         final var rc = new RegexComparer(this.patterns);
         assertTrue(rc.find(this.bagOfWords.get(2)).isEmpty());
@@ -99,6 +111,7 @@ public class Test_RegexComparer {
     }
 
     @Test
+    @Tag("unit")
     public void testFindMatchingPatternWithFilter() {
         final var rc = new RegexComparer(this.patterns);
         final var expected = List.of("1000.25", "2024-01-01");
@@ -107,6 +120,7 @@ public class Test_RegexComparer {
     }
 
     @Test
+    @Tag("unit")
     public void testFindNonMatchingPatternWithFilter() {
         final var rc = new RegexComparer(this.patterns);
         assertTrue(rc.find(this.bagOfWords.get(0), "DATE").isEmpty());

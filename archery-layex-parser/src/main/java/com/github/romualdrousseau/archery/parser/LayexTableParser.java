@@ -12,13 +12,13 @@ import com.github.romualdrousseau.archery.base.BaseTable;
 import com.github.romualdrousseau.archery.base.DataTable;
 import com.github.romualdrousseau.archery.base.MetaTable;
 import com.github.romualdrousseau.archery.header.MetaHeader;
+import com.github.romualdrousseau.archery.parser.layex.Layex;
+import com.github.romualdrousseau.archery.parser.layex.TableLexer;
+import com.github.romualdrousseau.archery.parser.layex.TableMatcher;
 import com.github.romualdrousseau.archery.parser.table.DataTableGroupSubFooterParserFactory;
 import com.github.romualdrousseau.archery.parser.table.DataTableGroupSubHeaderParserFactory;
 import com.github.romualdrousseau.archery.parser.table.DataTableParserFactory;
 import com.github.romualdrousseau.archery.parser.table.MetaTableParser;
-import com.github.romualdrousseau.archery.layex.Layex;
-import com.github.romualdrousseau.archery.layex.TableLexer;
-import com.github.romualdrousseau.archery.layex.TableMatcher;
 
 public class LayexTableParser extends SimpleTableParser {
 

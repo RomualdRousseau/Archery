@@ -14,9 +14,9 @@ import com.github.romualdrousseau.archery.base.BaseRow;
 import com.github.romualdrousseau.archery.base.RowGroup;
 import com.github.romualdrousseau.archery.header.PivotEntry;
 import com.github.romualdrousseau.archery.header.PivotKeyHeader;
-import com.github.romualdrousseau.archery.commons.bigdata.DataFrame;
-import com.github.romualdrousseau.archery.commons.bigdata.DataFrameWriter;
-import com.github.romualdrousseau.archery.commons.bigdata.Row;
+import com.github.romualdrousseau.archery.commons.collections.DataFrame;
+import com.github.romualdrousseau.archery.commons.collections.DataFrameWriter;
+import com.github.romualdrousseau.archery.commons.collections.Row;
 import com.github.romualdrousseau.archery.commons.strings.StringUtils;
 
 public class IntelliTable extends DataTable {

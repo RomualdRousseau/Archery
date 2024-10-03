@@ -2,7 +2,7 @@ package com.github.romualdrousseau.archery.intelli;
 
 import com.github.romualdrousseau.archery.base.BaseRow;
 import com.github.romualdrousseau.archery.base.BaseTable;
-import com.github.romualdrousseau.archery.commons.bigdata.Row;
+import com.github.romualdrousseau.archery.commons.collections.Row;
 
 public class IntelliRow extends BaseRow {
 

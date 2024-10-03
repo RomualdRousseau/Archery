@@ -8,13 +8,15 @@ import static org.hamcrest.CoreMatchers.not;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 import com.github.romualdrousseau.archery.commons.types.Tensor;
 
 public class Test_Tensor {
 
     @Test
+    @Tag("unit")
     public void testNull() {
         final Tensor M1 = Tensor.Null;
         final Tensor M2 = Tensor.zeros(1);
@@ -23,6 +25,7 @@ public class Test_Tensor {
     }
 
     @Test
+    @Tag("unit")
     public void testZero() {
         final Tensor M1 = Tensor.zeros(4);
         final Tensor M2 = Tensor.of(0, 0, 0, 0);
@@ -32,6 +35,7 @@ public class Test_Tensor {
     }
 
     @Test
+    @Tag("unit")
     public void testEquals() {
         final Tensor M1 = Tensor.of(1, 2, 3, 4, 5);
         final Tensor M2 = Tensor.of(1, 2, 3, 4, 5);
@@ -43,6 +47,7 @@ public class Test_Tensor {
     }
 
     @Test
+    @Tag("unit")
     public void testIAdd() {
         final Tensor M1 = Tensor.of(1, 2, 3, 4, 5);
         final Tensor M2 = Tensor.of(2, 4, 6, 8, 10);
@@ -51,6 +56,7 @@ public class Test_Tensor {
     }
 
     @Test
+    @Tag("unit")
     public void testIf_lt_then() {
         final Tensor M1 = Tensor.of(1, 2, 3, 4, 5);
         final Tensor M2 = Tensor.of(0, 0, 1, 1, 1);
@@ -59,6 +65,7 @@ public class Test_Tensor {
     }
 
     @Test
+    @Tag("unit")
     public void testArgMax() {
         final Tensor M1 = Tensor.Null;
         final Tensor M2 = Tensor.of(1, 2, 5, 4, 3);

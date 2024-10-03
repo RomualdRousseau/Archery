@@ -4,7 +4,7 @@ import com.github.romualdrousseau.archery.base.BaseCell;
 import com.github.romualdrousseau.archery.base.MetaTable;
 import com.github.romualdrousseau.archery.header.MetaHeader;
 import com.github.romualdrousseau.archery.header.MetaKeyValueHeader;
-import com.github.romualdrousseau.archery.layex.TableParser;
+import com.github.romualdrousseau.archery.parser.layex.TableParser;
 
 public class MetaTableParser extends TableParser<BaseCell> {
 

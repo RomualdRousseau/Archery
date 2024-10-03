@@ -2,7 +2,9 @@ package com.github.romualdrousseau.archery;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 
 import com.github.romualdrousseau.archery.classifier.SimpleTagClassifier;
 
@@ -65,12 +67,15 @@ public class Test_Any2Json {
         }
     }
 
-    private static final Model model;
-    static {
+    private static Model model;
+
+    @BeforeAll
+    public static void setUp() {
         model = ModelDB.createConnection("sales-english");
     }
 
     @Test
+    @Tag("unit")
     public void testSimpleClassifierWithEnclosedTag() throws Exception {
         try (final var classifer = new SimpleTagClassifier(model, TagClassifier.TagStyle.NONE)) {
             assertEquals("customerName", classifer.predict(null, new SimpleHeader("customer name ($customerName)")));
@@ -78,6 +83,7 @@ public class Test_Any2Json {
     }
 
     @Test
+    @Tag("unit")
     public void testSimpleClassifierWithSnake() throws Exception {
         try (final var classifer = new SimpleTagClassifier(model, TagClassifier.TagStyle.SNAKE)) {
             assertEquals("customer_name_u", classifer.predict(null, new SimpleHeader("customer name_u")));
@@ -88,6 +94,7 @@ public class Test_Any2Json {
     }
 
     @Test
+    @Tag("unit")
     public void testSimpleClassifierWithCamel() throws Exception {
         try (final var classifer = new SimpleTagClassifier(model, TagClassifier.TagStyle.CAMEL)) {
             assertEquals("customerNameu", classifer.predict(null, new SimpleHeader("customer name_u")));
@@ -98,6 +105,7 @@ public class Test_Any2Json {
     }
 
     @Test
+    @Tag("unit")
     public void testSimpleClassifierCompatible() throws Exception {
         try (final var classifer = new SimpleTagClassifier(model, TagClassifier.TagStyle.NONE)) {
             assertEquals("customer_name", classifer.predict(null, new SimpleHeader("customer name")));

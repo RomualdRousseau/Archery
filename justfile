@@ -32,11 +32,11 @@ build:
 
 # Run the tests
 test:
-    mvn -Dsurefire.failIfNoSpecifiedTests=false test
+    mvn -Dtest=UnitTestSuite -Dsurefire.failIfNoSpecifiedTests=false test
 
 # Run all tests
 test-full:
-    mvn -Dsurefire.failIfNoSpecifiedTests=false test
+    mvn -Dtest=FullTestSuite -Dsurefire.failIfNoSpecifiedTests=false test
 
 # Install in the local repository
 install:
