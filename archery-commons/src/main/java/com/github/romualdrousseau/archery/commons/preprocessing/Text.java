@@ -11,8 +11,8 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.github.romualdrousseau.archery.commons.collections.CollectionUtils;
-import com.github.romualdrousseau.archery.commons.json.JSON;
-import com.github.romualdrousseau.archery.commons.json.JSONArray;
+import com.github.romualdrousseau.archery.commons.dsf.DSFArray;
+import com.github.romualdrousseau.archery.commons.dsf.json.JSON;
 import com.github.romualdrousseau.archery.commons.preprocessing.hasher.DefaultHasher;
 import com.github.romualdrousseau.archery.commons.preprocessing.tokenizer.DefaultTokenizer;
 import com.github.romualdrousseau.archery.commons.preprocessing.comparer.DefaultComparer;
@@ -141,8 +141,8 @@ public class Text {
         return shuffler.stream().map(mutator).filter(x -> x != value).toList();
     }
 
-    public static JSONArray json_sequence(final List<Integer> sequence) {
-        JSONArray result = JSON.newArray();
+    public static DSFArray json_sequence(final List<Integer> sequence) {
+        DSFArray result = JSON.newArray();
         sequence.forEach(x -> result.append(x));
         return result;
     }

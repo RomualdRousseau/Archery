@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.archery.commons.yaml.jackson;
+package com.github.romualdrousseau.archery.commons.dsf.json.jackson;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -8,14 +8,14 @@ import java.util.Optional;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.romualdrousseau.archery.commons.yaml.YAMLArray;
-import com.github.romualdrousseau.archery.commons.yaml.YAMLObject;
+import com.github.romualdrousseau.archery.commons.dsf.DSFArray;
+import com.github.romualdrousseau.archery.commons.dsf.DSFObject;
 
-public class YAMLJacksonObject implements YAMLObject {
+public class JSONJacksonObject implements DSFObject {
     private final ObjectMapper mapper;
-    private final ObjectNode objectNode;
+    protected ObjectNode objectNode;
 
-    public YAMLJacksonObject(final ObjectMapper mapper, final JsonNode node) {
+    public JSONJacksonObject(final ObjectMapper mapper, final JsonNode node) {
         this.mapper = mapper;
         if (node == null) {
             this.objectNode = mapper.createObjectNode();
@@ -34,7 +34,7 @@ public class YAMLJacksonObject implements YAMLObject {
             @Override
             public Iterator<String> iterator()
             {
-                return YAMLJacksonObject.this.objectNode.fieldNames();
+                return JSONJacksonObject.this.objectNode.fieldNames();
             }
         };
     }
@@ -48,9 +48,9 @@ public class YAMLJacksonObject implements YAMLObject {
         }
         final T object;
         if (node.isObject()) {
-            object = (T) new YAMLJacksonObject(this.mapper, node);
+            object = (T) new JSONJacksonObject(this.mapper, node);
         } else if (node.isArray()) {
-            object = (T) new YAMLJacksonArray(this.mapper, node);
+            object = (T) new JSONJacksonArray(this.mapper, node);
         } else if (node.isInt()) {
             object = (T) Integer.valueOf(node.intValue());
         } else if (node.isFloat()) {
@@ -62,11 +62,11 @@ public class YAMLJacksonObject implements YAMLObject {
     }
 
     @Override
-    public <T> YAMLObject set(final String k, final T o) {
-        if (o instanceof YAMLObject) {
-            this.objectNode.set(k, ((YAMLJacksonObject) o).getJsonNode());
-        } else if (o instanceof YAMLArray) {
-            this.objectNode.set(k, ((YAMLJacksonArray) o).getJsonNode());
+    public <T> DSFObject set(final String k, final T o) {
+        if (o instanceof DSFObject) {
+            this.objectNode.set(k, ((JSONJacksonObject) o).getJsonNode());
+        } else if (o instanceof DSFArray) {
+            this.objectNode.set(k, ((JSONJacksonArray) o).getJsonNode());
         } else {
             this.objectNode.set(k, this.mapper.convertValue(o, JsonNode.class));
         }
@@ -74,7 +74,7 @@ public class YAMLJacksonObject implements YAMLObject {
     }
 
     @Override
-    public YAMLObject remove(final String k) {
+    public DSFObject remove(final String k) {
         this.objectNode.remove(k);
         return this;
     }
@@ -89,7 +89,6 @@ public class YAMLJacksonObject implements YAMLObject {
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
-        //return this.objectNode.toString();
     }
 
     @Override

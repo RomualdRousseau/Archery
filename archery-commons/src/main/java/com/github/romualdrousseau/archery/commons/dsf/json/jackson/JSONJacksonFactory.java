@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.archery.commons.json.jackson;
+package com.github.romualdrousseau.archery.commons.dsf.json.jackson;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -13,11 +13,11 @@ import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.romualdrousseau.archery.commons.json.JSONArray;
-import com.github.romualdrousseau.archery.commons.json.JSONFactory;
-import com.github.romualdrousseau.archery.commons.json.JSONObject;
+import com.github.romualdrousseau.archery.commons.dsf.DSFArray;
+import com.github.romualdrousseau.archery.commons.dsf.DSFFactory;
+import com.github.romualdrousseau.archery.commons.dsf.DSFObject;
 
-public class JSONJacksonFactory implements JSONFactory {
+public class JSONJacksonFactory implements DSFFactory {
     private final ObjectMapper mapper;
 
     public JSONJacksonFactory() {
@@ -34,11 +34,11 @@ public class JSONJacksonFactory implements JSONFactory {
         this.mapper.getFactory().setStreamReadConstraints(streamReadConstraints);
     }
 
-    public JSONArray newArray() {
+    public DSFArray newArray() {
         return new JSONJacksonArray(this.mapper, this.mapper.createArrayNode());
     }
 
-    public JSONArray parseArray(final String data) {
+    public DSFArray parseArray(final String data) {
         try {
             return new JSONJacksonArray(this.mapper, this.mapper.readTree(data));
         } catch (final IOException e) {
@@ -46,11 +46,11 @@ public class JSONJacksonFactory implements JSONFactory {
         }
     }
 
-    public JSONArray parseArray(final Object object) {
+    public DSFArray parseArray(final Object object) {
         return new JSONJacksonArray(this.mapper, (JsonNode) object);
     }
 
-    public JSONArray loadArray(final Path filePath) {
+    public DSFArray loadArray(final Path filePath) {
         try (BufferedReader reader = this.createReader(filePath)) {
             return new JSONJacksonArray(this.mapper, this.mapper.readTree(reader));
         } catch (final IOException e) {
@@ -58,7 +58,7 @@ public class JSONJacksonFactory implements JSONFactory {
         }
     }
 
-    public void saveArray(final JSONArray a, final Path filePath, final boolean pretty) {
+    public void saveArray(final DSFArray a, final Path filePath, final boolean pretty) {
         try {
             if (pretty) {
                 mapper.writerWithDefaultPrettyPrinter().writeValue(filePath.toFile(), ((JSONJacksonArray) a).arrayNode);
@@ -70,11 +70,11 @@ public class JSONJacksonFactory implements JSONFactory {
         }
     }
 
-    public JSONObject newObject() {
+    public DSFObject newObject() {
         return new JSONJacksonObject(this.mapper, this.mapper.createObjectNode());
     }
 
-    public JSONObject parseObject(final String data) {
+    public DSFObject parseObject(final String data) {
         try {
             return new JSONJacksonObject(this.mapper, this.mapper.readTree(data));
         } catch (final IOException e) {
@@ -82,11 +82,11 @@ public class JSONJacksonFactory implements JSONFactory {
         }
     }
 
-    public JSONObject parseObject(final Object object) {
+    public DSFObject parseObject(final Object object) {
         return new JSONJacksonObject(this.mapper, (JsonNode) object);
     }
 
-    public JSONObject loadObject(final Path filePath) {
+    public DSFObject loadObject(final Path filePath) {
         try (BufferedReader reader = this.createReader(filePath)) {
             return new JSONJacksonObject(this.mapper, this.mapper.readTree(reader));
         } catch (final IOException e) {
@@ -94,7 +94,7 @@ public class JSONJacksonFactory implements JSONFactory {
         }
     }
 
-    public void saveObject(final JSONObject o, final Path filePath, final boolean pretty) {
+    public void saveObject(final DSFObject o, final Path filePath, final boolean pretty) {
         try {
             if (pretty) {
                 mapper.writerWithDefaultPrettyPrinter().writeValue(filePath.toFile(), ((JSONJacksonObject) o).objectNode);

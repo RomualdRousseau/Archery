@@ -9,10 +9,10 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.github.romualdrousseau.archery.ModelData;
+import com.github.romualdrousseau.archery.commons.dsf.yaml.YAML;
+import com.github.romualdrousseau.archery.commons.dsf.DSFArray;
+import com.github.romualdrousseau.archery.commons.dsf.DSFObject;
 import com.github.romualdrousseau.archery.commons.types.Pair;
-import com.github.romualdrousseau.archery.commons.yaml.YAML;
-import com.github.romualdrousseau.archery.commons.yaml.YAMLArray;
-import com.github.romualdrousseau.archery.commons.yaml.YAMLObject;
 
 public class DataContractModelData implements ModelData {
 
@@ -20,25 +20,25 @@ public class DataContractModelData implements ModelData {
         return new DataContractModelData(null);
     }
 
-    public DataContractModelData(final YAMLObject backstore) {
+    public DataContractModelData(final DSFObject backstore) {
         this.backstore = backstore;
 
         if (backstore == null) {
             return;
         }
 
-        final var entities = this.backstore.<YAMLObject>get("entities").get();
+        final var entities = this.backstore.<DSFObject>get("entities").get();
 
         this.entityList = StreamSupport.stream(entities.keys().spliterator(), false).toList();
 
         this.patternMap = StreamSupport.stream(entities.keys().spliterator(), false).flatMap(k -> {
-            final var entity = entities.<YAMLObject>get(k).get();
-            final var patterns = entity.<YAMLArray>get("patterns").get();
+            final var entity = entities.<DSFObject>get(k).get();
+            final var patterns = entity.<DSFArray>get("patterns").get();
             return patterns.<String>stream().map(v -> new Pair(v, k));
         }).collect(Collectors.toUnmodifiableMap(s -> s.getKey(), s -> s.getValue()));
 
         this.pivotEntityList = StreamSupport.stream(entities.keys().spliterator(), false).filter(k -> {
-            final var entity = entities.<YAMLObject>get(k).get();
+            final var entity = entities.<DSFObject>get(k).get();
             return entity.<Boolean>get("pivot").orElse(false);
         }).toList();
 
@@ -48,12 +48,12 @@ public class DataContractModelData implements ModelData {
         this.metaLayexList = YAML.<String>queryStream(this.backstore, "extracts.parser.meta").toList();
         this.dataLayexList = YAML.<String>queryStream(this.backstore, "extracts.parser.data").toList();
 
-        final var tags = this.backstore.<YAMLObject>get("definitions").get();
+        final var tags = this.backstore.<DSFObject>get("definitions").get();
 
         this.tagList = StreamSupport.stream(tags.keys().spliterator(), false).toList();
 
         this.requiredTagList = StreamSupport.stream(tags.keys().spliterator(), false).filter(k -> {
-            final var tag = tags.<YAMLObject>get(k).get();
+            final var tag = tags.<DSFObject>get(k).get();
             return tag.<Boolean>get("required").orElse(false);
         }).toList();
 
@@ -130,7 +130,7 @@ public class DataContractModelData implements ModelData {
         throw new UnsupportedOperationException("Unimplemented method 'save'");
     }
 
-    private final YAMLObject backstore;
+    private final DSFObject backstore;
     private List<String> filterList;
     private List<String> entityList;
     private Map<String, String> patternMap;

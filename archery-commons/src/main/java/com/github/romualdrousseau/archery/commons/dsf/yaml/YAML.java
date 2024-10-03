@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.archery.commons.yaml;
+package com.github.romualdrousseau.archery.commons.dsf.yaml;
 
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -7,36 +7,39 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.github.romualdrousseau.archery.commons.yaml.jackson.YAMLJacksonFactory;
+import com.github.romualdrousseau.archery.commons.dsf.DSFArray;
+import com.github.romualdrousseau.archery.commons.dsf.DSFFactory;
+import com.github.romualdrousseau.archery.commons.dsf.DSFObject;
+import com.github.romualdrousseau.archery.commons.dsf.yaml.jackson.YAMLJacksonFactory;
 
 public class YAML {
-    private static YAMLFactory Factory = new YAMLJacksonFactory();
+    private static DSFFactory Factory = new YAMLJacksonFactory();
 
-    public static YAMLArray newArray() {
+    public static DSFArray newArray() {
         return YAML.Factory.newArray();
     }
 
-    public static YAMLArray arrayOf(final String data) {
+    public static DSFArray arrayOf(final String data) {
         return YAML.Factory.parseArray(data);
     }
 
-    public static YAMLArray arrayOf(final Object object) {
+    public static DSFArray arrayOf(final Object object) {
         return YAML.Factory.parseArray(object);
     }
 
-    public static <T> YAMLArray arrayOf(final List<T> l) {
+    public static <T> DSFArray arrayOf(final List<T> l) {
         final var array = YAML.newArray();
         l.forEach(s -> array.append(s));
         return array;
     }
 
-    public static <T> YAMLArray arrayOf(final Stream<T> l) {
+    public static <T> DSFArray arrayOf(final Stream<T> l) {
         final var array = YAML.newArray();
         l.forEach(s -> array.append(s));
         return array;
     }
 
-    public static <T> YAMLArray arrayOf(final Map<String, T> m) {
+    public static <T> DSFArray arrayOf(final Map<String, T> m) {
         final var array = YAML.newArray();
         m.forEach((k, v) -> {
             final var pair = YAML.newObject();
@@ -47,45 +50,45 @@ public class YAML {
         return array;
     }
 
-    public static YAMLArray loadArray(final Path filePath) {
+    public static DSFArray loadArray(final Path filePath) {
         return YAML.Factory.loadArray(filePath);
     }
 
-    public static void saveArray(final YAMLArray a, final Path filePath) {
+    public static void saveArray(final DSFArray a, final Path filePath) {
         YAML.Factory.saveArray(a, filePath, false);
     }
 
-    public static void saveArray(final YAMLArray a, final Path filePath, final boolean pretty) {
+    public static void saveArray(final DSFArray a, final Path filePath, final boolean pretty) {
         YAML.Factory.saveArray(a, filePath, pretty);
     }
 
-    public static YAMLObject newObject() {
+    public static DSFObject newObject() {
         return YAML.Factory.newObject();
     }
 
-    public static YAMLObject objectOf(final String data) {
+    public static DSFObject objectOf(final String data) {
         return YAML.Factory.parseObject(data);
     }
 
-    public static YAMLObject objectOf(final Object object) {
+    public static DSFObject objectOf(final Object object) {
         return YAML.Factory.parseObject(object);
     }
 
-    public static <T> YAMLObject objectOf(final Map<String, T> m) {
-        final YAMLObject object = YAML.newObject();
+    public static <T> DSFObject objectOf(final Map<String, T> m) {
+        final var object = YAML.newObject();
         m.forEach((k, v) -> object.set(k, v));
         return object;
     }
 
-    public static YAMLObject loadObject(final Path filePath) {
+    public static DSFObject loadObject(final Path filePath) {
         return YAML.Factory.loadObject(filePath);
     }
 
-    public static void saveObject(final YAMLObject o, final Path filePath) {
+    public static void saveObject(final DSFObject o, final Path filePath) {
         YAML.Factory.saveObject(o, filePath, false);
     }
 
-    public static void saveObject(final YAMLObject o, final Path filePath, final boolean pretty) {
+    public static void saveObject(final DSFObject o, final Path filePath, final boolean pretty) {
         YAML.Factory.saveObject(o, filePath, pretty);
     }
 
@@ -93,11 +96,11 @@ public class YAML {
     public static <T> Optional<T> query(final Object a, final String q) {
         Object curr = a;
         for(final var token: Arrays.asList(q.split("\\."))) {
-            if (curr instanceof YAMLArray) {
+            if (curr instanceof DSFArray) {
                 final int i = Integer.parseInt(token);
-                curr = ((YAMLArray) curr).get(i).orElse(null);
-            } else if (curr instanceof YAMLObject) {
-                curr = ((YAMLObject) curr).get(token).orElse(null);
+                curr = ((DSFArray) curr).get(i).orElse(null);
+            } else if (curr instanceof DSFObject) {
+                curr = ((DSFObject) curr).get(token).orElse(null);
             } else {
                 curr = null;
             }
@@ -107,8 +110,8 @@ public class YAML {
 
     public static <T> Stream<T> queryStream(final Object a, final String q) {
         return YAML.<T>query(a, q)
-                .filter(o -> o instanceof YAMLArray)
-                .map(o -> ((YAMLArray) o).<T>stream())
+                .filter(o -> o instanceof DSFArray)
+                .map(o -> ((DSFArray) o).<T>stream())
                 .orElse(Stream.empty());
     }
 }

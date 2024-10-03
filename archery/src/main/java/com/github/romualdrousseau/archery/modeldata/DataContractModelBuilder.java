@@ -12,8 +12,8 @@ import java.util.Collections;
 import java.util.List;
 
 import com.github.romualdrousseau.archery.Model;
-import com.github.romualdrousseau.archery.commons.yaml.YAML;
-import com.github.romualdrousseau.archery.commons.yaml.YAMLObject;
+import com.github.romualdrousseau.archery.commons.dsf.yaml.YAML;
+import com.github.romualdrousseau.archery.commons.dsf.DSFObject;
 
 public class DataContractModelBuilder {
 
@@ -32,7 +32,7 @@ public class DataContractModelBuilder {
         return this;
     }
 
-    public DataContractModelBuilder fromYAML(final YAMLObject yamlObject) {
+    public DataContractModelBuilder fromYAML(final DSFObject yamlObject) {
         return this.fromModelData(new DataContractModelData(yamlObject));
     }
 

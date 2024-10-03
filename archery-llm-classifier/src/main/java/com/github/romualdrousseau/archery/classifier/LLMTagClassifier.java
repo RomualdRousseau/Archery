@@ -7,12 +7,12 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
-import com.github.romualdrousseau.archery.commons.json.JSON;
-import com.github.romualdrousseau.archery.commons.json.JSONObject;
 import com.github.romualdrousseau.archery.Header;
 import com.github.romualdrousseau.archery.Model;
 import com.github.romualdrousseau.archery.Table;
 import com.github.romualdrousseau.archery.TagClassifier;
+import com.github.romualdrousseau.archery.commons.dsf.DSFObject;
+import com.github.romualdrousseau.archery.commons.dsf.json.JSON;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.service.OpenAiService;
@@ -84,5 +84,5 @@ public class LLMTagClassifier extends SimpleTagClassifier {
     }
 
     private OpenAiService service;
-    private JSONObject tags;
+    private DSFObject tags;
 }

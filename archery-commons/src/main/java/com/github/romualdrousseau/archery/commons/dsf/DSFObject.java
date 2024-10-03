@@ -1,16 +1,16 @@
-package com.github.romualdrousseau.archery.commons.yaml;
+package com.github.romualdrousseau.archery.commons.dsf;
 
 import java.util.Optional;
 
-public interface YAMLObject {
+public interface DSFObject {
 
     Iterable<String> keys();
 
     <T> Optional<T> get(String k);
 
-    <T> YAMLObject set(String k, T o);
+    <T> DSFObject set(String k, T o);
 
-    YAMLObject remove(String k);
+    DSFObject remove(String k);
 
     String toString(final boolean pretty);
 

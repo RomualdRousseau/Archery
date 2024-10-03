@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.archery.commons.json.jackson;
+package com.github.romualdrousseau.archery.commons.dsf.json.jackson;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -7,10 +7,10 @@ import java.util.Optional;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.github.romualdrousseau.archery.commons.json.JSONArray;
-import com.github.romualdrousseau.archery.commons.json.JSONObject;
+import com.github.romualdrousseau.archery.commons.dsf.DSFArray;
+import com.github.romualdrousseau.archery.commons.dsf.DSFObject;
 
-public class JSONJacksonArray implements JSONArray {
+public class JSONJacksonArray implements DSFArray {
     private ObjectMapper mapper;
     protected ArrayNode arrayNode;
 
@@ -55,10 +55,10 @@ public class JSONJacksonArray implements JSONArray {
     }
 
     @Override
-    public <T> JSONArray set(final int i, final T o) {
-        if (o instanceof JSONObject) {
+    public <T> DSFArray set(final int i, final T o) {
+        if (o instanceof DSFObject) {
             this.arrayNode.set(i, ((JSONJacksonObject) o).getJsonNode());
-        } else if (o instanceof JSONArray) {
+        } else if (o instanceof DSFArray) {
             this.arrayNode.set(i, ((JSONJacksonArray) o).getJsonNode());
         } else {
             this.arrayNode.set(i, this.mapper.convertValue(o, JsonNode.class));
@@ -67,10 +67,10 @@ public class JSONJacksonArray implements JSONArray {
     }
 
     @Override
-    public <T> JSONArray append(final T o) {
-        if (o instanceof JSONObject) {
+    public <T> DSFArray append(final T o) {
+        if (o instanceof DSFObject) {
             this.arrayNode.add(((JSONJacksonObject) o).getJsonNode());
-        } else if (o instanceof JSONArray) {
+        } else if (o instanceof DSFArray) {
             this.arrayNode.add(((JSONJacksonArray) o).getJsonNode());
         } else if (o instanceof Integer) {
             this.arrayNode.add((Integer) o);
@@ -83,7 +83,7 @@ public class JSONJacksonArray implements JSONArray {
     }
 
     @Override
-    public JSONArray remove(final int i) {
+    public DSFArray remove(final int i) {
         this.arrayNode.remove(i);
         return this;
     }

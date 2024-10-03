@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.archery.commons.yaml.jackson;
+package com.github.romualdrousseau.archery.commons.dsf.yaml.jackson;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -15,11 +15,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-import com.github.romualdrousseau.archery.commons.yaml.YAMLArray;
-import com.github.romualdrousseau.archery.commons.yaml.YAMLFactory;
-import com.github.romualdrousseau.archery.commons.yaml.YAMLObject;
+import com.github.romualdrousseau.archery.commons.dsf.DSFArray;
+import com.github.romualdrousseau.archery.commons.dsf.DSFFactory;
+import com.github.romualdrousseau.archery.commons.dsf.DSFObject;
 
-public class YAMLJacksonFactory implements YAMLFactory {
+public class YAMLJacksonFactory implements DSFFactory {
     private final ObjectMapper mapper;
 
     public YAMLJacksonFactory() {
@@ -38,11 +38,11 @@ public class YAMLJacksonFactory implements YAMLFactory {
         this.mapper.getFactory().setStreamReadConstraints(streamReadConstraints);
     }
 
-    public YAMLArray newArray() {
+    public DSFArray newArray() {
         return new YAMLJacksonArray(this.mapper, this.mapper.createArrayNode());
     }
 
-    public YAMLArray parseArray(final String data) {
+    public DSFArray parseArray(final String data) {
         try {
             return new YAMLJacksonArray(this.mapper, this.mapper.readTree(data));
         } catch (final IOException e) {
@@ -50,11 +50,11 @@ public class YAMLJacksonFactory implements YAMLFactory {
         }
     }
 
-    public YAMLArray parseArray(final Object object) {
+    public DSFArray parseArray(final Object object) {
         return new YAMLJacksonArray(this.mapper, (JsonNode) object);
     }
 
-    public YAMLArray loadArray(final Path filePath) {
+    public DSFArray loadArray(final Path filePath) {
         try (BufferedReader reader = this.createReader(filePath)) {
             return new YAMLJacksonArray(this.mapper, this.mapper.readTree(reader));
         } catch (final IOException e) {
@@ -62,7 +62,7 @@ public class YAMLJacksonFactory implements YAMLFactory {
         }
     }
 
-    public void saveArray(final YAMLArray a, final Path filePath, final boolean pretty) {
+    public void saveArray(final DSFArray a, final Path filePath, final boolean pretty) {
         try {
             final var aa = (YAMLJacksonArray) a;
             if (pretty) {
@@ -75,11 +75,11 @@ public class YAMLJacksonFactory implements YAMLFactory {
         }
     }
 
-    public YAMLObject newObject() {
+    public DSFObject newObject() {
         return new YAMLJacksonObject(this.mapper, this.mapper.createObjectNode());
     }
 
-    public YAMLObject parseObject(final String data) {
+    public DSFObject parseObject(final String data) {
         try {
             return new YAMLJacksonObject(this.mapper, this.mapper.readTree(data));
         } catch (final IOException e) {
@@ -87,11 +87,11 @@ public class YAMLJacksonFactory implements YAMLFactory {
         }
     }
 
-    public YAMLObject parseObject(final Object object) {
+    public DSFObject parseObject(final Object object) {
         return new YAMLJacksonObject(this.mapper, (JsonNode) object);
     }
 
-    public YAMLObject loadObject(final Path filePath) {
+    public DSFObject loadObject(final Path filePath) {
         try (BufferedReader reader = this.createReader(filePath)) {
             return new YAMLJacksonObject(this.mapper, this.mapper.readTree(reader));
         } catch (final IOException e) {
@@ -99,7 +99,7 @@ public class YAMLJacksonFactory implements YAMLFactory {
         }
     }
 
-    public void saveObject(final YAMLObject o, final Path filePath, final boolean pretty) {
+    public void saveObject(final DSFObject o, final Path filePath, final boolean pretty) {
         try {
             final var oo = (YAMLJacksonObject) o;
             if (pretty) {

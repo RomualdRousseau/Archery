@@ -7,10 +7,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.github.romualdrousseau.archery.ModelData;
-import com.github.romualdrousseau.archery.commons.json.JSON;
-import com.github.romualdrousseau.archery.commons.json.JSONArray;
-import com.github.romualdrousseau.archery.commons.json.JSONCollector;
-import com.github.romualdrousseau.archery.commons.json.JSONObject;
+import com.github.romualdrousseau.archery.commons.dsf.DSFArray;
+import com.github.romualdrousseau.archery.commons.dsf.DSFCollector;
+import com.github.romualdrousseau.archery.commons.dsf.DSFObject;
+import com.github.romualdrousseau.archery.commons.dsf.json.JSON;
 
 public class JsonModelData implements ModelData {
 
@@ -18,7 +18,7 @@ public class JsonModelData implements ModelData {
         return new JsonModelData(JSON.newObject());
     }
 
-    public JsonModelData(final JSONObject backstore) {
+    public JsonModelData(final DSFObject backstore) {
         this.backstore = backstore;
     }
 
@@ -35,7 +35,7 @@ public class JsonModelData implements ModelData {
 
     @Override
     public List<String> getList(final String key) {
-        return this.backstore.<JSONArray>get(key)
+        return this.backstore.<DSFArray>get(key)
                 .map(x -> x.<String>stream().toList())
                 .orElse(Collections.emptyList());
     }
@@ -48,8 +48,8 @@ public class JsonModelData implements ModelData {
 
     @Override
     public Map<String, String> getMap(final String key) {
-        return this.backstore.<JSONArray>get(key)
-                .map(x -> x.<JSONObject>stream().collect(JSONCollector.<String>toUnmodifiableMap("key", "value")))
+        return this.backstore.<DSFArray>get(key)
+                .map(x -> x.<DSFObject>stream().collect(DSFCollector.<String>toUnmodifiableMap("key", "value")))
                 .orElse(Collections.emptyMap());
     }
 
@@ -64,5 +64,5 @@ public class JsonModelData implements ModelData {
         JSON.saveObject(this.backstore, path);
     }
 
-    private final JSONObject backstore;
+    private final DSFObject backstore;
 }

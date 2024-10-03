@@ -15,9 +15,9 @@ import java.util.Map;
 import com.github.romualdrousseau.archery.Model;
 import com.github.romualdrousseau.archery.TableParser;
 import com.github.romualdrousseau.archery.TagClassifier;
-import com.github.romualdrousseau.archery.commons.json.JSON;
-import com.github.romualdrousseau.archery.commons.json.JSONObject;
-import com.github.romualdrousseau.archery.commons.yaml.YAML;
+import com.github.romualdrousseau.archery.commons.dsf.DSFObject;
+import com.github.romualdrousseau.archery.commons.dsf.json.JSON;
+import com.github.romualdrousseau.archery.commons.dsf.yaml.YAML;
 
 public class JsonModelBuilder {
 
@@ -51,7 +51,7 @@ public class JsonModelBuilder {
         return this;
     }
 
-    public JsonModelBuilder fromJSON(final JSONObject jsonObject) {
+    public JsonModelBuilder fromJSON(final DSFObject jsonObject) {
         return this.fromModelData(new JsonModelData(jsonObject));
     }
 

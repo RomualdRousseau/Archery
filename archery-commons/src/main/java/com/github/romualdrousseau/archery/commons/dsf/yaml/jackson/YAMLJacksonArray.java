@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.archery.commons.yaml.jackson;
+package com.github.romualdrousseau.archery.commons.dsf.yaml.jackson;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -7,10 +7,10 @@ import java.util.Optional;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.github.romualdrousseau.archery.commons.yaml.YAMLArray;
-import com.github.romualdrousseau.archery.commons.yaml.YAMLObject;
+import com.github.romualdrousseau.archery.commons.dsf.DSFArray;
+import com.github.romualdrousseau.archery.commons.dsf.DSFObject;
 
-public class YAMLJacksonArray implements YAMLArray {
+public class YAMLJacksonArray implements DSFArray {
     private final ObjectMapper mapper;
     private final ArrayNode arrayNode;
 
@@ -55,10 +55,10 @@ public class YAMLJacksonArray implements YAMLArray {
     }
 
     @Override
-    public <T> YAMLArray set(final int i, final T o) {
-        if (o instanceof YAMLObject) {
+    public <T> DSFArray set(final int i, final T o) {
+        if (o instanceof DSFObject) {
             this.arrayNode.set(i, ((YAMLJacksonObject) o).getJsonNode());
-        } else if (o instanceof YAMLArray) {
+        } else if (o instanceof DSFArray) {
             this.arrayNode.set(i, ((YAMLJacksonArray) o).getJsonNode());
         } else {
             this.arrayNode.set(i, this.mapper.convertValue(o, JsonNode.class));
@@ -67,10 +67,10 @@ public class YAMLJacksonArray implements YAMLArray {
     }
 
     @Override
-    public <T> YAMLArray append(final T o) {
-        if (o instanceof YAMLObject) {
+    public <T> DSFArray append(final T o) {
+        if (o instanceof DSFObject) {
             this.arrayNode.add(((YAMLJacksonObject) o).getJsonNode());
-        } else if (o instanceof YAMLArray) {
+        } else if (o instanceof DSFArray) {
             this.arrayNode.add(((YAMLJacksonArray) o).getJsonNode());
         } else if (o instanceof Integer) {
             this.arrayNode.add((Integer) o);
@@ -83,7 +83,7 @@ public class YAMLJacksonArray implements YAMLArray {
     }
 
     @Override
-    public YAMLArray remove(final int i) {
+    public DSFArray remove(final int i) {
         this.arrayNode.remove(i);
         return this;
     }
