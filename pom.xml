@@ -5,26 +5,28 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.romualdrousseau</groupId>
-    <artifactId>any2json-monorepo</artifactId>
-    <version>2.44-SNAPSHOT</version>
+    <artifactId>archery-monorepo</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>any2json-monorepo</name>
+    <name>archery-monorepo</name>
     <description>
         A java API to manipulate semi structured documents and extract data from them.
     </description>
-    <url>https://github.com/romualdrousseau/any2json-monorepo</url>
+    <url>https://github.com/romualdrousseau/archery-monorepo</url>
 
     <modules>
-        <module>any2json</module>
-        <module>any2json-layex-parser</module>
-        <module>any2json-net-classifier</module>
-        <module>any2json-csv</module>
-        <module>any2json-excel</module>
-        <module>any2json-parquet</module>
-        <module>any2json-dbf</module>
-        <module>any2json-pdf</module>
-        <module>any2json-examples</module>
+        <module>archery-commons</module>
+        <module>archery</module>
+        <module>archery-layex-parser</module>
+        <module>archery-net-classifier</module>
+        <module>archery-llm-classifier</module>
+        <module>archery-csv</module>
+        <module>archery-excel</module>
+        <module>archery-parquet</module>
+        <module>archery-dbf</module>
+        <module>archery-pdf</module>
+        <module>archery-examples</module>
     </modules>
 
     <licenses>
@@ -53,9 +55,9 @@
 
         <maven-minimum.version>3.6.3</maven-minimum.version>
 
-        <shuju.version>1.29.8</shuju.version>
         <log4j.version>2.23.1</log4j.version>
-        <snappy.version>1.1.10.6</snappy.version>
+        <fury.version>0.4.1</fury.version>
+        <snappy.version>1.1.10.7</snappy.version>
         <jackson.version>2.17.2</jackson.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <jython.version>2.7.4</jython.version>
@@ -64,9 +66,13 @@
         <hadoop.version>3.4.0</hadoop.version>
         <parquet.version>1.14.2</parquet.version>
         <tabula.version>1.0.5</tabula.version>
+        <openai-service.version>0.18.2</openai-service.version>
+        <reflections.version>0.10.2</reflections.version>
+        <tensorflow.version>0.5.0</tensorflow.version>
 
         <junit.version>4.13.2</junit.version>
-        <junit-suite.version>1.10.2</junit-suite.version>
+        <junit-platform.version>1.11.0</junit-platform.version>
+        <junit-jupiter.version>5.11.0</junit-jupiter.version>
         <hamcrest.version>3.0</hamcrest.version>
     </properties>
 
@@ -101,9 +107,9 @@
     </distributionManagement>
 
     <scm>
-        <connection>scm:git:https://github.com/romualdrousseau/any2json-monorepo.git</connection>
-        <developerConnection>scm:git:https://github.com/romualdrousseau/any2json-monorepo.git</developerConnection>
-        <url>https://github.com/romualdrousseau/any2json-monorepo</url>
+        <connection>scm:git:https://github.com/romualdrousseau/archery-monorepo.git</connection>
+        <developerConnection>scm:git:https://github.com/romualdrousseau/archery-monorepo.git</developerConnection>
+        <url>https://github.com/romualdrousseau/archery-monorepo</url>
     </scm>
 
     <dependencies>
@@ -112,6 +118,18 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite</artifactId>
+            <version>${junit-platform.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -350,12 +368,29 @@
                 <version>3.4.2</version>
             </plugin>
             <plugin>
-                <artifactId>maven-install-plugin</artifactId>
-                <version>3.1.3</version>
-            </plugin>
-            <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>3.8.0</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>3.1.3</version>
+                <executions>
+                    <execution>
+                        <?m2e ignore?>
+                        <id>xelem</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <file>${maven.multiModuleProjectDirectory}/libs/xelem-3.1/xelem-3.1.jar</file>
+                            <groupId>nl.fountain</groupId>
+                            <artifactId>xelem</artifactId>
+                            <version>3.1</version>
+                            <packaging>jar</packaging>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

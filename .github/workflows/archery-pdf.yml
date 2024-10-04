@@ -1,0 +1,23 @@
+name: archery-pdf
+
+on:
+    push:
+        branches:
+            - '**'
+            - "!main"
+        paths:
+            - archery/**
+            - .github/workflows/archery-pdf.yml
+
+jobs:
+    build:
+        uses: ./.github/workflows/maven-build.yml
+        with:
+            service: archery-pdf
+
+    test:
+        needs: [build]
+        uses: ./.github/workflows/maven-test.yml
+        with:
+            service: archery-pdf
+        secrets: inherit

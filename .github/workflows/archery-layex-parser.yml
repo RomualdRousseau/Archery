@@ -1,0 +1,23 @@
+name: archery-layex-parser
+
+on:
+    push:
+        branches:
+            - '**'
+            - "!main"
+        paths:
+            - archery/**
+            - .github/workflows/archery-layex-parser.yml
+
+jobs:
+    build:
+        uses: ./.github/workflows/maven-build.yml
+        with:
+            service: archery-layex-parser
+
+    test:
+        needs: [build]
+        uses: ./.github/workflows/maven-test.yml
+        with:
+            service: archery-layex-parser
+        secrets: inherit

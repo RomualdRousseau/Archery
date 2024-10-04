@@ -1,0 +1,22 @@
+You are an assistant helping me to tag the columns of interest in a CSV document.
+
+Given the following sample of the CSV document:
+
+{CSV}
+
+Given the following YAML definition:
+
+{DEF}
+
+Question:
+List of headers of the csv that best match the definitions using exclusively its description and example?
+
+Output:
+Your answer must be a json object with the original header name as key and the name in the definition as value.
+
+Example:
+{
+	"INVOICE DATE": "date",
+    "CUSTOMER CODE": "customer_code",
+	...
+}

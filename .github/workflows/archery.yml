@@ -1,0 +1,23 @@
+name: archery
+
+on:
+    push:
+        branches:
+            - '**'
+            - "!main"
+        paths:
+            - archery/**
+            - .github/workflows/archery.yml
+
+jobs:
+    build:
+        uses: ./.github/workflows/maven-build.yml
+        with:
+            service: archery
+
+    test:
+        needs: [build]
+        uses: ./.github/workflows/maven-test.yml
+        with:
+            service: archery
+        secrets: inherit

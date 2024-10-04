@@ -1,0 +1,23 @@
+name: archery-llm-classifier
+
+on:
+    push:
+        branches:
+            - '**'
+            - "!main"
+        paths:
+            - archery/**
+            - .github/workflows/archery-llm-classifier.yml
+
+jobs:
+    build:
+        uses: ./.github/workflows/maven-build.yml
+        with:
+            service: archery-llm-classifier
+
+    test:
+        needs: [build]
+        uses: ./.github/workflows/maven-test.yml
+        with:
+            service: archery-llm-classifier
+        secrets: inherit

@@ -1,0 +1,23 @@
+name: archery-dbf
+
+on:
+    push:
+        branches:
+            - '**'
+            - "!main"
+        paths:
+            - archery/**
+            - .github/workflows/archery-dbf.yml
+
+jobs:
+    build:
+        uses: ./.github/workflows/maven-build.yml
+        with:
+            service: archery-dbf
+
+    test:
+        needs: [build]
+        uses: ./.github/workflows/maven-test.yml
+        with:
+            service: archery-dbf
+        secrets: inherit
