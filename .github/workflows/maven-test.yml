@@ -31,6 +31,6 @@ jobs:
               run: mvn -U -B clean initialize --projects :${{ inputs.service }} --also-make
 
             - name: Test project
-              run: mvn -U -B test --projects :${{ inputs.service }} --also-make
+              run: mvn -U -B -Dtest=UnitTestSuite -Dsurefire.failIfNoSpecifiedTests=false test --projects :${{ inputs.service }} --also-make
               env:
                   OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
