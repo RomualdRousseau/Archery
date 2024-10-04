@@ -368,12 +368,29 @@
                 <version>3.4.2</version>
             </plugin>
             <plugin>
-                <artifactId>maven-install-plugin</artifactId>
-                <version>3.1.3</version>
-            </plugin>
-            <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>3.8.0</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>3.1.3</version>
+                <executions>
+                    <execution>
+                        <?m2e ignore?>
+                        <id>xelem</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <file>${maven.multiModuleProjectDirectory}/libs/xelem-3.1/xelem-3.1.jar</file>
+                            <groupId>nl.fountain</groupId>
+                            <artifactId>xelem</artifactId>
+                            <version>3.1</version>
+                            <packaging>jar</packaging>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
