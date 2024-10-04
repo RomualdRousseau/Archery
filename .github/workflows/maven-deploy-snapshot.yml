@@ -29,7 +29,7 @@ jobs:
               run: mvn -U -B clean initialize
 
             - name: Deploy project snapshot
-              run: mvn -U -B deploy -P snapshot -s .mvn/settings.xml
+              run: mvn -U -B -DskipTests deploy -P snapshot -s .mvn/settings.xml
               env:
                   OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
                   OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}

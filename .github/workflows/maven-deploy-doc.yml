@@ -41,7 +41,7 @@ jobs:
             - name: Installing local dependencies
               run: mvn -U -B clean initialize
 
-            - name: Deploy project
+            - name: Install project
               run: mvn -U -B -DskipTests install
 
             - name: Build documentation
