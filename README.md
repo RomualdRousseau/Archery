@@ -1,4 +1,4 @@
-# Archery
+# ![Archery](/archery-documents/icons/archery-text-64.png)
 
 ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
 ![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.romualdrousseau/archery/badge.svg)
