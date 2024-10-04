@@ -14,7 +14,7 @@
 
     <name>archery-commons</name>
     <description>
-        Archery plugin to tag tabular output implementing embeddings.
+        Archery Commons are a collection of Java components used by all other Archery modules.
     </description>
     <url>https://github.com/romualdrousseau/archery-monorepo</url>
 
