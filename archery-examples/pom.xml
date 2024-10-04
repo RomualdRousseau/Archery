@@ -4,12 +4,12 @@
     <parent>
         <groupId>com.github.romualdrousseau</groupId>
         <artifactId>archery-monorepo</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
 
     <groupId>com.github.romualdrousseau</groupId>
     <artifactId>archery-examples</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>archery-examples</name>

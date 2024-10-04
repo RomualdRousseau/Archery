@@ -4,8 +4,8 @@
 ![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.romualdrousseau/archery/badge.svg)
 ![Snyk security score](https://snyk-widget.herokuapp.com/badge/mvn/com.github.romualdrousseau/any2json/badge.svg)
 ![Snyk Known Vulnerabilities](https://snyk.io/test/github/com.github.romualdrousseau/archery/badge.svg)
-![Test](https://github.com/romualdrousseau/any2json/actions/workflows/any2json-monorepo-snapshot.yml/badge.svg)
-![Build](https://github.com/romualdrousseau/any2json/actions/workflows/any2json-monorepo-release.yml/badge.svg)
+![Test](https://github.com/romualdrousseau/archery/actions/workflows/archery-monorepo-snapshot.yml/badge.svg)
+![Build](https://github.com/romualdrousseau/archery/actions/workflows/archery-monorepo-release.yml/badge.svg)
 ![Servier Inspired](https://raw.githubusercontent.com/servierhub/.github/main/badges/inspired.svg)
 
 A java API to manipulate semi structured documents and extract data from them.
