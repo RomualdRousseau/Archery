@@ -11,10 +11,28 @@ import com.github.romualdrousseau.archery.parser.LayexTableParser;
 
 public class Tutorial9 implements Runnable {
 
-    public Tutorial9() {
+    public static void main(final String[] args) {
+        new Tutorial9().run();
     }
 
-    public void visitTable(TableGraph parent) {
+    @Override
+    public void run() {
+        final var builder = Common.loadModelBuilderFromGitHub("sales-english");
+
+        final var model = builder
+                .setTableParser(this.customTableParser())
+                .build();
+
+        final var file = Common.loadData("AG120-N-074.pdf", this.getClass());
+        try (final var doc = DocumentFactory.createInstance(file, "UTF-8")
+                .setModel(model)
+                .setHints(EnumSet.of(Document.Hint.INTELLI_LAYOUT))) {
+
+            doc.sheets().forEach(s -> Common.addSheetDebugger(s).getTableGraph().ifPresent(this::visitTable));
+        }
+    }
+
+    private void visitTable(final TableGraph parent) {
         parent.children().forEach(c -> {
             final var table = c.getTable();
             if (table instanceof DataTable) {
@@ -27,28 +45,11 @@ public class Tutorial9 implements Runnable {
         });
     }
 
-    @Override
-    public void run() {
-        final var tableParser = new LayexTableParser(
+    private LayexTableParser customTableParser() {
+        return new LayexTableParser(
                 List.of(""),
                 List.of(
-                    "((vv$)(v+$v+$))(()(.+$)())+()",
-                    "(()(.+$))(()(.+$)())+()"));
-
-        final var builder = Common.loadModelBuilderFromGitHub("sales-english");
-        builder.setTableParser(tableParser);
-        final var model = builder.build();
-
-        final var file = Common.loadData("AG120-N-074.pdf", this.getClass());
-        try (final var doc = DocumentFactory.createInstance(file, "UTF-8")
-                .setModel(model)
-                .setHints(EnumSet.of(Document.Hint.INTELLI_LAYOUT))) {
-
-            doc.sheets().forEach(s -> Common.addSheetDebugger(s).getTableGraph().ifPresent(this::visitTable));
-        }
-    }
-
-    public static void main(final String[] args) {
-        new Tutorial9().run();
+                        "((vv$)(v+$v+$))(()(.+$)())+()",
+                        "(()(.+$))(()(.+$)())+()"));
     }
 }

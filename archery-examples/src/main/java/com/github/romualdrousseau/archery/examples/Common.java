@@ -19,7 +19,7 @@ import com.github.romualdrousseau.archery.event.TableReadyEvent;
 
 public class Common {
     private static final Logger LOGGER = LoggerFactory.getLogger(Common.class);
-    private static final String REPO_BASE_URL = "https://raw.githubusercontent.com/RomualdRousseau/Archery/Archery-Models/main";
+    private static final String REPO_BASE_URL = "https://raw.githubusercontent.com/romualdrousseau/archery/main/archery-models";
 
     public static <T> JsonModelBuilder loadModelBuilder(final String modelName, final Class<T> clazz) {
         return new JsonModelBuilder().fromPath(Common.getResourcePath(String.format("/models/%s.json", modelName), clazz));

@@ -9,26 +9,34 @@ import com.github.romualdrousseau.archery.parser.LayexTableParser;
 
 public class Tutorial7 implements Runnable {
 
-    public Tutorial7() {
+    public static void main(final String[] args) {
+        new Tutorial7().run();
     }
 
     @Override
     public void run() {
-        final var tableParser = new LayexTableParser(
-                List.of("(v.$)+"),
-                List.of("(()(v.+$v.+$))(()(e.+$)+())(v.+$)"));
-
         final var builder = Common.loadModelBuilderFromGitHub("sales-english");
-        builder.setTableParser(tableParser);
-        final var model = builder.build();
+
+        final var model = builder
+                .setTableParser(this.customTableParser())
+                .build();
 
         final var file = Common.loadData("document with noises.pdf", this.getClass());
         try (final var doc = DocumentFactory.createInstance(file, "UTF-8")
                 .setModel(model)
                 .setHints(EnumSet.of(Document.Hint.INTELLI_LAYOUT))
-                .setRecipe(
-                    "sheet.setCapillarityThreshold(0)",
-                    "sheet.dropNullRows(0.45)")) {
+                .setRecipe("""
+                        sheet.dropRowsWhenFillRatioLessThan(0.5)
+                        sheet.cropWhenFillRatioLessThan(0.5)
+                        pos = sheet.searchNthValue("MONTH", 0, 2, 1)
+                        if pos is not None:
+                            col, row = pos
+                            sheet.patchCells(col, row, col, row, ["MONTH UNIT", "YEAR UNIT"])
+                        pos = sheet.searchNthValue("MONTH", 0, 2, 1)
+                        if pos is not None:
+                            col, row = pos
+                            sheet.patchCells(col, row, col, row, ["MONTH DOLLAR", "YEAR DOLLAR"])
+                        """)) {
 
             doc.sheets().forEach(s -> Common.addSheetDebugger(s).getTable().ifPresent(t -> {
                 Common.printHeaders(t.headers());
@@ -37,7 +45,9 @@ public class Tutorial7 implements Runnable {
         }
     }
 
-    public static void main(final String[] args) {
-        new Tutorial7().run();
+    private LayexTableParser customTableParser() {
+        return new LayexTableParser(
+                List.of("(v.$)+"),
+                List.of("(()(.+$.+$))(()([/PACKAGE/].+$)+([/^PACKAGE/|E].+$){1,2})+([/^PACKAGE/|E].+$)"));
     }
 }
