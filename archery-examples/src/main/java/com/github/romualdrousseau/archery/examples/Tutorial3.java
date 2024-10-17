@@ -30,7 +30,7 @@ public class Tutorial3 implements Runnable {
         try (final var doc = DocumentFactory.createInstance(file, "UTF-8")
                 .setModel(model)
                 .setHints(EnumSet.of(Document.Hint.INTELLI_LAYOUT))
-                .setRecipe("sheet.setCapillarityThreshold(0)")) {
+                .setRecipe("sheet.setCapillarityThreshold(1)")) {
 
             doc.sheets().forEach(s -> Common.addSheetDebugger(s).getTable().ifPresent(t -> {
                 Common.printHeaders(t.headers());
@@ -41,14 +41,13 @@ public class Tutorial3 implements Runnable {
 
     private LayexTableParser customTableParser() {
         return new LayexTableParser(
-            List.of("(v.$)+"),
-            List.of("(()(S+$))(()([/^TOTAL/|v].+$)())+(/TOTAL/.+$)"));
+                List.of("((v)(S)$)+"),
+                List.of("((e.+$)?(v+$))(()([/^TOTAL/|v].+$)())+(/TOTAL/.+$)"));
     }
 
     private List<String> customEntities(final List<String> entities) {
         final var result = new ArrayList<String>(entities);
-        result.add("PRODUCTNAME");
-        result.remove("PACKAGE");
+        result.add(0, "PRODUCTNAME");
         return result;
     }
 
