@@ -8,21 +8,40 @@ import com.github.romualdrousseau.archery.parser.layex.TableParser;
 
 public class MetaTableParser extends TableParser<BaseCell> {
 
+    public static final int META_KEY = 1;
+    public static final int META_VALUE = 2;
+
     public MetaTableParser(final MetaTable metaTable) {
         this.metaTable = metaTable;
+
     }
 
     public void processSymbolFunc(final BaseCell cell) {
         if (this.getColumn() == 0) {
+            this.processHeader();
+            this.key = null;
+            this.value = null;
+        }
+        if (this.getGroup() == META_KEY && this.key == null) {
             this.key = cell;
-        } else if (this.getColumn() == 1) {
+        }
+        if (this.getGroup() == META_VALUE && this.value == null) {
             this.value = cell;
-        } else if (cell.getSymbol().equals("$")) {
-            if (!this.value.hasValue()) {
-                this.metaTable.addHeader(new MetaHeader(this.metaTable, this.key));
-            } else {
-                this.metaTable.addHeader(new MetaKeyValueHeader(this.metaTable, this.key, this.value));
-            }
+        }
+        if (cell == BaseCell.EndOfStream) {
+            this.processHeader();
+        }
+    }
+
+    private void processHeader() {
+        final var hasKey = this.key != null && this.key.hasValue();
+        final var hasValue = this.value != null && this.value.hasValue();
+        if (hasKey && hasValue) {
+            this.metaTable.addHeader(new MetaKeyValueHeader(this.metaTable, this.key, this.value));
+        } else if (hasKey && !hasValue) {
+            this.metaTable.addHeader(new MetaHeader(this.metaTable, this.key));
+        } else if (!hasKey && hasValue) {
+            this.metaTable.addHeader(new MetaHeader(this.metaTable, this.value));
         }
     }
 

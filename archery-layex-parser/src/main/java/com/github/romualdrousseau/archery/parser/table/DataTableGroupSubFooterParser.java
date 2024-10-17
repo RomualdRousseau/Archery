@@ -8,7 +8,6 @@ import com.github.romualdrousseau.archery.base.DataTable;
 import com.github.romualdrousseau.archery.base.RowGroup;
 import com.github.romualdrousseau.archery.header.DataTableHeader;
 import com.github.romualdrousseau.archery.header.MetaGroupHeader;
-import com.github.romualdrousseau.archery.header.MetaTableHeader;
 import com.github.romualdrousseau.archery.header.PivotEntry;
 import com.github.romualdrousseau.archery.header.PivotKeyHeader;
 
@@ -24,8 +23,8 @@ public class DataTableGroupSubFooterParser extends DataTableParser {
     public DataTableGroupSubFooterParser(final DataTable dataTable, final boolean disablePivot) {
         this.dataTable = dataTable;
         this.disablePivot = disablePivot;
-        this.splitRows = new ArrayList<Integer>();
-        this.ignoreRows = new ArrayList<Integer>();
+        this.splitRows = new ArrayList<>();
+        this.ignoreRows = new ArrayList<>();
 
         this.firstRowCell = null;
         this.currRowGroup = null;
@@ -37,6 +36,9 @@ public class DataTableGroupSubFooterParser extends DataTableParser {
     @Override
     public void processSymbolFunc(final BaseCell cell) {
         final var symbol = cell.getSymbol();
+        if (cell == BaseCell.EndOfStream) {
+            return;
+        }
 
         if (this.getColumn() == 0) {
             this.firstRowCell = null;
@@ -87,8 +89,6 @@ public class DataTableGroupSubFooterParser extends DataTableParser {
     private void processMeta(final BaseCell cell, final String symbol) {
         if (symbol.equals("$")) {
             this.dataTable.setFirstRowOffset(this.getRow() + 1);
-        } else if (cell.hasValue()) {
-            this.dataTable.addHeader(new MetaTableHeader(this.dataTable, cell));
         }
     }
 
