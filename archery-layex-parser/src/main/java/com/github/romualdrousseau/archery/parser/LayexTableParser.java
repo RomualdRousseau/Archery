@@ -1,5 +1,6 @@
 package com.github.romualdrousseau.archery.parser;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,7 @@ public class LayexTableParser extends SimpleTableParser {
 
     private final List<String> metaLayexes;
     private final List<String> dataLayexes;
+    private final ArrayList<BaseTable> remainingMetaTables;
 
     private DataTableParserFactory dataTableParserFactory;
     private List<TableMatcher> metaMatchers;
@@ -36,6 +38,7 @@ public class LayexTableParser extends SimpleTableParser {
     public LayexTableParser(final List<String> metaLayexes, final List<String> dataLayexes) {
         this.metaLayexes = metaLayexes;
         this.dataLayexes = dataLayexes;
+        this.remainingMetaTables = new ArrayList<BaseTable>();
         this.dataTableParserFactory = new DataTableGroupSubHeaderParserFactory();
         this.metaMatchers = metaLayexes.stream().map(Layex::new).map(Layex::compile).toList();
         this.dataMatchers = dataLayexes.stream().map(Layex::new).map(Layex::compile).toList();
@@ -75,15 +78,20 @@ public class LayexTableParser extends SimpleTableParser {
     public List<DataTable> getDataTables(final BaseSheet sheet, final List<BaseTable> tables) {
         final var matchers = this.getDataMatcherList();
         final var result = new ArrayList<DataTable>();
+        final var remainingTables = new ArrayDeque<BaseTable>(tables);
 
-        for (final var table : tables) {
+        this.remainingMetaTables.clear();
+
+        while (!remainingTables.isEmpty()) {
+            final var table = remainingTables.pollFirst();
             table.setVisited(false);
 
             for (var rowOffset = 0; rowOffset < TRY_LAYEX_COUNT; rowOffset++) {
                 final var lexer = new TableLexer(table, rowOffset);
                 for (final var matcher : matchers) {
                     if (!table.isVisited()) {
-                        table.setVisited(this.parseDataTable(table, lexer, matcher, rowOffset, result));
+                        table.setVisited(this.parseDataTable(table, lexer, matcher, rowOffset, result, remainingTables,
+                                this.remainingMetaTables));
                     }
                 }
             }
@@ -96,8 +104,12 @@ public class LayexTableParser extends SimpleTableParser {
     public List<MetaTable> getMetaTables(final BaseSheet sheet, final List<BaseTable> tables) {
         final var matchers = this.getMetaMatcherList();
         final var result = new ArrayList<MetaTable>();
+        final var remainingTables = new ArrayDeque<BaseTable>(tables);
 
-        for (final var table : tables) {
+        remainingTables.addAll(this.remainingMetaTables);
+
+        while (!remainingTables.isEmpty()) {
+            final var table = remainingTables.pollFirst();
             if (table.isVisited()) {
                 continue;
             }
@@ -135,51 +147,53 @@ public class LayexTableParser extends SimpleTableParser {
     }
 
     private boolean parseDataTable(final BaseTable table, final TableLexer lexer, final TableMatcher matcher,
-            final int rowOffset, final List<DataTable> result) {
+            final int rowOffset, final List<DataTable> result, final ArrayDeque<BaseTable> remainingTables,
+            final ArrayList<BaseTable> metaTables) {
         final var dataTable = new DataTable(table, rowOffset);
         final var disablePivot = !table.getSheet().isPivotEnabled();
         final var parser = this.dataTableParserFactory.getInstance(dataTable, disablePivot);
         if (!matcher.match(lexer.reset(), parser)) {
             return false;
         }
-
+        parser.processSymbolFunc(BaseCell.EndOfStream);
         if (parser.getSplitRows().size() > 0) {
-            dataTable.adjustLastRow(dataTable.getFirstRow() + parser.getSplitRows().get(0) - 1);
+            final var lastRow = dataTable.getFirstRow() + parser.getSplitRows().get(0) - 1;
+            dataTable.adjustLastRow(lastRow);
         }
         dataTable.ignoreRows().addAll(parser.getIgnoreRows());
         dataTable.setLoadCompleted(true);
         result.add(dataTable);
 
-        if (parser.getSplitRows().size() > 0) {
-            return this.splitAllSubTables(table, matcher, rowOffset, parser.getSplitRows().get(0), result);
+        if (dataTable.getHeaderRowOffset() > 0) {
+            final var firstRow = table.getFirstRow() + rowOffset;
+            final var lastRow = table.getFirstRow() + rowOffset + dataTable.getHeaderRowOffset() - 1;
+            metaTables.add(new BaseTable(table, firstRow, lastRow));
         }
-        return true;
-    }
 
-    private boolean splitAllSubTables(final BaseTable table, final TableMatcher matcher, final int rowOffset,
-            final int splitRow, final List<DataTable> result) {
-        final var firstRow = table.getFirstRow() + rowOffset + splitRow;
-        if (firstRow >= table.getLastRow()) {
-            return true;
+        if (parser.getSplitRows().size() > 0) {
+            final var firstRow = table.getFirstRow() + rowOffset + parser.getSplitRows().get(0);
+            if (firstRow < table.getLastRow()) {
+                remainingTables.addFirst(new BaseTable(table, firstRow, table.getLastRow()));
+            }
         }
-        final var nextTable = new BaseTable(table, firstRow, table.getLastRow());
-        final var lexer = new TableLexer(table, 0);
-        return this.parseDataTable(nextTable, lexer, matcher, 0, result);
+
+        return true;
     }
 
     private boolean parseMetaTable(final BaseTable table, final TableLexer lexer, final TableMatcher matcher,
             final List<MetaTable> result) {
-        final MetaTable metaTable = new MetaTable(table);
+        final var metaTable = new MetaTable(table);
         final var parser = new MetaTableParser(metaTable);
         if (!matcher.match(lexer.reset(), parser)) {
             return false;
         }
+        parser.processSymbolFunc(BaseCell.EndOfStream);
         result.add(metaTable);
         return true;
     }
 
     private void convertToMetaHeaders(final BaseTable table, final List<MetaTable> result) {
-        final MetaTable metaTable = new MetaTable(table);
+        final var metaTable = new MetaTable(table);
         for (final var row : metaTable.rows()) {
             for (final var cell : row.cells()) {
                 if (cell.hasValue()) {
@@ -187,7 +201,9 @@ public class LayexTableParser extends SimpleTableParser {
                 }
             }
         }
-        metaTable.setLoadCompleted(true);
-        result.add(metaTable);
+        if (metaTable.getNumberOfHeaders() > 0) {
+            metaTable.setLoadCompleted(true);
+            result.add(metaTable);
+        }
     }
 }

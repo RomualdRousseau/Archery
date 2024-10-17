@@ -9,25 +9,24 @@ import com.github.romualdrousseau.archery.parser.LayexTableParser;
 
 public class Tutorial6 implements Runnable {
 
-    public Tutorial6() {
+    public static void main(final String[] args) {
+        new Tutorial6().run();
     }
 
     @Override
     public void run() {
-        final var tableParser = new LayexTableParser(
-                List.of("(v.$)+"),
-                List.of("(()(E+$E+$))(()(/^PRODUCTCODE/.+$)*(/PRODUCTCODE/.+$))+()"));
-
         final var builder = Common.loadModelBuilderFromGitHub("sales-english");
-        builder.setTableParser(tableParser);
-        final var model = builder.build();
+
+        final var model = builder
+                .setTableParser(this.customTableParser())
+                .build();
 
         final var file = Common.loadData("document with noises.xls", this.getClass());
         try (final var doc = DocumentFactory.createInstance(file, "UTF-8")
                 .setModel(model)
                 .setHints(EnumSet.of(Document.Hint.INTELLI_LAYOUT))
                 .setRecipe(
-                    "sheet.setCapillarityThreshold(1.5)",
+                        "sheet.setCapillarityThreshold(1.5)",
                         "sheet.setDataTableParserFactory(\"DataTableGroupSubFooterParserFactory\")",
                         "sheet.dropRowsWhenFillRatioLessThan(0.2)")) {
 
@@ -38,7 +37,9 @@ public class Tutorial6 implements Runnable {
         }
     }
 
-    public static void main(final String[] args) {
-        new Tutorial6().run();
+    private LayexTableParser customTableParser() {
+        return new LayexTableParser(
+                List.of("(v.$)+"),
+                List.of("(()(E+$E+$))(()(/^PRODUCTCODE/.+$)*(/PRODUCTCODE/.+$))+()"));
     }
 }

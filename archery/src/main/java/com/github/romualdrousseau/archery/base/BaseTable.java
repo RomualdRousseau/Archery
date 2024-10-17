@@ -32,13 +32,13 @@ public class BaseTable implements Table, Visitable {
 
         this.sheet = sheet;
         this.firstColumn = firstColumn;
-        this.firstRow = firstRow;
         this.lastColumn = lastColumn;
         this.cachedRows = cachedRows;
         this.ignoreRows = ignoreRows;
         this.headers = new ArrayList<>(lastColumn - firstColumn);
 
         this.visited = false;
+        this.firstRow = firstRow;
         this.lastRow = lastRow;
         this.firstRowOffset = 0;
         this.lastRowOffset = 0;
@@ -232,9 +232,9 @@ public class BaseTable implements Table, Visitable {
     private final List<Integer> ignoreRows;
     private final BaseSheet sheet;
     private final int firstColumn;
-    private final int firstRow;
     private final int lastColumn;
     private final ArrayList<Header> headers;
+    private  int firstRow;
     private int lastRow;
     private int firstRowOffset;
     private int lastRowOffset;

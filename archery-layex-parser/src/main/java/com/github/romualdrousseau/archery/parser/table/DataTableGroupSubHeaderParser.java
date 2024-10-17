@@ -24,8 +24,8 @@ public class DataTableGroupSubHeaderParser extends DataTableParser {
     public DataTableGroupSubHeaderParser(final DataTable dataTable, final boolean disablePivot) {
         this.dataTable = dataTable;
         this.disablePivot = disablePivot;
-        this.splitRows = new ArrayList<Integer>();
-        this.ignoreRows = new ArrayList<Integer>();
+        this.splitRows = new ArrayList<>();
+        this.ignoreRows = new ArrayList<>();
 
         this.firstRowCell = null;
         this.currRowGroup = null;
@@ -37,6 +37,9 @@ public class DataTableGroupSubHeaderParser extends DataTableParser {
     @Override
     public void processSymbolFunc(final BaseCell cell) {
         final var symbol = cell.getSymbol();
+        if (cell == BaseCell.EndOfStream) {
+            return;
+        }
 
         if (this.getColumn() == 0) {
             this.firstRowCell = null;
@@ -87,8 +90,6 @@ public class DataTableGroupSubHeaderParser extends DataTableParser {
     private void processMeta(final BaseCell cell, final String symbol) {
         if (symbol.equals("$")) {
             this.dataTable.setFirstRowOffset(this.getRow() + 1);
-        } else if (cell.hasValue()) {
-            this.dataTable.addHeader(new MetaTableHeader(this.dataTable, cell));
         }
     }
 

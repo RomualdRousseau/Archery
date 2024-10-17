@@ -9,20 +9,17 @@ import com.github.romualdrousseau.archery.parser.LayexTableParser;
 
 public class Tutorial8 implements Runnable {
 
-    public Tutorial8() {
+    public static void main(final String[] args) {
+        new Tutorial8().run();
     }
 
     @Override
     public void run() {
-        final var tableParser = new LayexTableParser(
-                List.of(""),
-                List.of(
-                    "((vv$)(v+$v+$))(()(.+$)())+()",
-                    "(()(.+$))(()(.+$)())+()"));
-
         final var builder = Common.loadModelBuilderFromGitHub("sales-english");
-        builder.setTableParser(tableParser);
-        final var model = builder.build();
+
+        final var model = builder
+                .setTableParser(this.customTableParser())
+                .build();
 
         final var file = Common.loadData("AG120-N-074.pdf", this.getClass());
         try (final var doc = DocumentFactory.createInstance(file, "UTF-8")
@@ -36,7 +33,11 @@ public class Tutorial8 implements Runnable {
         }
     }
 
-    public static void main(final String[] args) {
-        new Tutorial8().run();
+    private LayexTableParser customTableParser() {
+        return new LayexTableParser(
+                List.of(""),
+                List.of(
+                        "((vv$)(v+$v+$))(()(.+$)())+()",
+                        "(()(.+$))(()(.+$)())+()"));
     }
 }

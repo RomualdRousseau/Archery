@@ -57,7 +57,8 @@ public class BaseRow implements Row {
     @Override
     public BaseCell getCellAt(final int colIndex) {
         if (colIndex < 0 || colIndex >= this.table.getNumberOfColumns()) {
-            throw new IndexOutOfBoundsException();
+            // throw new IndexOutOfBoundsException(colIndex);
+            return BaseCell.EndOfRow;
         }
         var result = cachedCells[colIndex];
         if (result == null) {
@@ -89,14 +90,14 @@ public class BaseRow implements Row {
     }
 
     protected String getCellValueAt(final int colIndex) {
-        assert (colIndex >= 0 && colIndex < this.table.getNumberOfColumns()) : "column index out of bound";
+        assert (colIndex >= 0 && colIndex < this.table.getNumberOfColumns()) : "Index out of range: " + colIndex;
         final int col = this.table.getFirstColumn() + colIndex;
         final int row = this.table.getFirstRow() + this.rowIndex;
         return this.table.getSheet().getCellDataAt(col, row);
     }
 
     protected int getNumberOfMergedCellsAt(final int colIndex) {
-        assert (colIndex >= 0 && colIndex < this.table.getNumberOfColumns()) : "column index out of bound";
+        assert (colIndex >= 0 && colIndex < this.table.getNumberOfColumns()) : "Index out of range: " + colIndex;
         final int col = this.table.getFirstColumn() + colIndex;
         final int row = this.table.getFirstRow() + this.rowIndex;
         return this.table.getSheet().getNumberOfMergedCellsAt(col, row);
