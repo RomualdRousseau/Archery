@@ -4,9 +4,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import com.github.romualdrousseau.archery.base.PatcheableSheetStore;
 import com.github.romualdrousseau.archery.commons.collections.DataFrame;
@@ -96,15 +94,13 @@ class DbfSheet extends PatcheableSheetStore implements Closeable {
     }
 
     private DataFrame processRows(final DBFReader reader, final DataFrameWriter writer) throws IOException {
-        final List<String[]> rows = new ArrayList<String[]>();
-
         final int numberOfFields = reader.getFieldCount();
         final String[] headers = new String[numberOfFields];
         for (int i = 0; i < numberOfFields; i++) {
             final DBFField field = reader.getField(i);
             headers[i] = StringUtils.cleanToken(field.getName());
         }
-        rows.add(headers);
+        writer.write(Row.of(headers));
 
         for (Object[] rowObjects; (rowObjects = reader.nextRecord()) != null;) {
             final String[] cells = new String[rowObjects.length];
