@@ -55,6 +55,8 @@ public class YAMLJacksonObject implements DSFObject {
             object = (T) Integer.valueOf(node.intValue());
         } else if (node.isFloat()) {
             object = (T) Float.valueOf(node.floatValue());
+        } else if (node.isBoolean()) {
+            object = (T) Boolean.valueOf(node.booleanValue());
         } else {
             object = (T) node.textValue();
         }
