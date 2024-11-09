@@ -49,7 +49,7 @@ public class JsonModelData implements ModelData {
     @Override
     public Map<String, String> getMap(final String key) {
         return this.backstore.<DSFArray>get(key)
-                .map(x -> x.<DSFObject>stream().collect(DSFCollector.<String>toUnmodifiableMap("key", "value")))
+                .map(x -> x.<DSFObject>stream().collect(DSFCollector.<String>toLinkedMap("key", "value")))
                 .orElse(Collections.emptyMap());
     }
 

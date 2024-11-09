@@ -48,8 +48,8 @@ public class RegexComparer implements Text.IComparer {
     @Override
     public Optional<String> find(final String v) {
         return (v == null) ? Optional.empty()
-                : this.compiledPatterns.values().stream()
-                        .map(e -> e.matcher(v))
+                : this.patterns.entrySet().stream()
+                        .map(p -> this.compiledPatterns.get(p.getKey()).matcher(v))
                         .filter(m -> m.find())
                         .map(m -> m.group())
                         .findFirst();
