@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.apache.commons.collections4.map.LRUMap;
 
 import com.github.romualdrousseau.archery.modeldata.EmptyModelData;
+import com.github.romualdrousseau.archery.commons.collections.CollectionUtils;
 import com.github.romualdrousseau.archery.commons.preprocessing.Text;
 import com.github.romualdrousseau.archery.commons.preprocessing.comparer.RegexComparer;
 import com.github.romualdrousseau.archery.commons.types.Tensor;
@@ -34,7 +35,7 @@ public class Model {
         this.pivotEntityList = modelData.getList("pivotEntityList");
         this.tagList = modelData.getList("tags");
         this.requiredTagList = modelData.getList("requiredTags");
-        this.comparer = new RegexComparer(this.patternMap);
+        this.comparer = new RegexComparer(CollectionUtils.sortMap(this.patternMap, this.entityList));
     }
 
     public ModelData getData() {
