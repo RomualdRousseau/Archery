@@ -63,8 +63,8 @@
         <jython.version>2.7.4</jython.version>
         <poi.version>5.3.0</poi.version>
         <javadbf.version>1.14.1</javadbf.version>
-        <hadoop.version>3.4.0</hadoop.version>
-        <parquet.version>1.14.2</parquet.version>
+        <hadoop.version>3.4.1</hadoop.version>
+        <parquet.version>1.14.3</parquet.version>
         <tabula.version>1.0.5</tabula.version>
         <openai-service.version>0.18.2</openai-service.version>
         <reflections.version>0.10.2</reflections.version>
