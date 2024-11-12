@@ -65,7 +65,7 @@
         <javadbf.version>1.14.1</javadbf.version>
         <hadoop.version>3.4.1</hadoop.version>
         <parquet.version>1.14.4</parquet.version>
-        <tabula.version>1.0.5</tabula.version>
+        <tabula.version>1.0.12</tabula.version>
         <openai-service.version>0.18.2</openai-service.version>
         <reflections.version>0.10.2</reflections.version>
         <tensorflow.version>0.5.0</tensorflow.version>
