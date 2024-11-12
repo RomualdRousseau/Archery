@@ -428,11 +428,6 @@
     <dependencyManagement>
         <dependencies>
             <!-- Fix vunerabilities -->
-            <dependency>
-                <groupId>org.apache.avro</groupId>
-                <artifactId>avro</artifactId>
-                <version>1.11.4</version>
-            </dependency>
             <!-- Fix convergences -->
             <dependency>
                 <groupId>org.slf4j</groupId>
