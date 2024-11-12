@@ -5,7 +5,7 @@ public class Settings {
     public final static int MAX_STORE_ROWS = 10000;
 
     public final static float DEFAULT_RATIO_SIMILARITY = 0.35f;
-    public final static float DEFAULT_ENTITY_PROBABILITY = 0.6f;
+    public final static float DEFAULT_ENTITY_PROBABILITY = 0.45f;
     public final static float DEFAULT_CAPILLARITY_THRESHOLD = 0.5f;
 
     public final static String PIVOT_KEY_SUFFIX = "#PIVOT?";
