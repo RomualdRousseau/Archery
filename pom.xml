@@ -428,6 +428,7 @@
     <dependencyManagement>
         <dependencies>
             <!-- Fix vunerabilities -->
+            <!-- Fix convergences -->
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
@@ -569,7 +570,11 @@
                 <artifactId>classgraph</artifactId>
                 <version>4.8.177</version>
             </dependency>
-            <!-- Fix convergences -->
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib</artifactId>
+                <version>1.9.25</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-api</artifactId>
