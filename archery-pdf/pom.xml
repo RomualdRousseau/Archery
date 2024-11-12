@@ -27,15 +27,9 @@
         </dependency>
         <!-- PDF Framework -->
         <dependency>
-            <groupId>technology.tabula</groupId>
+            <groupId>fr.neolegal</groupId>
             <artifactId>tabula</artifactId>
-             <version>${tabula.version}</version>
-             <exclusions>
-                <exclusion>
-                    <groupId>org.bouncycastle</groupId>
-                    <artifactId>bcprov-jdk15on</artifactId>
-                </exclusion>
-            </exclusions>
+            <version>${tabula.version}</version>
         </dependency>
     </dependencies>
 </project>

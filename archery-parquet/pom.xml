@@ -30,16 +30,20 @@
             <version>${hadoop.version}</version>
             <exclusions>
                 <exclusion>
-                    <artifactId>hadoop-shaded-protobuf_3_7</artifactId>
-                    <groupId>org.apache.hadoop.thirdparty</groupId>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-reload4j</artifactId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>slf4j-reload4j</artifactId>
                     <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-simple</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.bouncycastle</groupId>
                     <artifactId>bcprov-jdk15on</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>hadoop-shaded-protobuf_3_7</artifactId>
+                    <groupId>org.apache.hadoop.thirdparty</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
