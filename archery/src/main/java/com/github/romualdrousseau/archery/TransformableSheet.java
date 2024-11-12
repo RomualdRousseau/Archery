@@ -62,7 +62,7 @@ public class TransformableSheet {
         if (!StringUtils.isBlank(recipe)) {
             try (var pyInterp = new PythonInterpreter()) {
                 pyInterp.set("sheet", this);
-                pyInterp.exec(recipe);
+                pyInterp.exec(pyInterp.compile(recipe));
             }
         }
 
