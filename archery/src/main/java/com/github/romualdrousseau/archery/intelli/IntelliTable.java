@@ -153,7 +153,7 @@ public class IntelliTable extends DataTable {
         final var newRow = new Row(this.tmpHeaders.size());
         for (final var abstractHeader : this.tmpHeaders) {
             final var orgHeaders = orgTable.findAllHeaders(abstractHeader);
-            this.generateCellsNoPivot(graph, orgHeaders, abstractHeader, rowGroup, orgRow, newRow);
+            this.generateCells(graph, orgHeaders, abstractHeader, rowGroup, orgRow, newRow);
         }
         return newRow;
     }
@@ -170,7 +170,7 @@ public class IntelliTable extends DataTable {
                             orgRow.getCellAt(pivotEntry.getCell().getColumnIndex()).getValue());
                 }
             } else {
-                this.generateCellsNoPivot(graph, orgHeaders, abstractHeader, rowGroup, orgRow, newRow);
+                this.generateCells(graph, orgHeaders, abstractHeader, rowGroup, orgRow, newRow);
             }
         }
         return newRow;
@@ -189,7 +189,7 @@ public class IntelliTable extends DataTable {
                     newRow.set(ci + 2, orgRow.getCellAt(pivotEntry.getCell().getColumnIndex()).getValue());
                 }
             } else {
-                this.generateCellsNoPivot(graph, orgHeaders, abstractHeader, rowGroup, orgRow, newRow);
+                this.generateCells(graph, orgHeaders, abstractHeader, rowGroup, orgRow, newRow);
             }
         }
         return newRow;
@@ -215,32 +215,41 @@ public class IntelliTable extends DataTable {
                     }
                 }
             } else {
-                this.generateCellsNoPivot(graph, orgHeaders, abstractHeader, rowGroup, orgRow, newRow);
+                this.generateCells(graph, orgHeaders, abstractHeader, rowGroup, orgRow, newRow);
             }
         }
         return newRow;
     }
 
-    private void generateCellsNoPivot(final BaseTableGraph graph, final List<BaseHeader> orgHeaders,
+    private void generateCells(final BaseTableGraph graph, final List<BaseHeader> orgHeaders,
             final BaseHeader abstractHeader, final RowGroup rowGroup, final BaseRow orgRow, final Row newRow) {
         if (orgHeaders.size() > 0) {
             for (final var orgHeader : orgHeaders) {
                 final var orgAbstractHeader = (BaseHeader) orgHeader;
                 if (rowGroup == null || !orgAbstractHeader.hasRowGroup()) {
-                    final var value = orgAbstractHeader.getCellAtRow(orgRow).getValue();
-                    abstractHeader.setColumnEmpty(abstractHeader.isColumnEmpty() & value.isBlank());
-                    newRow.set(abstractHeader.getColumnIndex(), value);
+                    final var currValue = orgAbstractHeader.getCellAtRow(orgRow).getValue();
+                    final var prevValue = newRow.get(abstractHeader.getColumnIndex());
+                    this.generateCell(abstractHeader, prevValue, currValue, newRow);
                 } else {
-                    final var value = rowGroup.getCell().getValue();
-                    abstractHeader.setColumnEmpty(abstractHeader.isColumnEmpty() & value.isBlank());
-                    newRow.set(abstractHeader.getColumnIndex(), rowGroup.getCell().getValue());
+                    final var currValue = rowGroup.getCell().getValue();
+                    this.generateCell(abstractHeader, null, currValue, newRow);
                 }
+
             }
         } else {
-            final var header = graph.getParent().findClosestHeader(abstractHeader);
-            final var value = header.getValue();
-            abstractHeader.setColumnEmpty(abstractHeader.isColumnEmpty() && StringUtils.isFastBlank(value));
-            newRow.set(abstractHeader.getColumnIndex(), value);
+            final var orgAbstractHeader = graph.getParent().findClosestHeader(abstractHeader);
+            final var currValue = orgAbstractHeader.getValue();
+            final var prevValue = newRow.get(abstractHeader.getColumnIndex());
+            this.generateCell(abstractHeader, prevValue, currValue, newRow);
+        }
+    }
+
+    private void generateCell(final BaseHeader abstractHeader, final String prevValue, final String currValue, final Row newRow) {
+        abstractHeader.setColumnEmpty(abstractHeader.isColumnEmpty() && StringUtils.isFastBlank(currValue));
+        if (prevValue == null) {
+            newRow.set(abstractHeader.getColumnIndex(), currValue);
+        } else {
+            newRow.set(abstractHeader.getColumnIndex(), prevValue + currValue);
         }
     }
 
