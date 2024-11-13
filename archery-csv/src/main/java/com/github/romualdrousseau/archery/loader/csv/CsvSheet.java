@@ -129,8 +129,8 @@ class CsvSheet extends PatcheableSheetStore implements Closeable {
 
     private String[] parseOneRow(final String data, final String separator) {
         final var result = new ArrayList<String>();
-        var acc = "";
         var state = 0;
+        var acc = "";
 
         final char[] tmp = data.toCharArray();
         for (int i = 0; i < tmp.length; i++) {
@@ -171,6 +171,10 @@ class CsvSheet extends PatcheableSheetStore implements Closeable {
                     }
                     break;
             }
+        }
+
+        if (state == 1) {
+            throw new RuntimeException(String.format("Malformed CSV: %s", data));
         }
 
         if (!acc.trim().equals("")) {
