@@ -98,10 +98,12 @@ public class DataTableHeader extends BaseHeader {
             if (cell.getSymbol().equals("e")) {
                 entityVector.iadd(cell.getEntityVector());
             }
-            
+
             n += Settings.DEFAULT_ENTITY_PROBABILITY;
         }
-        entityVector.if_lt_then(n, 0.0f, 1.0f);
+        if (n > 0.0f) {
+            entityVector.if_lt_then(n, 0.0f, 1.0f);
+        }
         final var entityList = this.getTable().getSheet().getDocument().getModel().getEntityList();
         return IntStream.range(0, entityVector.size).boxed()
                 .filter(i -> entityVector.data[i] == 1)
