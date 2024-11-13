@@ -83,17 +83,25 @@ public class DataTableHeader extends BaseHeader {
         final var N = Math.min(this.getTable().getNumberOfRows(), Settings.DEFAULT_SAMPLE_COUNT);
         final var entityVector = Tensor
                 .zeros(this.getTable().getSheet().getDocument().getModel().getEntityList().size());
+        float n = 0.0f;
         for (int i = 0; i < N; i++) {
             final BaseRow row = this.getTable().getRowAt(i);
             if (row == null) {
                 continue;
             }
+
             final BaseCell cell = row.getCellAt(this.getColumnIndex());
-            if (cell.hasValue() && cell.getSymbol().equals("e")) {
+            if (!cell.hasValue()) {
+                continue;
+            }
+
+            if (cell.getSymbol().equals("e")) {
                 entityVector.iadd(cell.getEntityVector());
             }
+            
+            n += Settings.DEFAULT_ENTITY_PROBABILITY;
         }
-        entityVector.if_lt_then(N * Settings.DEFAULT_ENTITY_PROBABILITY, 0.0f, 1.0f);
+        entityVector.if_lt_then(n, 0.0f, 1.0f);
         final var entityList = this.getTable().getSheet().getDocument().getModel().getEntityList();
         return IntStream.range(0, entityVector.size).boxed()
                 .filter(i -> entityVector.data[i] == 1)
