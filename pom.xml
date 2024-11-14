@@ -160,6 +160,12 @@
                                 <requireJavaVersion>
                                     <version>${java.version}</version>
                                 </requireJavaVersion>
+                                <dependencyConvergence>
+                                    <uniqueVersions>false</uniqueVersions>
+                                    <excludes>
+                                        <exclude>nl.fountain:xelem</exclude>
+                                    </excludes>
+                                </dependencyConvergence>
                             </rules>
                         </configuration>
                     </execution>
