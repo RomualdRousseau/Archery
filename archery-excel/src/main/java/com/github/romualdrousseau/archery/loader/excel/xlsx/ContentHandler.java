@@ -67,16 +67,20 @@ public class ContentHandler extends DefaultHandler {
     public void startElement(final String uri, final String localName, final String name,
             final Attributes attributes) {
         if ("row".equals(name)) {
-            assert (attributes.getValue("r") != null) : "Row malformed without ref";
-            this.fillMissingRows(Integer.valueOf(attributes.getValue("r")) - 1);
-            this.row = new ArrayList<String>();
-            this.prevCell = null;
-            this.currCell = null;
+            if (attributes.getValue("r") != null) {
+                if (attributes.getValue("r") != null) {
+                    this.fillMissingRows(Integer.valueOf(attributes.getValue("r")) - 1);
+                }
+                this.row = new ArrayList<String>();
+                this.prevCell = null;
+                this.currCell = null;
+            }
         } else if ("c".equals(name)) {
-            assert (attributes.getValue("r") != null) : "Cell malformed without ref";
             this.prevCell = this.currCell;
             this.currCell = new Cell();
-            this.currCell.address = new CellAddress(attributes.getValue("r"));
+            this.currCell.address = (attributes.getValue("r") != null)
+                    ? new CellAddress(attributes.getValue("r"))
+                    : CellAddress.A1;
             this.currCell.type = this.getCellTypeFromString(attributes.getValue("t"));
             this.currCell.style = this.getCellStyleFromString(attributes.getValue("s"));
         } else if ("v".equals(name)) {
