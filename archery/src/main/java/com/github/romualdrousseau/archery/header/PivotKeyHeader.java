@@ -54,12 +54,12 @@ public class PivotKeyHeader extends MetaHeader {
         this.valueName = newName;
     }
 
-    public PivotValueHeader getPivotValue() {
-        return new PivotValueHeader(this, this.valueName);
-    }
-
     public PivotTypeHeader getPivotType() {
         return new PivotTypeHeader(this, this.valueName);
+    }
+
+    public PivotValueHeader getPivotValue() {
+        return new PivotValueHeader(this, this.valueName);
     }
 
     public void addEntry(final BaseCell entry) {

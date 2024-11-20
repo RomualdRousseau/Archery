@@ -11,6 +11,12 @@ public class PivotEntry {
         this.typeValue = cell.getSheet().getDocument().getModel().toEntityName(cell.getValue(), pivotEntityName);
     }
 
+    private PivotEntry(final PivotEntry pivotEntry) {
+        this.cell = pivotEntry.cell;
+        this.pivotValue = pivotEntry.pivotValue;
+        this.typeValue = pivotEntry.typeValue;
+    }
+
     public BaseCell getCell() {
         return this.cell;
     }
@@ -23,8 +29,13 @@ public class PivotEntry {
         return this.typeValue;
     }
 
-    public void setTypeValue(final String typeValue) {
+    public PivotEntry setTypeValue(final String typeValue) {
         this.typeValue = typeValue;
+        return this;
+    }
+
+    public PivotEntry clone() {
+        return new PivotEntry(this);
     }
 
     private final BaseCell cell;

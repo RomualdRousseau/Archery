@@ -1,25 +1,23 @@
 package com.github.romualdrousseau.archery.commons.python;
 
-import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 public class PythonSimpleDateFormat extends SimpleDateFormat {
 
+    private final Locale locale;
+
     public PythonSimpleDateFormat() {
-        super();
+        this("", Locale.US);
     }
 
     public PythonSimpleDateFormat(final String pattern) {
-        super(PythonSimpleDateFormat.toJava(pattern));
-    }
-
-    public PythonSimpleDateFormat(final String pattern, DateFormatSymbols formatSymbols) {
-        super(PythonSimpleDateFormat.toJava(pattern), formatSymbols);
+        this(pattern, PythonSimpleDateFormat.toJavaLocale(pattern));
     }
 
     public PythonSimpleDateFormat(final String pattern, Locale locale) {
         super(PythonSimpleDateFormat.toJava(pattern), locale);
+        this.locale = locale;
     }
 
     public static String toPython(final String javaPattern) {
@@ -68,7 +66,6 @@ public class PythonSimpleDateFormat extends SimpleDateFormat {
             .replaceAll("%w", "u")
             .replaceAll("%u", "u")
             .replaceAll("%U", "ww")
-            .replaceAll("%V", "ww")
             .replaceAll("%H", "HH")
             .replaceAll("%-H", "H")
             .replaceAll("%I", "hh")
@@ -77,5 +74,17 @@ public class PythonSimpleDateFormat extends SimpleDateFormat {
             .replaceAll("%-M", "m")
             .replaceAll("%S", "ss")
             .replaceAll("%-S", "s");
+    }
+
+    public static Locale toJavaLocale(final String pythonPattern) {
+        if (pythonPattern.contains("%w") || pythonPattern.contains("%W")) {
+            return Locale.UK;
+        } else {
+            return Locale.US;
+        }
+    }
+
+    public Locale getLocale() {
+        return this.locale;
     }
 }
