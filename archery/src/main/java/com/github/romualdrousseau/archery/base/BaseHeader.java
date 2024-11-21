@@ -7,11 +7,24 @@ import com.github.romualdrousseau.archery.Row;
 
 public abstract class BaseHeader implements Header {
 
+    private final BaseCell cell;
+
+    private BaseTable table;
+    private int colIndex;
+    private boolean columnEmpty;
+
     public BaseHeader(final BaseTable table, final BaseCell cell) {
         this.table = table;
         this.cell = cell;
         this.colIndex = cell.getColumnIndex();
         this.columnEmpty = false;
+    }
+
+    protected BaseHeader(final BaseHeader parent) {
+        this.table = parent.table;
+        this.cell = parent.cell;
+        this.colIndex = parent.colIndex;
+        this.columnEmpty = parent.columnEmpty;
     }
 
     @Override
@@ -44,7 +57,7 @@ public abstract class BaseHeader implements Header {
         return false;
     }
 
-    public void setColumnEmpty(boolean columnEmpty) {
+    public void setColumnEmpty(final boolean columnEmpty) {
         this.columnEmpty = columnEmpty;
     }
 
@@ -72,12 +85,16 @@ public abstract class BaseHeader implements Header {
         return false;
     }
 
-    public boolean isPivotHeader() {
-        return this.cell.isPivotHeader();
+    public boolean isPivotKeyHeader() {
+        return this.cell.isPivotKeyHeader();
     }
 
-    public Optional<String> getPivotEntityAsString() {
-        return this.cell.getPivotEntityAsString();
+    public boolean isPivotTypeHeader() {
+        return this.cell.isPivotTypeHeader();
+    }
+
+    public Optional<String> getPivotKeyEntityAsString() {
+        return this.cell.getPivotKeyEntityAsString();
     }
 
     @Override
@@ -89,12 +106,7 @@ public abstract class BaseHeader implements Header {
         return other != null &&  this.getName().equalsIgnoreCase(other.getName());
     }
 
-    public abstract String getValue();
-
     public abstract BaseHeader clone();
 
-    private BaseTable table;
-    private final BaseCell cell;
-    private int colIndex;
-    private boolean columnEmpty;
+    public abstract String getValue();
 }

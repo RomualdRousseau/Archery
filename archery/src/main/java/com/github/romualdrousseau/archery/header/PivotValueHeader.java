@@ -7,6 +7,15 @@ public class PivotValueHeader extends PivotKeyHeader {
         this.name = name;
     }
 
+    protected PivotValueHeader(final PivotValueHeader parent) {
+        this(parent, parent.name);
+    }
+
+    @Override
+    public PivotValueHeader clone() {
+        return new PivotValueHeader(this);
+    }
+
     @Override
     public String getName() {
         if(!this.getTable().isLoadCompleted()) {
@@ -14,11 +23,6 @@ public class PivotValueHeader extends PivotKeyHeader {
         } else {
             return String.format(this.getTable().getSheet().getPivotValueFormat(), this.name);
         }
-    }
-
-    @Override
-    public PivotValueHeader clone() {
-        return new PivotValueHeader(this, this.name);
     }
 
     private String name;

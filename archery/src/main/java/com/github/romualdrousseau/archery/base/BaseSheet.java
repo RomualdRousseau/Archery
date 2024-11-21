@@ -367,26 +367,40 @@ public class BaseSheet implements Sheet {
         this.pivotEnabled = false;
     }
 
-    public List<String> getPivotEntityList() {
-        if (!this.pivotEnabled) {
-            return Collections.emptyList();
-        }
-        if (this.pivotEntityList == null) {
-            return this.getDocument().getModel().getPivotEntityList();
-        }
-        return this.pivotEntityList;
-    }
-
-    public void setPivotEntityList(final List<String> pivotEntityList) {
-        this.pivotEntityList = pivotEntityList;
-    }
-
     public PivotOption getPivotOption() {
         return this.pivotOption;
     }
 
     public void setPivotOption(final PivotOption option) {
         this.pivotOption = option;
+    }
+
+    public List<String> getPivotKeyEntityList() {
+        if (!this.pivotEnabled) {
+            return Collections.emptyList();
+        }
+        if (this.pivotKeyEntityList == null) {
+            return this.getDocument().getModel().getPivotEntityList();
+        }
+        return this.pivotKeyEntityList;
+    }
+
+    public void setPivotKeyEntityList(final List<String> pivotKeyEntityList) {
+        this.pivotKeyEntityList = pivotKeyEntityList;
+    }
+
+    public List<String> getPivotTypeEntityList() {
+        if (!this.pivotEnabled) {
+            return Collections.emptyList();
+        }
+        if (this.pivotTypeEntityList == null) {
+            return Collections.emptyList();
+        }
+        return this.pivotTypeEntityList;
+    }
+
+    public void setPivotTypeEntityList(final List<String> pivotTypeEntityList) {
+        this.pivotTypeEntityList = pivotTypeEntityList;
     }
 
     public String getPivotKeyFormat() {
@@ -479,5 +493,6 @@ public class BaseSheet implements Sheet {
     private String pivotTypeFormat;
     private String groupValueFormat;
     private String columnValueFormat;
-    private List<String> pivotEntityList;
+    private List<String> pivotKeyEntityList;
+    private List<String> pivotTypeEntityList;
 }

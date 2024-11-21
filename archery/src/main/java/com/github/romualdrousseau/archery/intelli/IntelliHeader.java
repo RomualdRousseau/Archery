@@ -27,7 +27,7 @@ public class IntelliHeader extends DataTableHeader {
                         StreamSupport.stream(this.entities().spliterator(), false).findAny()
                                 .map(x -> this.getEntitiesAsString()).orElse("VALUE"));
             }
-        } else if (this.isPivotHeader() || !disableAutoName) {
+        } else if (this.isPivotKeyHeader() || !disableAutoName) {
             this.name = this.getTable().getSheet().getDocument().getModel().toEntityName(cellValue);
         } else {
             this.name = cellValue;
@@ -37,6 +37,15 @@ public class IntelliHeader extends DataTableHeader {
 
         this.setColumnIndex(header.getColumnIndex());
         this.setColumnEmpty(StringUtils.isFastBlank(this.name) && header.isColumnEmpty());
+    }
+
+    protected IntelliHeader(final IntelliHeader parent) {
+        this(parent, parent.disableAutoName);
+    }
+
+    @Override
+    public BaseHeader clone() {
+        return new IntelliHeader(this);
     }
 
     @Override
@@ -69,11 +78,6 @@ public class IntelliHeader extends DataTableHeader {
         return value
                 .map(x -> new BaseCell(x, this.getColumnIndex(), 1, this.getTable().getSheet()))
                 .orElseGet(() -> this.getCellAtRow(row));
-    }
-
-    @Override
-    public BaseHeader clone() {
-        return new IntelliHeader(this, this.disableAutoName);
     }
 
     @Override

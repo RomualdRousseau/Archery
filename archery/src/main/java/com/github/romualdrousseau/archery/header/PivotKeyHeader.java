@@ -12,21 +12,17 @@ import com.github.romualdrousseau.archery.base.BaseTable;
 public class PivotKeyHeader extends MetaHeader {
 
     public PivotKeyHeader(final BaseTable table, final BaseCell cell) {
+        this(table, cell, cell.getPivotKeyEntityAsString().get());
+    }
+
+    public PivotKeyHeader(final BaseTable table, final BaseCell cell, final String pivotEntityName) {
         super(table, cell);
-        this.entries = new ArrayList<>();
-        this.entries.add(new PivotEntry(cell, this.getPivotEntityAsString().get()));
-        this.valueName = this.getPivotEntityAsString().get();
+        this.pivotEntityName = pivotEntityName;
+        this.entries = new ArrayList<>(List.of(new PivotEntry(cell, pivotEntityName)));
     }
 
-    private PivotKeyHeader(final PivotKeyHeader parent) {
-        super(parent.getTable(), parent.getCell());
-        this.entries = parent.entries;
-        this.valueName = this.getPivotEntityAsString().get();
-    }
-
-    @Override
-    public String getName() {
-        return String.format(this.getTable().getSheet().getPivotKeyFormat(), super.getName());
+    protected PivotKeyHeader(final PivotKeyHeader parent) {
+        this(parent.getTable(), parent.getCell(), parent.pivotEntityName);
     }
 
     @Override
@@ -34,38 +30,45 @@ public class PivotKeyHeader extends MetaHeader {
         return new PivotKeyHeader(this);
     }
 
+    @Override
+    public String getName() {
+        return String.format(this.getTable().getSheet().getPivotKeyFormat(), super.getName());
+    }
+
+    public String getPivotEntityName() {
+        return this.pivotEntityName;
+    }
+
     public List<PivotEntry> getEntries() {
         return this.entries;
     }
 
-    public Set<String> getEntryTypes() {
+    public void addEntry(final BaseCell entry) {
+        this.entries.add(new PivotEntry(entry, this.pivotEntityName));
+    }
+
+    public Set<String> getEntryTypeValues() {
         return this.entries.stream().map(x -> x.getTypeValue()).collect(Collectors.toSet());
     }
 
-    public Set<String> getEntryValues() {
-        return this.entries.stream().map(x -> x.getValue()).collect(Collectors.toSet());
+    public void setEntryTypeValues(final Set<String> entryTypeValues) {
+        this.entries.clear();
+        this.entries.addAll(entryTypeValues.stream()
+                .map(x -> new PivotEntry(this.getCell(), this.pivotEntityName).setTypeValue(x)).toList());
     }
 
-    public String getValueName() {
-        return this.valueName;
+    public Set<String> getEntryPivotValues() {
+        return this.entries.stream().map(x -> x.getPivotValue()).collect(Collectors.toSet());
     }
 
-    public void updateValueName(final String newName) {
-        this.valueName = newName;
+    public PivotTypeHeader getPivotTypeHeader() {
+        return new PivotTypeHeader(this, this.pivotEntityName);
     }
 
-    public PivotTypeHeader getPivotType() {
-        return new PivotTypeHeader(this, this.valueName);
-    }
-
-    public PivotValueHeader getPivotValue() {
-        return new PivotValueHeader(this, this.valueName);
-    }
-
-    public void addEntry(final BaseCell entry) {
-        this.entries.add(new PivotEntry(entry, this.getPivotEntityAsString().get()));
+    public PivotValueHeader getPivotValueHeader() {
+        return new PivotValueHeader(this, this.pivotEntityName);
     }
 
     private final List<PivotEntry> entries;
-    private String valueName;
+    private final String pivotEntityName;
 }

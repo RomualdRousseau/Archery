@@ -11,21 +11,26 @@ import com.github.romualdrousseau.archery.base.BaseTable;
 
 public class MetaHeader extends BaseHeader {
 
+    private final String name;
+    private final BaseCell value;
+    private final String valueOfValue;
+
     public MetaHeader(final BaseTable table, final BaseCell cell) {
         super(table, cell);
-
-        final var model = this.getTable().getSheet().getDocument().getModel();
-        final var cellValue = this.getCell().getValue();
-        this.transformedCell = model
-                .toEntityValue(cellValue)
-                .map(x -> new BaseCell(x, this.getCell()))
-                .orElse(this.getCell());
-        this.name = this.getPivotEntityAsString().orElseGet(() -> model.toEntityName(cellValue));
-        this.value = this.transformedCell.getValue();
+        final var model = table.getSheet().getDocument().getModel();
+        final var cellValue = cell.getValue();
+        this.name = this.getPivotKeyEntityAsString().orElseGet(() -> model.toEntityName(cellValue));
+        this.value = model.toEntityValue(cellValue).map(x -> new BaseCell(x, cell)).orElse(cell);
+        this.valueOfValue = this.value.getValue();
     }
 
-    private MetaHeader(final MetaHeader parent) {
+    protected MetaHeader(final MetaHeader parent) {
         this(parent.getTable(), parent.getCell());
+    }
+
+    @Override
+    public BaseHeader clone() {
+        return new MetaHeader(this);
     }
 
     @Override
@@ -35,17 +40,12 @@ public class MetaHeader extends BaseHeader {
 
     @Override
     public String getValue() {
-        return this.value;
+        return this.valueOfValue;
     }
 
     @Override
     public BaseCell getCellAtRow(final Row row) {
-        return this.transformedCell;
-    }
-
-    @Override
-    public BaseHeader clone() {
-        return new MetaHeader(this);
+        return this.value;
     }
 
     @Override
@@ -62,8 +62,4 @@ public class MetaHeader extends BaseHeader {
     public HeaderTag getTag() {
         return null;
     }
-
-    private final String name;
-    private final String value;
-    private final BaseCell transformedCell;
 }

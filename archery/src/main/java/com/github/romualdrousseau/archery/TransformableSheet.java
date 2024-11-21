@@ -291,16 +291,6 @@ public class TransformableSheet {
     }
 
     /**
-     * This method sets the pivot entities for the sheet using the given list of
-     * entities.
-     *
-     * @param pivotEntityList the list of entities as a list of string
-     */
-    public void setPivotEntityList(final List<String> pivotEntityList) {
-        this.sheet.setPivotEntityList(pivotEntityList);
-    }
-
-    /**
      * This method sets the pivot option for the sheet using the given option
      * string.
      *
@@ -308,6 +298,38 @@ public class TransformableSheet {
      */
     public void setPivotOption(final String option) {
         this.sheet.setPivotOption(Enum.valueOf(PivotOption.class, option));
+    }
+
+    /**
+     * This method sets the pivot entities for the sheet using the given list of
+     * entities.
+     *
+     * @param pivotEntityList the list of entities as a list of string
+     *
+     * @deprecated use {@link TransformableSheet#setPivotKeyEntityList(List<String>)}
+     */
+    public void setPivotEntityList(final List<String> pivotEntityList) {
+        this.sheet.setPivotKeyEntityList(pivotEntityList);
+    }
+
+    /**
+     * This method sets the pivot key for the sheet using the given list of
+     * entities.
+     *
+     * @param pivotKeyEntityList the list of entities as a list of string
+     */
+    public void setPivotKeyEntityList(final List<String> pivotKeyEntityList) {
+        this.sheet.setPivotKeyEntityList(pivotKeyEntityList);
+    }
+
+    /**
+     * This method sets the pivot type for the sheet using the given list of
+     * entities.
+     *
+     * @param pivotTypeEntityList the list of entities as a list of string
+     */
+    public void setPivotTypeEntityList(final List<String> pivotTypeEntityList) {
+        this.sheet.setPivotTypeEntityList(pivotTypeEntityList);
     }
 
     /**

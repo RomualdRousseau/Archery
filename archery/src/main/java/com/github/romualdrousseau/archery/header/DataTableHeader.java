@@ -15,14 +15,27 @@ import com.github.romualdrousseau.archery.commons.types.Tensor;
 
 public class DataTableHeader extends BaseHeader {
 
-    public DataTableHeader(final BaseHeader parent) {
-        this(parent.getTable(), parent.getCell());
-    }
+    private String name;
+    private HeaderTag tag;
+    private List<String> entities;
 
     public DataTableHeader(final BaseTable table, final BaseCell cell) {
+        this(table, cell, cell.getValue(), null);
+    }
+
+    public DataTableHeader(final BaseTable table, final BaseCell cell, final String name, final List<String> entities) {
         super(table, cell);
-        this.name = this.getCell().getValue();
-        this.entities = null;
+        this.name = name;
+        this.entities = entities;
+    }
+
+    private DataTableHeader(final DataTableHeader parent) {
+        this(parent.getTable(), parent.getCell(), parent.name, parent.entities);
+    }
+
+    @Override
+    public BaseHeader clone() {
+        return new DataTableHeader(this);
     }
 
     @Override
@@ -51,11 +64,6 @@ public class DataTableHeader extends BaseHeader {
     }
 
     @Override
-    public BaseHeader clone() {
-        return new DataTableHeader(this);
-    }
-
-    @Override
     public boolean hasTag() {
         return this.tag != null;
     }
@@ -68,7 +76,6 @@ public class DataTableHeader extends BaseHeader {
     public void resetTag() {
         this.tag = null;
     }
-
     public void updateTag() {
         if (StringUtils.isFastBlank(this.getName())) {
             this.tag = HeaderTag.None;
@@ -78,7 +85,6 @@ public class DataTableHeader extends BaseHeader {
             this.tag = new HeaderTag(tagValue);
         }
     }
-
     private List<String> sampleEntities() {
         final var N = Math.min(this.getTable().getNumberOfRows(), Settings.DEFAULT_SAMPLE_COUNT);
         final var entityVector = Tensor
@@ -110,8 +116,4 @@ public class DataTableHeader extends BaseHeader {
                 .map(i -> entityList.get(i))
                 .toList();
     }
-
-    private String name;
-    private HeaderTag tag;
-    private List<String> entities;
 }
