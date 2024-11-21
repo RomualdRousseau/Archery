@@ -11,18 +11,24 @@ import com.github.romualdrousseau.archery.base.BaseTable;
 
 public class PivotKeyHeader extends MetaHeader {
 
+    private final List<PivotEntry> entries;
+    private final String pivotEntityName;
+
     public PivotKeyHeader(final BaseTable table, final BaseCell cell) {
-        this(table, cell, cell.getPivotKeyEntityAsString().get());
+        this(table, cell, cell.getPivotKeyEntityAsString().get(), null);
     }
 
-    public PivotKeyHeader(final BaseTable table, final BaseCell cell, final String pivotEntityName) {
+    protected PivotKeyHeader(final BaseTable table, final BaseCell cell, final String pivotEntityName,
+            final List<PivotEntry> entries) {
         super(table, cell);
         this.pivotEntityName = pivotEntityName;
-        this.entries = new ArrayList<>(List.of(new PivotEntry(cell, pivotEntityName)));
+        this.entries = (entries == null)
+                ? new ArrayList<>(List.of(new PivotEntry(cell, pivotEntityName)))
+                : entries;
     }
 
     protected PivotKeyHeader(final PivotKeyHeader parent) {
-        this(parent.getTable(), parent.getCell(), parent.pivotEntityName);
+        this(parent.getTable(), parent.getCell(), parent.pivotEntityName, parent.entries);
     }
 
     @Override
@@ -68,7 +74,4 @@ public class PivotKeyHeader extends MetaHeader {
     public PivotValueHeader getPivotValueHeader() {
         return new PivotValueHeader(this, this.pivotEntityName);
     }
-
-    private final List<PivotEntry> entries;
-    private final String pivotEntityName;
 }

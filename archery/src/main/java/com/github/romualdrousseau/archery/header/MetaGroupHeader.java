@@ -10,7 +10,7 @@ public class MetaGroupHeader extends MetaTableHeader {
         super(table, cell);
     }
 
-    private MetaGroupHeader(final MetaGroupHeader parent) {
+    protected MetaGroupHeader(final MetaGroupHeader parent) {
         this(parent.getTable(), parent.getCell());
     }
 

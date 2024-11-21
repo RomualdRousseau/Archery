@@ -13,7 +13,7 @@ public class MetaTableHeader extends MetaHeader {
         this(table, cell, null);
     }
 
-    public MetaTableHeader(final BaseTable table, final BaseCell cell, final RowGroup rowGroup) {
+    protected MetaTableHeader(final BaseTable table, final BaseCell cell, final RowGroup rowGroup) {
         super(table, cell);
         this.rowGroup = rowGroup;
     }

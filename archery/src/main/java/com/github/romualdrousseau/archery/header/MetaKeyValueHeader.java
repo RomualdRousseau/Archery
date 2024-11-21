@@ -12,19 +12,21 @@ public class MetaKeyValueHeader extends MetaHeader {
     private final String valueOfValue;
 
     public MetaKeyValueHeader(final BaseTable table, final BaseCell key, final BaseCell value) {
-        this(table, key, value, key.getValue());
+        this(table, key, key.getValue(), value, null);
     }
 
-    public MetaKeyValueHeader(final BaseTable table, final BaseCell key, final BaseCell value, final String name) {
+    protected MetaKeyValueHeader(final BaseTable table, final BaseCell key, final String name, final BaseCell value,
+            final String valueOfValue) {
         super(table, key);
         this.name = name;
         this.value = value;
-        this.valueOfValue = this.getTable().getSheet().getDocument().getModel().toEntityValue(value.getValue())
-                .orElse(value.getValue());
+        this.valueOfValue = (valueOfValue == null)
+                ? table.getSheet().getDocument().getModel().toEntityValue(value.getValue()).orElse(value.getValue())
+                : valueOfValue;
     }
 
     protected MetaKeyValueHeader(final MetaKeyValueHeader parent) {
-        this(parent.getTable(), parent.getCell(), parent.value);
+        this(parent.getTable(), parent.getCell(), parent.name, parent.value, parent.valueOfValue);
     }
 
     @Override

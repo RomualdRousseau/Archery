@@ -20,17 +20,19 @@ public class DataTableHeader extends BaseHeader {
     private List<String> entities;
 
     public DataTableHeader(final BaseTable table, final BaseCell cell) {
-        this(table, cell, cell.getValue(), null);
+        this(table, cell, cell.getValue(), null, null);
     }
 
-    public DataTableHeader(final BaseTable table, final BaseCell cell, final String name, final List<String> entities) {
+    protected DataTableHeader(final BaseTable table, final BaseCell cell, final String name, final HeaderTag tag,
+            final List<String> entities) {
         super(table, cell);
         this.name = name;
+        this.tag = tag;
         this.entities = entities;
     }
 
-    private DataTableHeader(final DataTableHeader parent) {
-        this(parent.getTable(), parent.getCell(), parent.name, parent.entities);
+    protected DataTableHeader(final DataTableHeader parent) {
+        this(parent.getTable(), parent.getCell(), parent.name, parent.tag, parent.entities);
     }
 
     @Override
@@ -76,6 +78,7 @@ public class DataTableHeader extends BaseHeader {
     public void resetTag() {
         this.tag = null;
     }
+
     public void updateTag() {
         if (StringUtils.isFastBlank(this.getName())) {
             this.tag = HeaderTag.None;
@@ -85,6 +88,7 @@ public class DataTableHeader extends BaseHeader {
             this.tag = new HeaderTag(tagValue);
         }
     }
+
     private List<String> sampleEntities() {
         final var N = Math.min(this.getTable().getNumberOfRows(), Settings.DEFAULT_SAMPLE_COUNT);
         final var entityVector = Tensor

@@ -25,7 +25,10 @@ public class MetaHeader extends BaseHeader {
     }
 
     protected MetaHeader(final MetaHeader parent) {
-        this(parent.getTable(), parent.getCell());
+        super(parent.getTable(), parent.getCell());
+        this.name = parent.name;
+        this.value = parent.value;
+        this.valueOfValue = parent.valueOfValue;
     }
 
     @Override
