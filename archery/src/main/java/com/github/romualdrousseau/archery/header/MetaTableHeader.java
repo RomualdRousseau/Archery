@@ -18,13 +18,9 @@ public class MetaTableHeader extends MetaHeader {
         this.rowGroup = rowGroup;
     }
 
-    protected MetaTableHeader(final MetaTableHeader parent) {
-        this(parent.getTable(), parent.getCell(), parent.rowGroup);
-    }
-
     @Override
     public BaseHeader clone() {
-        return new MetaTableHeader(this);
+        return new MetaTableHeader(this.getTable(), this.getCell(), this.rowGroup);
     }
 
     @Override

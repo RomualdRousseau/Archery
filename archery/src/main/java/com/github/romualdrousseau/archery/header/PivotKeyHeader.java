@@ -27,13 +27,9 @@ public class PivotKeyHeader extends MetaHeader {
                 : entries;
     }
 
-    protected PivotKeyHeader(final PivotKeyHeader parent) {
-        this(parent.getTable(), parent.getCell(), parent.pivotEntityName, parent.entries);
-    }
-
     @Override
     public BaseHeader clone() {
-        return new PivotKeyHeader(this);
+        return new PivotKeyHeader(this.getTable(), this.getCell(), this.pivotEntityName, this.entries);
     }
 
     @Override

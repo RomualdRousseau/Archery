@@ -3,17 +3,13 @@ package com.github.romualdrousseau.archery.header;
 public class PivotTypeHeader extends PivotKeyHeader {
 
     public PivotTypeHeader(final PivotKeyHeader parent, final String name) {
-        super(parent);
+        super(parent.getTable(), parent.getCell(), parent.getPivotEntityName(), parent.getEntries());
         this.name = name;
-    }
-
-    protected PivotTypeHeader(final PivotTypeHeader parent) {
-        this(parent, parent.name);
     }
 
     @Override
     public PivotTypeHeader clone() {
-        return new PivotTypeHeader(this);
+        return new PivotTypeHeader(this, this.name);
     }
 
     @Override

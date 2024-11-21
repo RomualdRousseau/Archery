@@ -16,24 +16,30 @@ public class MetaHeader extends BaseHeader {
     private final String valueOfValue;
 
     public MetaHeader(final BaseTable table, final BaseCell cell) {
-        super(table, cell);
-        final var model = table.getSheet().getDocument().getModel();
-        final var cellValue = cell.getValue();
-        this.name = this.getPivotKeyEntityAsString().orElseGet(() -> model.toEntityName(cellValue));
-        this.value = model.toEntityValue(cellValue).map(x -> new BaseCell(x, cell)).orElse(cell);
-        this.valueOfValue = this.value.getValue();
+        this(table, cell, null, null, null);
     }
 
-    protected MetaHeader(final MetaHeader parent) {
-        super(parent.getTable(), parent.getCell());
-        this.name = parent.name;
-        this.value = parent.value;
-        this.valueOfValue = parent.valueOfValue;
+    protected MetaHeader(final BaseTable table, final BaseCell cell, final String name, final BaseCell value,
+            final String valueOfValue) {
+        super(table, cell);
+
+        final var model = table.getSheet().getDocument().getModel();
+        final var cellValue = cell.getValue();
+        
+        this.name = (name == null)
+                ? this.getPivotKeyEntityAsString().orElseGet(() -> model.toEntityName(cellValue))
+                : name;
+        this.value = (value == null)
+                ? model.toEntityValue(cellValue).map(x -> new BaseCell(x, cell)).orElse(cell)
+                : value;
+        this.valueOfValue = (valueOfValue == null)
+                ? this.value.getValue()
+                : valueOfValue;
     }
 
     @Override
     public BaseHeader clone() {
-        return new MetaHeader(this);
+        return new MetaHeader(this.getTable(), this.getCell(), this.name, this.value, this.valueOfValue);
     }
 
     @Override

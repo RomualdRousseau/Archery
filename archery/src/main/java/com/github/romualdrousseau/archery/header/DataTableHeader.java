@@ -31,13 +31,9 @@ public class DataTableHeader extends BaseHeader {
         this.entities = entities;
     }
 
-    protected DataTableHeader(final DataTableHeader parent) {
-        this(parent.getTable(), parent.getCell(), parent.name, parent.tag, parent.entities);
-    }
-
     @Override
     public BaseHeader clone() {
-        return new DataTableHeader(this);
+        return new DataTableHeader(this.getTable(), this.getCell(), this.name, this.tag, this.entities);
     }
 
     @Override

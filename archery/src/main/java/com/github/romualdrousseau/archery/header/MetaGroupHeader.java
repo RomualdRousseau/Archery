@@ -10,13 +10,9 @@ public class MetaGroupHeader extends MetaTableHeader {
         super(table, cell);
     }
 
-    protected MetaGroupHeader(final MetaGroupHeader parent) {
-        this(parent.getTable(), parent.getCell());
-    }
-
     @Override
     public BaseHeader clone() {
-        return new MetaGroupHeader(this);
+        return new MetaGroupHeader(this.getTable(), this.getCell());
     }
 
     @Override

@@ -18,20 +18,20 @@ public class MetaKeyValueHeader extends MetaHeader {
     protected MetaKeyValueHeader(final BaseTable table, final BaseCell key, final String name, final BaseCell value,
             final String valueOfValue) {
         super(table, key);
+
+        final var model = table.getSheet().getDocument().getModel();
+        final var cellValue = value.getValue();
+
         this.name = name;
         this.value = value;
         this.valueOfValue = (valueOfValue == null)
-                ? table.getSheet().getDocument().getModel().toEntityValue(value.getValue()).orElse(value.getValue())
+                ? model.toEntityValue(cellValue).orElse(cellValue)
                 : valueOfValue;
-    }
-
-    protected MetaKeyValueHeader(final MetaKeyValueHeader parent) {
-        this(parent.getTable(), parent.getCell(), parent.name, parent.value, parent.valueOfValue);
     }
 
     @Override
     public BaseHeader clone() {
-        return new MetaKeyValueHeader(this);
+        return new MetaKeyValueHeader(this.getTable(), this.getCell(), this.name, this.value, this.valueOfValue);
     }
 
     @Override
