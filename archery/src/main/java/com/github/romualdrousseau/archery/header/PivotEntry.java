@@ -4,6 +4,11 @@ import com.github.romualdrousseau.archery.base.BaseCell;
 
 public class PivotEntry {
 
+    private final BaseCell cell;
+    private final String pivotValue;
+
+    private String typeValue;
+
     public PivotEntry(final BaseCell cell, final String pivotEntityName) {
         this.cell = cell;
         this.pivotValue = cell.getSheet().getDocument().getModel().toEntityValue(cell.getValue(), pivotEntityName)
@@ -15,7 +20,7 @@ public class PivotEntry {
         return this.cell;
     }
 
-    public String getValue() {
+    public String getPivotValue() {
         return this.pivotValue;
     }
 
@@ -23,11 +28,8 @@ public class PivotEntry {
         return this.typeValue;
     }
 
-    public void setTypeValue(final String typeValue) {
+    public PivotEntry setTypeValue(final String typeValue) {
         this.typeValue = typeValue;
+        return this;
     }
-
-    private final BaseCell cell;
-    private final String pivotValue;
-    private String typeValue;
 }

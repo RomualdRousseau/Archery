@@ -101,7 +101,7 @@ public class DataTableGroupSubHeaderParser extends DataTableParser {
                 this.firstRowHeader = false;
             }
         } else if (this.firstRowHeader) {
-            if (!this.disablePivot && symbol.equals("e") && cell.isPivotHeader() && cell.getColumnIndex() > 0) {
+            if (!this.disablePivot && symbol.equals("e") && cell.isPivotKeyHeader() && cell.getColumnIndex() > 0) {
                 var foundPivot = this.dataTable.findFirstPivotHeader();
                 if (foundPivot == null) {
                     foundPivot = new PivotKeyHeader(this.dataTable, cell);

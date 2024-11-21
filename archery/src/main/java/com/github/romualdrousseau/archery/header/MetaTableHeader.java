@@ -7,23 +7,25 @@ import com.github.romualdrousseau.archery.base.RowGroup;
 
 public class MetaTableHeader extends MetaHeader {
 
+    private RowGroup rowGroup;
+
     public MetaTableHeader(final BaseTable table, final BaseCell cell) {
-        super(table, cell);
-        this.rowGroup = null;
+        this(table, cell, null);
     }
 
-    private MetaTableHeader(final MetaTableHeader parent) {
-        this(parent.getTable(), parent.getCell());
+    protected MetaTableHeader(final BaseTable table, final BaseCell cell, final RowGroup rowGroup) {
+        super(table, cell);
+        this.rowGroup = rowGroup;
+    }
+
+    @Override
+    public BaseHeader clone() {
+        return new MetaTableHeader(this.getTable(), this.getCell(), this.rowGroup);
     }
 
     @Override
     public String getValue() {
         return null;
-    }
-
-    @Override
-    public BaseHeader clone() {
-        return new MetaTableHeader(this);
     }
 
     @Override
@@ -34,6 +36,4 @@ public class MetaTableHeader extends MetaHeader {
 	public void assignRowGroup(final RowGroup rowGroup) {
         this.rowGroup = rowGroup;
     }
-
-    private RowGroup rowGroup;
 }

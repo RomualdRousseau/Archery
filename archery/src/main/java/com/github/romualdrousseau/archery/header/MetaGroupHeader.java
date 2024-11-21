@@ -10,17 +10,13 @@ public class MetaGroupHeader extends MetaTableHeader {
         super(table, cell);
     }
 
-    private MetaGroupHeader(final MetaGroupHeader parent) {
-        super(parent.getTable(), parent.getCell());
+    @Override
+    public BaseHeader clone() {
+        return new MetaGroupHeader(this.getTable(), this.getCell());
     }
 
     @Override
     public String getName() {
         return String.format(this.getTable().getSheet().getGroupValueFormat(), super.getName());
-    }
-
-    @Override
-    public BaseHeader clone() {
-        return new MetaGroupHeader(this);
     }
 }

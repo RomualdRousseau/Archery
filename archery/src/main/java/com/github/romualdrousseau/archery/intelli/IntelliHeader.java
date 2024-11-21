@@ -8,17 +8,27 @@ import java.util.stream.StreamSupport;
 import com.github.romualdrousseau.archery.Row;
 import com.github.romualdrousseau.archery.base.BaseCell;
 import com.github.romualdrousseau.archery.base.BaseHeader;
+import com.github.romualdrousseau.archery.commons.strings.StringUtils;
 import com.github.romualdrousseau.archery.config.Settings;
 import com.github.romualdrousseau.archery.header.DataTableHeader;
-import com.github.romualdrousseau.archery.commons.strings.StringUtils;
 
 public class IntelliHeader extends DataTableHeader {
+
+    public static Optional<String> mergeValues(final List<String> values) {
+        return StringUtils.merge(Settings.MERGE_SEPARATOR, values);
+    }
+
+    private final String name;
+    private final boolean disableAutoName;
+
+    private IntelliHeader prevSibling;
+    private IntelliHeader nextSibling;
 
     public IntelliHeader(final BaseHeader header, final boolean disableAutoName) {
         super(header.getTable(), new BaseCell(header.getName(), header.getColumnIndex(), 1,
                 header.getCell().getRawValue(), header.getTable().getSheet()));
 
-        final String cellValue = this.getCell().getValue();
+        final var cellValue = this.getCell().getValue();
         if (StringUtils.isFastBlank(cellValue)) {
             if (header.isColumnEmpty()) {
                 this.name = "";
@@ -27,7 +37,7 @@ public class IntelliHeader extends DataTableHeader {
                         StreamSupport.stream(this.entities().spliterator(), false).findAny()
                                 .map(x -> this.getEntitiesAsString()).orElse("VALUE"));
             }
-        } else if (this.isPivotHeader() || !disableAutoName) {
+        } else if (this.isPivotKeyHeader() || !disableAutoName) {
             this.name = this.getTable().getSheet().getDocument().getModel().toEntityName(cellValue);
         } else {
             this.name = cellValue;
@@ -37,6 +47,15 @@ public class IntelliHeader extends DataTableHeader {
 
         this.setColumnIndex(header.getColumnIndex());
         this.setColumnEmpty(StringUtils.isFastBlank(this.name) && header.isColumnEmpty());
+    }
+
+    protected IntelliHeader(final IntelliHeader parent) {
+        this(parent, parent.disableAutoName);
+    }
+
+    @Override
+    public BaseHeader clone() {
+        return new IntelliHeader(this);
     }
 
     @Override
@@ -70,12 +89,7 @@ public class IntelliHeader extends DataTableHeader {
                 .map(x -> new BaseCell(x, this.getColumnIndex(), 1, this.getTable().getSheet()))
                 .orElseGet(() -> this.getCellAtRow(row));
     }
-
-    @Override
-    public BaseHeader clone() {
-        return new IntelliHeader(this, this.disableAutoName);
-    }
-
+    
     @Override
     public void resetTag() {
         super.resetTag();
@@ -96,13 +110,4 @@ public class IntelliHeader extends DataTableHeader {
         other.prevSibling = e;
         e.nextSibling = other;
     }
-
-    public static Optional<String> mergeValues(final List<String> values) {
-        return StringUtils.merge(Settings.MERGE_SEPARATOR, values);
-    }
-
-    private final String name;
-    private final boolean disableAutoName;
-    private IntelliHeader prevSibling;
-    private IntelliHeader nextSibling;
 }

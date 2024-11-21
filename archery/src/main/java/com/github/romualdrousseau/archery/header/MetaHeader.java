@@ -11,21 +11,35 @@ import com.github.romualdrousseau.archery.base.BaseTable;
 
 public class MetaHeader extends BaseHeader {
 
-    public MetaHeader(final BaseTable table, final BaseCell cell) {
-        super(table, cell);
+    private final String name;
+    private final BaseCell value;
+    private final String valueOfValue;
 
-        final var model = this.getTable().getSheet().getDocument().getModel();
-        final var cellValue = this.getCell().getValue();
-        this.transformedCell = model
-                .toEntityValue(cellValue)
-                .map(x -> new BaseCell(x, this.getCell()))
-                .orElse(this.getCell());
-        this.name = this.getPivotEntityAsString().orElseGet(() -> model.toEntityName(cellValue));
-        this.value = this.transformedCell.getValue();
+    public MetaHeader(final BaseTable table, final BaseCell cell) {
+        this(table, cell, null, null, null);
     }
 
-    private MetaHeader(final MetaHeader parent) {
-        this(parent.getTable(), parent.getCell());
+    protected MetaHeader(final BaseTable table, final BaseCell cell, final String name, final BaseCell value,
+            final String valueOfValue) {
+        super(table, cell);
+
+        final var model = table.getSheet().getDocument().getModel();
+        final var cellValue = cell.getValue();
+        
+        this.name = (name == null)
+                ? this.getPivotKeyEntityAsString().orElseGet(() -> model.toEntityName(cellValue))
+                : name;
+        this.value = (value == null)
+                ? model.toEntityValue(cellValue).map(x -> new BaseCell(x, cell)).orElse(cell)
+                : value;
+        this.valueOfValue = (valueOfValue == null)
+                ? this.value.getValue()
+                : valueOfValue;
+    }
+
+    @Override
+    public BaseHeader clone() {
+        return new MetaHeader(this.getTable(), this.getCell(), this.name, this.value, this.valueOfValue);
     }
 
     @Override
@@ -35,17 +49,12 @@ public class MetaHeader extends BaseHeader {
 
     @Override
     public String getValue() {
-        return this.value;
+        return this.valueOfValue;
     }
 
     @Override
     public BaseCell getCellAtRow(final Row row) {
-        return this.transformedCell;
-    }
-
-    @Override
-    public BaseHeader clone() {
-        return new MetaHeader(this);
+        return this.value;
     }
 
     @Override
@@ -62,8 +71,4 @@ public class MetaHeader extends BaseHeader {
     public HeaderTag getTag() {
         return null;
     }
-
-    private final String name;
-    private final String value;
-    private final BaseCell transformedCell;
 }

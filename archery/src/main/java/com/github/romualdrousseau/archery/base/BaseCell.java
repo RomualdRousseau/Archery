@@ -107,14 +107,19 @@ public class BaseCell implements Cell, Symbol {
         return this.entityVector;
     }
 
-    public boolean isPivotHeader() {
-        return this.getPivotEntityAsString().isPresent();
+    public boolean isPivotKeyHeader() {
+        return this.getPivotKeyEntityAsString().isPresent();
     }
 
-    public Optional<String> getPivotEntityAsString() {
+    public boolean isPivotTypeHeader() {
+        final var pivotTypeEntityList = this.sheet.getPivotTypeEntityList();
+        return pivotTypeEntityList.stream().anyMatch(x -> this.value.matches(x));
+    }
+
+    public Optional<String> getPivotKeyEntityAsString() {
         if (this.sheet != null) {
-            final var pivotEntityList = this.sheet.getPivotEntityList();
-            return this.entities().stream().filter(x -> pivotEntityList.contains(x)).findFirst();
+            final var pivotKeyEntityList = this.sheet.getPivotKeyEntityList();
+            return this.entities().stream().filter(x -> pivotKeyEntityList.contains(x)).findFirst();
         } else {
             return Optional.empty();
         }

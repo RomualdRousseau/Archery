@@ -15,14 +15,25 @@ import com.github.romualdrousseau.archery.commons.types.Tensor;
 
 public class DataTableHeader extends BaseHeader {
 
-    public DataTableHeader(final BaseHeader parent) {
-        this(parent.getTable(), parent.getCell());
-    }
+    private String name;
+    private HeaderTag tag;
+    private List<String> entities;
 
     public DataTableHeader(final BaseTable table, final BaseCell cell) {
+        this(table, cell, cell.getValue(), null, null);
+    }
+
+    protected DataTableHeader(final BaseTable table, final BaseCell cell, final String name, final HeaderTag tag,
+            final List<String> entities) {
         super(table, cell);
-        this.name = this.getCell().getValue();
-        this.entities = null;
+        this.name = name;
+        this.tag = tag;
+        this.entities = entities;
+    }
+
+    @Override
+    public BaseHeader clone() {
+        return new DataTableHeader(this.getTable(), this.getCell(), this.name, this.tag, this.entities);
     }
 
     @Override
@@ -48,11 +59,6 @@ public class DataTableHeader extends BaseHeader {
                     : this.sampleEntities();
         }
         return this.entities;
-    }
-
-    @Override
-    public BaseHeader clone() {
-        return new DataTableHeader(this);
     }
 
     @Override
@@ -110,8 +116,4 @@ public class DataTableHeader extends BaseHeader {
                 .map(i -> entityList.get(i))
                 .toList();
     }
-
-    private String name;
-    private HeaderTag tag;
-    private List<String> entities;
 }
