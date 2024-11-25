@@ -86,7 +86,8 @@ public class LayexTableParser extends SimpleTableParser {
             final var table = remainingTables.pollFirst();
             table.setVisited(false);
 
-            for (var rowOffset = 0; rowOffset < TRY_LAYEX_COUNT; rowOffset++) {
+            final var maxRowOffset = Math.min(TRY_LAYEX_COUNT, table.getLastRow() - table.getFirstRow());
+            for (var rowOffset = 0; rowOffset < maxRowOffset; rowOffset++) {
                 final var lexer = new TableLexer(table, rowOffset);
                 for (final var matcher : matchers) {
                     if (!table.isVisited()) {
