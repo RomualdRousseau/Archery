@@ -80,7 +80,7 @@ public class NetTagClassifier extends SimpleTagClassifier implements Trainable {
                 model.getData().getList("lexicon"),
                 Optional.ofNullable(model.getModelAttributes().get("modelPath")).map(Path::of));
 
-        assert this.isModelTemp && model.getData().<String>get("model").isPresent() : "model element must exist";
+        assert !this.isModelTemp || this.isModelTemp && model.getData().<String>get("model").isPresent() : "model element must exist";
 
         this.setModel(model);
         this.setTagStyle(tagStyle);
