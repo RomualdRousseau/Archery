@@ -258,7 +258,7 @@ public class BaseSheet implements Sheet {
         for(int i = 0; i < length; i++) {
             for (int j = 0; j < this.getLastColumnNum(offset + i); j++) {
                 final var cell = this.getCellDataAt(j, offset + i);
-                if (cell.matches(regex)) {
+                if (cell != null && cell.matches(regex)) {
                     if (++n == nth) {
                         return List.of(j, offset + i);
                     }
