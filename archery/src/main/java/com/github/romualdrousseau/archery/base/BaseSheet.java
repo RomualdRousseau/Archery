@@ -21,8 +21,10 @@ import com.github.romualdrousseau.archery.event.SheetPreparedEvent;
 import com.github.romualdrousseau.archery.event.TableGraphBuiltEvent;
 import com.github.romualdrousseau.archery.event.TableReadyEvent;
 import com.github.romualdrousseau.archery.intelli.IntelliTable;
+
 import com.github.romualdrousseau.archery.TransformableSheet;
 import com.github.romualdrousseau.archery.commons.collections.CollectionUtils;
+import com.github.romualdrousseau.archery.commons.strings.StringUtils;
 
 public class BaseSheet implements Sheet {
 
@@ -258,7 +260,7 @@ public class BaseSheet implements Sheet {
         for(int i = 0; i < length; i++) {
             for (int j = 0; j < this.getLastColumnNum(offset + i); j++) {
                 final var cell = this.getCellDataAt(j, offset + i);
-                if (cell != null && cell.matches(regex)) {
+                if (!StringUtils.isFastBlank(cell) && cell.matches(regex)) {
                     if (++n == nth) {
                         return List.of(j, offset + i);
                     }
