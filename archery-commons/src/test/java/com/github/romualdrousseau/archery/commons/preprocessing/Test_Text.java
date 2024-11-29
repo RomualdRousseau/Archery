@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.archery.commons;
+package com.github.romualdrousseau.archery.commons.preprocessing;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.Tag;
 
-import com.github.romualdrousseau.archery.commons.preprocessing.Text;
 import com.github.romualdrousseau.archery.commons.preprocessing.comparer.RegexComparer;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

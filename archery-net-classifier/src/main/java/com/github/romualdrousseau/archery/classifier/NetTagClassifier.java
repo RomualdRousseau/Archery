@@ -31,8 +31,9 @@ import com.github.romualdrousseau.archery.TagClassifier;
 import com.github.romualdrousseau.archery.commons.types.Tensor;
 import com.github.romualdrousseau.archery.commons.python.PythonManager;
 import com.github.romualdrousseau.archery.commons.dsf.json.JSON;
-import com.github.romualdrousseau.archery.commons.io.Disk;
+import com.github.romualdrousseau.archery.commons.io.FileOps;
 import com.github.romualdrousseau.archery.commons.io.TempFile;
+import com.github.romualdrousseau.archery.commons.io.Zip;
 import com.github.romualdrousseau.archery.commons.preprocessing.Text;
 import com.github.romualdrousseau.archery.commons.preprocessing.hasher.VocabularyHasher;
 import com.github.romualdrousseau.archery.commons.preprocessing.tokenizer.NgramTokenizer;
@@ -200,24 +201,20 @@ public class NetTagClassifier extends SimpleTagClassifier implements Trainable {
     }
 
     private void closeModelML() {
-        try {
-            if (tagClassifierModel != null) {
-                tagClassifierModel.close();
-                tagClassifierModel = null;
-                tagClassifierFunc = null;
-            }
-            if (this.isModelTemp && this.modelPath.isPresent() && this.modelPath.get().toFile().exists()) {
-                Disk.deleteDir(modelPath.get());
-            }
-        } catch (final IOException x) {
-            throw new UncheckedIOException(x);
+        if (tagClassifierModel != null) {
+            tagClassifierModel.close();
+            tagClassifierModel = null;
+            tagClassifierFunc = null;
+        }
+        if (this.isModelTemp && this.modelPath.isPresent() && this.modelPath.get().toFile().exists()) {
+            FileOps.deleteDir(modelPath.get());
         }
     }
 
     private String serializeModelML(final Path modelPath) {
         assert modelPath != null && modelPath.toFile().exists();
         try (final var temp = new TempFile("model-", ".zip")) {
-            Disk.zipDir(modelPath, temp.getPath().toFile());
+            Zip.zip(modelPath, temp.getPath().toFile());
             return Base64.getEncoder().encodeToString(Files.readAllBytes(temp.getPath()));
         } catch (final IOException x) {
             throw new UncheckedIOException(x);
@@ -229,7 +226,7 @@ public class NetTagClassifier extends SimpleTagClassifier implements Trainable {
         try (final var temp = new TempFile("model-", ".zip")) {
             Files.write(temp.getPath(), Base64.getDecoder().decode(modelString), StandardOpenOption.CREATE);
             final var modelPath = Files.createTempDirectory("model-");
-            Disk.unzipDir(temp.getPath(), modelPath);
+            Zip.unzip(temp.getPath().toFile(), modelPath);
             modelPath.toFile().deleteOnExit();
             return modelPath;
         } catch (final IOException x) {

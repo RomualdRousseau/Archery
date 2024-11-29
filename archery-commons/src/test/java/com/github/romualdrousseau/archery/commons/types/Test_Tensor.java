@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.archery.commons;
+package com.github.romualdrousseau.archery.commons.types;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -10,8 +10,6 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
-
-import com.github.romualdrousseau.archery.commons.types.Tensor;
 
 public class Test_Tensor {
 

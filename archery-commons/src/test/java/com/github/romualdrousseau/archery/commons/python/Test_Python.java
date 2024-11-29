@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.archery.commons;
+package com.github.romualdrousseau.archery.commons.python;
 
 import static org.junit.Assert.assertEquals;
 
@@ -9,8 +9,6 @@ import java.util.Date;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
-
-import com.github.romualdrousseau.archery.commons.python.PythonSimpleDateFormat;
 
 public class Test_Python {
 

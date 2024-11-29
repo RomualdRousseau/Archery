@@ -13,7 +13,7 @@ import com.github.romualdrousseau.archery.Document;
 import com.github.romualdrousseau.archery.Sheet;
 import com.github.romualdrousseau.archery.base.BaseDocument;
 import com.github.romualdrousseau.archery.base.BaseSheet;
-import com.github.romualdrousseau.archery.commons.io.Disk;
+import com.github.romualdrousseau.archery.commons.io.FileOps;
 
 public class PdfDocument extends BaseDocument {
 
@@ -41,7 +41,7 @@ public class PdfDocument extends BaseDocument {
             return false;
         }
 
-        final var sheetName2 = (sheetName == null) ? Disk.removeExtension(pdfFile.getName()) : sheetName;
+        final var sheetName2 = (sheetName == null) ? FileOps.removeExtension(pdfFile.getName()) : sheetName;
         if (encoding != null && this.openWithEncoding(pdfFile, encoding, sheetName2)) {
             return true;
         } else if (this.openWithEncoding(pdfFile, "ISO-8859-1", sheetName2)) {

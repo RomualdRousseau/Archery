@@ -12,7 +12,7 @@ import com.github.romualdrousseau.archery.Sheet;
 import com.github.romualdrousseau.archery.base.BaseDocument;
 import com.github.romualdrousseau.archery.base.BaseSheet;
 import com.github.romualdrousseau.archery.transform.op.DropColumnsWhenFillRatioLessThan;
-import com.github.romualdrousseau.archery.commons.io.Disk;
+import com.github.romualdrousseau.archery.commons.io.FileOps;
 import com.github.romualdrousseau.archery.commons.strings.StringUtils;
 
 public class CsvDocument extends BaseDocument {
@@ -35,7 +35,7 @@ public class CsvDocument extends BaseDocument {
 
         this.sheet = null;
 
-        final var sheetName2 = (sheetName == null) ? Disk.removeExtension(txtFile.getName()) : sheetName;
+        final var sheetName2 = (sheetName == null) ? FileOps.removeExtension(txtFile.getName()) : sheetName;
         if (encoding != null && this.openWithEncoding(txtFile, encoding, sheetName2)) {
             return true;
         } else if (this.openWithEncoding(txtFile, "UTF-8", sheetName2)) {
