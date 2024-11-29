@@ -6,6 +6,8 @@ import java.util.Locale;
 
 public class PythonSimpleDateFormat extends SimpleDateFormat {
 
+    public static final String DEFAULT_PYTHON_DATE_FORMAT = "%Y-%m-%d";
+
     private final String pythonPattern;
     private final Locale locale;
 
