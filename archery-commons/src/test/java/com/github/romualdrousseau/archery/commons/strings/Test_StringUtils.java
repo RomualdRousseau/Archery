@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.archery.commons;
+package com.github.romualdrousseau.archery.commons.strings;
 
 import static org.junit.Assert.assertEquals;
 
@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 
 import com.github.romualdrousseau.archery.commons.preprocessing.tokenizer.ShingleTokenizer;
-import com.github.romualdrousseau.archery.commons.strings.StringUtils;
 
 public class Test_StringUtils {
 
