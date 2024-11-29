@@ -69,6 +69,8 @@
         <openai-service.version>0.18.2</openai-service.version>
         <reflections.version>0.10.2</reflections.version>
         <tensorflow.version>0.5.0</tensorflow.version>
+        <zip4j.version>2.11.5</zip4j.version>
+        <logstash-logback.version>8.0</logstash-logback.version>
 
         <junit.version>4.13.2</junit.version>
         <junit-platform.version>1.11.3</junit-platform.version>
