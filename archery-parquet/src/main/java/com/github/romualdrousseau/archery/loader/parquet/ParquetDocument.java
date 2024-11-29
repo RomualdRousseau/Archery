@@ -14,7 +14,7 @@ import com.github.romualdrousseau.archery.Document;
 import com.github.romualdrousseau.archery.Sheet;
 import com.github.romualdrousseau.archery.base.BaseDocument;
 import com.github.romualdrousseau.archery.base.BaseSheet;
-import com.github.romualdrousseau.archery.commons.io.Disk;
+import com.github.romualdrousseau.archery.commons.io.FileOps;
 import com.github.romualdrousseau.archery.transform.op.DropColumnsWhenFillRatioLessThan;
 
 public class ParquetDocument extends BaseDocument {
@@ -48,7 +48,7 @@ public class ParquetDocument extends BaseDocument {
             final var config = new Configuration();
             final var file = HadoopInputFile.fromPath(path, config);
             final var reader = AvroParquetReader.<GenericRecord>builder(file).disableCompatibility().build();
-            final var sheetName2 = (sheetName == null) ? Disk.removeExtension(parquetFile.getName()) : sheetName;
+            final var sheetName2 = (sheetName == null) ? FileOps.removeExtension(parquetFile.getName()) : sheetName;
             this.sheet = new ParquetSheet(sheetName2, reader);
             return true;
         } catch (IOException x) {

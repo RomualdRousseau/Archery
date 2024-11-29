@@ -12,7 +12,7 @@ import com.github.romualdrousseau.archery.Document;
 import com.github.romualdrousseau.archery.Sheet;
 import com.github.romualdrousseau.archery.base.BaseDocument;
 import com.github.romualdrousseau.archery.base.BaseSheet;
-import com.github.romualdrousseau.archery.commons.io.Disk;
+import com.github.romualdrousseau.archery.commons.io.FileOps;
 import com.linuxense.javadbf.DBFReader;
 
 public class DbfDocument extends BaseDocument {
@@ -39,7 +39,7 @@ public class DbfDocument extends BaseDocument {
             return false;
         }
 
-        final var sheetName2 = (sheetName == null) ? Disk.removeExtension(dbfFile.getName()) : sheetName;
+        final var sheetName2 = (sheetName == null) ? FileOps.removeExtension(dbfFile.getName()) : sheetName;
         if (encoding != null && this.openWithEncoding(dbfFile, encoding, sheetName2)) {
             return true;
         } else if (this.openWithEncoding(dbfFile, "ISO-8859-1", sheetName2)) {
