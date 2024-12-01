@@ -1,15 +1,34 @@
 package com.github.romualdrousseau.archery.commons.io;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 
+import com.github.romualdrousseau.archery.commons.strings.StringUtils;
+
 public class FileOps {
 
-    public static void copyDir(Path src, Path dest) {
+    public static BufferedReader createBufferedReaderUtfBOM(final Path filePath) throws IOException {
+        return processUtfBOM(new BufferedReader(
+                new InputStreamReader(new FileInputStream(filePath.toFile()), StandardCharsets.UTF_8)));
+    }
+
+    public static BufferedReader processUtfBOM(final BufferedReader reader) throws IOException {
+        reader.mark(1);
+        if (reader.read() != StringUtils.BOM_CHAR) {
+            reader.reset(); // skip BOM if present
+        }
+        return reader;
+    }
+
+    public static void copyDir(final Path src, final Path dest) {
         try {
             Files.walk(src).forEach(source -> copyFile(source, dest.resolve(src.relativize(source))));
         } catch (final IOException x) {
@@ -28,11 +47,11 @@ public class FileOps {
         }
     }
 
-    public static void copyFile(Path src, Path dest) {
+    public static void copyFile(final Path src, final Path dest) {
         try {
             dest.getParent().toFile().mkdirs();
             Files.copy(src, dest);
-        } catch (IOException x) {
+        } catch (final IOException x) {
             throw new UncheckedIOException(x);
         }
     }
