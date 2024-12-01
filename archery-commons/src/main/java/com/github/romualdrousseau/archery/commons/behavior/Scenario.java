@@ -7,43 +7,42 @@ import java.util.Optional;
 public class Scenario<R> {
 
     @FunctionalInterface
-    public interface Function<U, V> {
-        V apply(final Scenario<U> scenario, U u) throws Exception;
+    public interface GivenClause {
+        void given(final Scenario<?> scenario) throws Exception;
     }
 
     @FunctionalInterface
-    public interface Supplier<V> {
-        V get(final Scenario<?> scenario) throws Exception;
+    public interface WhenClause<T> {
+        T when(final Scenario<?> scenario) throws Exception;
     }
 
     @FunctionalInterface
-    public interface Consumer<U> {
-        void accept(final Scenario<U> scenario, U u) throws Exception;
+    public interface ThenClause<T> {
+        void then(final Scenario<?> scenario, final T actual) throws Exception;
     }
 
-    public static Scenario<Void> noParameters() throws Exception {
-        return new Scenario<Void>();
+    public static Scenario<Void> givenNoParameters() throws Exception {
+        return new Scenario<Void>(new HashMap<>(), null);
     }
 
-    public static Scenario<Void> withParameters(final Map<String, Object> parameters) throws Exception {
-        return new Scenario<Void>(parameters);
+    public static Scenario<Void> givenParameters(final Map<String, Object> parameters) throws Exception {
+        return new Scenario<Void>(new HashMap<>(parameters), null);
+    }
+
+    public static Scenario<Void> givenScenario(final Scenario<?> parent) throws Exception {
+        return new Scenario<Void>(parent.context, null);
     }
 
     private final Map<String, Object> context;
-
     private final R value;
 
-    private Scenario() {
-        this(Map.of(), null);
-    }
-
-    private Scenario(final Map<String, Object> context) {
-        this(context, null);
-    }
-
     private Scenario(final Map<String, Object> context, final R value) {
-        this.context = new HashMap<>(context);
+        this.context = context;
         this.value = value;
+    }
+
+    public Map<String, Object> getContext() {
+        return this.context;
     }
 
     @SuppressWarnings("unchecked")
@@ -51,21 +50,22 @@ public class Scenario<R> {
         return Optional.ofNullable((T) this.context.get(key));
     }
 
-    public <T> Scenario<R> put(final String key, final T value) {
+    public <T> T put(final String key, final T value) {
         this.context.put(key, value);
+        return value;
+    }
+
+    public Scenario<R> given(final GivenClause step) throws Exception {
+        step.given(this);
         return this;
     }
 
-    public <T> Scenario<T> given(final Supplier<T> step) throws Exception {
-        return new Scenario<T>(this.context, step.get(this));
+    public <T> Scenario<T> when(final WhenClause<T> step) throws Exception {
+        return new Scenario<T>(this.context, step.when(this));
     }
 
-    public <T> Scenario<T> when(final Function<R, T> step) throws Exception {
-        return new Scenario<T>(this.context, step.apply(this, this.value));
-    }
-
-    public Scenario<R> then(final Consumer<R> step) throws Exception {
-        step.accept(this, this.value);
+    public Scenario<R> then(final ThenClause<R> step) throws Exception {
+        step.then(this, this.value);
         return this;
     }
 }
