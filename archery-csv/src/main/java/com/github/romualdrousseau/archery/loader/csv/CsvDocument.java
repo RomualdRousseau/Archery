@@ -13,7 +13,6 @@ import com.github.romualdrousseau.archery.base.BaseDocument;
 import com.github.romualdrousseau.archery.base.BaseSheet;
 import com.github.romualdrousseau.archery.transform.op.DropColumnsWhenFillRatioLessThan;
 import com.github.romualdrousseau.archery.commons.io.FileOps;
-import com.github.romualdrousseau.archery.commons.strings.StringUtils;
 
 public class CsvDocument extends BaseDocument {
 
@@ -87,21 +86,13 @@ public class CsvDocument extends BaseDocument {
         try {
             final var reader = new BufferedReader(new InputStreamReader(new FileInputStream(txtFile), encoding));
             if (encoding.startsWith("UTF-")) {
-                this.processUtfBOM(reader);
+                FileOps.processUtfBOM(reader);
             }
             this.sheet = new CsvSheet(sheetName, reader);
             this.sheet.checkDataEncoding();
             return true;
         } catch (final IOException x) {
             return false;
-        }
-    }
-
-    private void processUtfBOM(final BufferedReader reader) throws IOException {
-        // skip BOM if present
-        reader.mark(1);
-        if (reader.read() != StringUtils.BOM_CHAR) {
-            reader.reset();
         }
     }
 }
