@@ -54,9 +54,12 @@ public class PivotKeyHeader extends MetaHeader {
     }
 
     public void setEntryTypeValues(final Set<String> entryTypeValues) {
+        final var newEntries = entryTypeValues.stream()
+                .flatMap(x -> this.entries.stream()
+                        .map(y -> new PivotEntry(y.getCell(), this.pivotEntityName).setTypeValue(x)))
+                .toList();
         this.entries.clear();
-        this.entries.addAll(entryTypeValues.stream()
-                .map(x -> new PivotEntry(this.getCell(), this.pivotEntityName).setTypeValue(x)).toList());
+        this.entries.addAll(newEntries);
     }
 
     public Set<String> getEntryPivotValues() {
