@@ -109,10 +109,12 @@ public class IntelliTable extends DataTable {
 
         if (header instanceof PivotKeyHeader) {
             final var pivotHeader = (PivotKeyHeader) header.clone();
+
+            if (!pivotEntryTypes.isEmpty()) {
+                pivotHeader.setEntryTypeValues(pivotEntryTypes);
+            }
+
             if (this.getSheet().getPivotOption() == PivotOption.WITH_TYPE_AND_VALUE) {
-                if (!pivotEntryTypes.isEmpty()) {
-                    pivotHeader.setEntryTypeValues(pivotEntryTypes);
-                }
                 this.addHeaderIntoTmpHeaders(pivotHeader, false);
                 pivotHeader.getEntryTypeValues().forEach(
                         x -> this.addHeaderIntoTmpHeaders(pivotHeader.getPivotTypeHeader().clone().setName(x), false));
@@ -191,20 +193,23 @@ public class IntelliTable extends DataTable {
         }
         if (pivotKeyHeader == null) {
             this.emitOneRowWithoutPivot(graph, orgTable, orgRow, rowGroup).ifPresent(newRows::add);
-        } else if (this.getSheet().getPivotOption() == PivotOption.WITH_TYPE_AND_VALUE) {
-            pivotKeyHeader.getEntryPivotValues()
-                    .forEach(x -> this
-                            .emitOneRowWithPivotTypeAndValue(graph, orgTable, orgRow, rowGroup, pivotKeyHeader, x,
-                                    this.findTypeValue(orgTable, orgRow, pivotTypeHeader))
-                            .ifPresent(newRows::add));
-        } else if (this.getSheet().getPivotOption() == PivotOption.WITH_TYPE) {
-            pivotKeyHeader.getEntries()
-                    .forEach(x -> this.emitOneRowWithPivotAndType(graph, orgTable, orgRow, rowGroup, x)
-                            .ifPresent(newRows::add));
         } else {
-            pivotKeyHeader.getEntries()
-                    .forEach(x -> this.emitOneRowWithPivot(graph, orgTable, orgRow, rowGroup, x)
-                            .ifPresent(newRows::add));
+            final var typeValue = this.findTypeValue(orgTable, orgRow, pivotTypeHeader);
+            if (this.getSheet().getPivotOption() == PivotOption.WITH_TYPE_AND_VALUE) {
+                pivotKeyHeader.getEntryPivotValues()
+                        .forEach(x -> this
+                                .emitOneRowWithPivotTypeAndValue(graph, orgTable, orgRow, rowGroup, pivotKeyHeader, x,
+                                        typeValue)
+                                .ifPresent(newRows::add));
+            } else if (this.getSheet().getPivotOption() == PivotOption.WITH_TYPE) {
+                pivotKeyHeader.getEntries()
+                        .forEach(x -> this.emitOneRowWithPivotAndType(graph, orgTable, orgRow, rowGroup, x, typeValue)
+                                .ifPresent(newRows::add));
+            } else {
+                pivotKeyHeader.getEntries()
+                        .forEach(x -> this.emitOneRowWithPivot(graph, orgTable, orgRow, rowGroup, x, typeValue)
+                                .ifPresent(newRows::add));
+            }
         }
         return newRows;
     }
@@ -257,8 +262,11 @@ public class IntelliTable extends DataTable {
     }
 
     private Optional<Row> emitOneRowWithPivotAndType(final BaseTableGraph graph, final DataTable orgTable,
-            final BaseRow orgRow, final RowGroup rowGroup, final PivotEntry pivotEntry) {
+            final BaseRow orgRow, final RowGroup rowGroup, final PivotEntry pivotEntry, final String typeValue) {
         if (!orgRow.getCellAt(pivotEntry.getCell().getColumnIndex()).hasValue()) {
+            return Optional.empty();
+        }
+        if (typeValue != null && !typeValue.equals(pivotEntry.getTypeValue())) {
             return Optional.empty();
         }
 
@@ -283,8 +291,11 @@ public class IntelliTable extends DataTable {
     }
 
     private Optional<Row> emitOneRowWithPivot(final BaseTableGraph graph, final DataTable orgTable,
-            final BaseRow orgRow, final RowGroup rowGroup, final PivotEntry pivotEntry) {
+            final BaseRow orgRow, final RowGroup rowGroup, final PivotEntry pivotEntry, final String typeValue) {
         if (!orgRow.getCellAt(pivotEntry.getCell().getColumnIndex()).hasValue()) {
+            return Optional.empty();
+        }
+        if (typeValue != null && !typeValue.equals(pivotEntry.getTypeValue())) {
             return Optional.empty();
         }
 
