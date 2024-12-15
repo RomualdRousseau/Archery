@@ -20,7 +20,7 @@ public class SimpleTagClassifier implements TagClassifier {
         this.model = model;
         this.tagStyle = tagStyle;
 
-        this.lexicon =(model != null && model.getData().get("lexicon").isPresent())
+        this.lexicon = (model != null && model.getData().get("lexicon").isPresent())
                 ? model.getData().getList("lexicon")
                 : StringUtils.getSymbols().stream().toList();
         this.tagTokenizer = new ShingleTokenizer(this.getLexicon(), 1);
@@ -71,20 +71,23 @@ public class SimpleTagClassifier implements TagClassifier {
 
     @Override
     public String ensureTagStyle(final String text) {
+        final var cleanText = (this.model == null)
+                ? text
+                : this.model.getFilterList().stream().reduce(text, (a, x) -> a.replaceAll("(?i)" + x, " "));
         if (this.tagStyle == TagClassifier.TagStyle.SNAKE) {
             this.tagTokenizer.disableLemmatization();
-            return StringUtils.toSnake(text, this.tagTokenizer);
+            return StringUtils.toSnake(cleanText, this.tagTokenizer);
         }
         if (this.tagStyle == TagClassifier.TagStyle.CAMEL) {
             this.tagTokenizer.disableLemmatization();
-            return StringUtils.toCamel(text, this.tagTokenizer);
+            return StringUtils.toCamel(cleanText, this.tagTokenizer);
         }
-        if (text.indexOf(" ") > 0 || text.indexOf("_") > 0) {
+        if (cleanText.indexOf(" ") > 0 || cleanText.indexOf("_") > 0) {
             this.tagTokenizer.enableLemmatization();
-            return StringUtils.toSnake(text, this.tagTokenizer);
+            return StringUtils.toSnake(cleanText, this.tagTokenizer);
         } else {
             this.tagTokenizer.enableLemmatization();
-            return StringUtils.toCamel(text, this.tagTokenizer);
+            return StringUtils.toCamel(cleanText, this.tagTokenizer);
         }
     }
 
