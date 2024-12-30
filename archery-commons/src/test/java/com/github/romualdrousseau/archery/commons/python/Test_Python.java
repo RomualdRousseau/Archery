@@ -29,5 +29,11 @@ public class Test_Python {
 
         final var formatterUS = new PythonSimpleDateFormat("%b, %Y", Locale.forLanguageTag("en-US"));
         assertEquals("Sep, 2023", formatterUS.format(formatterUS.parse("Sep, 2023")));
+
+        final var formatterUS2 = new PythonSimpleDateFormat("'Year' %Y-%b %Y", Locale.forLanguageTag("en-US"));
+        assertEquals("Oct, 2024", formatterUS.format(formatterUS2.parse("Year 2024-Oct 2024")));
+
+        final var formatterHU = new PythonSimpleDateFormat("%Y. %B", Locale.forLanguageTag("hu-HU"));
+        assertEquals("2024. október", formatterHU.format(formatterHU.parse("2024. Október")));
     }
 }
