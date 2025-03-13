@@ -452,7 +452,6 @@
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java</artifactId>
-                <!-- Can not update to latest 4.x.x: Broke tensorflow-core -->
                 <version>4.30.0</version>
             </dependency>
             <dependency>
