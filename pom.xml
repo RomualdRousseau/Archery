@@ -55,26 +55,26 @@
 
         <maven-minimum.version>3.6.3</maven-minimum.version>
 
-        <log4j.version>2.24.2</log4j.version>
+        <log4j.version>2.24.3</log4j.version>
         <fury.version>0.4.1</fury.version>
         <snappy.version>1.1.10.7</snappy.version>
-        <jackson.version>2.18.1</jackson.version>
+        <jackson.version>2.18.3</jackson.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <jython.version>2.7.4</jython.version>
-        <poi.version>5.3.0</poi.version>
+        <poi.version>5.4.0</poi.version>
         <javadbf.version>1.14.1</javadbf.version>
         <hadoop.version>3.4.1</hadoop.version>
-        <parquet.version>1.14.4</parquet.version>
+        <parquet.version>1.15.0</parquet.version>
         <tabula.version>1.0.12</tabula.version>
         <openai-service.version>0.18.2</openai-service.version>
         <reflections.version>0.10.2</reflections.version>
-        <tensorflow.version>0.5.0</tensorflow.version>
+        <tensorflow.version>1.0.0</tensorflow.version>
         <zip4j.version>2.11.5</zip4j.version>
         <logstash-logback.version>8.0</logstash-logback.version>
 
         <junit.version>4.13.2</junit.version>
-        <junit-platform.version>1.11.3</junit-platform.version>
-        <junit-jupiter.version>5.11.3</junit-jupiter.version>
+        <junit-platform.version>1.12.0</junit-platform.version>
+        <junit-jupiter.version>5.12.0</junit-jupiter.version>
         <hamcrest.version>3.0</hamcrest.version>
     </properties>
 
@@ -176,7 +176,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>3.4.0</version>
+                <version>3.4.1</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -186,7 +186,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
+                <version>3.14.0</version>
                 <configuration>
                     <compilerArgs>
                         <arg>-Xlint:-options</arg>
@@ -201,7 +201,7 @@
                     <dependency>
                         <groupId>me.fabriciorby</groupId>
                         <artifactId>maven-surefire-junit5-tree-reporter</artifactId>
-                        <version>1.3.0</version>
+                        <version>1.4.0</version>
                     </dependency>
                 </dependencies>
                 <configuration>
@@ -228,7 +228,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
-                <version>3.1.3</version>
+                <version>3.1.4</version>
                 <executions>
                     <execution>
                         <?m2e ignore?>
@@ -266,7 +266,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.13.0</version>
+                        <version>3.14.0</version>
                         <configuration>
                             <compilerArgs>
                                 <arg>-Xlint:-options</arg>
@@ -302,7 +302,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.11.1</version>
+                        <version>3.11.2</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -352,7 +352,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.8.0</version>
+                        <version>3.11.2</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -416,7 +416,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-project-info-reports-plugin</artifactId>
-                        <version>3.8.0</version>
+                        <version>3.9.0</version>
                     </plugin>
                 </plugins>
             </build>
@@ -425,7 +425,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.8.0</version>
+                        <version>3.11.2</version>
                         <reportSets>
                             <reportSet>
                                 <id>build-reports</id>
@@ -447,13 +447,13 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>2.0.16</version>
+                <version>2.0.17</version>
             </dependency>
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java</artifactId>
                 <!-- Can not update to latest 4.x.x: Broke tensorflow-core -->
-                <version>3.25.5</version>
+                <version>4.30.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.avro</groupId>
@@ -463,22 +463,22 @@
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-xml</artifactId>
-                <version>12.0.15</version>
+                <version>12.0.17</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-http</artifactId>
-                <version>12.0.15</version>
+                <version>12.0.17</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-io</artifactId>
-                <version>12.0.15</version>
+                <version>12.0.17</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-util</artifactId>
-                <version>12.0.15</version>
+                <version>12.0.17</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -493,7 +493,7 @@
             <dependency>
                 <groupId>com.nimbusds</groupId>
                 <artifactId>nimbus-jose-jwt</artifactId>
-                <version>9.47</version>
+                <version>10.0.2</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
@@ -503,7 +503,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-text</artifactId>
-                <version>1.12.0</version>
+                <version>1.13.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -513,37 +513,37 @@
             <dependency>
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
-                <version>1.17.1</version>
+                <version>1.18.0</version>
             </dependency>
             <dependency>
                 <groupId>commons-logging</groupId>
                 <artifactId>commons-logging</artifactId>
-                <version>1.3.4</version>
+                <version>1.3.5</version>
             </dependency>
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>33.3.1-jre</version>
+                <version>33.4.0-jre</version>
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-common</artifactId>
-                <version>4.1.115.Final</version>
+                <version>4.1.119.Final</version>
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-codec-http</artifactId>
-                <version>4.1.115.Final</version>
+                <version>4.1.119.Final</version>
             </dependency>
             <dependency>
                 <groupId>org.jline</groupId>
                 <artifactId>jline</artifactId>
-                <version>3.27.1</version>
+                <version>3.29.0</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk18on</artifactId>
-                <version>1.79</version>
+                <version>1.80</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -553,12 +553,12 @@
             <dependency>
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
-                <version>2.11.0</version>
+                <version>2.12.1</version>
             </dependency>
             <dependency>
                 <groupId>dnsjava</groupId>
                 <artifactId>dnsjava</artifactId>
-                <version>3.6.2</version>
+                <version>3.6.3</version>
             </dependency>
             <dependency>
                 <groupId>org.reactivestreams</groupId>
@@ -568,7 +568,7 @@
             <dependency>
                 <groupId>com.squareup.okio</groupId>
                 <artifactId>okio</artifactId>
-                <version>3.9.1</version>
+                <version>3.10.2</version>
             </dependency>
             <dependency>
                 <groupId>com.squareup.okhttp3</groupId>
@@ -583,7 +583,7 @@
             <dependency>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-stdlib</artifactId>
-                <version>2.0.21</version>
+                <version>2.1.10</version>
             </dependency>
             <dependency>
                 <groupId>javax.xml.bind</groupId>
