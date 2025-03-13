@@ -1,7 +1,10 @@
 package com.github.romualdrousseau.archery.commons.python;
 
+import java.text.FieldPosition;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 public class PythonSimpleDateFormat extends SimpleDateFormat {
@@ -15,7 +18,7 @@ public class PythonSimpleDateFormat extends SimpleDateFormat {
         this(pythonPattern, Locale.getDefault());
     }
 
-    public PythonSimpleDateFormat(final String pythonPattern, Locale locale) {
+    public PythonSimpleDateFormat(final String pythonPattern, final Locale locale) {
         super(PythonSimpleDateFormat.toJavaPattern(pythonPattern), locale);
         this.pythonPattern = pythonPattern;
         this.locale = locale;
@@ -39,6 +42,34 @@ public class PythonSimpleDateFormat extends SimpleDateFormat {
         }
     }
 
+    @Override
+    public Date parse(final String text, final ParsePosition pos) {
+        if (this.pythonPattern.contains("%Q")) {
+            return super.parse(text
+                    .replace("Q1", "01-01")
+                    .replace("Q2", "04-01")
+                    .replace("Q3", "07-01")
+                    .replace("Q4", "10-01"),
+                    pos);
+        } else {
+            return super.parse(text, pos);
+        }
+    }
+
+    @Override
+    public StringBuffer format(final Date date, final StringBuffer buffer, final FieldPosition pos) {
+        if (this.pythonPattern.contains("%Q")) {
+            final var res = super.format(date, buffer, pos).toString();
+            return new StringBuffer(res
+                    .replace("01-01", "Q1")
+                    .replace("04-01", "Q2")
+                    .replace("07-01", "Q3")
+                    .replace("10-01", "Q4"));
+        } else {
+            return super.format(date, buffer, pos);
+        }
+    }
+
     public static String toPythonPattern(final String javaPattern) {
         return javaPattern
                 .replaceAll("YYYY", "%G")
@@ -55,6 +86,7 @@ public class PythonSimpleDateFormat extends SimpleDateFormat {
                 .replaceAll("EEEEE", "%A")
                 .replaceAll("EEE", "%a")
                 .replaceAll("ww", "%W")
+                .replaceAll("w", "%W")
                 .replaceAll("u", "%u")
                 .replaceAll("HH", "%H")
                 .replaceAll("H", "%-H")
@@ -82,9 +114,10 @@ public class PythonSimpleDateFormat extends SimpleDateFormat {
                 .replaceAll("%A", "EEEEE")
                 .replaceAll("%a", "EEE")
                 .replaceAll("%W", "ww")
+                .replaceAll("%U", "ww")
+                .replaceAll("%V", "ww")
                 .replaceAll("%w", "u")
                 .replaceAll("%u", "u")
-                .replaceAll("%U", "ww")
                 .replaceAll("%H", "HH")
                 .replaceAll("%-H", "H")
                 .replaceAll("%I", "hh")
@@ -92,6 +125,7 @@ public class PythonSimpleDateFormat extends SimpleDateFormat {
                 .replaceAll("%M", "mm")
                 .replaceAll("%-M", "m")
                 .replaceAll("%S", "ss")
-                .replaceAll("%-S", "s");
+                .replaceAll("%-S", "s")
+                .replaceAll("%Q", "MM-dd");
     }
 }
