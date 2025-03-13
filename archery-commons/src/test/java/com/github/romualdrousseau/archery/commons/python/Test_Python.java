@@ -33,7 +33,24 @@ public class Test_Python {
         final var formatterUS2 = new PythonSimpleDateFormat("'Year' %Y-%b %Y", Locale.forLanguageTag("en-US"));
         assertEquals("Oct, 2024", formatterUS.format(formatterUS2.parse("Year 2024-Oct 2024")));
 
-        final var formatterHU = new PythonSimpleDateFormat("%Y. %B", Locale.forLanguageTag("hu-HU"));
-        assertEquals("2024. október", formatterHU.format(formatterHU.parse("2024. Október")));
+        final var formatterHU1 = new PythonSimpleDateFormat("%Y. %B", Locale.forLanguageTag("hu-HU"));
+        assertEquals("2024. október", formatterHU1.format(formatterHU1.parse("2024. Október")));
+
+        final var formatterHU2 = new PythonSimpleDateFormat("%G 'week' %V", Locale.forLanguageTag("hu-HU"));
+        assertEquals(Date.from(LocalDate.of(2024, 12, 30).atStartOfDay(ZoneId.systemDefault()).toInstant()), formatterHU2.parse("2025 week 1"));
+    }
+
+    @Test
+    @Tag("unit")
+    public void testPythonSimpleDateformatWithQuarter() throws ParseException {
+        final var formatterGB = new PythonSimpleDateFormat("%Y %Q", Locale.forLanguageTag("en-GB"));
+        assertEquals("2023 Q1", formatterGB.format(formatterGB.parse("2023 Q1")));
+        assertEquals("2023 Q2", formatterGB.format(formatterGB.parse("2023 Q2")));
+        assertEquals("2023 Q3", formatterGB.format(formatterGB.parse("2023 Q3")));
+        assertEquals("2023 Q4", formatterGB.format(formatterGB.parse("2023 Q4")));
+        assertEquals(Date.from(LocalDate.of(2023, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()), formatterGB.parse("2023 Q1"));
+        assertEquals(Date.from(LocalDate.of(2023, 4, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()), formatterGB.parse("2023 Q2"));
+        assertEquals(Date.from(LocalDate.of(2023, 7, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()), formatterGB.parse("2023 Q3"));
+        assertEquals(Date.from(LocalDate.of(2023, 10, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()), formatterGB.parse("2023 Q4"));
     }
 }
