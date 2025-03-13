@@ -536,6 +536,11 @@
                 <version>4.1.119.Final</version>
             </dependency>
             <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-handler</artifactId>
+                <version>4.1.119.Final</version>
+            </dependency>
+            <dependency>
                 <groupId>org.jline</groupId>
                 <artifactId>jline</artifactId>
                 <version>3.29.0</version>
