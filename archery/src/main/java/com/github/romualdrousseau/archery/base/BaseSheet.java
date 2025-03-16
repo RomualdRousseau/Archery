@@ -430,8 +430,7 @@ public class BaseSheet implements Sheet {
     }
 
     private Optional<TableGraph> getTableGraph(final boolean applyTransformation, final SheetParser sheetParser,
-            final TableParser tableParser,
-            final EnumSet<Document.Hint> hints) {
+            final TableParser tableParser, final EnumSet<Document.Hint> hints) {
 
         // Here is the core of the algorithm
 
@@ -473,6 +472,8 @@ public class BaseSheet implements Sheet {
             return Optional.empty();
         }
 
+        // Build table graph
+
         if (!hints.contains(Document.Hint.INTELLI_LAYOUT)) {
             return Optional.of(new BaseTableGraph(dataTables.get(0)));
         }
@@ -501,12 +502,9 @@ public class BaseSheet implements Sheet {
             return Optional.empty();
         }
 
-        final DataTable table;
-        if (hints.contains(Document.Hint.INTELLI_LAYOUT)) {
-            table = new IntelliTable(this, (BaseTableGraph) root.get(), this.autoHeaderNameEnabled);
-        } else {
-            table = (DataTable) root.get().getTable();
-        }
+        final DataTable table = hints.contains(Document.Hint.INTELLI_LAYOUT)
+                ? new IntelliTable(this, (BaseTableGraph) root.get(), this.autoHeaderNameEnabled)
+                : (DataTable) root.get().getTable();
 
         // Tag headers
 
