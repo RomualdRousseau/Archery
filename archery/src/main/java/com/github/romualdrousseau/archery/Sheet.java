@@ -22,7 +22,7 @@ public interface Sheet {
 
     boolean isIntelliEnabled();
 
-    void enableIntelli();
+    Sheet enableIntelli();
 
-    void disableIntelli();
+    Sheet disableIntelli();
 }

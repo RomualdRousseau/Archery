@@ -193,13 +193,15 @@ public class BaseSheet implements Sheet {
     }
 
     @Override
-    public void enableIntelli() {
+    public Sheet enableIntelli() {
         this.intelliEnabled = true;
+        return this;
     }
 
     @Override
-    public void disableIntelli() {
+    public Sheet disableIntelli() {
         this.intelliEnabled = false;
+        return this;
     }
 
     public SheetStore getSheetStore() {
