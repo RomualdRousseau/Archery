@@ -40,6 +40,7 @@ public class BaseSheet implements Sheet {
         this.columnMask = CollectionUtils.mutableRange(0, this.storeLastColumnNum + 1);
         this.rowMask = CollectionUtils.mutableRange(0, this.sheetStore.getLastRowNum() + 1);
 
+        this.intelliEnabled = true;
         this.pivotEnabled = true;
         this.metaEnabled = true;
         this.autoCropEnabled = false;
@@ -93,37 +94,112 @@ public class BaseSheet implements Sheet {
 
     @Override
     public Optional<TableGraph> getTableGraph() {
-        return this.getTableGraph(
-                true,
-                this.document.getSheetParser(),
-                this.document.getTableParser(),
-                this.document.getHints());
+
+        // Here is the core of the algorithm
+
+        if (this.getLastRowNum() <= 0 || this.getLastColumnNum() <= 0) {
+            return Optional.empty();
+        }
+
+        // Apply transformations
+
+        final SheetParser sheetParser;
+        final TableParser tableParser;
+        final EnumSet<Document.Hint> hints;
+
+        if (this.isIntelliEnabled()) {
+            this.applyTransformations();
+            sheetParser = this.document.getSheetParser();
+            tableParser = this.document.getTableParser();
+            hints = this.document.getHints();
+        } else {
+            sheetParser = new SimpleSheetParser();
+            tableParser = new SimpleTableParser();
+            hints = EnumSet.noneOf(Document.Hint.class);
+        }
+        if (!this.notifyStepCompleted(new SheetPreparedEvent(this))) {
+            return Optional.empty();
+        }
+
+        // Find datatables and metatables
+
+        final var tables = sheetParser.findAllTables(this);
+        if (!this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables))) {
+            return Optional.empty();
+        }
+
+        final var dataTables = tableParser.getDataTables(this, tables);
+        if (!this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables))) {
+            return Optional.empty();
+        }
+        if (dataTables.size() == 0) {
+            return Optional.empty();
+        }
+
+        final List<MetaTable> metaTables;
+        if (this.metaEnabled) {
+            metaTables = tableParser.getMetaTables(this, tables);
+        } else {
+            metaTables = Collections.emptyList();
+        }
+        if (!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
+            return Optional.empty();
+        }
+
+        // Build table graph
+
+        if (!hints.contains(Document.Hint.INTELLI_LAYOUT)) {
+            return Optional.of(new BaseTableGraph(dataTables.get(0)));
+        }
+
+        // Build table graph: linked the metatable and datatables depending of the
+        // reading directional preferences
+        // in perception of visual stimuli depending of the cultures and writing
+        // systems.
+
+        final var readingDirection = this.document.getReadingDirection();
+        final var root = BaseTableGraphBuilder.build(metaTables, dataTables, readingDirection);
+
+        if (!this.notifyStepCompleted(new TableGraphBuiltEvent(this, root))) {
+            return Optional.empty();
+        }
+
+        return Optional.of(root);
     }
 
     @Override
     public Optional<Table> getTable() {
-        return this.getTable(true,
-                this.document.getSheetParser(),
-                this.document.getTableParser(),
-                this.document.getHints());
+
+        final var root = this.getTableGraph();
+        if (root.isEmpty()) {
+            return Optional.empty();
+        }
+
+        final DataTable table = this.isIntelliEnabled() && this.document.getHints().contains(Document.Hint.INTELLI_LAYOUT)
+                ? new IntelliTable(this, (BaseTableGraph) root.get(), this.autoHeaderNameEnabled)
+                : (DataTable) root.get().getTable();
+
+        // Tag headers
+
+        table.updateHeaderTags();
+        this.notifyStepCompleted(new TableReadyEvent(this, table));
+
+        return Optional.of(table);
     }
 
     @Override
-    public Optional<TableGraph> getRawTableGraph() {
-        return this.getTableGraph(
-                false,
-                new SimpleSheetParser(),
-                new SimpleTableParser(),
-                EnumSet.noneOf(Document.Hint.class));
+    public boolean isIntelliEnabled() {
+        return this.intelliEnabled;
     }
 
     @Override
-    public Optional<Table> getRawTable() {
-        return this.getTable(
-                false,
-                new SimpleSheetParser(),
-                new SimpleTableParser(),
-                EnumSet.noneOf(Document.Hint.class));
+    public void enableIntelli() {
+        this.intelliEnabled = true;
+    }
+
+    @Override
+    public void disableIntelli() {
+        this.intelliEnabled = false;
     }
 
     public SheetStore getSheetStore() {
@@ -429,91 +505,6 @@ public class BaseSheet implements Sheet {
                 .map(this.sheetStore::getLastColumnNum).max().getAsInt();
     }
 
-    private Optional<TableGraph> getTableGraph(final boolean applyTransformation, final SheetParser sheetParser,
-            final TableParser tableParser, final EnumSet<Document.Hint> hints) {
-
-        // Here is the core of the algorithm
-
-        if (this.getLastRowNum() <= 0 || this.getLastColumnNum() <= 0) {
-            return Optional.empty();
-        }
-
-        // Apply transformations
-
-        if (applyTransformation) {
-            this.applyTransformations();
-        }
-        if (!this.notifyStepCompleted(new SheetPreparedEvent(this))) {
-            return Optional.empty();
-        }
-
-        // Find datatables and metatables
-
-        final var tables = sheetParser.findAllTables(this);
-        if (!this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables))) {
-            return Optional.empty();
-        }
-
-        final var dataTables = tableParser.getDataTables(this, tables);
-        if (!this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables))) {
-            return Optional.empty();
-        }
-        if (dataTables.size() == 0) {
-            return Optional.empty();
-        }
-
-        final List<MetaTable> metaTables;
-        if (this.metaEnabled) {
-            metaTables = tableParser.getMetaTables(this, tables);
-        } else {
-            metaTables = Collections.emptyList();
-        }
-        if (!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
-            return Optional.empty();
-        }
-
-        // Build table graph
-
-        if (!hints.contains(Document.Hint.INTELLI_LAYOUT)) {
-            return Optional.of(new BaseTableGraph(dataTables.get(0)));
-        }
-
-        // Build table graph: linked the metatable and datatables depending of the
-        // reading directional preferences
-        // in perception of visual stimuli depending of the cultures and writing
-        // systems.
-
-        final var readingDirection = this.document.getReadingDirection();
-        final var root = BaseTableGraphBuilder.build(metaTables, dataTables, readingDirection);
-
-        if (!this.notifyStepCompleted(new TableGraphBuiltEvent(this, root))) {
-            return Optional.empty();
-        }
-
-        return Optional.of(root);
-    }
-
-    private Optional<Table> getTable(final boolean applyTransformation, final SheetParser sheetParser,
-            final TableParser tableParser,
-            final EnumSet<Document.Hint> hints) {
-
-        final var root = this.getTableGraph(applyTransformation, sheetParser, tableParser, hints);
-        if (root.isEmpty()) {
-            return Optional.empty();
-        }
-
-        final DataTable table = hints.contains(Document.Hint.INTELLI_LAYOUT)
-                ? new IntelliTable(this, (BaseTableGraph) root.get(), this.autoHeaderNameEnabled)
-                : (DataTable) root.get().getTable();
-
-        // Tag headers
-
-        table.updateHeaderTags();
-        this.notifyStepCompleted(new TableReadyEvent(this, table));
-
-        return Optional.of(table);
-    }
-
     private final BaseDocument document;
     private final String name;
     private final PatcheableSheetStore sheetStore;
@@ -525,6 +516,7 @@ public class BaseSheet implements Sheet {
     private boolean transfoApplied = false;
     private boolean unmergedAll = false;
     private float capillarityThreshold = Settings.DEFAULT_CAPILLARITY_THRESHOLD;
+    private boolean intelliEnabled;
     private boolean pivotEnabled;
     private boolean metaEnabled;
     private boolean autoCropEnabled;
