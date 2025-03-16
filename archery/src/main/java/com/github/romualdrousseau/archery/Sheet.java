@@ -18,5 +18,9 @@ public interface Sheet {
 
     Optional<Table> getTable();
 
+    Optional<TableGraph> getRawTableGraph();
+
+    Optional<Table> getRawTable();
+
     void addSheetListener(final SheetListener listener);
 }

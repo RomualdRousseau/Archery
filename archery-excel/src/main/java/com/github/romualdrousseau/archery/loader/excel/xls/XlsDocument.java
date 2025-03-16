@@ -7,6 +7,8 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.apache.poi.EncryptedDocumentException;
+import org.apache.poi.hssf.OldExcelFormatException;
+import org.apache.poi.hssf.record.RecordInputStream.LeftoverDataException;
 import org.apache.poi.hssf.record.crypto.Biff8EncryptionKey;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
@@ -53,7 +55,7 @@ public class XlsDocument extends BaseDocument {
                 this.sheets.add(new XlsSheet(workbook.getSheetAt(i)));
             }
             return this.sheets.size() > 0;
-        } catch (EncryptedDocumentException | IOException e) {
+        } catch (EncryptedDocumentException | IOException | OldExcelFormatException | LeftoverDataException e) {
             this.close();
             return false;
         } finally {

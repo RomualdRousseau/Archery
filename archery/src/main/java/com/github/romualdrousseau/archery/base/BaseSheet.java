@@ -2,6 +2,7 @@ package com.github.romualdrousseau.archery.base;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -11,8 +12,10 @@ import com.github.romualdrousseau.archery.PivotOption;
 import com.github.romualdrousseau.archery.Sheet;
 import com.github.romualdrousseau.archery.SheetEvent;
 import com.github.romualdrousseau.archery.SheetListener;
+import com.github.romualdrousseau.archery.SheetParser;
 import com.github.romualdrousseau.archery.Table;
 import com.github.romualdrousseau.archery.TableGraph;
+import com.github.romualdrousseau.archery.TableParser;
 import com.github.romualdrousseau.archery.config.Settings;
 import com.github.romualdrousseau.archery.event.AllTablesExtractedEvent;
 import com.github.romualdrousseau.archery.event.DataTableListBuiltEvent;
@@ -21,7 +24,8 @@ import com.github.romualdrousseau.archery.event.SheetPreparedEvent;
 import com.github.romualdrousseau.archery.event.TableGraphBuiltEvent;
 import com.github.romualdrousseau.archery.event.TableReadyEvent;
 import com.github.romualdrousseau.archery.intelli.IntelliTable;
-
+import com.github.romualdrousseau.archery.parser.sheet.SimpleSheetParser;
+import com.github.romualdrousseau.archery.parser.table.SimpleTableParser;
 import com.github.romualdrousseau.archery.TransformableSheet;
 import com.github.romualdrousseau.archery.commons.collections.CollectionUtils;
 import com.github.romualdrousseau.archery.commons.strings.StringUtils;
@@ -89,85 +93,37 @@ public class BaseSheet implements Sheet {
 
     @Override
     public Optional<TableGraph> getTableGraph() {
-
-        // Here is the core of the algorithm
-
-        if (this.getLastRowNum() <= 0 || this.getLastColumnNum() <= 0) {
-            return Optional.empty();
-        }
-
-        // Apply transformations
-
-        this.applyTransformations();
-        if (!this.notifyStepCompleted(new SheetPreparedEvent(this))) {
-            return Optional.empty();
-        }
-
-        // Find datatables and metatables
-
-        final var tables = this.document.getSheetParser().findAllTables(this);
-        if (!this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables))) {
-            return Optional.empty();
-        }
-
-        final var dataTables = this.document.getTableParser().getDataTables(this, tables);
-        if (!this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables))) {
-            return Optional.empty();
-        }
-        if (dataTables.size() == 0) {
-            return Optional.empty();
-        }
-
-        final List<MetaTable> metaTables;
-        if (this.metaEnabled) {
-            metaTables = this.document.getTableParser().getMetaTables(this, tables);
-        } else {
-            metaTables = Collections.emptyList();
-        }
-        if (!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
-            return Optional.empty();
-        }
-
-        if (!this.document.getHints().contains(Document.Hint.INTELLI_LAYOUT)) {
-            return Optional.of(new BaseTableGraph(dataTables.get(0)));
-        }
-
-        // Build table graph: linked the metatable and datatables depending of the
-        // reading directional preferences
-        // in perception of visual stimuli depending of the cultures and writing
-        // systems.
-
-        final var readingDirection = this.document.getReadingDirection();
-        final var root = BaseTableGraphBuilder.build(metaTables, dataTables, readingDirection);
-
-        if (!this.notifyStepCompleted(new TableGraphBuiltEvent(this, root))) {
-            return Optional.empty();
-        }
-
-        return Optional.of(root);
+        return this.getTableGraph(
+                true,
+                this.document.getSheetParser(),
+                this.document.getTableParser(),
+                this.document.getHints());
     }
 
     @Override
     public Optional<Table> getTable() {
+        return this.getTable(true,
+                this.document.getSheetParser(),
+                this.document.getTableParser(),
+                this.document.getHints());
+    }
 
-        final var root = this.getTableGraph();
-        if (root.isEmpty()) {
-            return Optional.empty();
-        }
+    @Override
+    public Optional<TableGraph> getRawTableGraph() {
+        return this.getTableGraph(
+                false,
+                new SimpleSheetParser(),
+                new SimpleTableParser(),
+                EnumSet.noneOf(Document.Hint.class));
+    }
 
-        final DataTable table;
-        if (document.getHints().contains(Document.Hint.INTELLI_LAYOUT)) {
-            table = new IntelliTable(this, (BaseTableGraph) root.get(), this.autoHeaderNameEnabled);
-        } else {
-            table = (DataTable) root.get().getTable();
-        }
-
-        // Tag headers
-
-        table.updateHeaderTags();
-        this.notifyStepCompleted(new TableReadyEvent(this, table));
-
-        return Optional.of(table);
+    @Override
+    public Optional<Table> getRawTable() {
+        return this.getTable(
+                false,
+                new SimpleSheetParser(),
+                new SimpleTableParser(),
+                EnumSet.noneOf(Document.Hint.class));
     }
 
     public SheetStore getSheetStore() {
@@ -257,7 +213,7 @@ public class BaseSheet implements Sheet {
 
     public List<Integer> searchCell(final String regex, final int offset, final int length, final int nth) {
         int n = 0;
-        for(int i = 0; i < length; i++) {
+        for (int i = 0; i < length; i++) {
             for (int j = 0; j < this.getLastColumnNum(offset + i); j++) {
                 final var cell = this.getCellDataAt(j, offset + i);
                 if (!StringUtils.isFastBlank(cell) && cell.matches(regex)) {
@@ -471,6 +427,93 @@ public class BaseSheet implements Sheet {
         }
         return IntStream.rangeClosed(0, this.sheetStore.getLastRowNum())
                 .map(this.sheetStore::getLastColumnNum).max().getAsInt();
+    }
+
+    private Optional<TableGraph> getTableGraph(final boolean applyTransformation, final SheetParser sheetParser,
+            final TableParser tableParser,
+            final EnumSet<Document.Hint> hints) {
+
+        // Here is the core of the algorithm
+
+        if (this.getLastRowNum() <= 0 || this.getLastColumnNum() <= 0) {
+            return Optional.empty();
+        }
+
+        // Apply transformations
+
+        if (applyTransformation) {
+            this.applyTransformations();
+        }
+        if (!this.notifyStepCompleted(new SheetPreparedEvent(this))) {
+            return Optional.empty();
+        }
+
+        // Find datatables and metatables
+
+        final var tables = sheetParser.findAllTables(this);
+        if (!this.notifyStepCompleted(new AllTablesExtractedEvent(this, tables))) {
+            return Optional.empty();
+        }
+
+        final var dataTables = tableParser.getDataTables(this, tables);
+        if (!this.notifyStepCompleted(new DataTableListBuiltEvent(this, dataTables))) {
+            return Optional.empty();
+        }
+        if (dataTables.size() == 0) {
+            return Optional.empty();
+        }
+
+        final List<MetaTable> metaTables;
+        if (this.metaEnabled) {
+            metaTables = tableParser.getMetaTables(this, tables);
+        } else {
+            metaTables = Collections.emptyList();
+        }
+        if (!this.notifyStepCompleted(new MetaTableListBuiltEvent(this, metaTables))) {
+            return Optional.empty();
+        }
+
+        if (!hints.contains(Document.Hint.INTELLI_LAYOUT)) {
+            return Optional.of(new BaseTableGraph(dataTables.get(0)));
+        }
+
+        // Build table graph: linked the metatable and datatables depending of the
+        // reading directional preferences
+        // in perception of visual stimuli depending of the cultures and writing
+        // systems.
+
+        final var readingDirection = this.document.getReadingDirection();
+        final var root = BaseTableGraphBuilder.build(metaTables, dataTables, readingDirection);
+
+        if (!this.notifyStepCompleted(new TableGraphBuiltEvent(this, root))) {
+            return Optional.empty();
+        }
+
+        return Optional.of(root);
+    }
+
+    private Optional<Table> getTable(final boolean applyTransformation, final SheetParser sheetParser,
+            final TableParser tableParser,
+            final EnumSet<Document.Hint> hints) {
+
+        final var root = this.getTableGraph(applyTransformation, sheetParser, tableParser, hints);
+        if (root.isEmpty()) {
+            return Optional.empty();
+        }
+
+        final DataTable table;
+        if (hints.contains(Document.Hint.INTELLI_LAYOUT)) {
+            table = new IntelliTable(this, (BaseTableGraph) root.get(), this.autoHeaderNameEnabled);
+        } else {
+            table = (DataTable) root.get().getTable();
+        }
+
+        // Tag headers
+
+        table.updateHeaderTags();
+        this.notifyStepCompleted(new TableReadyEvent(this, table));
+
+        return Optional.of(table);
     }
 
     private final BaseDocument document;
