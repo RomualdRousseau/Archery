@@ -429,7 +429,7 @@ public class BaseSheet implements Sheet {
                 .map(this.sheetStore::getLastColumnNum).max().getAsInt();
     }
 
-    private Optional<TableGraph> getTableGraph(final boolean appltyTransformation, final SheetParser sheetParser,
+    private Optional<TableGraph> getTableGraph(final boolean applyTransformation, final SheetParser sheetParser,
             final TableParser tableParser,
             final EnumSet<Document.Hint> hints) {
 
@@ -441,7 +441,7 @@ public class BaseSheet implements Sheet {
 
         // Apply transformations
 
-        if (appltyTransformation) {
+        if (applyTransformation) {
             this.applyTransformations();
         }
         if (!this.notifyStepCompleted(new SheetPreparedEvent(this))) {
@@ -492,11 +492,11 @@ public class BaseSheet implements Sheet {
         return Optional.of(root);
     }
 
-    private Optional<Table> getTable(final boolean appltyTransformation, final SheetParser sheetParser,
+    private Optional<Table> getTable(final boolean applyTransformation, final SheetParser sheetParser,
             final TableParser tableParser,
             final EnumSet<Document.Hint> hints) {
 
-        final var root = this.getTableGraph(appltyTransformation, sheetParser, tableParser, hints);
+        final var root = this.getTableGraph(applyTransformation, sheetParser, tableParser, hints);
         if (root.isEmpty()) {
             return Optional.empty();
         }
