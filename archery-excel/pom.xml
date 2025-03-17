@@ -44,6 +44,12 @@
             <artifactId>poi-scratchpad</artifactId>
             <version>${poi.version}</version>
         </dependency>
+        <!-- JXL Framework -->
+        <dependency>
+            <groupId>net.sourceforge.jexcelapi</groupId>
+            <artifactId>jxl</artifactId>
+            <version>${jxl.version}</version>
+        </dependency>
         <!-- Test Framework -->
         <dependency>
             <groupId>com.github.romualdrousseau</groupId>
