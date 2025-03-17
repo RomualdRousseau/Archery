@@ -1,4 +1,4 @@
-package com.github.romualdrousseau.archery.loader.excel.xls;
+package com.github.romualdrousseau.archery.loader.excel.oldxls;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,27 +6,25 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.apache.poi.EncryptedDocumentException;
-import org.apache.poi.hssf.OldExcelFormatException;
-import org.apache.poi.hssf.record.RecordInputStream.LeftoverDataException;
-import org.apache.poi.hssf.record.crypto.Biff8EncryptionKey;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
-
 import com.github.romualdrousseau.archery.base.BaseDocument;
 import com.github.romualdrousseau.archery.base.BaseSheet;
-import com.github.romualdrousseau.archery.commons.strings.StringUtils;
+
+import jxl.Workbook;
+import jxl.WorkbookSettings;
+import jxl.read.biff.BiffException;
+
 import com.github.romualdrousseau.archery.Document;
 import com.github.romualdrousseau.archery.Sheet;
 
-public class XlsDocument extends BaseDocument {
+public class OldXlsDocument extends BaseDocument {
 
-    private static List<String> EXTENSIONS = List.of(".xls", ".xlsx", ".xlsm");
+    private static List<String> EXTENSIONS = List.of(".xls");
     private static final EnumSet<Hint> CAPABILITIES = EnumSet.of(
             Document.Hint.INTELLI_EXTRACT,
             Document.Hint.INTELLI_LAYOUT,
             Document.Hint.INTELLI_TAG);
 
-    private final ArrayList<XlsSheet> sheets = new ArrayList<XlsSheet>();
+    private final ArrayList<OldXlsSheet> sheets = new ArrayList<OldXlsSheet>();
 
     @Override
     protected EnumSet<Hint> getIntelliCapabilities() {
@@ -45,20 +43,20 @@ public class XlsDocument extends BaseDocument {
             return false;
         }
 
-        if (!StringUtils.isBlank(password)) {
-            Biff8EncryptionKey.setCurrentUserPassword(password);
-        }
-        try (final var workbook = WorkbookFactory.create(excelFile)) {
+        final var settings = new WorkbookSettings();
+        settings.setEncoding(encoding);
+
+        try {
+            final var workbook = Workbook.getWorkbook(excelFile, settings);
             this.sheets.clear();
             for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
-                this.sheets.add(new XlsSheet(workbook.getSheetAt(i)));
+                this.sheets.add(new OldXlsSheet(workbook.getSheet(i)));
             }
             return this.sheets.size() > 0;
-        } catch (EncryptedDocumentException | IOException | OldExcelFormatException | LeftoverDataException e) {
+        } catch (BiffException | IndexOutOfBoundsException | IOException e) {
             this.close();
             return false;
         } finally {
-            Biff8EncryptionKey.setCurrentUserPassword(null);
         }
     }
 

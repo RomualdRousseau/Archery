@@ -62,6 +62,7 @@
         <jackson.version>2.18.3</jackson.version>
         <javadbf.version>1.14.1</javadbf.version>
         <jython.version>2.7.4</jython.version>
+        <jxl.version>2.6.12</jxl.version>
         <log4j.version>2.24.3</log4j.version>
         <logstash-logback.version>8.0</logstash-logback.version>
         <openai-service.version>0.18.2</openai-service.version>

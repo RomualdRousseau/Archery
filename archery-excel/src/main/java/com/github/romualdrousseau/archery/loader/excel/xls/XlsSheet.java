@@ -3,7 +3,6 @@ package com.github.romualdrousseau.archery.loader.excel.xls;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.List;
 
 import com.github.romualdrousseau.archery.base.PatcheableSheetStore;
 import com.github.romualdrousseau.archery.commons.strings.StringUtils;
@@ -23,7 +22,7 @@ public class XlsSheet extends PatcheableSheetStore {
         this.sheet = sheet;
         this.mergedRegions = new ArrayList<CellRangeAddress>();
         for (int j = 0; j < this.sheet.getNumMergedRegions(); j++) {
-            final CellRangeAddress region = this.sheet.getMergedRegion(j);
+            final var region = this.sheet.getMergedRegion(j);
             this.mergedRegions.add(region);
         }
     }
@@ -83,7 +82,7 @@ public class XlsSheet extends PatcheableSheetStore {
         }
 
         int numberOfCells = 0;
-        for (final CellRangeAddress region : this.mergedRegions) {
+        for (final var region : this.mergedRegions) {
             if (region.isInRange(rowIndex, colIndex)) {
                 numberOfCells = region.getLastColumn() - region.getFirstColumn();
                 break;
@@ -111,13 +110,13 @@ public class XlsSheet extends PatcheableSheetStore {
     }
 
     private void unmergeCell(final int colIndex, final int rowIndex) {
-        final List<CellRangeAddress> regionsToRemove = new ArrayList<CellRangeAddress>();
-        for (final CellRangeAddress region : this.mergedRegions) {
+        final var regionsToRemove = new ArrayList<CellRangeAddress>();
+        for (final var region : this.mergedRegions) {
             if (region.isInRange(rowIndex, colIndex)) {
                 regionsToRemove.add(region);
             }
         }
-        for (final CellRangeAddress region : regionsToRemove) {
+        for (final var region : regionsToRemove) {
             this.mergedRegions.remove(region);
         }
     }
@@ -128,7 +127,7 @@ public class XlsSheet extends PatcheableSheetStore {
         }
 
         int rowToReturn = rowIndex;
-        for (final CellRangeAddress region : this.mergedRegions) {
+        for (final var region : this.mergedRegions) {
             if (region.getLastRow() > region.getFirstRow() && rowIndex > region.getFirstRow()
                     && region.isInRange(rowIndex, colIndex)) {
                 rowToReturn = region.getFirstRow();
@@ -144,7 +143,7 @@ public class XlsSheet extends PatcheableSheetStore {
             return false;
         }
 
-        final CellType type = cell.getCellType();
+        final var type = cell.getCellType();
         return !type.equals(CellType.BLANK);
     }
 
@@ -153,14 +152,14 @@ public class XlsSheet extends PatcheableSheetStore {
             return null;
         }
 
-        CellType type = cell.getCellType();
+        var type = cell.getCellType();
         if (type.equals(CellType.FORMULA)) {
             type = cell.getCachedFormulaResultType();
         }
 
         String value = "";
 
-        switch (cell.getCellType()) {
+        switch (type) {
             case STRING:
                 value = StringUtils.cleanToken(cell.getRichStringCellValue().getString());
                 break;
