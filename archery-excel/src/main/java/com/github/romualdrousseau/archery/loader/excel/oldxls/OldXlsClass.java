@@ -6,7 +6,7 @@ import com.github.romualdrousseau.archery.DocumentClass;
 public class OldXlsClass implements DocumentClass
 {
     public Priority getPriority() {
-        return Priority.LOW;
+        return Priority.HIGH;
     }
 
     public Document newInstance() {
