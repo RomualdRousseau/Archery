@@ -16,9 +16,8 @@ public class StringUtils {
     public static final char BOM_CHAR = '\uFEFF';
 
     public static final Map<String, String> symbols = Map.of(
-        "%+", "percent",
-        "\\$+", "dollar"
-    );
+            "%+", "percent",
+            "\\$+", "dollar");
 
     private static final ThreadLocal<Pattern> CLEAN_TOKEN_REGEX1 = new ThreadLocal<>() {
         @Override
@@ -137,7 +136,7 @@ public class StringUtils {
 
     public static String encodeSymbols(final String s) {
         var tmp = s;
-        for(var e: symbols.entrySet()) {
+        for (var e : symbols.entrySet()) {
             tmp = tmp.replaceAll(e.getKey(), e.getValue());
         }
         return tmp;
@@ -148,6 +147,8 @@ public class StringUtils {
     }
 
     public static Optional<String> merge(final String sep, final List<String> values) {
-        return values.stream().reduce((a, x) -> !a.contains(x) ? String.join(sep, a, x) : a);
+        return values.stream()
+                .sorted((s1, s2) -> s2.length() - s1.length())
+                .reduce((a, x) -> !a.contains(x) ? String.join(sep, a, x) : a);
     }
 }
