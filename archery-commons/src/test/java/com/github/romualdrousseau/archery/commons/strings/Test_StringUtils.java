@@ -65,4 +65,13 @@ public class Test_StringUtils {
         assertEquals("total quantity $", StringUtils.cleanToken("  total   quantity $  "));
         assertEquals("total quantity $", StringUtils.cleanToken(" \"\"\"  total   quantity $  \"\"\""));
     }
+
+    @Test
+    @Tag("unit")
+    public void testMerge() {
+        assertEquals("aaabbbccc", StringUtils.merge(" ", List.of("aaabbbccc", "aaa")).get());
+        assertEquals("aaabbbccc ddd", StringUtils.merge(" ", List.of("aaabbbccc", "ddd")).get());
+        assertEquals("aaabbbccc", StringUtils.merge(" ", List.of("aaa", "aaabbbccc")).get());
+        assertEquals("aaabbbccc ddd", StringUtils.merge(" ", List.of("ddd", "aaabbbccc")).get());
+    }
 }
