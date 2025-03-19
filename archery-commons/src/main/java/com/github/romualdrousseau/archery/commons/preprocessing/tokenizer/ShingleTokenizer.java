@@ -13,6 +13,8 @@ public class ShingleTokenizer implements Text.ITokenizer {
 
     private static final int MIN_SIZE = 2;
 
+    private static final int MIN_CAMEL_SIZE = 2;
+
     private static final ThreadLocal<Pattern> CAMEL_PATTERN = new ThreadLocal<Pattern>() {
         @Override
         protected Pattern initialValue() {
@@ -67,21 +69,20 @@ public class ShingleTokenizer implements Text.ITokenizer {
             }
         }
 
-        // Clean by space and underscore
+        // Split by space and then by Camel notation words if different cases
 
         s = s.replaceAll("[\\s_]+", " ").trim();
 
-        // Split by space and then by Camel notation words
+        // Split tokens
 
         final ArrayList<String> result = new ArrayList<String>();
-        if (s.toUpperCase().equals(s) || s.toLowerCase().equals(s)) {
-            for (final String ss : s.split(" ")) {
+        for (final String ss : s.split(" ")) {
+            if (ss.toUpperCase().equals(ss) || ss.toLowerCase().equals(ss) || ss.length() <= MIN_CAMEL_SIZE) {
                 result.add(ss.toLowerCase());
-            }
-        } else {
-            for (final String ss : s.split(" ")) {
+            } else {
                 for (final String sss : CAMEL_PATTERN.get().split(ss)) {
-                    if (sss.length() > 0 && (sss.length() > (minSize - 1) || !Character.isAlphabetic(sss.charAt(0)))) {
+                    if (sss.length() > 0
+                            && (sss.length() > (minSize - 1) || !Character.isAlphabetic(sss.charAt(0)))) {
                         result.add(sss.toLowerCase());
                     }
                 }
