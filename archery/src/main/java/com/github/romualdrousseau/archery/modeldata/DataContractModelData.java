@@ -63,6 +63,11 @@ public class DataContractModelData implements ModelData {
     }
 
     @Override
+    public Iterable<String> keys() {
+        return backstore.keys();
+    }
+
+    @Override
     public <T> Optional<T> get(final String key) {
         return Optional.empty();
     }

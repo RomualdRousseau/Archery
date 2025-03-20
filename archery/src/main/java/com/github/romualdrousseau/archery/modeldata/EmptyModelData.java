@@ -15,6 +15,11 @@ public class EmptyModelData implements ModelData {
     }
 
     @Override
+    public Iterable<String> keys() {
+        return Collections.emptyList();
+    }
+
+    @Override
     public <T> Optional<T> get(String key) {
         return Optional.empty();
     }
