@@ -59,7 +59,7 @@ public class ShingleTokenizer implements Text.ITokenizer {
         final var lexems = this.variants.stream().collect(Collectors.toList());
         while (lexems.size() > 0) {
             final var lexem = lexems.remove(0);
-            for (final String variant : lexem.getValue()) {
+            for (final var variant : lexem.getValue()) {
                 if (s.toLowerCase().contains(variant)) {
                     final var replacement = this.lemmatization ? lexem.getKey() : variant;
                     s = s.replaceAll("(?i)" + variant, " " + replacement + " ");
@@ -75,16 +75,15 @@ public class ShingleTokenizer implements Text.ITokenizer {
 
         // Split by space and then by Camel notation words if different cases
 
-        final ArrayList<String> result = new ArrayList<String>();
-        for (final String ss : s.split(" ")) {
+        final var result = new ArrayList<String>();
+        for (final var ss : s.split(" ")) {
             if (this.isMaybeCamelPattern(ss)) {
-                for (final String sss : CAMEL_PATTERN.get().split(ss)) {
-                    if (sss.length() > 0
-                            && (sss.length() > (minSize - 1) || !Character.isAlphabetic(sss.charAt(0)))) {
+                for (final var sss : CAMEL_PATTERN.get().split(ss)) {
+                    if (this.isValidToken(sss)) {
                         result.add(sss.toLowerCase());
                     }
                 }
-            } else{
+            } else if (this.isValidToken(ss)) {
                 result.add(ss.toLowerCase());
             }
         }
@@ -94,5 +93,9 @@ public class ShingleTokenizer implements Text.ITokenizer {
 
     private boolean isMaybeCamelPattern(final String s) {
         return !s.toUpperCase().equals(s) && !s.toLowerCase().equals(s) && s.length() > MIN_CAMEL_SIZE;
+    }
+
+    private boolean isValidToken(final String s) {
+        return s.length() > (this.minSize - 1) || s.length() > 0 && !Character.isAlphabetic(s.charAt(0));
     }
 }
