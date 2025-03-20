@@ -69,26 +69,30 @@ public class ShingleTokenizer implements Text.ITokenizer {
             }
         }
 
-        // Split by space and then by Camel notation words if different cases
+        // Cleanup
 
         s = s.replaceAll("[\\s_]+", " ").trim();
 
-        // Split tokens
+        // Split by space and then by Camel notation words if different cases
 
         final ArrayList<String> result = new ArrayList<String>();
         for (final String ss : s.split(" ")) {
-            if (ss.toUpperCase().equals(ss) || ss.toLowerCase().equals(ss) || ss.length() <= MIN_CAMEL_SIZE) {
-                result.add(ss.toLowerCase());
-            } else {
+            if (this.isMaybeCamelPattern(ss)) {
                 for (final String sss : CAMEL_PATTERN.get().split(ss)) {
                     if (sss.length() > 0
                             && (sss.length() > (minSize - 1) || !Character.isAlphabetic(sss.charAt(0)))) {
                         result.add(sss.toLowerCase());
                     }
                 }
+            } else{
+                result.add(ss.toLowerCase());
             }
         }
 
         return result;
+    }
+
+    private boolean isMaybeCamelPattern(final String s) {
+        return !s.toUpperCase().equals(s) && !s.toLowerCase().equals(s) && s.length() > MIN_CAMEL_SIZE;
     }
 }

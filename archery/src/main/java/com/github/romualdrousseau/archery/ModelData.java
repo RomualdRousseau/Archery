@@ -7,6 +7,8 @@ import java.util.Optional;
 
 public interface ModelData {
 
+    Iterable<String> keys();
+
     <T> Optional<T> get(String key);
 
     <T> ModelData set(String key, T value);

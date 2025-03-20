@@ -23,6 +23,11 @@ public class JsonModelData implements ModelData {
     }
 
     @Override
+    public Iterable<String> keys() {
+        return this.backstore.keys();
+    }
+
+    @Override
     public <T> Optional<T> get(final String key) {
         return this.backstore.<T>get(key);
     }
