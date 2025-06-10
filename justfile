@@ -44,11 +44,11 @@ install:
 
 # Deploy snapshot to the maven repository
 deploy-snapshot:
-	mvn clean deploy -DskipTests -P snapshot
+	mvn clean deploy -DskipTests -P snapshot -s .mvn/settings.xml
 
 # Deploy release to the maven repository
 deploy-release:
-	mvn clean deploy -DskipTests -P release
+	mvn clean deploy -DskipTests -P release -s .mvn/settings.xml
 
 # Prepape a new version
 prepare-version *args='':
