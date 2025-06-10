@@ -66,7 +66,7 @@
         <log4j.version>2.24.3</log4j.version>
         <logstash-logback.version>8.0</logstash-logback.version>
         <openai-service.version>0.18.2</openai-service.version>
-        <parquet.version>1.15.0</parquet.version>
+        <parquet.version>1.15.2</parquet.version>
         <poi.version>5.4.0</poi.version>
         <reflections.version>0.10.2</reflections.version>
         <snappy.version>1.1.10.7</snappy.version>
