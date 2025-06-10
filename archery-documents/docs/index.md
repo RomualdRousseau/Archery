@@ -21,17 +21,17 @@
 
 ## Plugins
 
-* [Archery Layex Parser](https://github.com/RomualdRousseau/Archery-Layex-Parser/)
-* [Archery Net Classifier](https://github.com/RomualdRousseau/Archery-Net-Classifier/)
-* [Archery Csv](https://github.com/RomualdRousseau/Archery-Csv/)
-* [Archery Excel](https://github.com/RomualdRousseau/Archery-Excel/)
-* [Archery Dbf](https://github.com/RomualdRousseau/Archery-Dbf/)
-* [Archery Parquet](https://github.com/RomualdRousseau/Archery-Parquet/)
-* [Archery Pdf](https://github.com/RomualdRousseau/Archery-Pdf/)
+* [Archery Layex Parser](https://github.com/RomualdRousseau/Archery/)
+* [Archery Net Classifier](https://github.com/RomualdRousseau/Archery/)
+* [Archery Csv](https://github.com/RomualdRousseau/Archery/)
+* [Archery Excel](https://github.com/RomualdRousseau/Archery/)
+* [Archery Dbf](https://github.com/RomualdRousseau/Archery/)
+* [Archery Parquet](https://github.com/RomualdRousseau/Archery/)
+* [Archery Pdf](https://github.com/RomualdRousseau/Archery/)
 
 ## Models
 
-* [Models](https://github.com/RomualdRousseau/Archery-Models/)
+* [Models](https://github.com/RomualdRousseau/Archery/)
 
 ## Resources
 
