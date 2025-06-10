@@ -12,7 +12,9 @@ import javax.xml.parsers.SAXParserFactory;
 import com.github.romualdrousseau.archery.base.PatcheableSheetStore;
 import com.github.romualdrousseau.archery.commons.collections.DataFrame;
 import com.github.romualdrousseau.archery.commons.collections.DataFrameWriter;
+import com.github.romualdrousseau.archery.commons.collections.Row;
 
+import org.apache.commons.collections4.map.LRUMap;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.model.SharedStrings;
 import org.apache.poi.xssf.model.StylesTable;
@@ -27,6 +29,7 @@ public class XlsxSheet extends PatcheableSheetStore implements Closeable {
     private final InputStream sheetData;
     private final StylesTable styles;
     private final SharedStrings sharedStrings;
+    private final LRUMap<Integer, Row> cachedRows = new LRUMap<>();
 
     private List<CellRangeAddress> mergedRegions;
     private DataFrame rows;
@@ -100,7 +103,7 @@ public class XlsxSheet extends PatcheableSheetStore implements Closeable {
         if (patchCell != null) {
             return true;
         } else {
-            final var cells = this.rows.getRow(n);
+            final var cells = this.cachedRows.computeIfAbsent(n, this.rows::getRow);
             return cells != null && colIndex < cells.size() && cells.get(colIndex) != null;
         }
     }
@@ -115,7 +118,7 @@ public class XlsxSheet extends PatcheableSheetStore implements Closeable {
         if (patchCell != null) {
             return patchCell;
         } else {
-            final var cells = this.rows.getRow(n);
+            final var cells = this.cachedRows.computeIfAbsent(n, this.rows::getRow);
             return cells != null && colIndex < cells.size() ? cells.get(colIndex) : null;
         }
     }

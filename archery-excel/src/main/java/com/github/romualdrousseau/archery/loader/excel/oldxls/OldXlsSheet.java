@@ -13,8 +13,6 @@ import jxl.Range;
 
 public class OldXlsSheet extends PatcheableSheetStore {
 
-    // private final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
-
     public OldXlsSheet(final Sheet sheet) throws IOException {
         this.sheet = sheet;
         this.mergedRegions = new ArrayList<Range>();

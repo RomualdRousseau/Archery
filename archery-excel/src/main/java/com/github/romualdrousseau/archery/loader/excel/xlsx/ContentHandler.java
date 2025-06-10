@@ -6,11 +6,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.romualdrousseau.archery.commons.collections.DataFrame;
-import com.github.romualdrousseau.archery.commons.collections.DataFrameWriter;
-import com.github.romualdrousseau.archery.commons.collections.Row;
-import com.github.romualdrousseau.archery.commons.strings.StringUtils;
-
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
@@ -25,6 +20,11 @@ import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import com.github.romualdrousseau.archery.commons.collections.DataFrame;
+import com.github.romualdrousseau.archery.commons.collections.DataFrameWriter;
+import com.github.romualdrousseau.archery.commons.collections.Row;
+import com.github.romualdrousseau.archery.commons.strings.StringUtils;
 
 public class ContentHandler extends DefaultHandler {
 
@@ -92,7 +92,10 @@ public class ContentHandler extends DefaultHandler {
             this.inlineStr = true;
             this.currCell.value = "";
         } else if ("mergeCell".equals(name) && attributes.getValue("ref") != null) {
-            mergedRegions.add(CellRangeAddress.valueOf(attributes.getValue("ref")));
+            final var mergedRegion = CellRangeAddress.valueOf(attributes.getValue("ref"));
+            if (mergedRegion.getNumberOfCells() > 1) {
+                mergedRegions.add(mergedRegion);
+            }
         }
     }
 
