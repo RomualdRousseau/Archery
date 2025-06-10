@@ -5,9 +5,9 @@ on:
                 required: true
                 type: string
         secrets:
-            OSSRH_USERNAME:
+            CENTRAL_USERNAME:
                 required: true
-            OSSRH_TOKEN:
+            CENTRAL_TOKEN:
                 required: true
             GPG_PASSPHRASE:
                 required: true
@@ -53,6 +53,6 @@ jobs:
                   export GPG_TTY=$(tty)
                   mvn -U -B -DskipTests deploy -P release -s .mvn/settings.xml
               env:
-                  OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-                  OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
+                  CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+                  CENTRAL_TOKEN: ${{ secrets.CENTRAL_TOKEN }}
                   GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
