@@ -24,6 +24,7 @@ buildNumber.properties
 *.sublime-workspace
 .vscode
 .venv/
+.factorypath
 
 # mkdoc
 archery-documents/**/misc/

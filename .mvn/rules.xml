@@ -13,5 +13,10 @@
         <ignoreVersion type="regex">(?i).*Dev(?:[.|-]?\d+)?</ignoreVersion>
     </ignoreVersions>
     <rules>
+        <rule groupId="com.github.romualdrousseau" artifactId="archery">
+            <ignoreVersions>
+                <ignoreVersion type="regex">.*</ignoreVersion>
+            </ignoreVersions>
+        </rule>
     </rules>
 </ruleset>
