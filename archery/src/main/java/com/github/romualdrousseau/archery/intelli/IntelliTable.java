@@ -8,13 +8,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.StreamSupport;
 
-import com.github.romualdrousseau.archery.PivotOption;
 import com.github.romualdrousseau.archery.base.BaseHeader;
 import com.github.romualdrousseau.archery.base.BaseRow;
 import com.github.romualdrousseau.archery.base.BaseSheet;
 import com.github.romualdrousseau.archery.base.BaseTableGraph;
 import com.github.romualdrousseau.archery.base.DataTable;
-import com.github.romualdrousseau.archery.base.RowGroup;
 import com.github.romualdrousseau.archery.commons.collections.DataFrame;
 import com.github.romualdrousseau.archery.commons.collections.DataFrameWriter;
 import com.github.romualdrousseau.archery.commons.collections.Row;
@@ -37,7 +35,7 @@ public class IntelliTable extends DataTable {
             final var pivotTypeHeader = this.findPivotTypeHeader(headers);
             final var strategy = this.getStrategy(pivotKeyHeader);
             this.writer = new DataFrameWriter(BATCH_SIZE, headers.size());
-            this.buildTables(root, strategy, headers, pivotKeyHeader, pivotTypeHeader);
+            this.buildIntelliTable(root, strategy, headers, pivotKeyHeader, pivotTypeHeader);
             this.rows = this.writer.getDataFrame();
             this.finalizeHeaders(headers, headerAutoNameEnabled);
         } catch (final IOException x) {
@@ -71,7 +69,8 @@ public class IntelliTable extends DataTable {
 
     private HashSet<String> collectPivotEntryTypes(final BaseTableGraph root) {
         final var pivotEntryTypes = new HashSet<String>();
-        root.parse(e -> e.getTable().headers().forEach(h -> this.addPivotEntryTypes((BaseHeader) h, pivotEntryTypes)));
+        root.parse(e -> e.getTable().headers()
+                .forEach(h -> this.addPivotEntryTypes((BaseHeader) h, pivotEntryTypes)));
         return pivotEntryTypes;
     }
 
@@ -83,36 +82,36 @@ public class IntelliTable extends DataTable {
     }
 
     private PivotKeyHeader findKeyPivotHeader(final List<BaseHeader> headers) {
-        for (final var header : headers) {
-            if (header instanceof PivotKeyHeader) {
-                return (PivotKeyHeader) header;
-            }
-        }
-        return null;
+        return headers.stream()
+                .filter(header -> header instanceof PivotKeyHeader)
+                .map(header -> (PivotKeyHeader) header)
+                .findFirst()
+                .orElse(null);
     }
 
     private DataTableHeader findPivotTypeHeader(final List<BaseHeader> headers) {
-        for (final var header : headers) {
-            if (header.isPivotTypeHeader()) {
-                return (DataTableHeader) header;
-            }
-        }
-        return null;
+        return headers.stream()
+                .filter(BaseHeader::isPivotTypeHeader)
+                .map(header -> (DataTableHeader) header)
+                .findFirst()
+                .orElse(null);
     }
 
     private IntelliTableStrategy getStrategy(final PivotKeyHeader pivotKeyHeader) {
         if (pivotKeyHeader == null) {
             return new IntelliTableStrategyWithoutPivot();
-        } else if (this.getSheet().getPivotOption() == PivotOption.WITH_TYPE_AND_VALUE) {
-            return new IntelliTableStrategyWithPivotTypeAndValue();
-        } else if (this.getSheet().getPivotOption() == PivotOption.WITH_TYPE) {
-            return new IntelliTableStrategyWithPivotType();
-        } else {
-            return new IntelliTableStrategyWithPivot();
+        }
+        switch (this.getSheet().getPivotOption()) {
+            case WITH_TYPE_AND_VALUE:
+                return new IntelliTableStrategyWithPivotTypeAndValue();
+            case WITH_TYPE:
+                return new IntelliTableStrategyWithPivotType();
+            default:
+                return new IntelliTableStrategyWithPivot();
         }
     }
 
-    private void buildTables(final BaseTableGraph root, final IntelliTableStrategy strategy,
+    private void buildIntelliTable(final BaseTableGraph root, final IntelliTableStrategy strategy,
             final List<BaseHeader> headers,
             final PivotKeyHeader pivotKeyHeader,
             final DataTableHeader pivotTypeHeader) {
@@ -157,12 +156,16 @@ public class IntelliTable extends DataTable {
         if (!pivotEntryTypes.isEmpty()) {
             pivotHeader.setEntryTypeValues(pivotEntryTypes);
         }
-        if (this.getSheet().getPivotOption() == PivotOption.WITH_TYPE_AND_VALUE) {
-            this.addHeaderWithPivotTypeAndValue(headers, pivotHeader);
-        } else if (this.getSheet().getPivotOption() == PivotOption.WITH_TYPE) {
-            this.addHeaderWithPivotType(headers, pivotHeader);
-        } else {
-            this.addHeaderWithPivot(headers, pivotHeader);
+        switch (this.getSheet().getPivotOption()) {
+            case WITH_TYPE_AND_VALUE:
+                this.addHeaderWithPivotTypeAndValue(headers, pivotHeader);
+                break;
+            case WITH_TYPE:
+                this.addHeaderWithPivotType(headers, pivotHeader);
+                break;
+            default:
+                this.addHeaderWithPivot(headers, pivotHeader);
+                break;
         }
     }
 
@@ -206,33 +209,24 @@ public class IntelliTable extends DataTable {
     }
 
     private void emitAllRowsForOneTableWithoutRowGroups(final IntelliTableStrategy strategy,
-            final List<BaseHeader> headers,
-            final BaseTableGraph graph,
-            final DataTable orgTable,
+            final List<BaseHeader> headers, final BaseTableGraph graph, final DataTable orgTable,
             final PivotKeyHeader pivotKeyHeader, final DataTableHeader pivotTypeHeader) {
-        for (final var orgRow : orgTable.rows()) {
-            this.addRows(strategy.emitAllRowsForOneRow(headers, graph, orgTable, (BaseRow) orgRow,
-                    pivotKeyHeader, pivotTypeHeader, null));
-        }
+        orgTable.rows().forEach(orgRow -> this.addRows(strategy.emitAllRowsForOneRow(headers, graph, orgTable,
+                (BaseRow) orgRow, pivotKeyHeader, pivotTypeHeader, null)));
     }
 
     private void emitAllRowsForOneTableWithRowGroups(final IntelliTableStrategy strategy,
-            final List<BaseHeader> headers,
-            final BaseTableGraph graph,
-            final DataTable orgTable,
+            final List<BaseHeader> headers, final BaseTableGraph graph, final DataTable orgTable,
             final PivotKeyHeader pivotKeyHeader, final DataTableHeader pivotTypeHeader) {
-        for (final RowGroup rowGroup : orgTable.rowGroups()) {
+        orgTable.rowGroups().forEach(rowGroup -> {
             for (int i = 0; i < rowGroup.getNumberOfRows(); i++) {
                 if (rowGroup.getRow() + i < orgTable.getNumberOfRows()) {
                     final var orgRow = orgTable.getRowAt(rowGroup.getRow() + i);
-                    this.addRows(strategy.emitAllRowsForOneRow(headers, graph, orgTable, orgRow,
-                            pivotKeyHeader,
-                            pivotTypeHeader,
-                            rowGroup));
+                    this.addRows(strategy.emitAllRowsForOneRow(headers, graph, orgTable, orgRow, pivotKeyHeader,
+                            pivotTypeHeader, rowGroup));
                 }
             }
-        }
-
+        });
     }
 
     private void addRows(final List<Row> newRows) {
