@@ -15,22 +15,17 @@ import com.github.romualdrousseau.archery.header.PivotKeyHeader;
 
 public class IntelliTableStrategyWithoutPivot  extends IntelliTableStrategy {
 
-    public IntelliTableStrategyWithoutPivot() {
-        // Constructor logic if needed
-    }
-
-    public void emitAllRowsForOneRowImpl(final List<BaseHeader> tmpHeaders, final BaseTableGraph graph, final DataTable orgTable,
+    @Override
+    public void emitAllRowsForOneRowImpl(final List<BaseHeader> headers, final BaseTableGraph graph, final DataTable orgTable,
             final BaseRow orgRow, final RowGroup rowGroup, final PivotKeyHeader pivotKeyHeader,
             final DataTableHeader pivotTypeHeader, final List<Row> newRows) {
-        this.emitOneRow(tmpHeaders, graph, orgTable, orgRow, rowGroup).ifPresent(newRows::add);
+        this.emitOneRow(headers, graph, orgTable, orgRow, rowGroup).ifPresent(newRows::add);
     }
 
-    private Optional<Row> emitOneRow(final List<BaseHeader> tmpHeaders, final BaseTableGraph graph, final DataTable orgTable,
+    private Optional<Row> emitOneRow(final List<BaseHeader> headers, final BaseTableGraph graph, final DataTable orgTable,
             final BaseRow orgRow, final RowGroup rowGroup) {
-        final var newRow = new Row(tmpHeaders.size());
-        for (final var header : tmpHeaders) {
-            this.emitAllCells(graph, orgTable, orgRow, rowGroup, header, newRow);
-        }
+        final var newRow = new Row(headers.size());
+        headers.forEach(header -> this.emitAllCells(graph, orgTable, orgRow, rowGroup, header, newRow));
         return Optional.of(newRow);
     }
 }

@@ -15,7 +15,9 @@ import com.github.romualdrousseau.archery.header.PivotKeyHeader;
 
 public abstract class IntelliTableStrategy {
 
-    public List<Row> emitAllRowsForOneRow(final List<BaseHeader> headers, final BaseTableGraph graph, final DataTable orgTable, final BaseRow orgRow, final PivotKeyHeader pivotKeyHeader, final DataTableHeader pivotTypeHeader, final RowGroup rowGroup) {
+    public List<Row> emitAllRowsForOneRow(final List<BaseHeader> headers, final BaseTableGraph graph,
+            final DataTable orgTable, final BaseRow orgRow, final PivotKeyHeader pivotKeyHeader,
+            final DataTableHeader pivotTypeHeader, final RowGroup rowGroup) {
         final var newRows = new ArrayList<Row>();
         if (orgRow.isIgnored()) {
             return newRows;
@@ -32,45 +34,59 @@ public abstract class IntelliTableStrategy {
 
     protected String findTypeValue(final DataTable orgTable, final BaseRow orgRow,
             final DataTableHeader pivotTypeHeader) {
-        if (pivotTypeHeader != null) {
-            final var orgHeaders = orgTable.findAllHeaders(pivotTypeHeader);
-            if (orgHeaders.size() > 0) {
-                return orgHeaders.get(0).getCellAtRow(orgRow).getValue();
-            }
+        if (pivotTypeHeader == null) {
+            return null;
         }
-        return null;
+        final var orgHeaders = orgTable.findAllHeaders(pivotTypeHeader);
+        return orgHeaders.isEmpty() ? null : orgHeaders.get(0).getCellAtRow(orgRow).getValue();
     }
 
     protected void emitAllCells(final BaseTableGraph graph, final DataTable orgTable, final BaseRow orgRow,
-            final RowGroup rowGroup,
-            final BaseHeader tmpHeader, final Row newRow) {
-        final var orgHeaders = orgTable.findAllHeaders(tmpHeader);
-        if (orgHeaders.size() > 0) {
-            for (final var orgHeader : orgHeaders) {
-                if (rowGroup == null || !orgHeader.hasRowGroup()) {
-                    final var oldValue = newRow.get(tmpHeader.getColumnIndex());
-                    final var newValue = orgHeader.getCellAtRow(orgRow).getValue();
-                    this.emitOneCell(tmpHeader, oldValue, newValue, newRow);
-                } else {
-                    final var newValue = rowGroup.getCell().getValue();
-                    this.emitOneCell(tmpHeader, null, newValue, newRow);
-                }
-            }
+            final RowGroup rowGroup, final BaseHeader header, final Row newRow) {
+        final var orgHeaders = orgTable.findAllHeaders(header);
+        if (!orgHeaders.isEmpty()) {
+            emitCellsFromHeader(orgHeaders, orgTable, orgRow, rowGroup, header, newRow);
         } else {
-            final var orgHeader = graph.getParent().findClosestHeader(tmpHeader);
-            final var oldValue = newRow.get(tmpHeader.getColumnIndex());
-            final var newValue = orgHeader.getValue();
-            this.emitOneCell(tmpHeader, oldValue, newValue, newRow);
+            emitCellFromClosestHeader(graph, header, newRow);
         }
     }
 
-    private void emitOneCell(final BaseHeader tmpHeader, final String oldValue, final String newValue,
+    private void emitCellsFromHeader(final List<BaseHeader> orgHeaders, final DataTable orgTable, final BaseRow orgRow,
+            final RowGroup rowGroup, final BaseHeader header, final Row newRow) {
+        orgHeaders.forEach(orgHeader -> {
+            if (rowGroup == null || !orgHeader.hasRowGroup()) {
+                final var oldValue = newRow.get(header.getColumnIndex());
+                final var newValue = orgHeader.getCellAtRow(orgRow).getValue();
+                this.emitOneCell(header, oldValue, newValue, newRow);
+            } else {
+                final var newValue = rowGroup.getCell().getValue();
+                this.emitOneCell(header, null, newValue, newRow);
+            }
+        });
+    }
+
+    private void emitCellFromClosestHeader(final BaseTableGraph graph, final BaseHeader header, final Row newRow) {
+        final var orgHeader = graph.getParent().findClosestHeader(header);
+        final var oldValue = newRow.get(header.getColumnIndex());
+        final var newValue = orgHeader.getValue();
+        this.emitOneCell(header, oldValue, newValue, newRow);
+    }
+
+    private void emitOneCell(final BaseHeader header, final String oldValue, final String newValue, final Row newRow) {
+        this.updateHeaderEmptyStatus(header, newValue);
+        this.updateRowValue(header, oldValue, newValue, newRow);
+    }
+
+    private void updateHeaderEmptyStatus(final BaseHeader header, final String newValue) {
+        header.setColumnEmpty(header.isColumnEmpty() && StringUtils.isFastBlank(newValue));
+    }
+
+    private void updateRowValue(final BaseHeader header, final String oldValue, final String newValue,
             final Row newRow) {
-        tmpHeader.setColumnEmpty(tmpHeader.isColumnEmpty() && StringUtils.isFastBlank(newValue));
         if (oldValue == null) {
-            newRow.set(tmpHeader.getColumnIndex(), newValue);
+            newRow.set(header.getColumnIndex(), newValue);
         } else {
-            newRow.set(tmpHeader.getColumnIndex(), oldValue + newValue);
+            newRow.set(header.getColumnIndex(), oldValue + newValue);
         }
     }
 }

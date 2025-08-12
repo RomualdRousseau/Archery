@@ -14,55 +14,75 @@ import com.github.romualdrousseau.archery.header.PivotKeyHeader;
 
 public class IntelliTableStrategyWithPivotTypeAndValue extends IntelliTableStrategy {
 
-    public IntelliTableStrategyWithPivotTypeAndValue() {
-        // Constructor logic if needed
-    }
-
     public void emitAllRowsForOneRowImpl(final List<BaseHeader> headers, final BaseTableGraph graph, final DataTable orgTable,
             final BaseRow orgRow, final RowGroup rowGroup, final PivotKeyHeader pivotKeyHeader,
             final DataTableHeader pivotTypeHeader, final List<Row> newRows) {
         final var typeValue = this.findTypeValue(orgTable, orgRow, pivotTypeHeader);
-        pivotKeyHeader.getEntryPivotValues()
-                .forEach(x -> this
-                        .emitOneRowWithPivotTypeAndValue(headers, graph, orgTable, orgRow, rowGroup, pivotKeyHeader, x,
-                                typeValue)
-                        .ifPresent(newRows::add));
+        pivotKeyHeader.getEntryPivotValues().stream()
+                .map(pivotValue -> emitOneRowWithPivotTypeAndValue(headers, graph, orgTable, orgRow, rowGroup, pivotKeyHeader, pivotValue, typeValue))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .forEach(newRows::add);
     }
 
     private Optional<Row> emitOneRowWithPivotTypeAndValue(final List<BaseHeader> headers, final BaseTableGraph graph,
             final DataTable orgTable,
             final BaseRow orgRow, final RowGroup rowGroup, final PivotKeyHeader pivotKeyHeader, final String pivotValue,
             final String typeValue) {
-        boolean hasPivotedValues = false;
         final var newRow = new Row(headers.size());
-        for (final var tmpHeader : headers) {
-            if (tmpHeader instanceof PivotKeyHeader) {
-                final var orgHeaders = orgTable.findAllHeaders(tmpHeader);
-                if (orgHeaders.size() > 0) {
-                    final var ci = tmpHeader.getColumnIndex();
-                    newRow.set(ci, pivotValue);
-                    int i = 1;
-                    for (final var entryTypeValue : pivotKeyHeader.getEntryTypeValues()) {
-                        final var tv_i = entryTypeValue;
-                        final var pv_i = pivotValue;
-                        final var ci_i = ci + i++;
-                        hasPivotedValues |= pivotKeyHeader.getEntries().stream()
-                                .filter(x -> x.getPivotValue().equals(pv_i) &&
-                                        (typeValue == null && x.getTypeValue().equals(tv_i)
-                                                || typeValue != null && typeValue.equals(tv_i)))
-                                .findFirst()
-                                .map(x -> {
-                                    final var cell = orgRow.getCellAt(x.getCell().getColumnIndex());
-                                    newRow.set(ci_i, cell.getValue());
-                                    return cell.hasValue();
-                                })
-                                .orElse(false);
-                    }
-                }
+        final var hasPivotedValues = processRow(headers, graph, orgTable, orgRow, rowGroup, pivotKeyHeader,
+                pivotValue, typeValue, newRow);
+        return hasPivotedValues ? Optional.of(newRow) : Optional.empty();
+    }
+
+    private boolean processRow(final List<BaseHeader> headers, final BaseTableGraph graph,
+            final DataTable orgTable, final BaseRow orgRow, final RowGroup rowGroup,
+            final PivotKeyHeader pivotKeyHeader, final String pivotValue, final String typeValue,
+            final Row newRow) {
+        var hasPivotedValues = false;
+        for (final var header : headers) {
+            if (header instanceof PivotKeyHeader) {
+                hasPivotedValues |= this.emitAllCellsWithPivotTypeAndValue(orgTable, orgRow, (PivotKeyHeader) header, pivotKeyHeader,
+                        pivotValue, typeValue, newRow);
             } else {
-                this.emitAllCells(graph, orgTable, orgRow, rowGroup, tmpHeader, newRow);
+                this.emitAllCells(graph, orgTable, orgRow, rowGroup, header, newRow);
             }
         }
-        return hasPivotedValues ? Optional.of(newRow) : Optional.empty();
+        return hasPivotedValues;
+    }
+
+    private boolean emitAllCellsWithPivotTypeAndValue(final DataTable orgTable, final BaseRow orgRow,
+            final PivotKeyHeader header, final PivotKeyHeader pivotKeyHeader, final String pivotValue,
+            final String typeValue, final Row newRow) {
+        final var orgHeaders = orgTable.findAllHeaders(header);
+        if (orgHeaders.isEmpty()) {
+            return false;
+        }
+
+        final var columnIndex = header.getColumnIndex();
+        newRow.set(columnIndex, pivotValue);
+
+        var hasPivotedValues = false;
+        int currentIndex = 1;
+        for (final var entryTypeValue : pivotKeyHeader.getEntryTypeValues()) {
+            hasPivotedValues |= this.emitAllCellsForEntries(orgRow, pivotKeyHeader, pivotValue, typeValue, entryTypeValue, columnIndex + currentIndex++, newRow);
+        }
+        return hasPivotedValues;
+    }
+
+    private boolean emitAllCellsForEntries(final BaseRow orgRow, final PivotKeyHeader pivotKeyHeader,
+            final String pivotValue, final String typeValue, final String entryTypeValue,
+            final int columnIndex, final Row newRow) {
+        return pivotKeyHeader.getEntries().stream()
+                .filter(entry -> entry.getPivotValue().equals(pivotValue) &&
+                        ((typeValue == null && entry.getTypeValue().equals(entryTypeValue)) ||
+                                (typeValue != null && typeValue.equals(entryTypeValue))))
+                .findFirst()
+                .map(entry -> {
+                    final var cellValue = orgRow.getCellAt(entry.getCell().getColumnIndex()).getValue();
+                    newRow.set(columnIndex, cellValue);
+                    return true;
+                })
+                .orElse(false);
     }
 }

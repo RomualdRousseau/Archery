@@ -15,39 +15,59 @@ import com.github.romualdrousseau.archery.header.PivotKeyHeader;
 
 public class IntelliTableStrategyWithPivot  extends IntelliTableStrategy {
 
-    public IntelliTableStrategyWithPivot() {
-    }
+    final private int PIVOT_KEY = 0;
+    final private int PIVOT_VALUE = 1;
 
-    public void emitAllRowsForOneRowImpl(final List<BaseHeader> tmpHeaders, final BaseTableGraph graph, final DataTable orgTable,
+    public void emitAllRowsForOneRowImpl(final List<BaseHeader> headers, final BaseTableGraph graph, final DataTable orgTable,
             final BaseRow orgRow, final RowGroup rowGroup, final PivotKeyHeader pivotKeyHeader,
             final DataTableHeader pivotTypeHeader, final List<Row> newRows) {
-        final var typeValue = this.findTypeValue(orgTable, orgRow, pivotTypeHeader);
-        pivotKeyHeader.getEntries()
-                        .forEach(x -> this.emitOneRowWithPivot(tmpHeaders, graph, orgTable, orgRow, rowGroup, x, typeValue)
-                                .ifPresent(newRows::add));
+        final var typeValue = findTypeValue(orgTable, orgRow, pivotTypeHeader);
+        pivotKeyHeader.getEntries().stream()
+                .map(entry -> emitOneRowWithPivot(headers, graph, orgTable, orgRow, rowGroup, entry, typeValue))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .forEach(newRows::add);
     }
 
-    private Optional<Row> emitOneRowWithPivot(final List<BaseHeader>tmpHeaders, final BaseTableGraph graph, final DataTable orgTable,
+    private Optional<Row> emitOneRowWithPivot(final List<BaseHeader> headers, final BaseTableGraph graph, final DataTable orgTable,
             final BaseRow orgRow, final RowGroup rowGroup, final PivotEntry pivotEntry, final String typeValue) {
-        if (!orgRow.getCellAt(pivotEntry.getCell().getColumnIndex()).hasValue()) {
+        if (!this.isValidPivotEntry(orgRow, pivotEntry, typeValue)) {
             return Optional.empty();
         }
-        if (typeValue != null && !typeValue.equals(pivotEntry.getTypeValue())) {
-            return Optional.empty();
-        }
-        final var newRow = new Row(tmpHeaders.size());
-        for (final var tmpHeader : tmpHeaders) {
-            if (tmpHeader instanceof PivotKeyHeader) {
-                final var orgHeaders = orgTable.findAllHeaders(tmpHeader);
-                if (orgHeaders.size() > 0) {
-                    final var ci = tmpHeader.getColumnIndex();
-                    newRow.set(ci + 0, pivotEntry.getCell().getValue());
-                    newRow.set(ci + 1, orgRow.getCellAt(pivotEntry.getCell().getColumnIndex()).getValue());
-                }
+        final var newRow = new Row(headers.size());
+        final var hasPivotedValues = this.processRow(headers, graph, orgTable, orgRow, rowGroup, pivotEntry, newRow);
+        return hasPivotedValues ? Optional.of(newRow) : Optional.empty();
+    }
+
+    private boolean isValidPivotEntry(final BaseRow orgRow, final PivotEntry pivotEntry, final String typeValue) {
+        return orgRow.getCellAt(pivotEntry.getCell().getColumnIndex()).hasValue() &&
+               (typeValue == null || typeValue.equals(pivotEntry.getTypeValue()));
+    }
+
+    private boolean processRow(final List<BaseHeader> headers, final BaseTableGraph graph,
+            final DataTable orgTable, final BaseRow orgRow, final RowGroup rowGroup,
+            final PivotEntry pivotEntry, final Row newRow) {
+        var hasPivotedValues = false;
+        for (final var header : headers) {
+            if (header instanceof PivotKeyHeader) {
+                hasPivotedValues |= this.emitAllCellsWithPivot(orgTable, header, pivotEntry, orgRow, newRow);
             } else {
-                this.emitAllCells(graph, orgTable, orgRow, rowGroup, tmpHeader, newRow);
+                this.emitAllCells(graph, orgTable, orgRow, rowGroup, header, newRow);
             }
         }
-        return Optional.of(newRow);
+        return hasPivotedValues;
+    }
+
+    private boolean emitAllCellsWithPivot(final DataTable orgTable, final BaseHeader header,
+            final PivotEntry pivotEntry, final BaseRow orgRow, final Row newRow) {
+        final var orgHeaders = orgTable.findAllHeaders(header);
+        if (orgHeaders.isEmpty()) {
+            return false;
+        }
+        final var columnIndex = header.getColumnIndex();
+        final var entryColumnIndex = pivotEntry.getCell().getColumnIndex();
+        newRow.set(columnIndex + PIVOT_KEY, pivotEntry.getCell().getValue());
+        newRow.set(columnIndex + PIVOT_VALUE, orgRow.getCellAt(entryColumnIndex).getValue());
+        return true;
     }
 }
