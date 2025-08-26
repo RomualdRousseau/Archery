@@ -26,7 +26,8 @@ public class IntelliTableStrategyWithPivotType extends IntelliTableStrategy {
             final DataTableHeader pivotTypeHeader, final List<Row> newRows) {
         final var typeValue = this.findTypeValue(orgTable, orgRow, pivotTypeHeader);
         pivotKeyHeader.getEntries().stream()
-                .map(entry -> emitOneRowWithPivotType(headers, graph, orgTable, orgRow, rowGroup, entry, typeValue))
+                .map(entry -> this.emitOneRowWithPivotType(headers, graph, orgTable, orgRow, rowGroup, entry,
+                        typeValue))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .forEach(newRows::add);
@@ -70,9 +71,13 @@ public class IntelliTableStrategyWithPivotType extends IntelliTableStrategy {
         }
         final var columnIndex = header.getColumnIndex();
         final var entryColumnIndex = pivotEntry.getCell().getColumnIndex();
+        final var cell = orgRow.getCellAt(entryColumnIndex);
+        if (cell == null || !cell.hasValue()) {
+            return false;
+        }
         newRow.set(columnIndex + PIVOT_KEY, pivotEntry.getPivotValue());
         newRow.set(columnIndex + PIVOT_TYPE, pivotEntry.getTypeValue());
-        newRow.set(columnIndex + PIVOT_VALUE, orgRow.getCellAt(entryColumnIndex).getValue());
+        newRow.set(columnIndex + PIVOT_VALUE, cell.getValue());
         return true;
     }
 }

@@ -14,12 +14,14 @@ import com.github.romualdrousseau.archery.header.PivotKeyHeader;
 
 public class IntelliTableStrategyWithPivotTypeAndValue extends IntelliTableStrategy {
 
-    public void emitAllRowsForOneRowImpl(final List<BaseHeader> headers, final BaseTableGraph graph, final DataTable orgTable,
+    public void emitAllRowsForOneRowImpl(final List<BaseHeader> headers, final BaseTableGraph graph,
+            final DataTable orgTable,
             final BaseRow orgRow, final RowGroup rowGroup, final PivotKeyHeader pivotKeyHeader,
             final DataTableHeader pivotTypeHeader, final List<Row> newRows) {
         final var typeValue = this.findTypeValue(orgTable, orgRow, pivotTypeHeader);
         pivotKeyHeader.getEntryPivotValues().stream()
-                .map(pivotValue -> emitOneRowWithPivotTypeAndValue(headers, graph, orgTable, orgRow, rowGroup, pivotKeyHeader, pivotValue, typeValue))
+                .map(pivotValue -> this.emitOneRowWithPivotTypeAndValue(headers, graph, orgTable, orgRow, rowGroup,
+                        pivotKeyHeader, pivotValue, typeValue))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .forEach(newRows::add);
@@ -42,7 +44,8 @@ public class IntelliTableStrategyWithPivotTypeAndValue extends IntelliTableStrat
         var hasPivotedValues = false;
         for (final var header : headers) {
             if (header instanceof PivotKeyHeader) {
-                hasPivotedValues |= this.emitAllCellsWithPivotTypeAndValue(orgTable, orgRow, (PivotKeyHeader) header, pivotKeyHeader,
+                hasPivotedValues |= this.emitAllCellsWithPivotTypeAndValue(orgTable, orgRow, (PivotKeyHeader) header,
+                        pivotKeyHeader,
                         pivotValue, typeValue, newRow);
             } else {
                 this.emitAllCells(graph, orgTable, orgRow, rowGroup, header, newRow);
@@ -65,12 +68,13 @@ public class IntelliTableStrategyWithPivotTypeAndValue extends IntelliTableStrat
         var hasPivotedValues = false;
         int currentIndex = 1;
         for (final var entryTypeValue : pivotKeyHeader.getEntryTypeValues()) {
-            hasPivotedValues |= this.emitAllCellsForEntries(orgRow, pivotKeyHeader, pivotValue, typeValue, entryTypeValue, columnIndex + currentIndex++, newRow);
+            hasPivotedValues |= this.emitAllCellForEntry(orgRow, pivotKeyHeader, pivotValue, typeValue,
+                    entryTypeValue, columnIndex + currentIndex++, newRow);
         }
         return hasPivotedValues;
     }
 
-    private boolean emitAllCellsForEntries(final BaseRow orgRow, final PivotKeyHeader pivotKeyHeader,
+    private boolean emitAllCellForEntry(final BaseRow orgRow, final PivotKeyHeader pivotKeyHeader,
             final String pivotValue, final String typeValue, final String entryTypeValue,
             final int columnIndex, final Row newRow) {
         return pivotKeyHeader.getEntries().stream()
@@ -79,8 +83,11 @@ public class IntelliTableStrategyWithPivotTypeAndValue extends IntelliTableStrat
                                 (typeValue != null && typeValue.equals(entryTypeValue))))
                 .findFirst()
                 .map(entry -> {
-                    final var cellValue = orgRow.getCellAt(entry.getCell().getColumnIndex()).getValue();
-                    newRow.set(columnIndex, cellValue);
+                    final var cell = orgRow.getCellAt(entry.getCell().getColumnIndex());
+                    if (cell == null || !cell.hasValue()) {
+                        return false;
+                    }
+                    newRow.set(columnIndex, cell.getValue());
                     return true;
                 })
                 .orElse(false);
