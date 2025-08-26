@@ -13,12 +13,13 @@ import com.github.romualdrousseau.archery.header.DataTableHeader;
 import com.github.romualdrousseau.archery.header.PivotEntry;
 import com.github.romualdrousseau.archery.header.PivotKeyHeader;
 
-public class IntelliTableStrategyWithPivot  extends IntelliTableStrategy {
+public class IntelliTableStrategyWithPivot extends IntelliTableStrategy {
 
     final private int PIVOT_KEY = 0;
     final private int PIVOT_VALUE = 1;
 
-    public void emitAllRowsForOneRowImpl(final List<BaseHeader> headers, final BaseTableGraph graph, final DataTable orgTable,
+    public void emitAllRowsForOneRowImpl(final List<BaseHeader> headers, final BaseTableGraph graph,
+            final DataTable orgTable,
             final BaseRow orgRow, final RowGroup rowGroup, final PivotKeyHeader pivotKeyHeader,
             final DataTableHeader pivotTypeHeader, final List<Row> newRows) {
         final var typeValue = findTypeValue(orgTable, orgRow, pivotTypeHeader);
@@ -29,7 +30,8 @@ public class IntelliTableStrategyWithPivot  extends IntelliTableStrategy {
                 .forEach(newRows::add);
     }
 
-    private Optional<Row> emitOneRowWithPivot(final List<BaseHeader> headers, final BaseTableGraph graph, final DataTable orgTable,
+    private Optional<Row> emitOneRowWithPivot(final List<BaseHeader> headers, final BaseTableGraph graph,
+            final DataTable orgTable,
             final BaseRow orgRow, final RowGroup rowGroup, final PivotEntry pivotEntry, final String typeValue) {
         if (!this.isValidPivotEntry(orgRow, pivotEntry, typeValue)) {
             return Optional.empty();
@@ -41,7 +43,7 @@ public class IntelliTableStrategyWithPivot  extends IntelliTableStrategy {
 
     private boolean isValidPivotEntry(final BaseRow orgRow, final PivotEntry pivotEntry, final String typeValue) {
         return orgRow.getCellAt(pivotEntry.getCell().getColumnIndex()).hasValue() &&
-               (typeValue == null || typeValue.equals(pivotEntry.getTypeValue()));
+                (typeValue == null || typeValue.equals(pivotEntry.getTypeValue()));
     }
 
     private boolean processRow(final List<BaseHeader> headers, final BaseTableGraph graph,
@@ -66,8 +68,12 @@ public class IntelliTableStrategyWithPivot  extends IntelliTableStrategy {
         }
         final var columnIndex = header.getColumnIndex();
         final var entryColumnIndex = pivotEntry.getCell().getColumnIndex();
+        final var cell = orgRow.getCellAt(entryColumnIndex);
+        if (cell == null || !cell.hasValue()) {
+            return false;
+        }
         newRow.set(columnIndex + PIVOT_KEY, pivotEntry.getCell().getValue());
-        newRow.set(columnIndex + PIVOT_VALUE, orgRow.getCellAt(entryColumnIndex).getValue());
+        newRow.set(columnIndex + PIVOT_VALUE, cell.getValue());
         return true;
     }
 }
