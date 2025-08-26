@@ -7,12 +7,15 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import com.github.romualdrousseau.archery.commons.time.DateUtils;
+
 public class PythonSimpleDateFormat extends SimpleDateFormat {
 
     public static final String DEFAULT_PYTHON_DATE_FORMAT = "%Y-%m-%d";
 
     private final String pythonPattern;
     private final Locale locale;
+    private final boolean monthAsQuarter;
 
     public PythonSimpleDateFormat(final String pythonPattern) {
         this(pythonPattern, Locale.getDefault());
@@ -22,6 +25,7 @@ public class PythonSimpleDateFormat extends SimpleDateFormat {
         super(PythonSimpleDateFormat.toJavaPattern(pythonPattern), locale);
         this.pythonPattern = pythonPattern;
         this.locale = locale;
+        this.monthAsQuarter = pythonPattern.contains("%Q") || pythonPattern.contains("%q");
     }
 
     public String getPythonPattern() {
@@ -44,30 +48,14 @@ public class PythonSimpleDateFormat extends SimpleDateFormat {
 
     @Override
     public Date parse(final String text, final ParsePosition pos) {
-        if (this.pythonPattern.contains("%Q")) {
-            return super.parse(text
-                    .replace("Q1", "01-01")
-                    .replace("Q2", "04-01")
-                    .replace("Q3", "07-01")
-                    .replace("Q4", "10-01"),
-                    pos);
-        } else {
-            return super.parse(text, pos);
-        }
+        final var date = super.parse(text, pos);
+        return this.monthAsQuarter ? DateUtils.quarterToMonth(date, this.locale) : date;
     }
 
     @Override
     public StringBuffer format(final Date date, final StringBuffer buffer, final FieldPosition pos) {
-        if (this.pythonPattern.contains("%Q")) {
-            final var res = super.format(date, buffer, pos).toString();
-            return new StringBuffer(res
-                    .replace("01-01", "Q1")
-                    .replace("04-01", "Q2")
-                    .replace("07-01", "Q3")
-                    .replace("10-01", "Q4"));
-        } else {
-            return super.format(date, buffer, pos);
-        }
+        final var date2 = this.monthAsQuarter ? DateUtils.monthToQuarter(date, this.locale) : date;
+        return super.format(date2, buffer, pos);
     }
 
     public static String toPythonPattern(final String javaPattern) {
@@ -126,6 +114,7 @@ public class PythonSimpleDateFormat extends SimpleDateFormat {
                 .replaceAll("%-M", "m")
                 .replaceAll("%S", "ss")
                 .replaceAll("%-S", "s")
-                .replaceAll("%Q", "MM-dd");
+                .replaceAll("%Q", "'Q'M")
+                .replaceAll("%q", "M");
     }
 }

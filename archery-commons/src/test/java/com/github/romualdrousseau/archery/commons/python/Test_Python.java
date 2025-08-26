@@ -17,7 +17,8 @@ public class Test_Python {
     @Tag("unit")
     public void testPythonSimpleDateformat() throws ParseException {
         final var formatter = new PythonSimpleDateFormat("%a,%d/%m/%y");
-        assertEquals("Sun,24/09/23", formatter.format(Date.from(LocalDate.of(2023, 9, 24).atStartOfDay(ZoneId.systemDefault()).toInstant())));
+        assertEquals("Sun,24/09/23", formatter
+                .format(Date.from(LocalDate.of(2023, 9, 24).atStartOfDay(ZoneId.systemDefault()).toInstant())));
         assertEquals("Sun,05/12/99", formatter.format(formatter.parse("Sun,05/12/99")));
     }
 
@@ -37,20 +38,43 @@ public class Test_Python {
         assertEquals("2024. október", formatterHU1.format(formatterHU1.parse("2024. Október")));
 
         final var formatterHU2 = new PythonSimpleDateFormat("%G 'week' %V", Locale.forLanguageTag("hu-HU"));
-        assertEquals(Date.from(LocalDate.of(2024, 12, 30).atStartOfDay(ZoneId.systemDefault()).toInstant()), formatterHU2.parse("2025 week 1"));
+        assertEquals(Date.from(LocalDate.of(2024, 12, 30).atStartOfDay(ZoneId.systemDefault()).toInstant()),
+                formatterHU2.parse("2025 week 1"));
     }
 
     @Test
     @Tag("unit")
-    public void testPythonSimpleDateformatWithQuarter() throws ParseException {
+    public void testPythonSimpleDateformatWithBigQuarter() throws ParseException {
         final var formatterGB = new PythonSimpleDateFormat("%Y %Q", Locale.forLanguageTag("en-GB"));
         assertEquals("2023 Q1", formatterGB.format(formatterGB.parse("2023 Q1")));
         assertEquals("2023 Q2", formatterGB.format(formatterGB.parse("2023 Q2")));
         assertEquals("2023 Q3", formatterGB.format(formatterGB.parse("2023 Q3")));
         assertEquals("2023 Q4", formatterGB.format(formatterGB.parse("2023 Q4")));
-        assertEquals(Date.from(LocalDate.of(2023, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()), formatterGB.parse("2023 Q1"));
-        assertEquals(Date.from(LocalDate.of(2023, 4, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()), formatterGB.parse("2023 Q2"));
-        assertEquals(Date.from(LocalDate.of(2023, 7, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()), formatterGB.parse("2023 Q3"));
-        assertEquals(Date.from(LocalDate.of(2023, 10, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()), formatterGB.parse("2023 Q4"));
+        assertEquals(Date.from(LocalDate.of(2023, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()),
+                formatterGB.parse("2023 Q1"));
+        assertEquals(Date.from(LocalDate.of(2023, 4, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()),
+                formatterGB.parse("2023 Q2"));
+        assertEquals(Date.from(LocalDate.of(2023, 7, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()),
+                formatterGB.parse("2023 Q3"));
+        assertEquals(Date.from(LocalDate.of(2023, 10, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()),
+                formatterGB.parse("2023 Q4"));
+    }
+
+    @Test
+    @Tag("unit")
+    public void testPythonSimpleDateformatWithSmallQuarter() throws ParseException {
+        final var formatterGB = new PythonSimpleDateFormat("%Y/%q", Locale.forLanguageTag("en-GB"));
+        assertEquals("2023/1", formatterGB.format(formatterGB.parse("2023/1")));
+        assertEquals("2023/2", formatterGB.format(formatterGB.parse("2023/2")));
+        assertEquals("2023/3", formatterGB.format(formatterGB.parse("2023/3")));
+        assertEquals("2023/4", formatterGB.format(formatterGB.parse("2023/4")));
+        assertEquals(Date.from(LocalDate.of(2023, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()),
+                formatterGB.parse("2023/1"));
+        assertEquals(Date.from(LocalDate.of(2023, 4, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()),
+                formatterGB.parse("2023/2"));
+        assertEquals(Date.from(LocalDate.of(2023, 7, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()),
+                formatterGB.parse("2023/3"));
+        assertEquals(Date.from(LocalDate.of(2023, 10, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()),
+                formatterGB.parse("2023/4"));
     }
 }

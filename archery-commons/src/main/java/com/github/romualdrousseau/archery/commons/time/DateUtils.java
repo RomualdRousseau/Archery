@@ -30,7 +30,8 @@ public class DateUtils {
         return DateUtils.parseDate(s, parser, DateUtils.DEFAULT_DATE_PARSER.get());
     }
 
-    public static Optional<Date> parseDate(final String s, final SimpleDateFormat parser, final SimpleDateFormat defaultParser) {
+    public static Optional<Date> parseDate(final String s, final SimpleDateFormat parser,
+            final SimpleDateFormat defaultParser) {
         return DateUtils.tryParseDate(s, parser)
                 .or(() -> DateUtils.tryParseDate(s, defaultParser));
     }
@@ -89,6 +90,20 @@ public class DateUtils {
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
+    }
+
+    public static Date quarterToMonth(final Date date, final Locale locale) {
+        final var calendar = Calendar.getInstance(locale);
+        calendar.setTime(date);
+        calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH) * 3);
+        return calendar.getTime();
+    }
+
+    public static Date monthToQuarter(final Date date, final Locale locale) {
+        final var calendar = Calendar.getInstance(locale);
+        calendar.setTime(date);
+        calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH) / 3);
+        return calendar.getTime();
     }
 
     private static void addDaysSkippingWeekends(final Calendar date, final int days) {

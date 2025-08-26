@@ -6,6 +6,8 @@ import com.github.romualdrousseau.archery.commons.collections.Row;
 
 public class IntelliRow extends BaseRow {
 
+    private final Row row;
+
     public IntelliRow(final BaseTable table, final int rowIndex, final Row row) {
         super(table, rowIndex);
         this.row = row;
@@ -20,6 +22,4 @@ public class IntelliRow extends BaseRow {
     protected int getNumberOfMergedCellsAt(final int colIndex) {
         return 1;
     }
-
-    private final Row row;
 }
