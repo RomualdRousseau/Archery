@@ -14,7 +14,7 @@ import com.github.romualdrousseau.archery.header.DataTableHeader;
 
 public class IntelliHeader extends DataTableHeader {
 
-    private static Optional<String> mergeValues(final List<String> values) {
+    public static Optional<String> mergeValues(final List<String> values) {
         return StringUtils.merge(Settings.MERGE_SEPARATOR, values);
     }
 
