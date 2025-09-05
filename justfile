@@ -1,5 +1,4 @@
 set positional-arguments
-set dotenv-required
 set dotenv-load
 
 export TF_CPP_MIN_LOG_LEVEL := "3"
