@@ -59,7 +59,7 @@
         <commons-collections4.version>4.5.0</commons-collections4.version>
         <fury.version>0.4.1</fury.version>
         <hadoop.version>3.4.1</hadoop.version>
-        <jackson.version>2.19.2</jackson.version>
+        <jackson.version>2.20</jackson.version>
         <javadbf.version>1.14.1</javadbf.version>
         <jython.version>2.7.4</jython.version>
         <jxl.version>2.6.12</jxl.version>
@@ -94,7 +94,7 @@
         <jetty.version>12.1.0</jetty.version>
         <jline.version>3.30.5</jline.version>
         <kotlin-stdlib.version>2.2.10</kotlin-stdlib.version>
-        <netty.version>4.2.4.Final</netty.version>
+        <netty.version>4.2.5.Final</netty.version>
         <nimbus-jose-jwt.version>10.4.2</nimbus-jose-jwt.version>
         <okhttp.version>4.12.0</okhttp.version>
         <okio.version>3.16.0</okio.version>
