@@ -21,7 +21,8 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
 
     /**
      * Sets the labels for the LoggerJsonWithLabels object.
-     * The labels define the categories or tags that can be assigned to log messages.
+     * The labels define the categories or tags that can be assigned to log
+     * messages.
      *
      * @param labels the LoggerLabels object containing the labels to be set
      * @return the updated LoggerJsonWithLabels object with the new labels
@@ -29,6 +30,18 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     public LoggerJsonWithLabels setLabels(final LoggerLabels labels) {
         this.labels = labels;
         return this;
+    }
+
+    /**
+     * Sets the labels for the LoggerJsonWithLabels object.
+     * The labels define the categories or tags that can be assigned to log
+     * messages.
+     *
+     * @param labels the LoggerLabels object containing the labels to be set
+     * @return the updated LoggerJsonWithLabels object with the new labels
+     */
+    public LoggerJsonWithLabels withLabels(final LoggerLabels labels) {
+        return new LoggerJsonWithLabels(this.logger).setLabels(labels);
     }
 
     /**
@@ -43,7 +56,8 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
 
     /**
      * Check if the trace level logging is enabled for this logger.
-     * This method delegates the call to the underlying logger and returns the value.
+     * This method delegates the call to the underlying logger and returns the
+     * value.
      *
      * @return true if trace level logging is enabled, false otherwise.
      */
@@ -70,7 +84,7 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
      * formatted log message as a parameter.
      *
      * @param format - the format string for the log message
-     * @param arg - the argument for the log message
+     * @param arg    - the argument for the log message
      */
     @Override
     public void trace(final String format, final Object arg) {
@@ -81,8 +95,10 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
      * Logs a trace message with the specified format and arguments.
      *
      * @param format - the format string to be used for the trace message
-     * @param arg1 - the first argument to be formatted and included in the trace message
-     * @param arg2 - the second argument to be formatted and included in the trace message
+     * @param arg1   - the first argument to be formatted and included in the trace
+     *               message
+     * @param arg2   - the second argument to be formatted and included in the trace
+     *               message
      */
     @Override
     public void trace(final String format, final Object arg1, final Object arg2) {
@@ -91,9 +107,10 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
 
     /**
      * Prints a trace message with the provided format and arguments.
-     * The trace message is created by formatting the format string with the provided arguments.
+     * The trace message is created by formatting the format string with the
+     * provided arguments.
      *
-     * @param format the format string for the trace message
+     * @param format    the format string for the trace message
      * @param arguments the arguments to be used in formatting the trace message
      */
     @Override
@@ -105,7 +122,7 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
      * Traces a log message along with an exception in the code.
      *
      * @param msg the log message to be traced
-     * @param t the Throwable object representing the exception
+     * @param t   the Throwable object representing the exception
      */
     @Override
     public void trace(final String msg, final Throwable t) {
@@ -116,7 +133,8 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
      * Determines if the trace level is enabled for a given marker.
      *
      * @param marker The marker for which to check if the trace level is enabled.
-     * @return True if the trace level is enabled for the given marker, false otherwise.
+     * @return True if the trace level is enabled for the given marker, false
+     *         otherwise.
      */
     @Override
     public boolean isTraceEnabled(final Marker marker) {
@@ -124,10 +142,11 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     }
 
     /**
-     * Logs a message with TRACE level, including a specified marker, using the logger associated with this class.
+     * Logs a message with TRACE level, including a specified marker, using the
+     * logger associated with this class.
      *
      * @param marker The marker associated with the log message.
-     * @param msg The log message to be logged.
+     * @param msg    The log message to be logged.
      *
      */
     @Override
@@ -137,13 +156,16 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
 
     /**
      * Overrides the trace method from the superclass.
-     * This method logs a trace message with a marker, using a format string and one argument.
-     * The method first formats the message using the given format and argument using the MessageFormatter class.
-     * Then it calls the trace method of the superclass, passing in the marker and the formatted message.
+     * This method logs a trace message with a marker, using a format string and one
+     * argument.
+     * The method first formats the message using the given format and argument
+     * using the MessageFormatter class.
+     * Then it calls the trace method of the superclass, passing in the marker and
+     * the formatted message.
      *
      * @param marker the marker for the trace message
      * @param format the format string to be used for formatting the message
-     * @param arg the argument to be substituted in the format string
+     * @param arg    the argument to be substituted in the format string
      */
     @Override
     public void trace(final Marker marker, final String format, final Object arg) {
@@ -151,13 +173,16 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     }
 
     /**
-     * Logs a trace level message with the specified marker and format, replacing the placeholders in the format string
+     * Logs a trace level message with the specified marker and format, replacing
+     * the placeholders in the format string
      * with the given arguments.
      *
-     * @param marker   the marker associated with the log message
-     * @param format   the format string that defines the log message
-     * @param arg1     the first argument to replace the placeholder in the format string
-     * @param arg2     the second argument to replace the placeholder in the format string
+     * @param marker the marker associated with the log message
+     * @param format the format string that defines the log message
+     * @param arg1   the first argument to replace the placeholder in the format
+     *               string
+     * @param arg2   the second argument to replace the placeholder in the format
+     *               string
      */
     @Override
     public void trace(final Marker marker, final String format, final Object arg1, final Object arg2) {
@@ -170,8 +195,8 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
      * during the formatting process.
      * The trace level message is then logged using the formatted message.
      *
-     * @param marker the marker associated with the trace message
-     * @param format the format string for the trace message
+     * @param marker    the marker associated with the trace message
+     * @param format    the format string for the trace message
      * @param arguments the arguments to be replaced in the format string
      */
     @Override
@@ -183,8 +208,8 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
      * Logs a trace message with the specified marker, message, and throwable.
      *
      * @param marker the marker associated with the log message (nullable)
-     * @param msg the log message
-     * @param t the throwable to be logged (nullable)
+     * @param msg    the log message
+     * @param t      the throwable to be logged (nullable)
      */
     @Override
     public void trace(final Marker marker, final String msg, final Throwable t) {
@@ -193,7 +218,8 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
 
     /**
      * Returns a boolean value indicating whether the debug mode is enabled.
-     * This method checks if the logger associated with the current instance is in debug mode.
+     * This method checks if the logger associated with the current instance is in
+     * debug mode.
      *
      * @return true if debug mode is enabled, false otherwise
      */
@@ -215,11 +241,12 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     /**
      * Logs a debug message with a single argument.
      *
-     * This method takes a formatting string, along with an argument, and formats them using the MessageFormatter class.
+     * This method takes a formatting string, along with an argument, and formats
+     * them using the MessageFormatter class.
      * The formatted message is then logged as a debug message.
      *
-     * @param format   the formatting string for the message
-     * @param arg      the argument to be included in the message
+     * @param format the formatting string for the message
+     * @param arg    the argument to be included in the message
      */
     @Override
     public void debug(final String format, final Object arg) {
@@ -228,12 +255,13 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
 
     /**
      * Logs a debug message with two arguments.
-     * This method formats the arguments using the specified format and passes them to the debug method
+     * This method formats the arguments using the specified format and passes them
+     * to the debug method
      * that takes a single argument.
      *
      * @param format the format string for the debug message
-     * @param arg1 the first argument to be formatted and logged
-     * @param arg2 the second argument to be formatted and logged
+     * @param arg1   the first argument to be formatted and logged
+     * @param arg2   the second argument to be formatted and logged
      */
     @Override
     public void debug(final String format, final Object arg1, final Object arg2) {
@@ -241,9 +269,10 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     }
 
     /**
-     * Formats a debug message using the given format string and arguments, and then logs it.
+     * Formats a debug message using the given format string and arguments, and then
+     * logs it.
      *
-     * @param format the format string for the debug message
+     * @param format    the format string for the debug message
      * @param arguments the arguments to be inserted into the format string
      */
     @Override
@@ -257,7 +286,7 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
      * the message, labels, and the throwable.
      *
      * @param msg the message to be printed
-     * @param t the throwable to be printed along with the message
+     * @param t   the throwable to be printed along with the message
      */
     @Override
     public void debug(final String msg, final Throwable t) {
@@ -268,7 +297,8 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
      * Returns whether debug logging is enabled for the specified marker.
      *
      * @param marker the marker to check if debug logging is enabled for
-     * @return true if debug logging is enabled for the specified marker, false otherwise
+     * @return true if debug logging is enabled for the specified marker, false
+     *         otherwise
      */
     @Override
     public boolean isDebugEnabled(final Marker marker) {
@@ -301,8 +331,8 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
      *
      * @param marker the marker to associate with the debug message
      * @param format the format string for the debug message
-     * @param arg the argument to be formatted and included in the debug message
-     * (no return value)
+     * @param arg    the argument to be formatted and included in the debug message
+     *               (no return value)
      */
     @Override
     public void debug(final Marker marker, final String format, final Object arg) {
@@ -310,13 +340,15 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     }
 
     /**
-     * This method is used to log debug messages with a specified marker, format, arg1, and arg2.
-     * It calls the debug method with the marker and the formatted message as arguments.
+     * This method is used to log debug messages with a specified marker, format,
+     * arg1, and arg2.
+     * It calls the debug method with the marker and the formatted message as
+     * arguments.
      *
      * @param marker the marker associated with the debug message
      * @param format the format of the debug message
-     * @param arg1 the first argument to be formatted in the debug message
-     * @param arg2 the second argument to be formatted in the debug message
+     * @param arg1   the first argument to be formatted in the debug message
+     * @param arg2   the second argument to be formatted in the debug message
      */
     @Override
     public void debug(final Marker marker, final String format, final Object arg1, final Object arg2) {
@@ -326,11 +358,13 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     /**
      * This method is used to log debug messages with a specified marker and format.
      * It takes in a marker, a format string, and a variable number of arguments.
-     * The format string is used to format the message with the specified arguments using MessageFormatter.
-     * The formatted message is then logged as a debug message with the specified marker.
+     * The format string is used to format the message with the specified arguments
+     * using MessageFormatter.
+     * The formatted message is then logged as a debug message with the specified
+     * marker.
      *
-     * @param marker - the marker for the log message
-     * @param format - the format string for the message
+     * @param marker    - the marker for the log message
+     * @param format    - the format string for the message
      * @param arguments - the arguments to be formatted into the message
      */
     @Override
@@ -342,8 +376,8 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
      * Debugs a log message with an optional marker and throwable.
      *
      * @param marker - the marker to associate with the log message (optional)
-     * @param msg - the log message to be debugged
-     * @param t - the throwable to be included in the log message (optional)
+     * @param msg    - the log message to be debugged
+     * @param t      - the throwable to be included in the log message (optional)
      */
     @Override
     public void debug(final Marker marker, final String msg, final Throwable t) {
@@ -353,7 +387,8 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     /**
      * Checks whether the logger level for 'info' messages is enabled.
      *
-     * @return true if the logger level for 'info' messages is enabled, false otherwise.
+     * @return true if the logger level for 'info' messages is enabled, false
+     *         otherwise.
      */
     @Override
     public boolean isInfoEnabled() {
@@ -378,7 +413,7 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
      * logs the resulting message as an informational message.
      *
      * @param format the message format string
-     * @param arg the argument to be substituted in the message format
+     * @param arg    the argument to be substituted in the message format
      */
     @Override
     public void info(final String format, final Object arg) {
@@ -389,8 +424,8 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
      * Logs a message at the INFO level with two arguments.
      *
      * @param format the message format string
-     * @param arg1 the first argument
-     * @param arg2 the second argument
+     * @param arg1   the first argument
+     * @param arg2   the second argument
      */
     @Override
     public void info(final String format, final Object arg1, final Object arg2) {
@@ -400,12 +435,15 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     /**
      * Logs an info message with a specific format and arguments.
      *
-     * This method takes a format string and variable number of arguments to create an info message,
-     * using the MessageFormatter.format() method from the MessageFormatter class. The resulting message
+     * This method takes a format string and variable number of arguments to create
+     * an info message,
+     * using the MessageFormatter.format() method from the MessageFormatter class.
+     * The resulting message
      * is then passed to the info() method of the current object to be logged.
      *
-     * @param format the format string for the info message
-     * @param arguments the variable number of arguments to be formatted into the message
+     * @param format    the format string for the info message
+     * @param arguments the variable number of arguments to be formatted into the
+     *                  message
      */
     @Override
     public void info(final String format, final Object... arguments) {
@@ -414,10 +452,11 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
 
     /**
      * Logs an informational message with an optional throwable.
-     * This method appends the given message, the current labels, and the exception information to the logger, using the info level.
+     * This method appends the given message, the current labels, and the exception
+     * information to the logger, using the info level.
      *
      * @param msg The message to be logged.
-     * @param t Optional Throwable object representing an exception to be logged..
+     * @param t   Optional Throwable object representing an exception to be logged..
      */
     @Override
     public void info(final String msg, final Throwable t) {
@@ -425,8 +464,10 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     }
 
     /**
-     * Checks if the given marker is enabled for the INFO level. This is a wrapper method
-     * that delegates the call to the underlying logger's isInfoEnabled() method with the provided marker.
+     * Checks if the given marker is enabled for the INFO level. This is a wrapper
+     * method
+     * that delegates the call to the underlying logger's isInfoEnabled() method
+     * with the provided marker.
      *
      * @param marker the marker to check if enabled for INFO level
      * @return true if the marker is enabled for INFO level, false otherwise
@@ -437,17 +478,18 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     }
 
     /**
-    * Logs an information message with the specified marker and message.
-    *
-    * @param marker the marker object to associate with the log message
-    * @param msg the information message to be logged
-    *
-    * Parameters:
-    * - marker (Marker): the marker object to associate with the log message
-    * - msg (String): the information message to be logged
-    *
-    * Return value: void
-    */
+     * Logs an information message with the specified marker and message.
+     *
+     * @param marker the marker object to associate with the log message
+     * @param msg    the information message to be logged
+     *
+     *               Parameters:
+     *               - marker (Marker): the marker object to associate with the log
+     *               message
+     *               - msg (String): the information message to be logged
+     *
+     *               Return value: void
+     */
     @Override
     public void info(final Marker marker, final String msg) {
         this.logger.info(marker, msg, this.labels.get());
@@ -456,12 +498,13 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     /**
      * Logs an INFO level message with the specified marker, format, and argument.
      *
-     * This method formats the message using the specified format and argument using the MessageFormatter class.
+     * This method formats the message using the specified format and argument using
+     * the MessageFormatter class.
      * Then it calls the info method with the generated message.
      *
      * @param marker the marker to be associated with the log message
      * @param format the format of the log message
-     * @param arg the argument to be included in the log message
+     * @param arg    the argument to be included in the log message
      */
     @Override
     public void info(final Marker marker, final String format, final Object arg) {
@@ -469,13 +512,16 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     }
 
     /**
-     * Logs a message at the INFO level with the specified marker, format, and two arguments.
-     * Calls the {@code info} method with the transformed message obtained by formatting the specified format and arguments using the MessageFormatter class.
+     * Logs a message at the INFO level with the specified marker, format, and two
+     * arguments.
+     * Calls the {@code info} method with the transformed message obtained by
+     * formatting the specified format and arguments using the MessageFormatter
+     * class.
      *
      * @param marker the marker to associate with the log message
      * @param format the format string for the log message
-     * @param arg1 the first argument to be formatted in the log message
-     * @param arg2 the second argument to be formatted in the log message
+     * @param arg1   the first argument to be formatted in the log message
+     * @param arg2   the second argument to be formatted in the log message
      */
     @Override
     public void info(final Marker marker, final String format, final Object arg1, final Object arg2) {
@@ -483,12 +529,14 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     }
 
     /**
-     * Logs an informational message with the given marker and format. This method uses MessageFormatter to format the
-     * message with the provided arguments and then calls the info method with the marker and formatted message.
+     * Logs an informational message with the given marker and format. This method
+     * uses MessageFormatter to format the
+     * message with the provided arguments and then calls the info method with the
+     * marker and formatted message.
      *
-     * @param marker     the marker associated with the log message
-     * @param format     the format string for the log message
-     * @param arguments  the arguments to be formatted with the format string
+     * @param marker    the marker associated with the log message
+     * @param format    the format string for the log message
+     * @param arguments the arguments to be formatted with the format string
      */
     @Override
     public void info(final Marker marker, final String format, final Object... arguments) {
@@ -499,8 +547,8 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
      * Sends an info log message with the specified marker, message, and exception.
      *
      * @param marker The marker associated with the log message.
-     * @param msg The log message to be sent.
-     * @param t The exception associated with the log message.
+     * @param msg    The log message to be sent.
+     * @param t      The exception associated with the log message.
      */
     @Override
     public void info(final Marker marker, final String msg, final Throwable t) {
@@ -520,7 +568,8 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
 
     /**
      * Logs a warning message using the logger instance.
-     * The message is formatted with the provided arguments and the logger level is set to WARNING.
+     * The message is formatted with the provided arguments and the logger level is
+     * set to WARNING.
      *
      * @param msg the warning message to be logged
      */
@@ -534,7 +583,7 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
      * logs it to the appropriate destination.
      *
      * @param format the format string specifying the content of the warning message
-     * @param arg the object argument to be formatted and included in the message
+     * @param arg    the object argument to be formatted and included in the message
      */
     @Override
     public void warn(final String format, final Object arg) {
@@ -545,8 +594,8 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
      * Sends a warning message with the given format and arguments.
      *
      * @param format the format string for the warning message
-     * @param arg1 the first argument to be included in the warning message
-     * @param arg2 the second argument to be included in the warning message
+     * @param arg1   the first argument to be included in the warning message
+     * @param arg2   the second argument to be included in the warning message
      */
     @Override
     public void warn(final String format, final Object arg1, final Object arg2) {
@@ -556,12 +605,15 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     /**
      * Logs a warning message with the specified format and arguments.
      * <p>
-     * This method formats the warning message by using the {@link MessageFormatter} class. It takes the
-     * provided format string and arguments, substitutes the arguments into the string, and retrieves the
-     * formatted message. The resulting formatted message is then logged as a warning using the {@link Logger}.
+     * This method formats the warning message by using the {@link MessageFormatter}
+     * class. It takes the
+     * provided format string and arguments, substitutes the arguments into the
+     * string, and retrieves the
+     * formatted message. The resulting formatted message is then logged as a
+     * warning using the {@link Logger}.
      * </p>
      *
-     * @param format the format string for the warning message
+     * @param format    the format string for the warning message
      * @param arguments the arguments to be substituted into the format string
      *
      * @throws IllegalArgumentException if the format string is null
@@ -581,7 +633,7 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
      * provide additional context or stack trace information.
      *
      * @param msg the warning message to be logged
-     * @param t the optional exception to be logged
+     * @param t   the optional exception to be logged
      */
     @Override
     public void warn(final String msg, final Throwable t) {
@@ -595,7 +647,8 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
      * logger.isWarnEnabled() method with the specified marker.
      *
      * @param marker the marker to be checked
-     * @return true if the warn level is enabled for this logger instance, false otherwise
+     * @return true if the warn level is enabled for this logger instance, false
+     *         otherwise
      */
     @Override
     public boolean isWarnEnabled(final Marker marker) {
@@ -604,11 +657,12 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
 
     /**
      * Writes a warning message to the logger with a specific marker and a message.
-     * The warning message is written by invoking the warn method of the logger object,
+     * The warning message is written by invoking the warn method of the logger
+     * object,
      * passing the marker, message, and the labels as arguments.
      *
      * @param marker the marker associated with the log message
-     * @param msg the warning message to be logged
+     * @param msg    the warning message to be logged
      */
     @Override
     public void warn(final Marker marker, final String msg) {
@@ -617,12 +671,13 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
 
     /**
      * Logs a warning message with a specific marker.
-     * The message is generated by formatting the given format string using the given argument.
+     * The message is generated by formatting the given format string using the
+     * given argument.
      * This method then delegates to the warn method to log the actual message.
      *
      * @param marker the marker associated with the warning message
      * @param format the format string used to generate the warning message
-     * @param arg the argument used to format the warning message
+     * @param arg    the argument used to format the warning message
      */
     @Override
     public void warn(final Marker marker, final String format, final Object arg) {
@@ -630,14 +685,15 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     }
 
     /**
-     * Generates a log message at the WARNING level with a marker, a format and two arguments.
+     * Generates a log message at the WARNING level with a marker, a format and two
+     * arguments.
      * The method formats the log message using the given format and arguments,
      * then calls the warn method with the marker and the formatted message.
      *
      * @param marker the marker associated with the log message
      * @param format the format string for the log message
-     * @param arg1 the first argument to be formatted in the log message
-     * @param arg2 the second argument to be formatted in the log message
+     * @param arg1   the first argument to be formatted in the log message
+     * @param arg2   the second argument to be formatted in the log message
      */
     @Override
     public void warn(final Marker marker, final String format, final Object arg1, final Object arg2) {
@@ -645,14 +701,16 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     }
 
     /**
-     * Logs a warning message with the specified marker, format string, and arguments.
+     * Logs a warning message with the specified marker, format string, and
+     * arguments.
      *
-     * This method formats the message using the specified format string and arguments
+     * This method formats the message using the specified format string and
+     * arguments
      * and then delegates the logging to the 'warn' method that logs the formatted
      * message with the specified marker.
      *
-     * @param marker The marker associated with the warning.
-     * @param format The format string for the warning message.
+     * @param marker    The marker associated with the warning.
+     * @param format    The format string for the warning message.
      * @param arguments The arguments to be used in the format string.
      */
     @Override
@@ -663,9 +721,9 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     /**
      * Logs a warning message with an optional marker and an exception.
      *
-     * @param marker   The marker object associated with the log message (optional).
-     * @param msg      The warning message to be logged.
-     * @param t        The exception to be logged.
+     * @param marker The marker object associated with the log message (optional).
+     * @param msg    The warning message to be logged.
+     * @param t      The exception to be logged.
      */
     @Override
     public void warn(final Marker marker, final String msg, final Throwable t) {
@@ -673,7 +731,8 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     }
 
     /**
-     * Returns a boolean value indicating whether error level logging is enabled for this logger.
+     * Returns a boolean value indicating whether error level logging is enabled for
+     * this logger.
      *
      * @return true if error level logging is enabled, false otherwise
      */
@@ -694,11 +753,12 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
 
     /**
      * Logs an error message with a formatted string and an argument.
-     * The method takes a format string and an argument, formats the message using MessageFormatter,
+     * The method takes a format string and an argument, formats the message using
+     * MessageFormatter,
      * and then logs the formatted message as an error.
      *
      * @param format the string format for the error message
-     * @param arg the argument to be inserted into the format string
+     * @param arg    the argument to be inserted into the format string
      */
     @Override
     public void error(final String format, final Object arg) {
@@ -708,11 +768,13 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     /**
      * Formats a message and passes it to the error method.
      *
-     * This method takes a format string and two arguments, and uses the MessageFormatter.format() method to format the message using the given format and arguments. The formatted message is then passed to the error method.
+     * This method takes a format string and two arguments, and uses the
+     * MessageFormatter.format() method to format the message using the given format
+     * and arguments. The formatted message is then passed to the error method.
      *
      * @param format the format string to be used for message formatting
-     * @param arg1 the first argument to be included in the formatted message
-     * @param arg2 the second argument to be included in the formatted message
+     * @param arg1   the first argument to be included in the formatted message
+     * @param arg2   the second argument to be included in the formatted message
      */
     @Override
     public void error(final String format, final Object arg1, final Object arg2) {
@@ -721,12 +783,15 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
 
     /**
      * Logs an error message with placeholders and arguments.
-     * This method formats the given error message using the provided format string and arguments,
+     * This method formats the given error message using the provided format string
+     * and arguments,
      * and then logs the resulting message as an error.
      *
-     * @param format - the format string for the error message, containing placeholders for
-     *        the arguments in the form of "{}"
-     * @param arguments - the objects to be substituted in the placeholders of the format string
+     * @param format    - the format string for the error message, containing
+     *                  placeholders for
+     *                  the arguments in the form of "{}"
+     * @param arguments - the objects to be substituted in the placeholders of the
+     *                  format string
      */
     @Override
     public void error(final String format, final Object... arguments) {
@@ -736,16 +801,22 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     /**
      * Logs an error message with an associated throwable.
      *
-     * This method logs an error message along with an optional throwable. The error message
-     * is provided as a parameter 'msg'. The associated throwable (if any) is provided as a
-     * parameter 't'. The error is logged using the logger's 'error' method, with the error
-     * message as the first argument. The logger's labels are also included in the log message,
-     * obtained from the 'labels' field of the class. If a throwable is provided, it is wrapped
-     * in a key-value pair with the key 'exception' and included in the log message using the
+     * This method logs an error message along with an optional throwable. The error
+     * message
+     * is provided as a parameter 'msg'. The associated throwable (if any) is
+     * provided as a
+     * parameter 't'. The error is logged using the logger's 'error' method, with
+     * the error
+     * message as the first argument. The logger's labels are also included in the
+     * log message,
+     * obtained from the 'labels' field of the class. If a throwable is provided, it
+     * is wrapped
+     * in a key-value pair with the key 'exception' and included in the log message
+     * using the
      * logger's 'error' method.
      *
-     * @param msg          the error message to be logged
-     * @param t            the throwable associated with the error (may be null)
+     * @param msg the error message to be logged
+     * @param t   the throwable associated with the error (may be null)
      */
     @Override
     public void error(final String msg, final Throwable t) {
@@ -765,10 +836,11 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     }
 
     /**
-     * Overrides the error method of the logger to log an error message with a specific marker and message.
+     * Overrides the error method of the logger to log an error message with a
+     * specific marker and message.
      *
      * @param marker the marker to associate with the error message
-     * @param msg the error message to be logged
+     * @param msg    the error message to be logged
      */
     @Override
     public void error(final Marker marker, final String msg) {
@@ -781,7 +853,7 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
      *
      * @param marker the marker used as a reference for the error
      * @param format the format of the error message
-     * @param arg the argument to be included in the error message
+     * @param arg    the argument to be included in the error message
      * @throws IllegalArgumentException if the format is invalid
      */
     @Override
@@ -790,14 +862,16 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
     }
 
     /**
-     * Logs an error message with the specified marker, format string, and arguments.
-     * The format string can contain placeholders that will be replaced by the provided arguments.
+     * Logs an error message with the specified marker, format string, and
+     * arguments.
+     * The format string can contain placeholders that will be replaced by the
+     * provided arguments.
      * The formatted message will be logged as an error.
      *
-     * @param marker   the marker associated with the error message
-     * @param format   the format string for the error message
-     * @param arg1     the first argument to be replaced in the format string
-     * @param arg2     the second argument to be replaced in the format string
+     * @param marker the marker associated with the error message
+     * @param format the format string for the error message
+     * @param arg1   the first argument to be replaced in the format string
+     * @param arg2   the second argument to be replaced in the format string
      */
     @Override
     public void error(final Marker marker, final String format, final Object arg1, final Object arg2) {
@@ -806,12 +880,14 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
 
     /**
      * Logs an error message with a marker, using the given format and arguments.
-     * The format string can contain placeholder "{}" that will be replaced by the values in the arguments array.
+     * The format string can contain placeholder "{}" that will be replaced by the
+     * values in the arguments array.
      * The formatted message will be passed to a logger with an error level.
      *
      * @param marker    the marker associated with the error message
      * @param format    the format string of the error message
-     * @param arguments the arguments to fill in the placeholders in the format string
+     * @param arguments the arguments to fill in the placeholders in the format
+     *                  string
      */
     @Override
     public void error(final Marker marker, final String format, final Object... arguments) {
@@ -822,8 +898,8 @@ public class LoggerJsonWithLabels implements LoggerWithLabels {
      * Logs an error message with an associated marker and optional throwable.
      *
      * @param marker the marker associated with the error message
-     * @param msg the error message to be logged
-     * @param t the optional throwable to be logged
+     * @param msg    the error message to be logged
+     * @param t      the optional throwable to be logged
      */
     @Override
     public void error(final Marker marker, final String msg, final Throwable t) {
