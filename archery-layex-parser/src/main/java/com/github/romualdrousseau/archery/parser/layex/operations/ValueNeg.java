@@ -1,14 +1,21 @@
 package com.github.romualdrousseau.archery.parser.layex.operations;
 
 import com.github.romualdrousseau.archery.base.Symbol;
+import com.github.romualdrousseau.archery.parser.layex.Layex;
 import com.github.romualdrousseau.archery.parser.layex.Lexer;
 import com.github.romualdrousseau.archery.parser.layex.TableMatcher;
 import com.github.romualdrousseau.archery.parser.layex.TableParser;
 
 public class ValueNeg implements TableMatcher {
 
-    public ValueNeg(final String v) {
+    public ValueNeg(final Layex layex, final String v) {
+        this.layex = layex;
         this.v = v.toLowerCase();
+    }
+
+    @Override
+    public Layex getLayex() {
+        return this.layex;
     }
 
     @Override
@@ -30,5 +37,6 @@ public class ValueNeg implements TableMatcher {
         return "!VALUE('" + this.v + "')";
     }
 
+    private final Layex layex;
     private final String v;
 }

@@ -1,13 +1,20 @@
 package com.github.romualdrousseau.archery.parser.layex.operations;
 
 import com.github.romualdrousseau.archery.base.Symbol;
+import com.github.romualdrousseau.archery.parser.layex.Layex;
 import com.github.romualdrousseau.archery.parser.layex.Lexer;
 import com.github.romualdrousseau.archery.parser.layex.TableMatcher;
 import com.github.romualdrousseau.archery.parser.layex.TableParser;
 
 public class Nop implements TableMatcher {
 
-    public Nop() {
+    public Nop(final Layex layex) {
+        this.layex = layex;
+    }
+
+    @Override
+    public Layex getLayex() {
+        return this.layex;
     }
 
     @Override
@@ -19,4 +26,6 @@ public class Nop implements TableMatcher {
     public String toString() {
         return "NOP";
     }
-  }
+
+    private final Layex layex;
+}

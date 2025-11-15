@@ -1,11 +1,23 @@
 package com.github.romualdrousseau.archery.parser.layex.operations;
 
 import com.github.romualdrousseau.archery.base.Symbol;
+import com.github.romualdrousseau.archery.parser.layex.Layex;
 import com.github.romualdrousseau.archery.parser.layex.Lexer;
 import com.github.romualdrousseau.archery.parser.layex.TableMatcher;
 import com.github.romualdrousseau.archery.parser.layex.TableParser;
 
 public class Literal implements TableMatcher {
+
+    private Layex layex;
+
+    public TableMatcher setLayex(Layex layex) {
+        this.layex = layex;
+        return this;
+    }
+
+    public Layex getLayex() {
+        return this.layex;
+    }
 
     public Literal(final String v) {
         this.v = v;

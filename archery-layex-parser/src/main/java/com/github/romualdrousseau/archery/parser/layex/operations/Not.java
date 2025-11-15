@@ -3,14 +3,21 @@ package com.github.romualdrousseau.archery.parser.layex.operations;
 import java.util.LinkedList;
 
 import com.github.romualdrousseau.archery.base.Symbol;
+import com.github.romualdrousseau.archery.parser.layex.Layex;
 import com.github.romualdrousseau.archery.parser.layex.Lexer;
 import com.github.romualdrousseau.archery.parser.layex.TableMatcher;
 import com.github.romualdrousseau.archery.parser.layex.TableParser;
 
 public class Not implements TableMatcher {
 
-    public Not(final LinkedList<TableMatcher> stack) {
+    public Not(final Layex layex, final LinkedList<TableMatcher> stack, int a) {
+        this.layex = layex;
         this.a = stack.pop();
+    }
+
+    @Override
+    public Layex getLayex() {
+        return this.layex;
     }
 
     @Override
@@ -23,9 +30,11 @@ public class Not implements TableMatcher {
         return "NOT(" + this.a + ")";
     }
 
-    private static final <S extends Symbol, C> boolean omatch(final Lexer<S, C> stream, final TableParser<S> context, final TableMatcher a) {
+    private static final <S extends Symbol, C> boolean omatch(final Lexer<S, C> stream, final TableParser<S> context,
+            final TableMatcher a) {
         return a instanceof Nop || a.match(stream, context);
     }
 
+    private final Layex layex;
     private final TableMatcher a;
 }
