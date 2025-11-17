@@ -79,8 +79,8 @@ update-deps:
     mvn -DcreateChecksum=true -DprocessDependencyManagement=false versions:display-dependency-updates
 
 # Copy dependencies
-copy-deps outdir='$PWD/target/jars':
-    mvn dependency:copy-dependencies -DoutputDirectory={{outdir}}
+copy-deps outdir='$PWD/target/jars': install
+    mvn -DoutputDirectory={{outdir}} dependency:copy-dependencies
 
 @copy-pdfs:
     cp ./archery-documents/whitepapers/Semi-structured\ Document\ Feature\ Extraction/misc/main.pdf ./archery-documents/docs/resources/feature-extraction.pdf

@@ -2,6 +2,8 @@ package com.github.romualdrousseau.archery;
 
 import java.util.List;
 
+import com.github.romualdrousseau.archery.commons.preprocessing.Text;
+
 public interface TagClassifier extends AutoCloseable {
 
     enum TagStyle {
@@ -25,4 +27,6 @@ public interface TagClassifier extends AutoCloseable {
     TagClassifier setLexicon(final List<String> lexion);
 
     String ensureTagStyle(final String text);
+
+    Text.ITokenizer getTagTokenizer();
 }

@@ -86,7 +86,7 @@ public class DbfDocument extends BaseDocument {
     private boolean openWithEncoding(final File dbfFile, final String encoding, final String sheetName) {
         try {
             final var reader = new DBFReader(new FileInputStream(dbfFile), Charset.forName(encoding));
-            this.sheet = new DbfSheet(sheetName, reader);
+            this.sheet = new DbfSheet(this, sheetName, reader);
             return true;
         } catch (final IOException | UnsupportedCharsetException x) {
             return false;

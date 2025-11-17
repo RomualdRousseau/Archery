@@ -67,21 +67,6 @@ public class IntelliTable extends DataTable {
         return new IntelliRow(this, rowIndex, this.rows.getRow(rowIndex));
     }
 
-    @Override
-    public void to_arrow(final String filePath) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void to_csv(final String filePath) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void to_json(final String filePath) {
-        throw new UnsupportedOperationException();
-    }
-
     private HashSet<String> collectPivotEntryTypes(final BaseTableGraph root) {
         final var pivotEntryTypes = new HashSet<String>();
         root.parse(e -> e.getTable().headers()
