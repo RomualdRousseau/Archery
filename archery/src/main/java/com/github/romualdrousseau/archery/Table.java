@@ -27,4 +27,10 @@ public interface Table extends Closeable {
     Iterable<Header> headerTags();
 
     void updateHeaderTags();
+
+    void to_arrow(final String filePath);
+
+    void to_csv(final String filePath);
+
+    void to_json(final String filePath);
 }

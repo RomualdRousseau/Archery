@@ -21,6 +21,7 @@ import com.github.romualdrousseau.archery.event.AllTablesExtractedEvent;
 import com.github.romualdrousseau.archery.event.DataTableListBuiltEvent;
 import com.github.romualdrousseau.archery.event.MetaTableListBuiltEvent;
 import com.github.romualdrousseau.archery.event.SheetPreparedEvent;
+import com.github.romualdrousseau.archery.event.SheetReadyEvent;
 import com.github.romualdrousseau.archery.event.TableGraphBuiltEvent;
 import com.github.romualdrousseau.archery.event.TableReadyEvent;
 import com.github.romualdrousseau.archery.intelli.IntelliTable;
@@ -101,6 +102,10 @@ public class BaseSheet implements Sheet {
             return Optional.empty();
         }
 
+        if (!this.notifyStepCompleted(new SheetReadyEvent(this))) {
+            return Optional.empty();
+        }
+
         // Apply transformations
 
         final SheetParser sheetParser;
@@ -175,9 +180,10 @@ public class BaseSheet implements Sheet {
             return Optional.empty();
         }
 
-        final DataTable table = this.isIntelliEnabled() && this.document.getHints().contains(Document.Hint.INTELLI_LAYOUT)
-                ? new IntelliTable(this, (BaseTableGraph) root.get(), this.autoHeaderNameEnabled)
-                : (DataTable) root.get().getTable();
+        final DataTable table = this.isIntelliEnabled()
+                && this.document.getHints().contains(Document.Hint.INTELLI_LAYOUT)
+                        ? new IntelliTable(this, (BaseTableGraph) root.get(), this.autoHeaderNameEnabled)
+                        : (DataTable) root.get().getTable();
 
         // Tag headers
 

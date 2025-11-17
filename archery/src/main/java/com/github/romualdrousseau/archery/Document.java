@@ -8,7 +8,8 @@ public interface Document extends AutoCloseable {
     enum Hint {
         INTELLI_EXTRACT,
         INTELLI_LAYOUT,
-        INTELLI_TAG
+        INTELLI_TAG,
+        INTELLI_TIME
     }
 
     SheetParser getSheetParser();

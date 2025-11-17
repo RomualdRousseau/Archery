@@ -118,10 +118,6 @@ public class BaseTable implements Table, Visitable {
     }
 
     @Override
-    public void updateHeaderTags() {
-    }
-
-    @Override
     public int getNumberOfHeaderTags() {
         return 0;
     }
@@ -129,6 +125,25 @@ public class BaseTable implements Table, Visitable {
     @Override
     public Iterable<Header> headerTags() {
         return null;
+    }
+
+    @Override
+    public void updateHeaderTags() {
+    }
+
+    @Override
+    public void to_arrow(final String filePath) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void to_csv(final String filePath) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void to_json(final String filePath) {
+        throw new UnsupportedOperationException();
     }
 
     public int getFirstColumn() {

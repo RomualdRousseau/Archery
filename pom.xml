@@ -75,7 +75,7 @@
         <zip4j.version>2.11.5</zip4j.version>
         <!-- Convergences -->
         <avro.version>1.12.1</avro.version>
-        <bcprov-jdk18on.version>1.82</bcprov-jdk18on.version>
+        <bc-jdk18on.version>1.82</bc-jdk18on.version>
         <classgraph.version>4.8.184</classgraph.version>
         <commons-cli.version>1.11.0</commons-cli.version>
         <commons-codec.version>1.20.0</commons-codec.version>
@@ -545,7 +545,12 @@
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk18on</artifactId>
-                <version>${bcprov-jdk18on.version}</version>
+                <version>${bc-jdk18on.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcmail-jdk18on</artifactId>
+                <version>${bc-jdk18on.version}</version>
             </dependency>
             <dependency>
                 <groupId>dnsjava</groupId>

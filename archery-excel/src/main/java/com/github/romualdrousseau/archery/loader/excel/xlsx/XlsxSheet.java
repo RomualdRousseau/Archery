@@ -9,6 +9,7 @@ import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
+import com.github.romualdrousseau.archery.Document;
 import com.github.romualdrousseau.archery.base.PatcheableSheetStore;
 import com.github.romualdrousseau.archery.commons.collections.DataFrame;
 import com.github.romualdrousseau.archery.commons.collections.DataFrameWriter;
@@ -25,6 +26,7 @@ public class XlsxSheet extends PatcheableSheetStore implements Closeable {
 
     private static final int BATCH_SIZE = 50000;
 
+    private final XlsxDocument document;
     private final String name;
     private final InputStream sheetData;
     private final StylesTable styles;
@@ -35,8 +37,10 @@ public class XlsxSheet extends PatcheableSheetStore implements Closeable {
     private DataFrame rows;
     private boolean dataLoaded;
 
-    public XlsxSheet(final String name, final InputStream sheetData, final SharedStrings sharedStrings,
+    public XlsxSheet(final XlsxDocument document, final String name, final InputStream sheetData,
+            final SharedStrings sharedStrings,
             final StylesTable styles) {
+        this.document = document;
         this.name = name;
         this.sheetData = sheetData;
         this.sharedStrings = sharedStrings;
@@ -62,7 +66,8 @@ public class XlsxSheet extends PatcheableSheetStore implements Closeable {
         try (final var writer = new DataFrameWriter(BATCH_SIZE)) {
             final var parserFactory = SAXParserFactory.newInstance();
             final var parser = parserFactory.newSAXParser().getXMLReader();
-            final var contentHandler = new ContentHandler(writer, this.sharedStrings, this.styles);
+            final var timeSupport = this.document.getHints().contains(Document.Hint.INTELLI_TIME);
+            final var contentHandler = new ContentHandler(writer, this.sharedStrings, this.styles, timeSupport);
             parser.setContentHandler(contentHandler);
             parser.parse(new InputSource(this.sheetData));
             this.mergedRegions = contentHandler.getMergesRegions();

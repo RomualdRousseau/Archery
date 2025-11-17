@@ -70,7 +70,7 @@ public class XlsxDocument extends BaseDocument {
             final var it = (SheetIterator) reader.getSheetsData();
             while (it.hasNext()) {
                 final InputStream sheetData = it.next();
-                this.sheets.add(new XlsxSheet(it.getSheetName(), sheetData, sharedStrings, styles));
+                this.sheets.add(new XlsxSheet(this, it.getSheetName(), sheetData, sharedStrings, styles));
             }
 
             return this.sheets.size() > 0;
