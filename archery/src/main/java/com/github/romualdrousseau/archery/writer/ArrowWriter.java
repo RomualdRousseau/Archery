@@ -23,7 +23,7 @@ import com.github.romualdrousseau.archery.commons.strings.StringUtils;
 
 public class ArrowWriter {
 
-    private static final int BATCH_SIZE = 1024;
+    private static final int BATCH_SIZE = 65536;
 
     private final BaseTable table;
 
@@ -32,26 +32,27 @@ public class ArrowWriter {
     }
 
     public void write(final String outputFilePath) throws IOException {
-        try (final var allocator = new RootAllocator();
+        try (
+                final var allocator = new RootAllocator();
                 final var out = new FileOutputStream(outputFilePath)) {
 
             // 1) Build Arrow schema from your framework schema
 
-            final var arrowSchema = buildArrowSchema(table.headers());
+            final var arrowSchema = this.buildArrowSchema(table.headers());
 
             // 2) Create vectors for each field
 
             final var fields = arrowSchema.getFields();
             final var vectors = new ArrayList<FieldVector>();
-
-            for (final Field field : fields) {
-                final FieldVector vector = field.createVector(allocator);
+            for (final var field : fields) {
+                final var vector = field.createVector(allocator);
                 vector.setInitialCapacity(BATCH_SIZE);
                 vector.allocateNew();
                 vectors.add(vector);
             }
 
-            try (final var root = new VectorSchemaRoot(fields, vectors, 0);
+            try (
+                    final var root = new VectorSchemaRoot(fields, vectors, 0);
                     final var writer = new ArrowStreamWriter(root, null, out)) {
 
                 writer.start();
@@ -85,7 +86,9 @@ public class ArrowWriter {
                 }
 
                 writer.end();
-                for (final FieldVector v : vectors) {
+
+            } finally {
+                for (final var v : vectors) {
                     v.close();
                 }
             }
@@ -110,7 +113,7 @@ public class ArrowWriter {
         return new Schema(arrowFields);
     }
 
-    private void setValue(final FieldVector vector, final int index, final Object value) {
+    private void setValue(final FieldVector vector, final int index, final String value) {
         if (value == null) {
             vector.setNull(index);
             return;
@@ -119,9 +122,7 @@ public class ArrowWriter {
         ((VarCharVector) vector).setSafe(index, bytes);
     }
 
-    private void flushBatch(final VectorSchemaRoot root,
-            final List<FieldVector> vectors,
-            final int rowCount,
+    private void flushBatch(final VectorSchemaRoot root, final List<FieldVector> vectors, final int rowCount,
             final ArrowStreamWriter writer) throws IOException {
 
         root.setRowCount(rowCount);
@@ -135,7 +136,7 @@ public class ArrowWriter {
         // Reuse vectors for the next batch: reset but keep allocated memory
         for (final FieldVector v : vectors) {
             v.reset();
-            v.setInitialCapacity(BATCH_SIZE);
+            // v.setInitialCapacity(BATCH_SIZE);
         }
     }
 }
