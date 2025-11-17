@@ -8,6 +8,9 @@ import java.util.Map;
 import com.github.romualdrousseau.archery.Header;
 import com.github.romualdrousseau.archery.Row;
 import com.github.romualdrousseau.archery.Table;
+import com.github.romualdrousseau.archery.writer.ArrowWriter;
+import com.github.romualdrousseau.archery.writer.CsvWriter;
+import com.github.romualdrousseau.archery.writer.JsonWriter;
 
 public class BaseTable implements Table, Visitable {
 
@@ -132,18 +135,18 @@ public class BaseTable implements Table, Visitable {
     }
 
     @Override
-    public void to_arrow(final String filePath) {
-        throw new UnsupportedOperationException();
+    public void to_arrow(final String filePath) throws IOException {
+        new ArrowWriter(this).write(filePath);
     }
 
     @Override
-    public void to_csv(final String filePath) {
-        throw new UnsupportedOperationException();
+    public void to_csv(final String filePath) throws IOException {
+        new CsvWriter(this).write(filePath);
     }
 
     @Override
-    public void to_json(final String filePath) {
-        throw new UnsupportedOperationException();
+    public void to_json(final String filePath) throws IOException {
+        new JsonWriter(this).write(filePath);
     }
 
     public int getFirstColumn() {

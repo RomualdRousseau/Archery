@@ -1,6 +1,7 @@
 package com.github.romualdrousseau.archery;
 
 import java.io.Closeable;
+import java.io.IOException;
 
 public interface Table extends Closeable {
 
@@ -28,9 +29,9 @@ public interface Table extends Closeable {
 
     void updateHeaderTags();
 
-    void to_arrow(final String filePath);
+    void to_arrow(final String outputfilePath) throws IOException;
 
-    void to_csv(final String filePath);
+    void to_csv(final String outputFilePath) throws IOException;
 
-    void to_json(final String filePath);
+    void to_json(final String outputFilePath) throws IOException;
 }

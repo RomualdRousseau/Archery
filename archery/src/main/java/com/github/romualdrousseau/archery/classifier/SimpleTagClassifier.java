@@ -7,6 +7,7 @@ import com.github.romualdrousseau.archery.Header;
 import com.github.romualdrousseau.archery.Model;
 import com.github.romualdrousseau.archery.Table;
 import com.github.romualdrousseau.archery.TagClassifier;
+import com.github.romualdrousseau.archery.commons.preprocessing.Text.ITokenizer;
 import com.github.romualdrousseau.archery.commons.preprocessing.tokenizer.ShingleTokenizer;
 import com.github.romualdrousseau.archery.commons.strings.StringUtils;
 
@@ -100,6 +101,11 @@ public class SimpleTagClassifier implements TagClassifier {
         } else {
             return this.ensureTagStyle(name);
         }
+    }
+
+    @Override
+    public ITokenizer getTagTokenizer() {
+        return this.tagTokenizer;
     }
 
     private final Pattern pattern = Pattern.compile(" \\(\\$(.*)\\)$");
