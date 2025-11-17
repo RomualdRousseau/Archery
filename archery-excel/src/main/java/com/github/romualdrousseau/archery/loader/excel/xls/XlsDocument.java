@@ -51,7 +51,7 @@ public class XlsDocument extends BaseDocument {
         try (final var workbook = WorkbookFactory.create(excelFile)) {
             this.sheets.clear();
             for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
-                this.sheets.add(new XlsSheet(workbook.getSheetAt(i)));
+                this.sheets.add(new XlsSheet(this, workbook.getSheetAt(i)));
             }
             return this.sheets.size() > 0;
         } catch (EncryptedDocumentException | IOException | OldExcelFormatException | LeftoverDataException e) {

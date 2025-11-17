@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
-import com.github.romualdrousseau.archery.base.PatcheableSheetStore;
-import com.github.romualdrousseau.archery.commons.strings.StringUtils;
-
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
@@ -14,11 +11,22 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;
 
+import com.github.romualdrousseau.archery.Document;
+import com.github.romualdrousseau.archery.base.PatcheableSheetStore;
+import com.github.romualdrousseau.archery.commons.strings.StringUtils;
+
 public class XlsSheet extends PatcheableSheetStore {
 
     private final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
+    private final SimpleDateFormat DATETIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+    private final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat("hh:mm:ss");
 
-    public XlsSheet(final Sheet sheet) throws IOException {
+    private final XlsDocument document;
+    private final Sheet sheet;
+    private final ArrayList<CellRangeAddress> mergedRegions;
+
+    public XlsSheet(final XlsDocument document, final Sheet sheet) throws IOException {
+        this.document = document;
         this.sheet = sheet;
         this.mergedRegions = new ArrayList<CellRangeAddress>();
         for (int j = 0; j < this.sheet.getNumMergedRegions(); j++) {
@@ -93,7 +101,8 @@ public class XlsSheet extends PatcheableSheetStore {
     }
 
     @Override
-    public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2, final String value, final boolean unmergeAll) {
+    public void patchCell(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2,
+            final String value, final boolean unmergeAll) {
         final String newCell;
         if (value == null) {
             newCell = this.getCellDataAt(colIndex1, rowIndex1);
@@ -165,7 +174,17 @@ public class XlsSheet extends PatcheableSheetStore {
                 break;
             case NUMERIC:
                 if (DateUtil.isCellDateFormatted(cell)) {
-                    value = DATE_FORMATTER.format(cell.getDateCellValue());
+                    if (this.document.getHints().contains(Document.Hint.INTELLI_TIME)) {
+                        final var dataFormatString = cell.getCellStyle().getDataFormatString();
+                        if (dataFormatString.contains("h") && !dataFormatString.contains("d")
+                                && !dataFormatString.contains("y")) {
+                            value = TIME_FORMATTER.format(cell.getDateCellValue());
+                        } else {
+                            value = DATETIME_FORMATTER.format(cell.getDateCellValue());
+                        }
+                    } else {
+                        value = DATE_FORMATTER.format(cell.getDateCellValue());
+                    }
                 } else {
                     final double d = cell.getNumericCellValue();
                     if (d != Math.rint(d)) {
@@ -184,7 +203,4 @@ public class XlsSheet extends PatcheableSheetStore {
 
         return value;
     }
-
-    private final Sheet sheet;
-    private final ArrayList<CellRangeAddress> mergedRegions;
 }

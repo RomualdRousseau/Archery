@@ -37,9 +37,12 @@ public class ContentHandler extends DefaultHandler {
     }
 
     private final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
+    private final SimpleDateFormat DATETIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+    private final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat("hh:mm:ss");
     private final DataFrameWriter rows;
     private final StylesTable styles;
     private final SharedStrings sharedStrings;
+    private final boolean timeSupport;
     private final List<CellRangeAddress> mergedRegions = new ArrayList<>();
 
     private ArrayList<String> row;
@@ -49,10 +52,11 @@ public class ContentHandler extends DefaultHandler {
     private Cell prevCell;
 
     public ContentHandler(final DataFrameWriter dataFrameWriter, final SharedStrings sharedStrings,
-            final StylesTable styles) {
+            final StylesTable styles, final boolean timeSupport) {
         this.rows = dataFrameWriter;
         this.styles = styles;
         this.sharedStrings = sharedStrings;
+        this.timeSupport = timeSupport;
     }
 
     public List<CellRangeAddress> getMergesRegions() {
@@ -187,9 +191,19 @@ public class ContentHandler extends DefaultHandler {
         } else if (cell.type.equals(CellType.NUMERIC)) {
             try {
                 final double d = Double.valueOf(cell.value);
-                if (DateUtil.isADateFormat(cell.style.getDataFormat(), cell.style.getDataFormatString())
+                final var dataFormatString = cell.style.getDataFormatString();
+                if (DateUtil.isADateFormat(cell.style.getDataFormat(), dataFormatString)
                         && DateUtil.isValidExcelDate(d)) {
-                    cell.value = DATE_FORMATTER.format(DateUtil.getJavaDate(d));
+                    if (this.timeSupport) {
+                        if (dataFormatString.contains("h") && !dataFormatString.contains("d")
+                                && !dataFormatString.contains("y")) {
+                            cell.value = TIME_FORMATTER.format(DateUtil.getJavaDate(d));
+                        } else {
+                            cell.value = DATETIME_FORMATTER.format(DateUtil.getJavaDate(d));
+                        }
+                    } else {
+                        cell.value = DATE_FORMATTER.format(DateUtil.getJavaDate(d));
+                    }
                 }
             } catch (final NumberFormatException x) {
                 cell.type = CellType.STRING;
