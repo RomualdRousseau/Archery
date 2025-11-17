@@ -43,16 +43,16 @@ public class Layex {
         // R = R$
         // R = R{n,m}|R{n,}
         // R = /lit/
-        // R = /!lit/
+        // R = /^lit/
         // R = s|v|e|.
         final String c = this.getSymbol();
 
         if (c.equals("")) {
-            return new Nop();
+            return new Nop(this);
         } else if (c.equals(")")) {
-            return new Nop();
+            return new Nop(this);
         } else if (c.equals("]")) {
-            return new Nop();
+            return new Nop(this);
         } else {
             final TableMatcher e1 = r2();
             final TableMatcher e2 = r();
@@ -61,7 +61,7 @@ public class Layex {
             } else {
                 this.stack.push(e2);
                 this.stack.push(e1);
-                return new Concat(this.stack);
+                return new Concat(this, this.stack);
             }
         }
     }
@@ -70,23 +70,23 @@ public class Layex {
         final String c = this.getSymbol();
         if (c.charAt(0) >= 'a' && c.charAt(0) <= 'z') {
             this.acceptSymbol();
-            return r3(new Value(c));
+            return r3(new Value(this, c));
         } else if (c.charAt(0) >= 'A' && c.charAt(0) <= 'Z') {
             this.acceptSymbol();
-            return r3(new ValueNeg(c));
+            return r3(new ValueNeg(this, c));
         } else if (c.charAt(0) == '.') {
             this.acceptSymbol();
             return r3(new Any());
         } else if (c.charAt(0) == '$') {
             this.acceptSymbol();
-            return r3(new EndOfRow());
+            return r3(new EndOfRow(this));
         } else if (c.equals("(")) {
             this.acceptSymbol();
             final int group = this.groupCounter++;
             final TableMatcher e = r();
             this.acceptSymbol(")");
             this.stack.push(r3(e));
-            return new Group(this.stack, group);
+            return new Group(this, this.stack, group);
         } else if (c.equals("[")) {
             this.acceptSymbol();
             final TableMatcher e = r();
@@ -107,15 +107,15 @@ public class Layex {
         if (c.equals("?")) {
             this.acceptSymbol();
             this.stack.push(e);
-            return new Many(this.stack, 0, 1);
+            return new Many(this, this.stack, 0, 1);
         } else if (c.equals("*")) {
             this.acceptSymbol();
             this.stack.push(e);
-            return new Many(this.stack, 0, Integer.MAX_VALUE);
+            return new Many(this, this.stack, 0, Integer.MAX_VALUE);
         } else if (c.equals("+")) {
             this.acceptSymbol();
             this.stack.push(e);
-            return new Many(this.stack, 1, Integer.MAX_VALUE);
+            return new Many(this, this.stack, 1, Integer.MAX_VALUE);
         } else if (c.equals("{")) {
             this.acceptSymbol();
             final TableMatcher e2 = r4(e);
@@ -126,7 +126,7 @@ public class Layex {
             final TableMatcher e2 = r();
             this.stack.push(e2);
             this.stack.push(e);
-            return new Or(this.stack);
+            return new Or(this, this.stack);
         } else {
             return e;
         }
@@ -149,7 +149,7 @@ public class Layex {
                 }
             }
             this.stack.push(e);
-            return new Many(this.stack, n1, n2);
+            return new Many(this, this.stack, n1, n2);
         } else {
             throw new RuntimeException("Syntax Error: " + c);
         }
@@ -159,7 +159,7 @@ public class Layex {
         String l = "";
         boolean neg = false;
         String c = this.getSymbol();
-        if(c.equals("^")) {
+        if (c.equals("^")) {
             this.acceptSymbol();
             neg = true;
             c = this.getSymbol();
@@ -169,7 +169,7 @@ public class Layex {
             l += c;
             c = this.getSymbol();
         }
-        return neg ? new LiteralNeg(l) : new Literal(l);
+        return neg ? new LiteralNeg(this, l) : new Literal(l);
     }
 
     private String getSymbol() {
@@ -186,8 +186,9 @@ public class Layex {
         }
     }
 
-    private Deque<TableMatcher> stack;
     private final String layex;
     private final StringLexer pattern;
+
+    private Deque<TableMatcher> stack;
     private int groupCounter;
 }

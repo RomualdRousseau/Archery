@@ -3,6 +3,7 @@ package com.github.romualdrousseau.archery.parser;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.github.romualdrousseau.archery.parser.table.SimpleTableParser;
 import com.github.romualdrousseau.archery.Model;
@@ -178,6 +179,11 @@ public class LayexTableParser extends SimpleTableParser {
             }
         }
 
+        final var info = Map.of(
+                "layex", matcher.getLayex().toString(),
+                "matcher", matcher.toString());
+        dataTable.setParserInfo(info);
+
         return true;
     }
 
@@ -190,6 +196,12 @@ public class LayexTableParser extends SimpleTableParser {
         }
         parser.processSymbolFunc(BaseCell.EndOfStream);
         result.add(metaTable);
+
+        final var info = Map.of(
+                "layex", matcher.getLayex().toString(),
+                "matcher", matcher.toString());
+        metaTable.setParserInfo(info);
+
         return true;
     }
 

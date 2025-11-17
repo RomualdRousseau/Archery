@@ -4,16 +4,23 @@ package com.github.romualdrousseau.archery.parser.layex.operations;
 import java.util.Deque;
 
 import com.github.romualdrousseau.archery.base.Symbol;
+import com.github.romualdrousseau.archery.parser.layex.Layex;
 import com.github.romualdrousseau.archery.parser.layex.Lexer;
 import com.github.romualdrousseau.archery.parser.layex.TableMatcher;
 import com.github.romualdrousseau.archery.parser.layex.TableParser;
 
 public class Many implements TableMatcher {
 
-    public Many(final Deque<TableMatcher> stack, final int minCount, final int maxCount) {
+    public Many(final Layex layex, final Deque<TableMatcher> stack, final int minCount, final int maxCount) {
+        this.layex = layex;
         this.a = stack.pop();
         this.minCount = minCount;
         this.maxCount = maxCount;
+    }
+
+    @Override
+    public Layex getLayex() {
+        return this.layex;
     }
 
     @Override
@@ -36,10 +43,12 @@ public class Many implements TableMatcher {
         return "MANY(" + this.a + ", " + this.minCount + ", " + this.maxCount + ")";
     }
 
-    private static final <S extends Symbol, C> boolean omatch(final Lexer<S, C> stream, final TableParser<S> context, final TableMatcher a) {
+    private static final <S extends Symbol, C> boolean omatch(final Lexer<S, C> stream, final TableParser<S> context,
+            final TableMatcher a) {
         return a instanceof Nop || a.match(stream, context);
     }
 
+    private final Layex layex;
     private final TableMatcher a;
     private final int minCount;
     private final int maxCount;

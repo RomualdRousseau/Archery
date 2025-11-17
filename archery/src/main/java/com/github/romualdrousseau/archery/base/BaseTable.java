@@ -3,6 +3,7 @@ package com.github.romualdrousseau.archery.base;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.github.romualdrousseau.archery.Header;
 import com.github.romualdrousseau.archery.Row;
@@ -44,6 +45,7 @@ public class BaseTable implements Table, Visitable {
         this.lastRowOffset = 0;
         this.headerRowOffset = 0;
         this.loadCompleted = false;
+        this.parserInfo = Map.of();
     }
 
     @Override
@@ -200,6 +202,14 @@ public class BaseTable implements Table, Visitable {
         this.headers.set(i, header);
     }
 
+    public void setParserInfo(final Map<String, String> info) {
+        this.parserInfo = info;
+    }
+
+    public Map<String, String> getParserInfo() {
+        return this.parserInfo;
+    }
+
     public List<BaseHeader> findAllHeaders(final BaseHeader headerToFind) {
         final var result = new ArrayList<BaseHeader>();
         for (final var header : this.headers()) {
@@ -234,11 +244,12 @@ public class BaseTable implements Table, Visitable {
     private final int firstColumn;
     private final int lastColumn;
     private final ArrayList<Header> headers;
-    private  int firstRow;
+    private int firstRow;
     private int lastRow;
     private int firstRowOffset;
     private int lastRowOffset;
     private int headerRowOffset;
     private boolean loadCompleted;
     private boolean visited;
+    private Map<String, String> parserInfo;
 }

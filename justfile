@@ -70,13 +70,17 @@ build-doc: copy-pdfs
 serve-doc: copy-pdfs
     mkdocs serve --config-file ./archery-documents/mkdocs.yml
 
-# Update all plugins and dependencies
-update-dependencies:
-    mvn -DcreateChecksum=true versions:display-dependency-updates
-
-# Update all plugins and dependencies
+# Update all plugins
 update-plugins:
-    mvn -DcreateChecksum=true versions:display-plugin-updates
+    mvn -DcreateChecksum=true -DprocessDependencyManagement=false versions:display-plugin-updates
+
+# Update all dependencies
+update-deps:
+    mvn -DcreateChecksum=true -DprocessDependencyManagement=false versions:display-dependency-updates
+
+# Copy dependencies
+copy-deps outdir='$PWD/target/jars':
+    mvn dependency:copy-dependencies -DoutputDirectory={{outdir}}
 
 @copy-pdfs:
     cp ./archery-documents/whitepapers/Semi-structured\ Document\ Feature\ Extraction/misc/main.pdf ./archery-documents/docs/resources/feature-extraction.pdf
