@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.github.romualdrousseau.archery.Document;
 import com.github.romualdrousseau.archery.base.PatcheableSheetStore;
 import com.github.romualdrousseau.archery.commons.collections.DataFrame;
 import com.github.romualdrousseau.archery.commons.collections.DataFrameWriter;
@@ -17,14 +18,17 @@ import com.linuxense.javadbf.DBFReader;
 class DbfSheet extends PatcheableSheetStore implements Closeable {
 
     private static final int BATCH_SIZE = 50000;
+    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
+    private static final SimpleDateFormat DATETIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
-    private final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
+    private final DbfDocument document;
     private final String name;
 
     private DBFReader reader;
     private DataFrame rows;
 
-    public DbfSheet(final String name, final DBFReader reader) {
+    public DbfSheet(DbfDocument document, final String name, final DBFReader reader) {
+        this.document = document;
         this.name = name;
         this.reader = reader;
         this.rows = null;
@@ -121,7 +125,11 @@ class DbfSheet extends PatcheableSheetStore implements Closeable {
                 return v.toString();
             }
         } else if (v instanceof Date) {
-            return DATE_FORMATTER.format((Date) v);
+            if (this.document.getHints().contains(Document.Hint.INTELLI_TIME)) {
+                return DATETIME_FORMATTER.format((Date) v);
+            } else {
+                return DATE_FORMATTER.format((Date) v);
+            }
         } else {
             return v.toString();
         }

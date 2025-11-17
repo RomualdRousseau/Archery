@@ -32,6 +32,4 @@ public interface Table extends Closeable {
     void to_arrow(final String outputfilePath) throws IOException;
 
     void to_csv(final String outputFilePath) throws IOException;
-
-    void to_json(final String outputFilePath) throws IOException;
 }
