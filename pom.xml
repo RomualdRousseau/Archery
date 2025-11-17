@@ -76,6 +76,7 @@
         <!-- Convergences -->
         <avro.version>1.12.1</avro.version>
         <bcprov-jdk18on.version>1.82</bcprov-jdk18on.version>
+        <bcpkix-jdk18on.version>1.79</bcpkix-jdk18on.version>
         <classgraph.version>4.8.184</classgraph.version>
         <commons-cli.version>1.11.0</commons-cli.version>
         <commons-codec.version>1.20.0</commons-codec.version>
@@ -546,6 +547,11 @@
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk18on</artifactId>
                 <version>${bcprov-jdk18on.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk18on</artifactId>
+                <version>${bcpkix-jdk18on.version}</version>
             </dependency>
             <dependency>
                 <groupId>dnsjava</groupId>
