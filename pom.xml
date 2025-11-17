@@ -102,6 +102,7 @@
         <reactive-streams.version>1.0.4</reactive-streams.version>
         <slf4j.version>2.0.17</slf4j.version>
         <stax2-api.version>4.2.2</stax2-api.version>
+        <jts-core.version>1.20.0</jts-core.version>
         <!-- Test Framework -->
         <hamcrest.version>3.0</hamcrest.version>
         <junit.version>4.13.2</junit.version>
@@ -696,6 +697,11 @@
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-util</artifactId>
                 <version>${jetty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.locationtech.jts</groupId>
+                <artifactId>jts-core</artifactId>
+                <version>${jts-core.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
