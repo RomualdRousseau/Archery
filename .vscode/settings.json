@@ -1,0 +1,7 @@
+{
+    "java.test.config": {
+        "envFile": "${workspaceFolder}/.env"
+    },
+    "java.compile.nullAnalysis.mode": "disabled",
+    "java.configuration.updateBuildConfiguration": "interactive"
+}

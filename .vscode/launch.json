@@ -1,0 +1,87 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Tutorial1",
+            "request": "launch",
+            "mainClass": "com.github.romualdrousseau.archery.examples.Tutorial1",
+            "projectName": "archery-examples",
+            "vmArgs": "-ea -Dfile.encoding=\"UTF-8\" --add-opens=java.base/java.nio=ALL-UNNAMED"
+        },
+        {
+            "type": "java",
+            "name": "Tutorial2",
+            "request": "launch",
+            "mainClass": "com.github.romualdrousseau.archery.examples.Tutorial2",
+            "projectName": "archery-examples",
+            "vmArgs": "-ea -Dfile.encoding=\"UTF-8\" --add-opens=java.base/java.nio=ALL-UNNAMED"
+        },
+        {
+            "type": "java",
+            "name": "Tutorial3",
+            "request": "launch",
+            "mainClass": "com.github.romualdrousseau.archery.examples.Tutorial3",
+            "projectName": "archery-examples",
+            "vmArgs": "-ea -Dfile.encoding=\"UTF-8\" --add-opens=java.base/java.nio=ALL-UNNAMED"
+        },
+        {
+            "type": "java",
+            "name": "Tutorial4",
+            "request": "launch",
+            "mainClass": "com.github.romualdrousseau.archery.examples.Tutorial4",
+            "projectName": "archery-examples",
+            "vmArgs": "-ea -Dfile.encoding=\"UTF-8\" --add-opens=java.base/java.nio=ALL-UNNAMED"
+        },
+        {
+            "type": "java",
+            "name": "Tutorial5",
+            "request": "launch",
+            "mainClass": "com.github.romualdrousseau.archery.examples.Tutorial5",
+            "projectName": "archery-examples",
+            "vmArgs": "-ea -Dfile.encoding=\"UTF-8\" --add-opens=java.base/java.nio=ALL-UNNAMED"
+        },
+        {
+            "type": "java",
+            "name": "Tutorial6",
+            "request": "launch",
+            "mainClass": "com.github.romualdrousseau.archery.examples.Tutorial6",
+            "projectName": "archery-examples",
+            "vmArgs": "-ea -Dfile.encoding=\"UTF-8\" --add-opens=java.base/java.nio=ALL-UNNAMED"
+        },
+        {
+            "type": "java",
+            "name": "Tutorial7",
+            "request": "launch",
+            "mainClass": "com.github.romualdrousseau.archery.examples.Tutorial7",
+            "projectName": "archery-examples",
+            "vmArgs": "-ea -Dfile.encoding=\"UTF-8\" --add-opens=java.base/java.nio=ALL-UNNAMED"
+        },
+        {
+            "type": "java",
+            "name": "Tutorial8",
+            "request": "launch",
+            "mainClass": "com.github.romualdrousseau.archery.examples.Tutorial8",
+            "projectName": "archery-examples",
+            "vmArgs": "-ea -Dfile.encoding=\"UTF-8\" --add-opens=java.base/java.nio=ALL-UNNAMED"
+        },
+        {
+            "type": "java",
+            "name": "Tutorial9",
+            "request": "launch",
+            "mainClass": "com.github.romualdrousseau.archery.examples.Tutorial9",
+            "projectName": "archery-examples",
+            "vmArgs": "-ea -Dfile.encoding=\"UTF-8\" --add-opens=java.base/java.nio=ALL-UNNAMED"
+        },
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}",
+            "vmArgs": "-ea -Dfile.encoding=\"UTF-8\" --add-opens=java.base/java.nio=ALL-UNNAMED"
+        }
+    ]
+}
