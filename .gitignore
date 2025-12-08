@@ -22,7 +22,6 @@ buildNumber.properties
 *.geany
 *.sublime-project
 *.sublime-workspace
-.vscode
 .venv/
 .factorypath
 
