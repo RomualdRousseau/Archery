@@ -57,7 +57,7 @@
 
         <!-- Archery Dependencies -->
         <commons-collections4.version>4.5.0</commons-collections4.version>
-        <fury.version>0.4.1</fury.version>
+        <fury.version>0.10.3</fury.version>
         <hadoop.version>3.4.2</hadoop.version>
         <jackson.version>2.19.4</jackson.version>
         <javadbf.version>1.14.1</javadbf.version>
