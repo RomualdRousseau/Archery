@@ -23,7 +23,7 @@ initialize:
 
 # Clean
 clean:
-    rm dependencies.txt
+    rm -f dependencies.txt
     mvn clean
 
 # Build
