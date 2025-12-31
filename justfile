@@ -23,6 +23,7 @@ initialize:
 
 # Clean
 clean:
+    rm dependencies.txt
     mvn clean
 
 # Build
@@ -80,7 +81,7 @@ update-deps:
 
 @list-deps:
     mvn dependency:list -DoutputFile=/tmp/dependencies -DoutputType=dot -DappendOutput=true -B -q
-    grep "compile\|runtime" /tmp/dependencies  | sort -u | sed -E 's/:(compile|runtime).*//'
+    grep "compile\|runtime" /tmp/dependencies | grep -v xelem | sort -u | sed -E 's/:(compile|runtime).*//' | sed -E 's/^\s+//' > dependencies.txt
 
 # Copy dependencies
 copy-deps outdir='$PWD/target/jars': install

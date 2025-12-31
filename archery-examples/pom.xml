@@ -51,6 +51,16 @@
             <artifactId>archery-pdf</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.romualdrousseau</groupId>
+            <artifactId>archery-dbf</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.romualdrousseau</groupId>
+            <artifactId>archery-parquet</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- Log4j Framework -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
