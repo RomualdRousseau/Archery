@@ -59,15 +59,16 @@
         <commons-collections4.version>4.5.0</commons-collections4.version>
         <fury.version>0.10.3</fury.version>
         <hadoop.version>3.4.2</hadoop.version>
-        <jackson.version>2.19.4</jackson.version>
+        <jackson.version>2.20.1</jackson.version>
+        <jackson-annotations.version>2.19.1</jackson-annotations.version>
         <javadbf.version>1.14.1</javadbf.version>
         <jython.version>2.7.4</jython.version>
         <jxl.version>2.6.12</jxl.version>
-        <log4j.version>2.25.2</log4j.version>
-        <logstash-logback.version>8.1</logstash-logback.version>
+        <log4j.version>2.25.3</log4j.version>
+        <logstash-logback.version>9.0</logstash-logback.version>
         <openai-service.version>0.18.2</openai-service.version>
         <parquet.version>1.16.0</parquet.version>
-        <poi.version>5.5.0</poi.version>
+        <poi.version>5.5.1</poi.version>
         <reflections.version>0.10.2</reflections.version>
         <snappy.version>1.1.10.8</snappy.version>
         <tabula.version>1.0.12</tabula.version>
@@ -94,7 +95,7 @@
         <jetty.version>12.1.4</jetty.version>
         <jline.version>3.30.6</jline.version>
         <kotlin-stdlib.version>2.2.21</kotlin-stdlib.version>
-        <netty.version>4.2.7.Final</netty.version>
+        <netty.version>4.2.8.Final</netty.version>
         <nimbus-jose-jwt.version>10.6</nimbus-jose-jwt.version>
         <okhttp.version>4.12.0</okhttp.version>
         <okio.version>3.16.3</okio.version>
@@ -190,7 +191,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>3.4.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -205,7 +206,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.3</version>
+                <version>3.5.4</version>
                 <dependencies>
                     <dependency>
                         <groupId>me.fabriciorby</groupId>
@@ -261,7 +262,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
-                <version>2.19.1</version>
+                <version>2.20.1</version>
                 <configuration>
                     <rulesUri>file:///${maven.multiModuleProjectDirectory}/.mvn/rules.xml</rulesUri>
                 </configuration>
@@ -325,7 +326,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.3.1</version>
+                        <version>3.4.0</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -374,7 +375,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.3.1</version>
+                        <version>3.4.0</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -606,7 +607,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-annotations</artifactId>
-                <version>${jackson.version}</version>
+                <version>${jackson-annotations.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.datatype</groupId>
