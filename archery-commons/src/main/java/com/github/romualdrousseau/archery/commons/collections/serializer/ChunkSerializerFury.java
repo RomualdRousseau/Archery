@@ -7,8 +7,8 @@ import org.xerial.snappy.Snappy;
 import com.github.romualdrousseau.archery.commons.collections.ChunkSerializer;
 import com.github.romualdrousseau.archery.commons.collections.Row;
 
-import io.fury.Fury;
-import io.fury.config.Language;
+import org.apache.fury.Fury;
+import org.apache.fury.config.Language;
 
 public class ChunkSerializerFury implements ChunkSerializer {
 

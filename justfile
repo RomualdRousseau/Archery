@@ -78,6 +78,10 @@ update-plugins:
 update-deps:
     mvn -DcreateChecksum=true -DprocessDependencyManagement=false versions:display-dependency-updates
 
+@list-deps:
+    mvn dependency:list -DoutputFile=/tmp/dependencies -DoutputType=dot -DappendOutput=true -B -q
+    grep "compile\|runtime" /tmp/dependencies  | sort -u | sed -E 's/:(compile|runtime).*//'
+
 # Copy dependencies
 copy-deps outdir='$PWD/target/jars': install
     mvn -DoutputDirectory={{outdir}} dependency:copy-dependencies
@@ -85,3 +89,4 @@ copy-deps outdir='$PWD/target/jars': install
 @copy-pdfs:
     cp ./archery-documents/whitepapers/Semi-structured\ Document\ Feature\ Extraction/misc/main.pdf ./archery-documents/docs/resources/feature-extraction.pdf
     cp ./archery-documents/whitepapers/Table\ Layout\ Regular\ Expression\ -\ Layex/misc/main.pdf ./archery-documents/docs/resources/layex.pdf
+

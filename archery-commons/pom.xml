@@ -21,12 +21,12 @@
     <dependencies>
         <!-- Serialization -->
         <dependency>
-            <groupId>org.furyio</groupId>
+            <groupId>org.apache.fury</groupId>
             <artifactId>fury-core</artifactId>
             <version>${fury.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.furyio</groupId>
+            <groupId>org.apache.fury</groupId>
             <artifactId>fury-format</artifactId>
             <version>${fury.version}</version>
         </dependency>
