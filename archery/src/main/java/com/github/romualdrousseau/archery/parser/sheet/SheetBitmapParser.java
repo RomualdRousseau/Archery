@@ -6,12 +6,12 @@ import java.util.List;
 import com.github.romualdrousseau.archery.SheetParser;
 import com.github.romualdrousseau.archery.base.BaseSheet;
 import com.github.romualdrousseau.archery.base.BaseTable;
-import com.github.romualdrousseau.archery.event.BitmapGeneratedEvent;
 import com.github.romualdrousseau.archery.commons.cv.Filter;
 import com.github.romualdrousseau.archery.commons.cv.ISearchBitmap;
 import com.github.romualdrousseau.archery.commons.cv.SearchPoint;
 import com.github.romualdrousseau.archery.commons.cv.Template;
 import com.github.romualdrousseau.archery.commons.cv.shapeextractor.RectangleExtractor;
+import com.github.romualdrousseau.archery.event.BitmapGeneratedEvent;
 
 public class SheetBitmapParser implements SheetParser {
 
@@ -36,33 +36,20 @@ public class SheetBitmapParser implements SheetParser {
             final var firstColumnNum = rectangle[0].getX();
             final var lastColumnNum = rectangle[1].getX();
             final var lastRowNum = rectangle[1].getY();
-            var firstRowNum = rectangle[0].getY();
+            final var firstRowNum = rectangle[0].getY();
 
             if (firstColumnNum > lastColumnNum || firstRowNum > lastRowNum) {
                 continue;
             }
 
-            final var table = new BaseTable(sheet, firstColumnNum, firstRowNum, lastColumnNum,
-                    lastRowNum);
+            var table = new BaseTable(sheet, firstColumnNum, firstRowNum, lastColumnNum, lastRowNum);
 
-            boolean isSplitted = false;
-            for (int i = 0; i < table.getNumberOfRows(); i++) {
-                final var row = table.getRowAt(i);
-                if (row.isEmpty()) {
-                    final int currRowNum = table.getFirstRow() + i;
-                    if (firstRowNum <= (currRowNum - 1)) {
-                        result.add(new BaseTable(table, firstRowNum, currRowNum - 1));
-                    }
-                    result.add(new BaseTable(table, currRowNum, currRowNum));
-                    firstRowNum = currRowNum + 1;
-                    isSplitted |= true;
-                }
+            if (sheet.isAutoSplitEnabled()) {
+                table = this.splitTable(table, firstRowNum, lastRowNum, result);
             }
 
-            if (!isSplitted) {
+            if (table != null) {
                 result.add(table);
-            } else if (firstRowNum <= lastRowNum) {
-                result.add(new BaseTable(table, firstRowNum, lastRowNum));
             }
         }
 
@@ -126,5 +113,29 @@ public class SheetBitmapParser implements SheetParser {
             }
         }
         return result;
+    }
+
+    private BaseTable splitTable(final BaseTable table, final int firstRowNum, final int lastRowNum,
+            final List<BaseTable> result) {
+        int splitRowNum = firstRowNum;
+
+        for (int i = 0; i < table.getNumberOfRows(); i++) {
+            final var row = table.getRowAt(i);
+            if (row.isEmpty()) {
+                final int currRowNum = table.getFirstRow() + i;
+                if (splitRowNum <= (currRowNum - 1)) {
+                    result.add(new BaseTable(table, firstRowNum, currRowNum - 1));
+                }
+                splitRowNum = currRowNum + 1;
+            }
+        }
+
+        if (firstRowNum == splitRowNum) {
+            return table;
+        } else if (splitRowNum <= lastRowNum) {
+            return new BaseTable(table, splitRowNum, lastRowNum);
+        } else {
+            return null;
+        }
     }
 }

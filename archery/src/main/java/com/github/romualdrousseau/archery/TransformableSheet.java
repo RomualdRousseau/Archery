@@ -259,6 +259,22 @@ public class TransformableSheet {
     }
 
     /**
+     * This method enables auto split of the tables the sheet. The auto split
+     * will split tables when empty rows are found within a table.
+     */
+    public void enableAutoSplit() {
+        this.sheet.enableAutoSplit();
+    }
+
+    /**
+     * This method disables auto split of the tables the sheet. The auto split
+     * will split tables when empty rows are found within a table.
+     */
+    public void disableAutoSplit() {
+        this.sheet.disableAutoSplit();
+    }
+
+    /**
      * This method enables the extraction of meta data of the sheet's associated
      * document. meta and table data will be extracted.
      */
@@ -306,7 +322,8 @@ public class TransformableSheet {
      *
      * @param pivotEntityList the list of entities as a list of string
      *
-     * @deprecated use {@link TransformableSheet#setPivotKeyEntityList(List<String>)}
+     * @deprecated use
+     *             {@link TransformableSheet#setPivotKeyEntityList(List<String>)}
      */
     public void setPivotEntityList(final List<String> pivotEntityList) {
         this.sheet.setPivotKeyEntityList(pivotEntityList);
@@ -373,7 +390,8 @@ public class TransformableSheet {
     }
 
     /**
-     * This method sets the name of a column header wihtout name for the sheet using the given
+     * This method sets the name of a column header wihtout name for the sheet using
+     * the given
      * format.
      *
      * @param format the format used as String#format(String, Object...)}
@@ -460,14 +478,15 @@ public class TransformableSheet {
     }
 
     /**
-     * This method patches the sequence of cells from the given column and row indices with the
+     * This method patches the sequence of cells from the given column and row
+     * indices with the
      * given values. The style is copied from an existing cell.
      *
      * @param colIndex1 the column index to copy the style from
      * @param rowIndex1 the row index to copy the style from
      * @param colIndex2 the column index to copy the style to
      * @param rowIndex2 the row index to copy the style to
-     * @param values     the values of the destination cells
+     * @param values    the values of the destination cells
      */
     public void patchCells(final int colIndex1, final int rowIndex1, final int colIndex2, final int rowIndex2,
             final List<String> values) {
@@ -626,9 +645,10 @@ public class TransformableSheet {
     }
 
     /**
-     * This method searches for the first occurence of a value that match a regex within a given row.
+     * This method searches for the first occurence of a value that match a regex
+     * within a given row.
      *
-     * @param regex the regex to search
+     * @param regex    the regex to search
      * @param rowIndex the row indexc to search
      */
     public List<Integer> searchFirstValue(final String regex, final int rowIndex) {
@@ -636,10 +656,11 @@ public class TransformableSheet {
     }
 
     /**
-     * This method searches for the first occurence of a value that match a regex within a given region of rows.
+     * This method searches for the first occurence of a value that match a regex
+     * within a given region of rows.
      * The region of rows begins at a given offset and has a given number of rows.
      *
-     * @param regex the regex to search
+     * @param regex  the regex to search
      * @param offset the starting offset of the region to search
      * @param length the number of rows to search
      */
@@ -648,13 +669,14 @@ public class TransformableSheet {
     }
 
     /**
-     * This method searches for the nth occurence of a value that match a regex within a given region of rows.
+     * This method searches for the nth occurence of a value that match a regex
+     * within a given region of rows.
      * The region of rows begins at a given offset and has a given number of rows.
      *
-     * @param regex the regex to search
+     * @param regex  the regex to search
      * @param offset the starting offset of the region to search
      * @param length the number of rows to search
-     * @param nth the nth occurence to match
+     * @param nth    the nth occurence to match
      */
     public List<Integer> searchNthValue(final String regex, final int offset, final int length, final int nth) {
         return this.sheet.searchCell(regex, offset, length, nth);

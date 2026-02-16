@@ -47,6 +47,7 @@ public class BaseSheet implements Sheet {
         this.autoCropEnabled = false;
         this.autoHeaderNameEnabled = true;
         this.autoMetaEnabled = true;
+        this.autoSplitEnabled = true;
 
         this.pivotOption = PivotOption.NONE;
         this.pivotKeyFormat = "%s " + Settings.PIVOT_KEY_SUFFIX;
@@ -397,6 +398,18 @@ public class BaseSheet implements Sheet {
         this.autoMetaEnabled = false;
     }
 
+    public boolean isAutoSplitEnabled() {
+        return this.autoSplitEnabled;
+    }
+
+    public void enableAutoSplit() {
+        this.autoSplitEnabled = true;
+    }
+
+    public void disableAutoSplit() {
+        this.autoSplitEnabled = false;
+    }
+
     public boolean isPivotEnabled() {
         return this.pivotEnabled;
     }
@@ -530,6 +543,7 @@ public class BaseSheet implements Sheet {
     private boolean autoCropEnabled;
     private boolean autoHeaderNameEnabled;
     private boolean autoMetaEnabled;
+    private boolean autoSplitEnabled;
     private PivotOption pivotOption;
     private String pivotKeyFormat;
     private String pivotValueFormat;

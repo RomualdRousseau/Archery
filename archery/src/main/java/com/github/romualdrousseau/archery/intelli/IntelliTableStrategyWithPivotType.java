@@ -36,6 +36,9 @@ public class IntelliTableStrategyWithPivotType extends IntelliTableStrategy {
     private Optional<Row> emitOneRowWithPivotType(final List<BaseHeader> headers, final BaseTableGraph graph,
             final DataTable orgTable,
             final BaseRow orgRow, final RowGroup rowGroup, final PivotEntry pivotEntry, final String typeValue) {
+        if (orgRow.isEmpty()) {
+            return Optional.empty();
+        }
         if (!this.isValidPivotEntry(orgRow, pivotEntry, typeValue)) {
             return Optional.empty();
         }

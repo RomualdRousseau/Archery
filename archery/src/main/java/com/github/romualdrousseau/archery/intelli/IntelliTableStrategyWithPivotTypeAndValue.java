@@ -31,6 +31,9 @@ public class IntelliTableStrategyWithPivotTypeAndValue extends IntelliTableStrat
             final DataTable orgTable,
             final BaseRow orgRow, final RowGroup rowGroup, final PivotKeyHeader pivotKeyHeader, final String pivotValue,
             final String typeValue) {
+        if (orgRow.isEmpty()) {
+            return Optional.empty();
+        }
         final var newRow = new Row(headers.size());
         final var hasPivotedValues = processRow(headers, graph, orgTable, orgRow, rowGroup, pivotKeyHeader,
                 pivotValue, typeValue, newRow);

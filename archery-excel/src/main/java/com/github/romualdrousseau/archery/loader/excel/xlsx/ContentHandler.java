@@ -70,11 +70,11 @@ public class ContentHandler extends DefaultHandler {
     @Override
     public void startElement(final String uri, final String localName, final String name,
             final Attributes attributes) {
+        final var attribute_r = attributes.getValue("r");
+        final var attribute_ref = attributes.getValue("ref");
         if ("row".equals(name)) {
-            if (attributes.getValue("r") != null) {
-                if (attributes.getValue("r") != null) {
-                    this.fillMissingRows(Integer.valueOf(attributes.getValue("r")) - 1);
-                }
+            if (attribute_r != null) {
+                this.fillMissingRows(Integer.valueOf(attribute_r) - 1);
                 this.row = new ArrayList<String>();
                 this.prevCell = null;
                 this.currCell = null;
@@ -82,9 +82,7 @@ public class ContentHandler extends DefaultHandler {
         } else if ("c".equals(name)) {
             this.prevCell = this.currCell;
             this.currCell = new Cell();
-            this.currCell.address = (attributes.getValue("r") != null)
-                    ? new CellAddress(attributes.getValue("r"))
-                    : CellAddress.A1;
+            this.currCell.address = (attribute_r != null) ? new CellAddress(attribute_r) : CellAddress.A1;
             this.currCell.type = this.getCellTypeFromString(attributes.getValue("t"));
             this.currCell.style = this.getCellStyleFromString(attributes.getValue("s"));
         } else if ("v".equals(name)) {
@@ -95,8 +93,8 @@ public class ContentHandler extends DefaultHandler {
             this.startValue = true;
             this.inlineStr = true;
             this.currCell.value = "";
-        } else if ("mergeCell".equals(name) && attributes.getValue("ref") != null) {
-            final var mergedRegion = CellRangeAddress.valueOf(attributes.getValue("ref"));
+        } else if ("mergeCell".equals(name) && attribute_ref != null) {
+            final var mergedRegion = CellRangeAddress.valueOf(attribute_ref);
             if (mergedRegion.getNumberOfCells() > 1) {
                 mergedRegions.add(mergedRegion);
             }
