@@ -20,7 +20,7 @@
         <module>archery</module>
         <module>archery-layex-parser</module>
         <module>archery-net-classifier</module>
-        <module>archery-llm-classifier</module>
+        <!-- <module>archery-llm-classifier</module> -->
         <module>archery-csv</module>
         <module>archery-excel</module>
         <module>archery-parquet</module>
