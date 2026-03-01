@@ -59,7 +59,7 @@
         <commons-collections4.version>4.5.0</commons-collections4.version>
         <fury.version>0.10.3</fury.version>
         <hadoop.version>3.4.2</hadoop.version>
-        <jackson.version>2.20.1</jackson.version>
+        <jackson.version>2.21.1</jackson.version>
         <jackson-annotations.version>2.19.1</jackson-annotations.version>
         <javadbf.version>1.14.1</javadbf.version>
         <jython.version>2.7.4</jython.version>
