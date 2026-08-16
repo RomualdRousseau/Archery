@@ -92,7 +92,7 @@
         <gson.version>2.13.2</gson.version>
         <guava.version>33.5.0-jre</guava.version>
         <jaxb-api.version>2.3.1</jaxb-api.version>
-        <jetty.version>12.1.4</jetty.version>
+        <jetty.version>12.1.5</jetty.version>
         <jline.version>3.30.6</jline.version>
         <kotlin-stdlib.version>2.2.21</kotlin-stdlib.version>
         <netty.version>4.2.8.Final</netty.version>
