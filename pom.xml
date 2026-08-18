@@ -95,7 +95,7 @@
         <jetty.version>12.1.9</jetty.version>
         <jline.version>3.30.6</jline.version>
         <kotlin-stdlib.version>2.2.21</kotlin-stdlib.version>
-        <netty.version>4.2.16.Final</netty.version>
+        <netty.version>4.2.17.Final</netty.version>
         <nimbus-jose-jwt.version>10.6</nimbus-jose-jwt.version>
         <okhttp.version>4.12.0</okhttp.version>
         <okio.version>3.16.3</okio.version>
